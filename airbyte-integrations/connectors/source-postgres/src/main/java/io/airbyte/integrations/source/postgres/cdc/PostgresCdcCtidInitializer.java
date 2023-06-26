@@ -17,6 +17,7 @@ import io.airbyte.integrations.source.postgres.PostgresUtils;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
+import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -34,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
@@ -116,7 +118,9 @@ public class PostgresCdcCtidInitializer {
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
       final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams.pairToCtidStatus(), fileNodes, initialDebeziumState);
-      final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(),
+      final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
+          new CtidPostgresSourceOperations(
+              Optional.of(new CdcMetadataInjector(Instant.now().toString(), savedOffset.orElseThrow(), new PostgresCdcConnectorMetadataInjector()))),
           quoteString,
           fileNodes,
           ctidStateManager,

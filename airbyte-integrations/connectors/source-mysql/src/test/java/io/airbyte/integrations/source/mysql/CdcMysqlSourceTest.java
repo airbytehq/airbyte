@@ -208,6 +208,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(1, stateMessages.size());
+    assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_CDC_OFFSET));
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_DB_HISTORY));

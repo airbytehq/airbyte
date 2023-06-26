@@ -100,6 +100,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -489,7 +490,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             finalListOfStreamsToBeSyncedViaCtid,
             getQuoteString());
         final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
+        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
             fileNodes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(

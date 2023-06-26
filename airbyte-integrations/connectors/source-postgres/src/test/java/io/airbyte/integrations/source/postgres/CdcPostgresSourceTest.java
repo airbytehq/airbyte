@@ -82,8 +82,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   protected String dbName;
   protected Database database;
   private DSLContext dslContext;
-  protected PostgresSource source;
-  protected JsonNode config;
+  private PostgresSource source;
+  private JsonNode config;
   private String fullReplicationSlot;
   private final String cleanUserName = "airbyte_test";
   private final String cleanUserPassword = "password";
@@ -143,7 +143,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
   }
 
-  protected JsonNode getReplicationMethod(final String dbName) {
+  private JsonNode getReplicationMethod(final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
@@ -370,9 +370,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    // fails for ctid
-    assertEquals(1, stateAfterFirstBatch.size());
-    assertNotNull(stateAfterFirstBatch.get(0).getData());
     assertExpectedStateMessages(stateAfterFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
@@ -423,7 +420,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterFirstBatch,  1);
+    assertExpectedStateMessages(stateAfterFirstBatch);
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
@@ -440,7 +437,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertExpectedStateMessages(stateAfterSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
       final JsonNode record =
@@ -459,14 +456,14 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
-    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterThirdBatch,  3);
+    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterThirdBatch);
     final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
         dataFromThirdBatch);
 
     assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
   }
 
-  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
+  protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
     assertExpectedStateMessages(stateMessages);
   }
 
@@ -617,7 +614,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     // As first `read` operation is from snapshot, it would generate only one state message at the end
     // of the process.
-    assertStateForVerifyCheckpointStatesByRecords(stateMessages);
+    assertExpectedStateMessages(stateMessages);
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
@@ -638,10 +635,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
-  protected void assertStateForVerifyCheckpointStatesByRecords(final List<AirbyteStateMessage> stateMessages) {
-    assertEquals(1, stateMessages.size());
-  }
-
   /**
    * This test verifies that multiple states are sent during the CDC process based on time ranges. We
    * can ensure that more than one `STATE` type of message is sent, but we are not able to assert the
@@ -654,8 +647,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
-
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
@@ -664,8 +655,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     // As first `read` operation is from snapshot, it would generate only one state message at the end
     // of the process.
-    // fails for ctid
-    assertEquals(1, stateMessages.size());
+    assertExpectedStateMessages(stateMessages);
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
@@ -674,8 +664,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
                   "F-" + recordsCreated));
       writeModelRecord(record);
     }
+    ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
+    ((ObjectNode) config).put("sync_checkpoint_records", 100_000);
 
-    final JsonNode stateAfterFirstSync = Jsons.jsonNode(stateMessages);
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
