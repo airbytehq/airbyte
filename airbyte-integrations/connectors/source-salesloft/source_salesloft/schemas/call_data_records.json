@@ -20,7 +20,7 @@
       "type": ["null", "string"]
     },
     "duration": {
-      "type": ["null", "string"]
+      "type": "integer"
     },
     "direction": {
       "type": ["null", "string"]

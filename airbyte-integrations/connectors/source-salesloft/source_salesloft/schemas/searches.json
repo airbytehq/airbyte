@@ -30,7 +30,8 @@
       "type": ["null", "string"]
     },
     "user_details": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "calendar_type": {
       "type": ["null", "string"]
@@ -100,6 +101,23 @@
     },
     "reschedule_meetings_enabled": {
       "type": ["null", "boolean"]
+    },
+    "active_meeting_url": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "url": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   }
 }
