@@ -50,7 +50,7 @@ To get the API token for your application follow this [steps](https://developer.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.
 5. Log in and Authorize to the Typeform account.
-6. **Start date** - Date to start fetching Responses stream data from.
+6. **Start date (Optional)** - Date to start fetching Responses stream data from. If start date is not set, Responses stream will fetch data from a year ago from today.
 7. **Form IDs (Optional)** - List of Form Ids to sync. If not passed - sync all account`s forms.
 8. Click **Set up source**.
 <!-- /env:cloud -->
