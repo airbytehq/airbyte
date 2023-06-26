@@ -18,8 +18,10 @@ import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRec
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
-import io.airbyte.protocol.models.v0.*;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
