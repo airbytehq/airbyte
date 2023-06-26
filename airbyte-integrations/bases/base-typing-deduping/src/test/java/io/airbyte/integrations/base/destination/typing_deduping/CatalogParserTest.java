@@ -116,22 +116,6 @@ class CatalogParserTest {
     assertEquals(2, parsedCatalog.streams().get(0).columns().size());
   }
 
-  /**
-   * If a stream has no cursor, then we should default to using the _airbyte_emitted_at column as the
-   * cursor.
-   * <p>
-   * (maybe. this might be implicit in the new behavior, and we can just kill this test. Depends on
-   * what our SQL queries look like.)
-   */
-  @Test
-  public void defaultCursor() {
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a")));
-
-    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
-
-    assertEquals("_airbyte_extracted_at", parsedCatalog.streams().get(0).cursor().get().name());
-  }
-
   private static ConfiguredAirbyteStream stream(String namespace, String name) {
     return stream(
         namespace,

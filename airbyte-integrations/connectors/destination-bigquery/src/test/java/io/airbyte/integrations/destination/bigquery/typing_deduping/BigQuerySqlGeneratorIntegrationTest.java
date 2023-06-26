@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.Field.Mode;
@@ -22,16 +25,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import org.apache.commons.text.StringSubstitutor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,10 +34,15 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static java.util.stream.Collectors.toSet;
-import static org.junit.jupiter.api.Assertions.*;
+import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO this proooobably belongs in test-integration? make sure to update the build.gradle
 // concurrent runner stuff if you do this
@@ -939,7 +937,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   /**
-   * Asserts that the expected rows match the query result. Please don't read this code. Trust the logs.
+   * Asserts that the expected rows match the query result. Please don't read this code. Trust the
+   * logs.
    */
   private void assertQueryResult(final List<Map<String, Optional<Object>>> expectedRows, final TableResult result) {
     List<Map<String, Object>> actualRows = result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
@@ -978,8 +977,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
       matchedRows.addAll(matchingRows);
     }
 
-
-    // TODO is the foundMultiMatch condition correct? E.g. what if we try to write the same row twice (because of a retry)? Are we
+    // TODO is the foundMultiMatch condition correct? E.g. what if we try to write the same row twice
+    // (because of a retry)? Are we
     // guaranteed to have some differentiator?
     if (foundMultiMatch || !missingRows.isEmpty() || matchedRows.size() != actualRows.size()) {
       Set<Map<String, Object>> extraRows = actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet());
@@ -994,20 +993,16 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private static <T> String sortedToString(Map<String, T> record, Function<T, ?> valueMapper) {
     return "{"
         + record.entrySet().stream()
-        .sorted(Entry.comparingByKey())
-        .map(entry -> entry.getKey() + "=" + valueMapper.apply(entry.getValue()))
-        .collect(Collectors.joining(", "))
+            .sorted(Entry.comparingByKey())
+            .map(entry -> entry.getKey() + "=" + valueMapper.apply(entry.getValue()))
+            .collect(Collectors.joining(", "))
         + "}";
   }
 
   /**
    * Attempts to generate a pretty-print diff of the rows. Output will look something like:
-   * {@code
-   * Missing row: {id=1}
-   * Extra row: {id=2}
-   * Mismatched row: id=3;
-   *   foo_column expected String arst, got Long 42
-   * }
+   * {@code Missing row: {id=1} Extra row: {id=2} Mismatched row: id=3; foo_column expected String
+   * arst, got Long 42 }
    *
    * Assumes that rows with the same id and cursor are the same row.
    */
@@ -1079,8 +1074,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   /**
-   * Compare two rows on the given column. Sorts nulls first. If the values are not the same type, assumes the left
-   * value is smaller.
+   * Compare two rows on the given column. Sorts nulls first. If the values are not the same type,
+   * assumes the left value is smaller.
    */
   private static int compareRowsOnColumn(String column, Map<String, Object> row1, Map<String, Object> row2) {
     Comparable<?> r1id = (Comparable<?>) row1.get(column);
@@ -1096,7 +1091,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         return 1;
       } else {
         if (r1id.getClass().equals(r2id.getClass())) {
-          // We're doing some very sketchy type-casting nonsense here, but it's guarded by the class equality check.
+          // We're doing some very sketchy type-casting nonsense here, but it's guarded by the class equality
+          // check.
           return ((Comparable) r1id).compareTo(r2id);
         } else {
           // Both values are non-null, but they're not the same type. Assume left is smaller.
@@ -1113,4 +1109,5 @@ public class BigQuerySqlGeneratorIntegrationTest {
       return o.getClass().getSimpleName() + " " + o;
     }
   }
+
 }

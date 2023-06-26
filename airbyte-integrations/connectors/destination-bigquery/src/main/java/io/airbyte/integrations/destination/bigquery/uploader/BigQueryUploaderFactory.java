@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -54,25 +55,28 @@ public class BigQueryUploaderFactory {
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    return getUploader(uploaderConfig, false);
-  }
-
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig, boolean skipTmpRawTable)
-      throws IOException {
-    final String schemaName = BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
+    boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
+    final String dataset;
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      dataset = uploaderConfig.getParsedStream().id().rawNamespace();
+    } else {
+      // This previously needed to handle null namespaces. That's now happening at the top of the
+      // connector, so we can assume namespace is non-null here.
+      dataset = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
+    }
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
-    final Set<String> existingSchemas = new HashSet<>();
+    final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
-    final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
-    final TableId tmpTable = TableId.of(schemaName, uploaderConfig.getTmpTableName());
+    final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
+    final TableId tmpTable = TableId.of(dataset, uploaderConfig.getTmpTableName());
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
-        existingSchemas,
-        schemaName,
+        existingDatasets,
+        dataset,
         tmpTable,
         datasetLocation,
         bigQuerySchema);
@@ -98,7 +102,7 @@ public class BigQueryUploaderFactory {
             syncMode,
             datasetLocation,
             recordFormatter,
-            skipTmpRawTable));
+            use1s1t));
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(

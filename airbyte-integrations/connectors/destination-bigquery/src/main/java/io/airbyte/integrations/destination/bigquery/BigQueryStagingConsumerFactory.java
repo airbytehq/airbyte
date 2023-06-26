@@ -12,10 +12,10 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
@@ -32,11 +32,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -64,21 +62,22 @@ public class BigQueryStagingConsumerFactory {
                                        final Function<String, String> targetTableNameTransformer,
                                        final BigQuerySqlGenerator sqlGenerator,
                                        final BigQueryDestinationHandler destinationHandler,
-                                       final CatalogParser.ParsedCatalog parsedCatalog,
-                                       final boolean use1s1t,
-                                       final String rawNamespaceOverride)
+                                       final ParsedCatalog parsedCatalog,
+                                       final String defaultNamespace)
       throws InterruptedException {
+    boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,
+        parsedCatalog,
         recordFormatterCreator,
         tmpTableNameTransformer,
         targetTableNameTransformer);
 
     final var overwriteStreamsWithTmpTable = createFinalTables(use1s1t, parsedCatalog, destinationHandler, sqlGenerator);
     final String finalDatasetId = config.get("dataset_id").asText();
-    ThrowingConsumer<String, InterruptedException> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(finalDatasetId,
-        rawNamespaceOverride,
+    ThrowingConsumer<String, InterruptedException> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(
+        finalDatasetId,
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
@@ -86,9 +85,9 @@ public class BigQueryStagingConsumerFactory {
         overwriteStreamsWithTmpTable);
 
     ThrowingConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer =
-        getReplaceFinalTableConsumer(use1s1t,
+        getReplaceFinalTableConsumer(
+            use1s1t,
             finalDatasetId,
-            rawNamespaceOverride,
             sqlGenerator,
             destinationHandler,
             overwriteStreamsWithTmpTable,
@@ -103,7 +102,8 @@ public class BigQueryStagingConsumerFactory {
             flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
         onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer),
         catalog,
-        json -> true);
+        json -> true,
+        defaultNamespace);
   }
 
   @FunctionalInterface
@@ -114,17 +114,14 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private ThrowingConsumer<String, InterruptedException> typingAndDedupingStreamConsumer(final String finalNamespace,
-                                                                                         final String rawNamespace,
                                                                                          final BigQuerySqlGenerator sqlGenerator,
                                                                                          final BigQueryDestinationHandler destinationHandler,
-                                                                                         final CatalogParser.ParsedCatalog parsedCatalog,
+                                                                                         final ParsedCatalog parsedCatalog,
                                                                                          final boolean use1s1t,
                                                                                          final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable) {
     return (streamName) -> {
-      if (!use1s1t) {
-        return;
-      } else {
-        final var streamConfig = getStreamConfig(streamName, finalNamespace, rawNamespace, parsedCatalog);
+      if (use1s1t) {
+        final var streamConfig = parsedCatalog.getStream(finalNamespace, streamName);
         String suffix;
         suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), "");
         final String sql = sqlGenerator.updateTable(suffix, streamConfig);
@@ -133,24 +130,9 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private CatalogParser.StreamConfig getStreamConfig(String streamName,
-                                                     String finalNamespace,
-                                                     String rawNamespace,
-                                                     final CatalogParser.ParsedCatalog parsedCatalog) {
-    BigQueryRecordConsumer.StreamWriteTargets streamWriteTargets =
-        new BigQueryRecordConsumer.StreamWriteTargets(finalNamespace, rawNamespace, streamName);
-    return parsedCatalog.streams()
-        .stream()
-        .filter(s -> s.id().originalName().equals(streamWriteTargets.name()) && s.id()
-            .originalNamespace()
-            .equals(streamWriteTargets.finalNamespace()))
-        .findFirst()
-        // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
-        .get();
-  }
-
   private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
                                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                                      final ParsedCatalog parsedCatalog,
                                                                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                                                                       final Function<String, String> tmpTableNameTransformer,
                                                                                       final Function<String, String> targetTableNameTransformer) {
@@ -159,15 +141,17 @@ public class BigQueryStagingConsumerFactory {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
 
           final AirbyteStream stream = configuredStream.getStream();
+          StreamConfig streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : stream.getNamespace();
-          final var targetTableName = resolveTargetTableName(targetTableNameTransformer, config.get("dataset_id").asText(), streamName);
+          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : stream.getNamespace();
+          final var targetTableName =
+              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
-              internalTableNamespace,
+              stream.getNamespace(),
               internalTableNamespace,
               BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
@@ -184,14 +168,6 @@ public class BigQueryStagingConsumerFactory {
             Functions.identity()));
   }
 
-  private String resolveTargetTableName(final Function<String, String> targetTableNameResolver, String datasetId, String streamName) {
-    final String v2name = String.join("_",
-        Arrays.asList(datasetId, streamName)
-            .stream().filter(Objects::nonNull)
-            .collect(Collectors.toList()));
-    return TypingAndDedupingFlag.isDestinationV2() ? Names.toAlphanumericAndUnderscore(v2name) : targetTableNameResolver.apply(streamName);
-  }
-
   /**
    * Sets up {@link BufferedStreamConsumer} with creation of the destination's raw tables
    *
@@ -201,7 +177,6 @@ public class BigQueryStagingConsumerFactory {
    *
    * @param bigQueryGcsOperations collection of Google Cloud Storage Operations
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
-   * @return
    */
   private OnStartFunction onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
@@ -232,7 +207,7 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private Map<SqlGenerator.StreamId, String> createFinalTables(boolean use1s1t,
-                                                               final CatalogParser.ParsedCatalog parsedCatalog,
+                                                               final ParsedCatalog parsedCatalog,
                                                                final BigQueryDestinationHandler destinationHandler,
                                                                final BigQuerySqlGenerator sqlGenerator)
       throws InterruptedException {
@@ -240,7 +215,7 @@ public class BigQueryStagingConsumerFactory {
     Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
     if (use1s1t) {
       // For each stream, make sure that its corresponding final table exists.
-      for (CatalogParser.StreamConfig stream : parsedCatalog.streams()) {
+      for (StreamConfig stream : parsedCatalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
           destinationHandler.execute(sqlGenerator.createTable(stream, ""));
@@ -286,7 +261,8 @@ public class BigQueryStagingConsumerFactory {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream that was not in the catalog: %s.\nKeys: %s\ncatalog: %s", pair,
+                writeConfigs.keySet(), Jsons.serialize(catalog)));
       }
 
       final BigQueryWriteConfig writeConfig = writeConfigs.get(pair);
@@ -303,7 +279,6 @@ public class BigQueryStagingConsumerFactory {
         writeConfig.addStagedFile(stagedFile);
         bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
             List.of(stagedFile));
-        final BigQueryRecordConsumer.StreamWriteTargets writeTargets = null;
         typerDeduper.accept(stream);
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table:", e);
@@ -317,7 +292,6 @@ public class BigQueryStagingConsumerFactory {
    *
    * @param bigQueryGcsOperations collection of staging operations
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
-   * @return
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
@@ -341,13 +315,12 @@ public class BigQueryStagingConsumerFactory {
 
   private ThrowingConsumer<BigQueryWriteConfig, InterruptedException> getReplaceFinalTableConsumer(boolean use1s1t,
                                                                                                    final String finalNamespace,
-                                                                                                   final String rawNamespace,
                                                                                                    final BigQuerySqlGenerator sqlGenerator,
                                                                                                    final BigQueryDestinationHandler destinationHandler,
                                                                                                    final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable,
-                                                                                                   final CatalogParser.ParsedCatalog parsedCatalog) {
+                                                                                                   final ParsedCatalog parsedCatalog) {
     return (writeConfig) -> {
-      final var streamConfig = getStreamConfig(writeConfig.streamName(), finalNamespace, rawNamespace, parsedCatalog);
+      final var streamConfig = parsedCatalog.getStream(finalNamespace, writeConfig.streamName());
       if (use1s1t && DestinationSyncMode.OVERWRITE.equals(writeConfig.syncMode())) {
         LOGGER.info("Overwriting final table with tmp table");
         final Optional<String> overwriteFinalTable =

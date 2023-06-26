@@ -40,7 +40,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -355,15 +354,6 @@ public class BigQueryUtils {
     return (dateTimeValue != null ? QueryParameterValue
         .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
         : null);
-  }
-
-  /**
-   * @return BigQuery dataset ID
-   */
-  public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String srcNamespace = stream.getStream().getNamespace();
-    final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
-    return sanitizeDatasetId(schemaName);
   }
 
   public static String sanitizeDatasetId(final String datasetId) {
