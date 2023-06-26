@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.bigquery;
 import static org.mockito.Mockito.mock;
 
 import com.google.cloud.bigquery.BigQuery;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
@@ -35,6 +38,8 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
 
   @BeforeEach
   public void setup() {
+    DestinationConfig.initialize(Jsons.deserialize("{}"));
+
     bigQueryRecordConsumer = new BigQueryRecordConsumer(
         mock(BigQuery.class),
         uploaderMap,
