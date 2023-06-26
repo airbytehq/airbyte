@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_carrier": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delimiter1": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delimiter2": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

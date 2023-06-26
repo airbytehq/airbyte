@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "sign": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

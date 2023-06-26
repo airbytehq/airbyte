@@ -3,27 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "reduction": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "price_display_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "show_prices": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

@@ -3,31 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_carrier": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order_invoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "weight": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shipping_cost_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shipping_cost_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tracking_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

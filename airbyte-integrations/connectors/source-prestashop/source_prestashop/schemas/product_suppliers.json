@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_product": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_product_attribute": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_supplier": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_supplier_reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_supplier_price_te": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

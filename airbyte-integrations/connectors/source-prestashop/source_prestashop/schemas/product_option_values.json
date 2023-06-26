@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_attribute_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "color": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "position": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

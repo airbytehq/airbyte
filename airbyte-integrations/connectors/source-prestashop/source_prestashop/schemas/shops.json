@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_shop_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_category": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "theme_name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

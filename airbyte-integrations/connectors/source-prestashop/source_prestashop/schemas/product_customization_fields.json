@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_product": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "required": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "is_module": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "is_deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

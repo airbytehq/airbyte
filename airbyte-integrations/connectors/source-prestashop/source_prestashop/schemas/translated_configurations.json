@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "value": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
@@ -17,13 +17,13 @@
       "format": "date-time"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

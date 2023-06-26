@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "share_customer": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "share_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "share_stock": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_employee": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order_state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_feature": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "value": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
