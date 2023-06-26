@@ -355,3 +355,11 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 
     assert json_schema == expected_custom_object_json_schema
     assert not adapter.called
+
+
+def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    for (entity, fully_qualified_name, schema) in api.get_custom_objects_metadata():
+        assert entity == "animals"
+        assert fully_qualified_name == "p19936848_Animal"
+        assert schema == expected_custom_object_json_schema

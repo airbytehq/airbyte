@@ -205,7 +205,7 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
-    def get_custom_objects_metadata(self) -> Tuple[str, str, Mapping[str, Any]]:
+    def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any]]]:
         data, response = self.get("/crm/v3/schemas", {})
         if not response.ok or "results" not in data:
             self.logger.warn(self._parse_and_handle_errors(response))
