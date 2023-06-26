@@ -17,14 +17,21 @@ interface CreateControlProps {
   onCancelTesting?: () => void;
   onBack?: () => void;
   disabled?: boolean;
+  isCopyMode?: boolean;
+  isEditMode?: boolean;
 }
 
 const ButtonContainer = styled.div`
-  margin-top: 34px;
+  margin-top: 20px;
   display: flex;
   //align-items: center;
   justify-content: space-between;
   flex-direction: column;
+
+  // position: sticky;
+  // bottom: 0;
+  // z-index: 1;
+  padding-right: 50px;
 `;
 
 const CreateControls: React.FC<CreateControlProps> = ({
@@ -33,6 +40,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
+  isEditMode,
   onBack,
 }) => {
   if (isSubmitting) {
@@ -46,7 +54,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <ButtonRows top="20" bottom="20" full>
+      <ButtonRows top="0" width={isEditMode ? "calc(100% - 18px)" : "calc(100% - 90px)"} position="absolute">
         <BigButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
         </BigButton>

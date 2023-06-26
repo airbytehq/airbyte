@@ -83,7 +83,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   const divRef = useRef(null);
   useEffect(() => {
-    const top: number = divRef.current ? divRef.current?.["offsetTop"] + 10 : 0;
+    const top: number = divRef.current ? divRef.current?.["offsetTop"] : 0;
     setOffsetTop(top);
   }, [documentationPanelOpen]);
 

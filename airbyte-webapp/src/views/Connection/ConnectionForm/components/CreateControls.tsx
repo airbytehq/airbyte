@@ -13,7 +13,14 @@ interface CreateControlsProps {
 }
 
 const ButtonContainer = styled.div`
-  padding: 15px 0;
+  // padding: 15px 0;
+  // display: flex;
+  // align-items: center;
+  // justify-content: space-between;
+  // flex-direction: column;
+  // position: sticky;
+  // bottom: 0;
+  // z-index: 1;
 `;
 
 const LoadingContainer = styled(ButtonContainer)`
@@ -78,10 +85,8 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
             <ErrorText>{errorMessage}</ErrorText>
           </div>
         </ErrorBlock>
-      ) : (
-        <div />
-      )}
-      <ButtonRows top="40" bottom="20">
+      ) : null}
+      <ButtonRows top="0" position="fixed" width="calc(100% - 18px)">
         <BigButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
         </BigButton>
