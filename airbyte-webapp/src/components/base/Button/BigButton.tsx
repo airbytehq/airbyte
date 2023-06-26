@@ -10,6 +10,7 @@ interface ButtonRowsProps {
   bottom?: string;
   width?: string;
   position?: "fixed" | "absolute" | "static";
+  background?: string;
 }
 
 export const ButtonRows = styled.div<ButtonRowsProps>`
@@ -22,7 +23,7 @@ export const ButtonRows = styled.div<ButtonRowsProps>`
   margin-top: ${({ top }) => (top ? top : 100)}px;
   margin-bottom: ${({ bottom }) => (bottom ? bottom : 0)}px;
   padding: 15px 0;
-  background: #fff;
+  background: ${({ background, theme }) => background || theme.white};
   position: ${({ position }) => position || "static"};
   bottom: 0;
   z-index: 1;
