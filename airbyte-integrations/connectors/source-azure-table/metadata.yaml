@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 798ae795-5189-42b6-b64e-3cb91db93338
@@ -13,6 +8,13 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Table Storage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/azure-table
+  documentationUrl: https://docs.airbyte.com/integrations/sources/azure-table
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

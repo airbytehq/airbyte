@@ -7,7 +7,7 @@ import datetime
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from unittest.mock import call
+from unittest.mock import Mock, call
 
 import pytest
 from airbyte_cdk.models import (
@@ -21,6 +21,9 @@ from airbyte_cdk.models import (
     AirbyteStateType,
     AirbyteStream,
     AirbyteStreamState,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
@@ -28,13 +31,17 @@ from airbyte_cdk.models import (
     Status,
     StreamDescriptor,
     SyncMode,
-    Type,
+    TraceType,
 )
+from airbyte_cdk.models import Type
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pytest import fixture
 
 logger = logging.getLogger("airbyte")
 
@@ -45,10 +52,12 @@ class MockSource(AbstractSource):
         check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
         streams: List[Stream] = None,
         per_stream: bool = True,
+        message_repository: MessageRepository = None
     ):
         self._streams = streams
         self.check_lambda = check_lambda
         self.per_stream = per_stream
+        self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
@@ -63,6 +72,10 @@ class MockSource(AbstractSource):
     @property
     def per_stream_state_enabled(self) -> bool:
         return self.per_stream
+
+    @property
+    def message_repository(self):
+        return self._message_repository
 
 
 class StreamNoStateMethod(Stream):
@@ -90,6 +103,16 @@ class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
+
+
+MESSAGE_FROM_REPOSITORY = Mock()
+
+
+@fixture
+def message_repository():
+    message_repository = Mock(spec=MessageRepository)
+    message_repository.consume_queue.return_value = [message for message in [MESSAGE_FROM_REPOSITORY]]
+    return message_repository
 
 
 def test_successful_check():
@@ -216,6 +239,34 @@ def test_read_nonexistent_stream_raises_exception(mocker):
         list(src.read(logger, {}, catalog))
 
 
+def test_read_stream_emits_repository_message_before_record(mocker, message_repository):
+    stream = MockStream(name="my_stream")
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "read_records", side_effect=[[{"a record": "a value"}, {"another record": "another value"}]])
+    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
+
+    source = MockSource(streams=[stream], message_repository=message_repository)
+
+    messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
+
+    assert messages.count(MESSAGE_FROM_REPOSITORY) == 1
+    record_messages = (message for message in messages if message.type == Type.RECORD)
+    assert all(messages.index(MESSAGE_FROM_REPOSITORY) < messages.index(record) for record in record_messages)
+
+
+def test_read_stream_emits_repository_message_on_error(mocker, message_repository):
+    stream = MockStream(name="my_stream")
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("error"))
+    message_repository.consume_queue.return_value = [message for message in [MESSAGE_FROM_REPOSITORY]]
+
+    source = MockSource(streams=[stream], message_repository=message_repository)
+
+    with pytest.raises(RuntimeError):
+        messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
+        assert MESSAGE_FROM_REPOSITORY in messages
+
+
 def test_read_stream_with_error_gets_display_message(mocker):
     stream = MockStream(name="my_stream")
 
@@ -250,6 +301,19 @@ def _as_records(stream: str, data: List[Dict[str, Any]]) -> List[AirbyteMessage]
     return [_as_record(stream, datum) for datum in data]
 
 
+def _as_stream_status(stream: str, status: AirbyteStreamStatus) -> AirbyteMessage:
+    trace_message = AirbyteTraceMessage(
+        emitted_at=datetime.datetime.now().timestamp() * 1000.0,
+        type=TraceType.STREAM_STATUS,
+        stream_status=AirbyteStreamStatusTraceMessage(
+            stream_descriptor=StreamDescriptor(name=stream),
+            status=status,
+        ),
+    )
+
+    return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
+
+
 def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_state: Dict[str, Any] = None):
     if per_stream_state:
         return AirbyteMessage(
@@ -277,6 +341,8 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
     for msg in messages:
         if msg.type == Type.RECORD and msg.record:
             msg.record.emitted_at = GLOBAL_EMITTED_AT
+        if msg.type == Type.TRACE and msg.trace:
+            msg.trace.emitted_at = GLOBAL_EMITTED_AT
     return messages
 
 
@@ -296,7 +362,17 @@ def test_valid_full_refresh_read_no_slices(mocker):
         ]
     )
 
-    expected = _as_records("s1", stream_output) + _as_records("s2", stream_output)
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
+            *_as_records("s2", stream_output),
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE)
+        ])
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
     assert expected == messages
@@ -326,7 +402,17 @@ def test_valid_full_refresh_read_with_slices(mocker):
         ]
     )
 
-    expected = [*_as_records("s1", slices), *_as_records("s2", slices)]
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", slices),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
+            *_as_records("s2", slices),
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE)
+        ])
 
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
@@ -448,18 +534,24 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
             _as_state({"s1": new_state_from_connector}, "s1", new_state_from_connector)
             if per_stream_enabled
             else _as_state({"s1": new_state_from_connector}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
             _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}, "s2", new_state_from_connector)
             if per_stream_enabled
             else _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert messages == expected
@@ -521,18 +613,24 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             _as_record("s1", stream_output[0]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s1", stream_output[1]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             _as_record("s2", stream_output[0]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_record("s2", stream_output[1]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
@@ -582,12 +680,18 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", stream_output),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", stream_output),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -658,20 +762,26 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             # stream 1 slice 1
             *_as_records("s1", stream_output),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
             *_as_records("s1", stream_output),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             # stream 2 slice 1
             *_as_records("s2", stream_output),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             # stream 2 slice 2
             *_as_records("s2", stream_output),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -753,10 +863,14 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -837,8 +951,10 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
             # stream 1 slice 1
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
@@ -850,7 +966,10 @@ class TestIncrementalRead:
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s1", stream_output[2]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             # stream 2 slice 1
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
@@ -862,7 +981,8 @@ class TestIncrementalRead:
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_record("s2", stream_output[2]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ])
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -942,6 +1062,8 @@ class TestIncrementalRead:
 
         expected = _fix_emitted_at(
             [
+                _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+                _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 # stream 1 slice 1
                 stream_data_to_airbyte_message("s1", stream_output[0]),
                 stream_data_to_airbyte_message("s1", stream_output[1]),
@@ -956,7 +1078,10 @@ class TestIncrementalRead:
                 _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
                 stream_data_to_airbyte_message("s1", stream_output[3]),
                 _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 # stream 2 slice 1
+                _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+                _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 stream_data_to_airbyte_message("s2", stream_output[0]),
                 stream_data_to_airbyte_message("s2", stream_output[1]),
                 stream_data_to_airbyte_message("s2", stream_output[2]),
@@ -970,6 +1095,7 @@ class TestIncrementalRead:
                 _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
                 stream_data_to_airbyte_message("s2", stream_output[3]),
                 _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
 

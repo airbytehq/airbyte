@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 05b0bce2-4ec4-4534-bb1a-5d0127bd91b7
@@ -13,6 +8,14 @@ data:
   icon: workramp.svg
   license: MIT
   name: WorkRamp
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/workramp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workramp
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

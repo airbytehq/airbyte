@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import sys
 import tempfile
 import traceback
@@ -11,6 +12,7 @@ import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
+from zipfile import BadZipFile
 
 import backoff
 import boto3
@@ -19,17 +21,27 @@ import google
 import numpy as np
 import pandas as pd
 import smart_open
+import smart_open.ssh
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
+from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
+from pandas.errors import ParserError
+from paramiko import SSHException
+from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+
+# Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
+logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):
@@ -87,10 +99,21 @@ class URLFile:
             self._file.close()
             self._file = None
 
+    def backoff_giveup(self, error):
+        # https://github.com/airbytehq/oncall/issues/1954
+        if isinstance(error, SSHException) and str(error).startswith("Error reading SSH protocol banner"):
+            # We need to clear smart_open internal _SSH cache from the previous attempt, otherwise:
+            # SSHException('SSH session not active')
+            # will be raised
+            smart_open.ssh._SSH.clear()
+            return False
+        return True
+
     def open(self):
         self.close()
+        _open = backoff.on_exception(backoff.expo, Exception, max_tries=5, giveup=self.backoff_giveup)(self._open)
         try:
-            self._file = self._open()
+            self._file = _open()
         except google.api_core.exceptions.NotFound as err:
             raise FileNotFoundError(self.url) from err
         return self
@@ -336,6 +359,12 @@ class Client:
             elif self._reader_options == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield from reader(fp, **reader_options)
+            elif self._reader_format == "excel":
+                # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
+                try:
+                    yield from self.openpyxl_chunk_reader(fp, **reader_options)
+                except (InvalidFileException, BadZipFile):
+                    yield reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
@@ -364,6 +393,8 @@ class Client:
             return "number"
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
+        if dtype == "datetime64[ns]":
+            return "date-time"
         return "string"
 
     @property
@@ -394,6 +425,16 @@ class Client:
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
                 raise ConnectionResetError
+            except ProtocolError as err:
+                error_msg = (
+                    f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
+                )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
+            except ParserError as err:
+                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
@@ -419,8 +460,14 @@ class Client:
             for col in df.columns:
                 # if data type of the same column differs in dataframes, we choose the broadest one
                 prev_frame_column_type = fields.get(col)
-                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
-        return {field: {"type": [fields[field], "null"]} for field in fields}
+                df_type = df[col].dtype
+                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
+        return {
+            field: (
+                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "date-time" else {"type": [fields[field], "null"]}
+            )
+            for field in fields
+        }
 
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
@@ -435,3 +482,26 @@ class Client:
                     "properties": self._stream_properties(fp, empty_schema=empty_schema, read_sample_chunk=True),
                 }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
+
+    def openpyxl_chunk_reader(self, file, **kwargs):
+        """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
+        work_book = load_workbook(filename=file, read_only=True)
+        user_provided_column_names = kwargs.get("names")
+        for sheetname in work_book.sheetnames:
+            work_sheet = work_book[sheetname]
+            data = work_sheet.values
+            end = work_sheet.max_row
+            if end == 1 and not user_provided_column_names:
+                message = "Please provide column names for table in reader options field"
+                logger.error(message)
+                raise AirbyteTracedException(
+                    message="Config validation error: " + message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                )
+            cols, start = (next(data), 1) if not user_provided_column_names else (user_provided_column_names, 0)
+            step = 500
+            while start <= end:
+                df = pd.DataFrame(data=(next(data) for _ in range(start, min(start + step, end))), columns=cols)
+                yield df
+                start += step

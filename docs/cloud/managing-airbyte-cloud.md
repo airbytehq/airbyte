@@ -142,15 +142,18 @@ To set up Slack notifications:
 
 Airbyte Cloud limitations within the Cloud UI (does not apply to customers using [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api))
 
-* Max number of workspaces per user: 100
-* Max number of sources in a workspace: 100
-* Max number of destinations in a workspace: 100
-* Max number of connections in a workspace: 100
+* Max number of workspaces per user: 5*
+* Max number of sources in a workspace: 20*
+* Max number of destinations in a workspace: 20*
+* Max number of connections in a workspace: 20*
 * Max number of streams that can be returned by a source in a discover call: 1K
 * Max number of streams that can be configured to sync in a single connection: 1K
 * Size of a single record: 100MB
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
+
+*Limits on workspaces, sources, destinations and connections do not apply to customers of [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api). To learn more [contact us](https://airbyte.com/talk-to-sales)!
+
 
 ## View the sync summary
 The sync summary displays information about the data moved during a sync.

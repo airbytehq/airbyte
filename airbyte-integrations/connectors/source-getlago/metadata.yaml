@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
@@ -13,6 +8,14 @@ data:
   icon: getlago.svg
   license: MIT
   name: GetLago
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/getlago
+  documentationUrl: https://docs.airbyte.com/integrations/sources/getlago
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

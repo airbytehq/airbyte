@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
@@ -13,6 +8,13 @@ data:
   icon: chargify.svg
   license: MIT
   name: Chargify
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/chargify
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chargify
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

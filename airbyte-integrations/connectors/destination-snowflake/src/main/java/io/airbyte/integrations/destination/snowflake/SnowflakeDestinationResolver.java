@@ -18,8 +18,6 @@ public class SnowflakeDestinationResolver {
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
-    } else if (isAzureBlobCopy(config)) {
-      return DestinationType.COPY_AZURE_BLOB;
     } else {
       return DestinationType.INTERNAL_STAGING;
     }
@@ -33,11 +31,6 @@ public class SnowflakeDestinationResolver {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
-  public static boolean isAzureBlobCopy(final JsonNode config) {
-    return config.has("loading_method") && config.get("loading_method").isObject()
-        && config.get("loading_method").has("azure_blob_storage_account_name");
-  }
-
   public static int getNumberOfFileBuffers(final JsonNode config) {
     int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
     if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
@@ -47,18 +40,15 @@ public class SnowflakeDestinationResolver {
     return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
-
   public static Map<DestinationType, Destination> getTypeToDestination(
                                                                        final String airbyteEnvironment) {
     final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
     final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination(airbyteEnvironment);
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
-    final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination(airbyteEnvironment);
 
     return ImmutableMap.of(
         DestinationType.COPY_S3, s3StagingDestination,
         DestinationType.COPY_GCS, gcsStagingDestination,
-        DestinationType.COPY_AZURE_BLOB, azureBlobStorageDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 

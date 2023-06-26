@@ -21,11 +21,11 @@ This page contains the setup guide and reference information for the Jira source
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
-4. Enter the **API Token** that you have created.
+4. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
 5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-6. Enter the **Email** for your Jira account.
+6. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated. Note that it will be used only in the following streams: BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues.
+8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams:BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues. For other streams it will replicate all data.  
 9. Toggle **Expand Issue Changelog** allows you to get a list of recent updates to every issue in the Issues stream.
 10. Toggle **Render Issue Fields** allows returning field values rendered in HTML format in the Issues stream.
 11. Toggle **Enable Experimental Streams** enables experimental PullRequests stream.
@@ -124,34 +124,39 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                                | Subject                                                                                                                 |
-|:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275)  | Add missing types to issues json schema |
-| 0.3.6   | 2023-04-10 | [\#24636](https://github.com/airbytehq/airbyte/pull/24636)  | Removed Connector Domain Pattern from Spec                                                                              |
-| 0.3.5   | 2023-04-05 | [\#24890](https://github.com/airbytehq/airbyte/pull/24890)  | Fix streams "IssuePropertyKeys", "ScreenTabFields"                                                                      |
-| 0.3.4   | 2023-02-14 | [\#23006](https://github.com/airbytehq/airbyte/pull/23006)  | Remove caching for `Issues` stream                                                                                      |
-| 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739)  | fix: check_connection fails if no projects are defined                                                                  |
-| 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859)  | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
-| 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Improved code to become beta                                                                                            |
-| 0.3.0   | 2022-11-03 | [\#18901](https://github.com/airbytehq/airbyte/pull/18901)  | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
-| 0.2.23  | 2022-10-28 | [\#18505](https://github.com/airbytehq/airbyte/pull/18505)  | Correcting `max_results` bug introduced in connector stream                                                             |
-| 0.2.22  | 2022-10-03 | [\#16944](https://github.com/airbytehq/airbyte/pull/16944)  | Adds support for `max_results` to `users` stream                                                                        |
-| 0.2.21  | 2022-07-28 | [\#15135](https://github.com/airbytehq/airbyte/pull/15135)  | Adds components to `fields` object on `issues` stream                                                                   |
-| 0.2.20  | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202)  | Adds resolutiondate to `fields` object on `issues` stream                                                               |
-| 0.2.19  | 2022-05-04 | [\#10835](https://github.com/airbytehq/airbyte/pull/10835)  | Change description for array fields                                                                                     |
-| 0.2.18  | 2021-12-23 | [\#7378](https://github.com/airbytehq/airbyte/pull/7378)    | Adds experimental endpoint Pull Request                                                                                 |
-| 0.2.17  | 2021-12-23 | [\#9079](https://github.com/airbytehq/airbyte/pull/9079)    | Update schema for `filters` stream + fix fetching `filters` stream                                                      |
-| 0.2.16  | 2021-12-21 | [\#8999](https://github.com/airbytehq/airbyte/pull/8999)    | Update connector fields title/description                                                                               |
-| 0.2.15  | 2021-11-01 | [\#7398](https://github.com/airbytehq/airbyte/pull/7398)    | Add option to render fields in HTML format and fix sprint_issue ids                                                     |
-| 0.2.14  | 2021-10-27 | [\#7408](https://github.com/airbytehq/airbyte/pull/7408)    | Fix normalization step error. Fix schemas. Fix `acceptance-test-config.yml`. Fix `streams.py`.                          |
-| 0.2.13  | 2021-10-20 | [\#7222](https://github.com/airbytehq/airbyte/pull/7222)    | Source Jira: Make recently added configs optional for backwards compatibility                                           |
-| 0.2.12  | 2021-10-19 | [\#6621](https://github.com/airbytehq/airbyte/pull/6621)    | Add Board, Epic, and Sprint streams                                                                                     |
-| 0.2.11  | 2021-09-02 | [\#6523](https://github.com/airbytehq/airbyte/pull/6523)    | Add cache and more streams \(boards and sprints\)                                                                       |
-| 0.2.9   | 2021-07-28 | [\#5426](https://github.com/airbytehq/airbyte/pull/5426)    | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh. |
-| 0.2.8   | 2021-07-28 | [\#4947](https://github.com/airbytehq/airbyte/pull/4947)    | Source Jira: fixing schemas accordinately to response.                                                                  |
-| 0.2.7   | 2021-07-19 | [\#4817](https://github.com/airbytehq/airbyte/pull/4817)    | Fixed `labels` schema properties issue.                                                                                 |
-| 0.2.6   | 2021-06-15 | [\#4113](https://github.com/airbytehq/airbyte/pull/4113)    | Fixed `user` stream with the correct endpoint and query param.                                                          |
-| 0.2.5   | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973)    | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support.                                                 |
-| 0.2.4   |            |                                                             | Implementing base\_read acceptance test dived by stream groups.                                                         |
-| 0.2.3   |            |                                                             | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud.                    |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                 |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.12  | 2023-06-01 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Expand on `leads` for `projects` stream |
+| 0.3.11  | 2023-06-01 | [\#26906](https://github.com/airbytehq/airbyte/pull/26906) | Handle project permissions error                                                                                        |
+| 0.3.10  | 2023-05-26 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Fixed bug when `board` doesn't support `sprints`                                                                        |
+| 0.3.9   | 2023-05-16 | [\#26114](https://github.com/airbytehq/airbyte/pull/26114) | Update fields info in docs and spec, update to latest airbyte-cdk                                                       |
+| 0.3.8   | 2023-05-04 | [\#25798](https://github.com/airbytehq/airbyte/pull/25798) | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
+| 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275) | Add missing types to issues json schema                                                                                 |
+| 0.3.6   | 2023-04-10 | [\#24636](https://github.com/airbytehq/airbyte/pull/24636) | Removed Connector Domain Pattern from Spec                                                                              |
+| 0.3.5   | 2023-04-05 | [\#24890](https://github.com/airbytehq/airbyte/pull/24890) | Fix streams "IssuePropertyKeys", "ScreenTabFields"                                                                      |
+| 0.3.4   | 2023-02-14 | [\#23006](https://github.com/airbytehq/airbyte/pull/23006) | Remove caching for `Issues` stream                                                                                      |
+| 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739) | fix: check_connection fails if no projects are defined                                                                  |
+| 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859) | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
+| 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128) | Improved code to become beta                                                                                            |
+| 0.3.0   | 2022-11-03 | [\#18901](https://github.com/airbytehq/airbyte/pull/18901) | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
+| 0.2.23  | 2022-10-28 | [\#18505](https://github.com/airbytehq/airbyte/pull/18505) | Correcting `max_results` bug introduced in connector stream                                                             |
+| 0.2.22  | 2022-10-03 | [\#16944](https://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                        |
+| 0.2.21  | 2022-07-28 | [\#15135](https://github.com/airbytehq/airbyte/pull/15135) | Adds components to `fields` object on `issues` stream                                                                   |
+| 0.2.20  | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202) | Adds resolutiondate to `fields` object on `issues` stream                                                               |
+| 0.2.19  | 2022-05-04 | [\#10835](https://github.com/airbytehq/airbyte/pull/10835) | Change description for array fields                                                                                     |
+| 0.2.18  | 2021-12-23 | [\#7378](https://github.com/airbytehq/airbyte/pull/7378)   | Adds experimental endpoint Pull Request                                                                                 |
+| 0.2.17  | 2021-12-23 | [\#9079](https://github.com/airbytehq/airbyte/pull/9079)   | Update schema for `filters` stream + fix fetching `filters` stream                                                      |
+| 0.2.16  | 2021-12-21 | [\#8999](https://github.com/airbytehq/airbyte/pull/8999)   | Update connector fields title/description                                                                               |
+| 0.2.15  | 2021-11-01 | [\#7398](https://github.com/airbytehq/airbyte/pull/7398)   | Add option to render fields in HTML format and fix sprint_issue ids                                                     |
+| 0.2.14  | 2021-10-27 | [\#7408](https://github.com/airbytehq/airbyte/pull/7408)   | Fix normalization step error. Fix schemas. Fix `acceptance-test-config.yml`. Fix `streams.py`.                          |
+| 0.2.13  | 2021-10-20 | [\#7222](https://github.com/airbytehq/airbyte/pull/7222)   | Source Jira: Make recently added configs optional for backwards compatibility                                           |
+| 0.2.12  | 2021-10-19 | [\#6621](https://github.com/airbytehq/airbyte/pull/6621)   | Add Board, Epic, and Sprint streams                                                                                     |
+| 0.2.11  | 2021-09-02 | [\#6523](https://github.com/airbytehq/airbyte/pull/6523)   | Add cache and more streams \(boards and sprints\)                                                                       |
+| 0.2.9   | 2021-07-28 | [\#5426](https://github.com/airbytehq/airbyte/pull/5426)   | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh. |
+| 0.2.8   | 2021-07-28 | [\#4947](https://github.com/airbytehq/airbyte/pull/4947)   | Source Jira: fixing schemas accordinately to response.                                                                  |
+| 0.2.7   | 2021-07-19 | [\#4817](https://github.com/airbytehq/airbyte/pull/4817)   | Fixed `labels` schema properties issue.                                                                                 |
+| 0.2.6   | 2021-06-15 | [\#4113](https://github.com/airbytehq/airbyte/pull/4113)   | Fixed `user` stream with the correct endpoint and query param.                                                          |
+| 0.2.5   | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support.                                                 |
+| 0.2.4   |            |                                                            | Implementing base\_read acceptance test dived by stream groups.                                                         |
+| 0.2.3   |            |                                                            | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud.                    |
 

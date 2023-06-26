@@ -9,6 +9,8 @@
         "title": "Account ID",
         "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
+        "pattern": "^[0-9]+$",
+        "pattern_descriptor": "1234567890",
         "examples": ["111111111111111"],
         "type": "string"
       },
@@ -27,7 +29,8 @@
         "order": 2,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "access_token": {
         "title": "Access Token",
@@ -351,12 +354,45 @@
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [["access_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "access_token"
+            ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+      }
+    }
     }
   }
 }

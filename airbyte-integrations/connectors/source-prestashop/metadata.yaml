@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - ${domain}
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
@@ -16,6 +11,14 @@ data:
   icon: prestashop.svg
   license: MIT
   name: PrestaShop
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/prestashop
+  documentationUrl: https://docs.airbyte.com/integrations/sources/prestashop
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

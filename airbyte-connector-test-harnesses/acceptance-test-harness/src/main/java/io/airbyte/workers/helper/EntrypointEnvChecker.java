@@ -48,6 +48,7 @@ public class EntrypointEnvChecker {
         null,
         Collections.emptyMap(),
         Collections.emptyMap(),
+        Collections.emptyMap(),
         Collections.emptyMap());
 
     final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));

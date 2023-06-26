@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
@@ -13,6 +8,13 @@ data:
   icon: looker.svg
   license: MIT
   name: Looker
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/looker
+  documentationUrl: https://docs.airbyte.com/integrations/sources/looker
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

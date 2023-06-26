@@ -62,7 +62,7 @@ If you want to allow your stream to be configured so that only data that has cha
 
 Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
 
-More information on `incremental_sync` configurations and the `DatetimeCursorBased` component can be found in the [incremental syncs](./incremental-syncs.md) section.
+More information on `incremental_sync` configurations and the `DatetimeBasedCursor` component can be found in the [incremental syncs](./incremental-syncs.md) section.
 
 ## Data retriever
 

@@ -5,14 +5,14 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
 @dataclass
@@ -97,22 +97,35 @@ class DeclarativeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        """
+        :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
+        """
+        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice):
             yield self._apply_transformations(record, self.config, stream_slice)
 
     def _apply_transformations(
         self,
-        message_or_record_data: Union[AirbyteMessage, AirbyteLogMessage, AirbyteTraceMessage, Mapping[str, Any]],
+        message_or_record_data: StreamData,
         config: Config,
         stream_slice: StreamSlice,
     ):
-        # If the input is an AirbyteRecord, transform the record's data
-        # If the input is another type of Airbyte Message, return it as is
+        # If the input is an AirbyteMessage with a record, transform the record's data
+        # If the input is another type of AirbyteMessage, return it as is
         # If the input is a dict, transform it
-        if isinstance(message_or_record_data, AirbyteLogMessage) or isinstance(message_or_record_data, AirbyteTraceMessage):
-            return message_or_record_data
+        if isinstance(message_or_record_data, AirbyteMessage):
+            if message_or_record_data.record:
+                record = message_or_record_data.record.data
+            else:
+                return message_or_record_data
+        elif isinstance(message_or_record_data, dict):
+            record = message_or_record_data
+        else:
+            # Raise an error because this is unexpected and indicative of a typing problem in the CDK
+            raise ValueError(
+                f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK."
+            )
         for transformation in self.transformations:
-            transformation.transform(message_or_record_data, config=config, stream_state=self.state, stream_slice=stream_slice)
+            transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
         return message_or_record_data
 
@@ -133,8 +146,7 @@ class DeclarativeStream(Stream):
 
         :param sync_mode:
         :param cursor_field:
-        :param stream_state:
+        :param stream_state: we knowingly avoid using stream_state as we want cursors to manage their own state
         :return:
         """
-        # this is not passing the cursor field because it is known at init time
-        return self.retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+        return self.retriever.stream_slices()

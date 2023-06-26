@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
@@ -13,6 +8,13 @@ data:
   icon: hubplanner.svg
   license: MIT
   name: Hubplanner
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/hubplanner
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hubplanner
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

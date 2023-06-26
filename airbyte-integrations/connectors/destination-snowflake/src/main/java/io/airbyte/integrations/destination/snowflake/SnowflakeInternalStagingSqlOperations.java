@@ -9,7 +9,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -164,7 +163,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -194,7 +193,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -215,7 +214,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }

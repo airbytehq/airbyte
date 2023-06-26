@@ -15,15 +15,13 @@ import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
@@ -62,11 +60,10 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
-    final var containerOuterAddress = SshHelpers.getOuterContainerAddress(container);
-    final var containerInnerAddress = SshHelpers.getInnerContainerAddress(container);
+
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", containerInnerAddress.left)
-        .put("port", containerInnerAddress.right)
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", HostPortResolver.resolvePort(container))
         .put("database", container.getDatabaseName())
         .put("schemas", Jsons.jsonNode(List.of("public")))
         .put("username", "postgres")
@@ -81,8 +78,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            containerOuterAddress.left,
-            containerOuterAddress.right,
+            container.getHost(),
+            container.getFirstMappedPort(),
             config.get("database").asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);

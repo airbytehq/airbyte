@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
@@ -13,6 +8,13 @@ data:
   icon: airbyte.svg
   license: MIT
   name: Open Exchange Rates
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
+  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

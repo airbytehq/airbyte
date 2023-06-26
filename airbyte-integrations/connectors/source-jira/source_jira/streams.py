@@ -28,6 +28,7 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     skip_http_status_codes = []
+    raise_on_http_errors = True
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -91,6 +92,19 @@ class JiraStream(HttpStream, ABC):
         except HTTPError as e:
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+            # we should skip the slice with `board id` which doesn't support `sprints`
+            # it's generally applied to all streams that might have the same error hit in the future.
+            errors = response.json().get("errorMessages")
+            self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            # for all other HTTP errors the defaul handling is applied
+            return super().should_retry(response)
 
 
 class StartDateJiraStream(JiraStream, ABC):
@@ -322,15 +336,14 @@ class Issues(IncrementalJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = "*all"
         jql_parts = [self.jql_compare_date(stream_state)]
         if self._project_ids:
-            project_ids = ", ".join([f"'{project_id}'" for project_id in self._project_ids])
-            jql_parts.append(f"project in ({project_ids})")
+            jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
         expand = []
         if self._expand_changelog:
@@ -341,14 +354,6 @@ class Issues(IncrementalJiraStream):
             params["expand"] = ",".join(expand)
         return params
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self._project_ids = []
-        if self._projects:
-            self._project_ids = self.get_project_ids()
-            if not self._project_ids:
-                return
-        yield from super().read_records(**kwargs)
-
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = record["fields"]["project"]["id"]
         record["projectKey"] = record["fields"]["project"]["key"]
@@ -358,6 +363,31 @@ class Issues(IncrementalJiraStream):
 
     def get_project_ids(self):
         return [project["id"] for project in read_full_refresh(self.projects_stream)]
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        self._project_ids = []
+        if self._projects:
+            self._project_ids = self.get_project_ids()
+            if not self._project_ids:
+                return
+            for project_id in self._project_ids:
+                yield {"project_id": project_id}
+        else:
+            yield from super().stream_slices(**kwargs)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            # Issue: https://github.com/airbytehq/airbyte/issues/26712
+            # we should skip the slice with wrong permissions on project level
+            errors = response.json().get("errorMessages")
+            self.logger.error(
+                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now."
+            )
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            return super().should_retry(response)
 
 
 class IssueComments(IncrementalJiraStream):
@@ -778,7 +808,7 @@ class Projects(JiraStream):
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
-        params["expand"] = "description"
+        params["expand"] = "description,lead"
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -1016,7 +1046,16 @@ class ScreenTabs(JiraStream):
 
     def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         screen_id = stream_slice["screen_id"]
-        yield from super().read_records(stream_slice={"screen_id": screen_id}, **kwargs)
+        for screen_tab in super().read_records(stream_slice={"screen_id": screen_id}, **kwargs):
+            """
+            For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
+            We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
+            """
+            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
+            if bad_request_reached:
+                self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
+                return
+            yield screen_tab
 
 
 class ScreenTabFields(JiraStream):
@@ -1071,8 +1110,11 @@ class Sprints(JiraStream):
         return f"board/{stream_slice['board_id']}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        available_board_types = ["scrum", "simple"]
         for board in read_full_refresh(self.boards_stream):
-            if board["type"] == "scrum":
+            if board["type"] in available_board_types:
+                board_details = {"name": board["name"], "id": board["id"]}
+                self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 

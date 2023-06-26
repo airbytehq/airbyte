@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.polygon.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
@@ -16,6 +11,14 @@ data:
   icon: polygon.svg
   license: MIT
   name: Polygon Stock API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

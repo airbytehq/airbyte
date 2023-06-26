@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import NotionStream, Users
+from source_notion.streams import Blocks, NotionStream, Users
 
 
 @pytest.fixture
@@ -73,6 +73,43 @@ def test_should_retry(patch_base_class, http_status, should_retry):
     assert stream.should_retry(response_mock) == should_retry
 
 
+def test_should_not_retry_with_ai_block(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    json_response = {
+        "object":"error",
+        "status":400,
+        "code":"validation_error",
+        "message":"Block type ai_block is not supported via the API.",
+    }
+    requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=400)
+    test_response = requests.get("https://api.notion.com/v1/blocks/123")
+    assert not stream.should_retry(test_response)
+
+
+def test_should_not_retry_with_not_found_block(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    json_response = {
+        "object": "error",
+        "status": 404,
+        "message": "Not Found for url: https://api.notion.com/v1/blocks/123/children?page_size=100",
+    }
+    requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=404)
+    test_response = requests.get("https://api.notion.com/v1/blocks/123")
+    assert not stream.should_retry(test_response)
+
+
+def test_empty_blocks_results(requests_mock):
+    stream = Blocks(parent=None, config=MagicMock())
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/aaa/children",
+        json={
+            "next_cursor": None,
+        },
+    )
+    stream.block_id_stack = ["aaa"]
+    assert list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=[])) == []
+
+
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock(headers={"retry-after": "10"})
     stream = NotionStream(config=MagicMock())
@@ -93,7 +130,7 @@ def test_users_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_user_stream_handles_pagination_correclty(requests_mock):
+def test_user_stream_handles_pagination_correctly(requests_mock):
     """
     Test shows that Users stream uses pagination as per Notion API docs.
     """

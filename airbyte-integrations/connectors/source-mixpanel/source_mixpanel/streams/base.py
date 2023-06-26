@@ -2,14 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from abc import ABC
 from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from pendulum import Date
@@ -20,8 +18,6 @@ class MixpanelStream(HttpStream, ABC):
     Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
       A maximum of 5 concurrent queries
       60 queries per hour.
-
-    API Rate Limit Handler: after each request freeze for the time period: 3600/reqs_per_hour_limit seconds
     """
 
     @property
@@ -31,6 +27,7 @@ class MixpanelStream(HttpStream, ABC):
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
     reqs_per_hour_limit: int = 60  # 1 query per minute
+    retries: int = 0
 
     def __init__(
         self,
@@ -55,10 +52,6 @@ class MixpanelStream(HttpStream, ABC):
         self.project_id = project_id
 
         super().__init__(authenticator=authenticator)
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Define abstract method"""
@@ -100,18 +93,24 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
-        if self.reqs_per_hour_limit > 0:
-            # we skip this block, if self.reqs_per_hour_limit = 0,
-            # in all other cases wait for X seconds to match API limitations
-            self.logger.info("Sleep for %s seconds to match API limitations", 3600 / self.reqs_per_hour_limit)
-            time.sleep(3600 / self.reqs_per_hour_limit)
-
     def backoff_time(self, response: requests.Response) -> float:
         """
-        Some API endpoints do not return "Retry-After" header
-        some endpoints return a strangely low number
+        Some API endpoints do not return "Retry-After" header.
+        https://developer.mixpanel.com/reference/import-events#rate-limits (exponential backoff)
         """
-        return max(int(response.headers.get("Retry-After", 600)), 60)
+
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            return float(retry_after)
+
+        self.retries += 1
+        return 2**self.retries * 60
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 402:
+            self.logger.warning(f"Unable to perform a request. Payment Required: {response.json()['error']}")
+            return False
+        return super().should_retry(response)
 
     def get_stream_params(self) -> Mapping[str, Any]:
         """

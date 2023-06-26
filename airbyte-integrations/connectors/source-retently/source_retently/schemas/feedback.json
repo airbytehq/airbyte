@@ -1,48 +1,64 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-      "id": { "type": "string" },
-      "customerId": { "type": "string" },
-      "email": { "type": "string" },
-      "firstName": { "type": "string" },
-      "lastName": { "type": "string" },
-      "companyName": { "type": "string" },
-      "jobTitle": { "type": "string" },
-      "country": { "type": "string" },
-      "state": { "type": "string" },
-      "city": { "type": "string" },
-      "tags": {
-        "type": "array",
-        "items": { "type": "string" }
-      },
-      "customProps": {
-         "type": "array",
-         "items": { "type": "object" }
-       },
-      "campaignId": { "type": "string" },
-      "campaignName": { "type": "string" },
-      "createdDate": { "type": "string" },
-      "score": { "type": "number" },
-      "comment": { "type": "string" },
-      "checkbox": { "type": "boolean" },
-      "additionalQuestions": {
-        "type": "array",
-        "items": { "type": "object" }
-      },
-      "feedbackTags":  {
-        "type": "array",
-        "items": { "type": "string" }
-      },
-      "notes": {
-        "type": "array",
-        "items": { "type": "object" }
-      },
-      "status": { "type": "string" },
-      "assigned": { "type": "string" },
-      "ratingCategory": { "type": "string" },
-      "resolved": { "type": "boolean" },
-      "channel": { "type": "string" },
-      "metricsType": { "type": "string" },
-      "isBogus": { "type": "boolean" }
-    }
+    "companyId": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "customerId": { "type": ["null", "string"] },
+    "email": { "type": ["null", "string"] },
+    "firstName": { "type": ["null", "string"] },
+    "lastName": { "type": ["null", "string"] },
+    "companyName": { "type": ["null", "string"] },
+    "jobTitle": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "city": { "type": ["null", "string"] },
+    "tags": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
+    },
+    "customProps": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
+    },
+    "campaignId": { "type": ["null", "string"] },
+    "campaignName": { "type": ["null", "string"] },
+    "createdDate": { "type": ["null", "string"] },
+    "score": { "type": ["null", "number"] },
+    "comment": { "type": ["null", "string"] },
+    "checkbox": { "type": ["null", "boolean"] },
+    "additionalQuestions": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
+    },
+    "feedbackTags": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
+    },
+    "feedbackTagsNew": {
+      "type": ["null", "array"]
+    },
+    "feedbackTopics": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": ["null", "string"] },
+          "sentiment": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "notes": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
+    },
+    "status": { "type": ["null", "string"] },
+    "assigned": { "type": ["null", "string"] },
+    "ratingCategory": { "type": ["null", "string"] },
+    "resolved": { "type": ["null", "boolean"] },
+    "channel": { "type": ["null", "string"] },
+    "metricsType": { "type": ["null", "string"] },
+    "isBogus": { "type": ["null", "boolean"] }
+  }
 }

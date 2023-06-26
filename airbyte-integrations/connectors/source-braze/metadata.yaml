@@ -1,17 +1,21 @@
 data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
+  dockerImageTag: 0.1.3
+  icon: braze.svg
+  dockerRepository: airbyte/source-braze
+  githubIssueLabel: source-braze
+  license: MIT
+  name: Braze
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: api
-  connectorType: source
-  definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
-  dockerImageTag: 0.1.3
-  dockerRepository: airbyte/source-braze
-  githubIssueLabel: source-braze
-  license: MIT
-  name: Braze
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.io/integrations/sources/braze
+  documentationUrl: https://docs.airbyte.com/integrations/sources/braze
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

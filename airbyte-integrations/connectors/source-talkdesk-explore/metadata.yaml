@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
@@ -13,6 +8,13 @@ data:
   icon: talkdesk-explore.svg
   license: MIT
   name: TalkDesk Explore
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/talkdesk-explore
+  documentationUrl: https://docs.airbyte.com/integrations/sources/talkdesk-explore
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

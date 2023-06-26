@@ -80,6 +80,18 @@ acceptance_tests:
         bypass_reason: "Can not populate; need messaging service configured"
       - name: "web_push_send_skip"
         bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_open"
+        bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_bounce"
+        bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_click"
+        bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_send"
+        bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_subscribe"
+        bypass_reason: "Can not populate; need messaging service configured"
+      - name: "email_unsubscribe"
+        bypass_reason: "Can not populate; need messaging service configured"
       timeout_seconds: 3600
       fail_on_extra_columns: false
   full_refresh:

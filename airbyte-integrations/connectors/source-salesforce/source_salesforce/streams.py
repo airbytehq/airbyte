@@ -432,7 +432,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.apparent_encoding or response.encoding or self.encoding
+            response_encoding = response.encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
@@ -450,7 +450,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         try:
             with open(path, "r", encoding=file_encoding) as data:
-                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for row in chunk:
@@ -579,7 +579,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
-    STREAM_SLICE_STEP = 120
+    STREAM_SLICE_STEP = 30
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -663,8 +663,6 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": last_record[self.cursor_field], "primary_key": last_record.get(self.primary_key)}
         return None
 
     def request_params(
@@ -683,11 +681,8 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         order_by_clause = ""
 
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            last_primary_key = (next_page_token or {}).get("primary_key", "")
-            if last_primary_key:
-                where_conditions.append(f"{self.primary_key} > '{last_primary_key}'")
             order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
-            order_by_clause = f"ORDER BY {order_by_fields} ASC LIMIT {self.page_size}"
+            order_by_clause = f"ORDER BY {order_by_fields} ASC"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"

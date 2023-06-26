@@ -20,12 +20,15 @@ jobs:
         uses: peter-evans/slash-command-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          permission: write
           commands: |
             test
+            legacy-test
             test-performance
             build-connector
             publish-connector
             publish
+            legacy-publish
             publish-external
             gke-kube-test
             run-specific-test

@@ -4,6 +4,8 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_square/spec.yaml"
+      backward_compatibility_tests_config:
+        disable_for_version: "1.0.0"
   connection:
     tests:
     - config_path: "secrets/config.json"
@@ -15,7 +17,11 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "1.0.0"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "1.0.0"
   basic_read:
     tests:
     - config_path: "secrets/config_oauth.json"
@@ -30,6 +36,17 @@ acceptance_tests:
         bypass_reason: "Not able to fill stream"
       expect_records:
         path: "integration_tests/expected_records_oauth.jsonl"
+      ignored_fields:
+        items:
+          - name: version
+            bypass_reason: "Floating data"
+          - name: updated_at
+            bypass_reason: "Floating data"
+        categories:
+          - name: version
+            bypass_reason: "Floating data"
+          - name: updated_at
+            bypass_reason: "Floating data"
       fail_on_extra_columns: false
   incremental:
     tests:
