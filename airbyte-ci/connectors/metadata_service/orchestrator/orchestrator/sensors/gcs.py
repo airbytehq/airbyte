@@ -1,4 +1,13 @@
-from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
+from dagster import (
+    sensor,
+    RunRequest,
+    SkipReason,
+    SensorDefinition,
+    SensorEvaluationContext,
+    build_resources,
+    DefaultSensorStatus,
+    SensorResult,
+)
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
@@ -44,3 +53,59 @@ def new_gcs_blobs_sensor(
             return RunRequest(run_key=run_key)
 
     return new_gcs_blobs_sensor_definition
+
+def new_gcs_blobs_partition_sensor(
+    gcs_blobs_resource_key,
+    job,
+    interval,
+    resources_def,
+    partitions_def,
+) -> SensorDefinition:
+    """
+    TODO
+    """
+
+    sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
+
+    @sensor(
+        name=sensor_name,
+        job=job,
+        minimum_interval_seconds=interval,
+        default_status=DefaultSensorStatus.STOPPED,
+    )
+    def new_gcs_blobs_sensor_definition(context: SensorEvaluationContext):
+        context.log.info(f"Starting {sensor_name}")
+
+        with build_resources(resources_def) as resources:
+            context.log.info(f"Got resources for {sensor_name}")
+
+            context.log.info(f"Old etag cursor: {context.cursor}")
+
+            gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
+
+            new_blobs = [
+                blob
+                for blob in gcs_blobs_resource
+                if not context.instance.has_dynamic_partition(
+                    partitions_def.name, blob.etag
+                )
+            ]
+
+            new_etags_found = [blob.etag for blob in new_blobs]
+            context.log.info(f"New etags found: {new_etags_found}")
+
+            if not new_etags_found:
+                return SkipReason(f"No new {gcs_blobs_resource_key} in GCS bucket")
+
+            return SensorResult(
+                run_requests=[
+                    RunRequest(partition_key=blob.etag) for blob in new_blobs
+                ],
+                dynamic_partitions_requests=[
+                    partitions_def.build_add_request(new_etags_found)
+                ],
+            )
+
+    return new_gcs_blobs_sensor_definition
+
+
