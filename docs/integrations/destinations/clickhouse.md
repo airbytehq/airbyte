@@ -43,7 +43,7 @@ You need a ClickHouse user with the following permissions:
 You can create such a user by running:
 
 ```
-GRANT CREATE ON * TO airbyte_user;
+GRANT SELECT, INSERT, ALTER, CREATE DATABASE, CREATE TABLE, DROP TABLE, TRUNCATE, REMOTE ON *.* TO airbyte_user;
 ```
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
@@ -79,13 +79,14 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.2.6   | 2023-06-26 | [\#](https://github.com/airbytehq/airbyte/pull/) | Add custom CA support                                                                         |
 | 0.2.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
 | 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
 | 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                         |
 | 0.2.2   | 2023-02-21 | [\#21509](https://github.com/airbytehq/airbyte/pull/21509) | Compatibility update with security patch for strict encrypt version                           |
 | 0.2.1   | 2022-12-06 | [\#19573](https://github.com/airbytehq/airbyte/pull/19573) | Update dbt version to 1.3.1                                                                   |
 | 0.2.0   | 2022-09-27 | [\#16970](https://github.com/airbytehq/airbyte/pull/16970) | Remove TCP port from spec parameters                                                          |
-| 0.1.12  | 2022-09-08 | [\#16444](https://github.com/airbytehq/airbyte/pull/16444) | Added custom jdbc params field                                                                |
+| 0.1.12  | 2022-09-08 | [\#16444](https://github.com/airbytehq/airbyte/pull/16444) | Added custom jdbc params field                                                                 |
 | 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9                                              |
 | 0.1.8   | 2022-07-05 | [\#13516](https://github.com/airbytehq/airbyte/pull/13516) | Added JDBC default parameter socket timeout                                                   |
 | 0.1.7   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                        |

@@ -19,6 +19,9 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +37,13 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
+  public static final String SSL_VERIFICATION_METHOD_KEY = "ssl_mode";
+  public static final String DEFAULT_SSL_VERIFICATION_METHOD = "none";
+  public static final String CA_CERT_FILENAME = "ca.crt";
 
   static final List<String> SSL_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000",
-      "sslmode=NONE");
+      "ssl=true");
   static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000");
 
@@ -47,11 +53,24 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public ClickhouseDestination() {
     super(DRIVER_CLASS, new ClickhouseSQLNameTransformer(), new ClickhouseSqlOperations());
+  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+      out.print(fileValue);
+    }
   }
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final boolean isSsl = JdbcUtils.useSsl(config);
+    final String sslVerificationMethod = config.has(SSL_VERIFICATION_METHOD_KEY)
+        && config.get(SSL_VERIFICATION_METHOD_KEY).has("mode")
+            ? config.get(SSL_VERIFICATION_METHOD_KEY).get("mode").asText()
+            : DEFAULT_SSL_VERIFICATION_METHOD;
+    final String caCertificate = config.has(SSL_VERIFICATION_METHOD_KEY)
+        && config.get(SSL_VERIFICATION_METHOD_KEY).has("ca_certificate")
+            ? config.get(SSL_VERIFICATION_METHOD_KEY).get("ca_certificate").asText()
+            : null;
+
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
             isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
@@ -61,6 +80,16 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
     if (isSsl) {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+      jdbcUrl.append(String.format("&sslmode=%s", sslVerificationMethod));
+
+      if (sslVerificationMethod.equals("strict") && caCertificate != null && !caCertificate.equals("")) {
+        try {
+          createCertificateFile(CA_CERT_FILENAME, caCertificate);
+        } catch (final IOException e) {
+          throw new RuntimeException("Failed to create certificate file");
+        }
+        jdbcUrl.append(String.format("&sslrootcert=%s", CA_CERT_FILENAME));
+      }
     } else {
       jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
     }
