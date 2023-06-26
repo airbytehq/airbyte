@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -24,7 +24,7 @@
       "type": "string"
     },
     "quantity": {
-      "type": "string"
+      "type": ["null", "integer"]
     },
     "reference": {
       "type": "string"
