@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
-from source_google_analytics_data_api.source import PAGE_SIZE, GoogleAnalyticsDataApiBaseStream
+from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
 
 from .utils import read_incremental
 
@@ -89,7 +89,7 @@ def test_request_body_json(patch_base_class):
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
-        "limit": str(PAGE_SIZE),
+        "limit": str(GoogleAnalyticsDataApiBaseStream.PAGE_SIZE),
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(

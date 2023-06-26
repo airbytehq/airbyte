@@ -39,9 +39,6 @@ from .utils import (
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 LOOKBACK_WINDOW = datetime.timedelta(days=2)
-# set page_size to 100000 due to determination of maximum limit value in official documentation
-# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
-PAGE_SIZE = 100000
 
 
 class ConfigurationError(Exception):
@@ -102,6 +99,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     """
     https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
     """
+    # set page_size to 100000 due to determination of maximum limit value in official documentation
+    # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+    PAGE_SIZE = 100000
 
     _record_date_format = "%Y%m%d"
     offset = 0
@@ -180,9 +180,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             total_rows = r["rowCount"]
 
             if self.offset == 0:
-                self.offset = PAGE_SIZE
+                self.offset = self.PAGE_SIZE
             else:
-                self.offset += PAGE_SIZE
+                self.offset += self.PAGE_SIZE
 
             if total_rows <= self.offset:
                 self.offset = 0
@@ -251,7 +251,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(PAGE_SIZE),
+            "limit": str(self.PAGE_SIZE),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -415,6 +415,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         metadata = None
         try:
             stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
+            # a temporary setting to test if this fixes OOM issue when calling `check()`
+            stream.PAGE_SIZE = 100
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
             error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
