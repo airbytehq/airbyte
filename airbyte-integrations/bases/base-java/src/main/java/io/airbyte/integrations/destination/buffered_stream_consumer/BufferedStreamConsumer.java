@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -96,7 +97,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private Instant nextFlushDeadline;
   private final Duration bufferFlushFrequency;
+  private final String defaultNamespace;
 
+  /**
+   * Feel free to continue using this in non-1s1t destinations - it may be easier to use. However, 1s1t
+   * destinations should prefer the version which accepts a {@code defaultNamespace}.
+   */
+  @Deprecated
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final OnStartFunction onStart,
                                 final BufferingStrategy bufferingStrategy,
@@ -109,7 +116,27 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose,
         catalog,
         isValidRecord,
-        Duration.ofMinutes(15));
+        Duration.ofMinutes(15),
+        // This is purely for backwards compatibility. Many older destinations handle this internally.
+        // Starting with Destinations V2, we recommend passing in an explicit namespace.
+        null);
+  }
+
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final OnStartFunction onStart,
+                                final BufferingStrategy bufferingStrategy,
+                                final OnCloseFunction onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final String defaultNamespace) {
+    this(outputRecordCollector,
+        onStart,
+        bufferingStrategy,
+        onClose,
+        catalog,
+        isValidRecord,
+        Duration.ofMinutes(15),
+        defaultNamespace);
   }
 
   /*
@@ -123,34 +150,21 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                          final OnCloseFunction onClose,
                          final ConfiguredAirbyteCatalog catalog,
                          final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                         final Duration flushFrequency) {
+                         final Duration flushFrequency,
+                         final String defaultNamespace) {
     this.outputRecordCollector = outputRecordCollector;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      this.streamNames = fromConfiguredCatalogAirbyteSchema(catalog);
-    } else {
-      this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
-    }
+    this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
     this.stateManager = new DefaultDestStateLifecycleManager();
     this.bufferFlushFrequency = flushFrequency;
-  }
-
-  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalogAirbyteSchema(final ConfiguredAirbyteCatalog catalog) {
-    final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
-
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final var pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
-      pairs.add(pair);
-    }
-
-    return pairs;
+    this.defaultNamespace = defaultNamespace;
   }
 
   @Override
@@ -176,12 +190,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage record = message.getRecord();
-      final AirbyteStreamNameNamespacePair stream;
-      if (TypingAndDedupingFlag.isDestinationV2()) {
-        stream = new AirbyteStreamNameNamespacePair(record.getStream(), JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
-      } else {
-        stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+      if (Strings.isNullOrEmpty(record.getNamespace())) {
+        record.setNamespace(defaultNamespace);
       }
+      final AirbyteStreamNameNamespacePair stream;
+      stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
 
       // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {

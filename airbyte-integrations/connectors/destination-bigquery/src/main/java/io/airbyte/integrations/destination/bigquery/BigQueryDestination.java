@@ -60,7 +60,6 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
-  public static final String USE_1S1T_FORMAT = "use_1s1t_format";
   public static final String RAW_NAMESPACE_OVERRIDE = "raw_data_dataset";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
@@ -195,9 +194,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
-   * @param outputRecordCollector
-   * @return
-   * @throws IOException
    */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
@@ -230,7 +226,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(config, catalog, parsedCatalog, outputRecordCollector, sqlGenerator);
     } else {
-      return getGcsRecordConsumer(config, catalog, outputRecordCollector);
+      return getGcsRecordConsumer(config, catalog, parsedCatalog, outputRecordCollector, sqlGenerator);
     }
   }
 
@@ -343,9 +339,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector)
+                                                     final ParsedCatalog parsedCatalog,
+                                                     final Consumer<AirbyteMessage> outputRecordCollector,
+                                                     final BigQuerySqlGenerator sqlGenerator)
       throws InterruptedException {
-    final boolean use1s1t = config.hasNonNull(USE_1S1T_FORMAT) && config.get(USE_1S1T_FORMAT).asBoolean();
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = getBigQuery(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
@@ -382,21 +379,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
 
-    // TODO refactor and share this with the standard inserts consumer
-    final BigQuery bigquery = getBigQuery(config);
-    // TODO
-    final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = null; // cloneAndModifyCatalogForFinalTables(config, catalog);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
-    LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
-    final CatalogParser catalogParser;
-    final String rawNamespaceOverride = null; // resolveRawNamespace(use1s1t, config);
-    if (rawNamespaceOverride != null) {
-      catalogParser = new CatalogParser(sqlGenerator, rawNamespaceOverride);
-    } else {
-      catalogParser = new CatalogParser(sqlGenerator);
-    }
-    final ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
-
     return new BigQueryStagingConsumerFactory().create(
         config,
         catalog,
@@ -407,10 +389,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         namingResolver::getTmpTableName,
         getTargetTableNameTransformer(namingResolver),
         sqlGenerator,
-        new BigQueryDestinationHandler(bigquery),
+        new BigQueryDestinationHandler(bigQuery),
         parsedCatalog,
-        use1s1t,
-        rawNamespaceOverride);
+        BigQueryUtils.getDatasetId(config));
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {
@@ -428,7 +409,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   /**
    * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
    * file buffers and sets the minimum number to the default
-   *
+   * <p>
    * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
    * not been thoroughly load tested across all instance sizes
    *
