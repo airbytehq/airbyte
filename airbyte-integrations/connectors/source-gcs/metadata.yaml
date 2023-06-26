@@ -2,11 +2,11 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-gcs
   githubIssueLabel: source-gcs
   icon: gcs.svg
-  license: MIT
+  license: ELv2
   name: GCS
   releaseStage: alpha
   registries:
