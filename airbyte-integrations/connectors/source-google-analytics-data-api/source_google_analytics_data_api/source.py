@@ -99,6 +99,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     """
     https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
     """
+
     # set page_size to 100000 due to determination of maximum limit value in official documentation
     # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
     PAGE_SIZE = 100000
