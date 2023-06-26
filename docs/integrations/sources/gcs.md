@@ -37,5 +37,5 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.2.0   | 2023-06-26 | [27651](https://github.com/airbytehq/airbyte/pull/xxx)   | License Update: Elv2 Errors |
+| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 Errors |
 | 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS             |
