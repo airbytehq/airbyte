@@ -78,6 +78,8 @@ With root level normalization, the output CSV is:
 | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | 123 | `{ "first": "John", "last": "Doe" }` |
 
+With the field `File Extension`, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with `csv` extension.
+
 ### JSON Lines \(JSONL\)
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
@@ -146,6 +148,7 @@ They will be like this in the output file:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1   | 2023-06-26 | [\#27701](https://github.com/airbytehq/airbyte/pull/21467) | File Extensions added for the csv output files                                                                                                                  |
 | 0.2.0   | 2023-01-18 | [\#15318](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
 | 0.1.6   | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
 | 0.1.5   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |
