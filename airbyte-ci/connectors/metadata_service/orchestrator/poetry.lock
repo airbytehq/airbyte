@@ -475,19 +475,19 @@ tox = ["tox"]
 
 [[package]]
 name = "dagit"
-version = "1.2.7"
+version = "1.3.11"
 description = "Web UI for dagster."
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagit-1.2.7-py3-none-any.whl", hash = "sha256:c1203d02d8fff28a51793fdf3d10826f019fca62d0859e2eac3c3c3237006ed4"},
-    {file = "dagit-1.2.7.tar.gz", hash = "sha256:057f852ab4296028ab87024f45ecc61cfffe20c8815169da51d7258204e80c4f"},
+    {file = "dagit-1.3.11-py3-none-any.whl", hash = "sha256:9b3f65535807d3214dfdfb46f271f6034d81690cc71937bed4f3b39626c56a94"},
+    {file = "dagit-1.3.11.tar.gz", hash = "sha256:f22b95553bfbc215d78ed9905fa020f5bf8e4bd6233f82725a71f5f0971e54f5"},
 ]
 
 [package.dependencies]
 click = ">=7.0,<9.0"
-dagster = "1.2.7"
-dagster-graphql = "1.2.7"
+dagster = "1.3.11"
+dagster-graphql = "1.3.11"
 starlette = "*"
 uvicorn = {version = "*", extras = ["standard"]}
 
@@ -497,17 +497,17 @@ test = ["starlette[full]"]
 
 [[package]]
 name = "dagster"
-version = "1.2.7"
+version = "1.3.11"
 description = "The data orchestration platform built for productivity."
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster-1.2.7-py3-none-any.whl", hash = "sha256:2063ac378db51bdcb2fffc05eef9b732ea3dcc7099f604a517276f8f0a82117f"},
-    {file = "dagster-1.2.7.tar.gz", hash = "sha256:993a92b29eda9a403b59b4d3bcf18bc4081eae8cb5330f256141143adf531928"},
+    {file = "dagster-1.3.11-py3-none-any.whl", hash = "sha256:8967efad4e75deaad9f7da4031bf5583336063acc127c29ad215a0ba0b71177a"},
+    {file = "dagster-1.3.11.tar.gz", hash = "sha256:20431db82f3d0b2bb47d0828a3ea25ece4ea24f6d8ca8475f7ecc7a0a66d841c"},
 ]
 
 [package.dependencies]
-alembic = ">=1.2.1,<1.6.3 || >1.6.3,<1.7.0 || >1.7.0"
+alembic = ">=1.2.1,<1.6.3 || >1.6.3,<1.7.0 || >1.7.0,<1.11.0 || >1.11.0"
 click = ">=5.0"
 coloredlogs = ">=6.1,<=14.0"
 croniter = ">=0.3.34"
@@ -516,13 +516,16 @@ grpcio = [
     {version = ">=1.44.0,<1.48.0", markers = "python_version < \"3.11\""},
     {version = ">=1.44.0", markers = "python_version >= \"3.11\""},
 ]
-grpcio-health-checking = ">=1.44.0"
+grpcio-health-checking = [
+    {version = ">=1.44.0,<1.48.0", markers = "python_version < \"3.11\""},
+    {version = ">=1.44.0", markers = "python_version >= \"3.11\""},
+]
 Jinja2 = "*"
 packaging = ">=20.9"
 pendulum = "*"
 protobuf = ">=3.20.0"
 psutil = {version = ">=1.0", markers = "platform_system == \"Windows\""}
-pydantic = "*"
+pydantic = "<1.10.7 || >1.10.7,<2.0.0"
 python-dateutil = "*"
 python-dotenv = "*"
 pytz = "*"
@@ -530,7 +533,7 @@ pywin32 = {version = "!=226", markers = "platform_system == \"Windows\""}
 PyYAML = ">=5.1"
 requests = "*"
 setuptools = "*"
-sqlalchemy = ">=1.0,<2.0.0"
+sqlalchemy = ">=1.0"
 tabulate = "*"
 tomli = "*"
 toposort = ">=1.0"
@@ -543,47 +546,47 @@ watchdog = ">=0.8.3"
 black = ["black[jupyter] (==22.12.0)"]
 docker = ["docker"]
 mypy = ["mypy (==0.991)"]
-pyright = ["pandas-stubs", "pyright (==1.1.298)", "types-PyYAML", "types-backports", "types-certifi", "types-chardet", "types-croniter", "types-cryptography", "types-mock", "types-paramiko", "types-pkg-resources", "types-pyOpenSSL", "types-python-dateutil", "types-pytz", "types-requests", "types-simplejson", "types-six", "types-sqlalchemy", "types-tabulate", "types-toml", "types-tzlocal"]
+pyright = ["pandas-stubs", "pyright (==1.1.298)", "types-PyYAML", "types-backports", "types-certifi", "types-chardet", "types-croniter", "types-cryptography", "types-mock", "types-paramiko", "types-pkg-resources", "types-pyOpenSSL", "types-python-dateutil", "types-pytz", "types-requests", "types-simplejson", "types-six", "types-sqlalchemy (==1.4.53.34)", "types-tabulate", "types-toml", "types-tzlocal"]
 ruff = ["ruff (==0.0.255)"]
-test = ["buildkite-test-collector", "docker", "grpcio-tools (>=1.44.0)", "mock (==3.0.5)", "objgraph", "pytest (==7.0.1)", "pytest-cov (==2.10.1)", "pytest-dependency (==0.5.1)", "pytest-mock (==3.3.1)", "pytest-rerunfailures (==10.0)", "pytest-runner (==5.2)", "pytest-xdist (==2.1.0)", "responses", "snapshottest (==0.6.0)", "tox (==3.25.0)", "yamllint"]
+test = ["buildkite-test-collector", "docker", "grpcio-tools (>=1.44.0)", "grpcio-tools (>=1.44.0,<1.48.0)", "mock (==3.0.5)", "objgraph", "pytest (==7.0.1)", "pytest-cov (==2.10.1)", "pytest-dependency (==0.5.1)", "pytest-mock (==3.3.1)", "pytest-rerunfailures (==10.0)", "pytest-runner (==5.2)", "pytest-xdist (==2.1.0)", "responses", "snapshottest (==0.6.0)", "tox (==3.25.0)", "yamllint"]
 
 [[package]]
 name = "dagster-cloud"
-version = "1.2.7"
+version = "1.3.11"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster_cloud-1.2.7-py3-none-any.whl", hash = "sha256:5f4a077ebc1170cd8d241a6347cca0346cbaeb85b82fee8697b66e71fba431e1"},
-    {file = "dagster_cloud-1.2.7.tar.gz", hash = "sha256:517f23424166051285ad8e7bd8c7c976c9d072f51709846e7a900942d14a62ad"},
+    {file = "dagster_cloud-1.3.11-py3-none-any.whl", hash = "sha256:d75c3d0fae09713bd5b59bc0e594d236a276b74f1f5d080feffaa10c06d6f1b0"},
+    {file = "dagster_cloud-1.3.11.tar.gz", hash = "sha256:2ec0254c0a325cebebe68954b033f977ee98f16ecca882d16df220b1bd136d61"},
 ]
 
 [package.dependencies]
-dagster = "1.2.7"
-dagster-cloud-cli = "1.2.7"
+dagster = "1.3.11"
+dagster-cloud-cli = "1.3.11"
 pex = "*"
 questionary = "*"
 requests = "*"
 typer = {version = "*", extras = ["all"]}
 
 [package.extras]
-docker = ["dagster-docker (==0.18.7)", "docker"]
-ecs = ["boto3", "dagster-aws (==0.18.7)"]
-kubernetes = ["dagster-k8s (==0.18.7)", "kubernetes"]
+docker = ["dagster-docker (==0.19.11)", "docker"]
+ecs = ["boto3", "dagster-aws (==0.19.11)"]
+kubernetes = ["dagster-k8s (==0.19.11)", "kubernetes"]
 pex = ["boto3"]
 sandbox = ["supervisor"]
 serverless = ["boto3"]
-tests = ["black", "dagster-cloud-test-infra", "dagster-k8s (==0.18.7)", "docker", "httpretty", "isort", "kubernetes", "moto[all]", "mypy", "paramiko", "pylint", "pytest", "types-PyYAML", "types-requests"]
+tests = ["black", "dagster-cloud-test-infra", "dagster-k8s (==0.19.11)", "docker", "httpretty", "isort", "kubernetes", "moto[all]", "mypy", "paramiko", "pylint", "pytest", "types-PyYAML", "types-requests"]
 
 [[package]]
 name = "dagster-cloud-cli"
-version = "1.2.7"
+version = "1.3.11"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster_cloud_cli-1.2.7-py3-none-any.whl", hash = "sha256:9a1c41ca3d5c15657f180e042327954e853342fe299a74e0a2721e22078f690f"},
-    {file = "dagster_cloud_cli-1.2.7.tar.gz", hash = "sha256:695881c458759f09187a785522f86756f6ee2f3abac3d4a6638d92ae4206f55e"},
+    {file = "dagster_cloud_cli-1.3.11-py3-none-any.whl", hash = "sha256:89e22b2f35f9b7fbb00a28eff68e4ef18b7c05ad3e5bea77ea8ae885db80d443"},
+    {file = "dagster_cloud_cli-1.3.11.tar.gz", hash = "sha256:dc16f97b7021dbe2492ffa8a05102439b394ab04a21fc3990d1d96f147392d07"},
 ]
 
 [package.dependencies]
@@ -599,18 +602,18 @@ tests = ["freezegun"]
 
 [[package]]
 name = "dagster-gcp"
-version = "0.18.7"
+version = "0.19.11"
 description = "Package for GCP-specific Dagster framework op and resource components."
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster-gcp-0.18.7.tar.gz", hash = "sha256:942e8313c6b94c194aa313f66bc3fa06daefa35801787ad501739c06a4246523"},
-    {file = "dagster_gcp-0.18.7-py3-none-any.whl", hash = "sha256:6ccd5fd1ed23b4ed8db6651b601acfcc21de73a95636865d85a2b1ec37140aa8"},
+    {file = "dagster-gcp-0.19.11.tar.gz", hash = "sha256:d432d734faff3dbc94d85a5933ae70a5770bf72a4ef035107a010c9dadcbd7cc"},
+    {file = "dagster_gcp-0.19.11-py3-none-any.whl", hash = "sha256:156fcd1b5e849bdc73803079e7f65ca480c25fbfc8b51a20efd0b36c0110b665"},
 ]
 
 [package.dependencies]
-dagster = "1.2.7"
-dagster-pandas = "0.18.7"
+dagster = "1.3.11"
+dagster-pandas = "0.19.11"
 db-dtypes = "*"
 google-api-python-client = "*"
 google-cloud-bigquery = "*"
@@ -622,35 +625,36 @@ pyarrow = ["pyarrow"]
 
 [[package]]
 name = "dagster-graphql"
-version = "1.2.7"
+version = "1.3.11"
 description = "The GraphQL frontend to python dagster."
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster-graphql-1.2.7.tar.gz", hash = "sha256:394f4933eb7fd3ab789cefdcd98f521e57e31b88f18f38807efbee55a9f9a378"},
-    {file = "dagster_graphql-1.2.7-py3-none-any.whl", hash = "sha256:e07a4f3505219d76302b48e5e5d568b0bd51b7508d071d269ebd59ce598e01e8"},
+    {file = "dagster-graphql-1.3.11.tar.gz", hash = "sha256:ff05df0bb0d89299250af090166f0a288530d1ac48ce16706b3aed10b44bc864"},
+    {file = "dagster_graphql-1.3.11-py3-none-any.whl", hash = "sha256:043d9d5493a6b74779a926fbdf5eb3f295dd8ccf8f0009173f2a7294ae846dba"},
 ]
 
 [package.dependencies]
-dagster = "1.2.7"
+dagster = "1.3.11"
 gql = {version = ">=3.0.0", extras = ["requests"]}
 graphene = ">=3"
 requests = "*"
 starlette = "*"
+urllib3 = "<2.0.0"
 
 [[package]]
 name = "dagster-pandas"
-version = "0.18.7"
+version = "0.19.11"
 description = "Utilities and examples for working with pandas and dagster, an opinionated framework for expressing data pipelines"
 optional = false
 python-versions = "*"
 files = [
-    {file = "dagster-pandas-0.18.7.tar.gz", hash = "sha256:aa4e984a4c762d8dd121f139b11d821b5e29de5d4e67c168a3936e317ef5dbe8"},
-    {file = "dagster_pandas-0.18.7-py3-none-any.whl", hash = "sha256:64737bcf9d94666c3dc8ca5f3dc12426ed3f557bf4596847874d9d8bb15b0373"},
+    {file = "dagster-pandas-0.19.11.tar.gz", hash = "sha256:4db127b7fcdf08cd2d03da007549b022ca82c5757060b09ba7f721a2b37329de"},
+    {file = "dagster_pandas-0.19.11-py3-none-any.whl", hash = "sha256:f2f07cf8e246adfd11eef6d3bbe40fa79b4f61757fd035f9d14684037d0e5094"},
 ]
 
 [package.dependencies]
-dagster = "1.2.7"
+dagster = "1.3.11"
 pandas = "*"
 
 [[package]]
@@ -2722,47 +2726,47 @@ files = [
 
 [[package]]
 name = "pydantic"
-version = "1.10.7"
+version = "1.10.9"
 description = "Data validation and settings management using python type hints"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pydantic-1.10.7-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e79e999e539872e903767c417c897e729e015872040e56b96e67968c3b918b2d"},
-    {file = "pydantic-1.10.7-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:01aea3a42c13f2602b7ecbbea484a98169fb568ebd9e247593ea05f01b884b2e"},
-    {file = "pydantic-1.10.7-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:516f1ed9bc2406a0467dd777afc636c7091d71f214d5e413d64fef45174cfc7a"},
-    {file = "pydantic-1.10.7-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ae150a63564929c675d7f2303008d88426a0add46efd76c3fc797cd71cb1b46f"},
-    {file = "pydantic-1.10.7-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:ecbbc51391248116c0a055899e6c3e7ffbb11fb5e2a4cd6f2d0b93272118a209"},
-    {file = "pydantic-1.10.7-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:f4a2b50e2b03d5776e7f21af73e2070e1b5c0d0df255a827e7c632962f8315af"},
-    {file = "pydantic-1.10.7-cp310-cp310-win_amd64.whl", hash = "sha256:a7cd2251439988b413cb0a985c4ed82b6c6aac382dbaff53ae03c4b23a70e80a"},
-    {file = "pydantic-1.10.7-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:68792151e174a4aa9e9fc1b4e653e65a354a2fa0fed169f7b3d09902ad2cb6f1"},
-    {file = "pydantic-1.10.7-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:dfe2507b8ef209da71b6fb5f4e597b50c5a34b78d7e857c4f8f3115effaef5fe"},
-    {file = "pydantic-1.10.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10a86d8c8db68086f1e30a530f7d5f83eb0685e632e411dbbcf2d5c0150e8dcd"},
-    {file = "pydantic-1.10.7-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d75ae19d2a3dbb146b6f324031c24f8a3f52ff5d6a9f22f0683694b3afcb16fb"},
-    {file = "pydantic-1.10.7-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:464855a7ff7f2cc2cf537ecc421291b9132aa9c79aef44e917ad711b4a93163b"},
-    {file = "pydantic-1.10.7-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:193924c563fae6ddcb71d3f06fa153866423ac1b793a47936656e806b64e24ca"},
-    {file = "pydantic-1.10.7-cp311-cp311-win_amd64.whl", hash = "sha256:b4a849d10f211389502059c33332e91327bc154acc1845f375a99eca3afa802d"},
-    {file = "pydantic-1.10.7-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:cc1dde4e50a5fc1336ee0581c1612215bc64ed6d28d2c7c6f25d2fe3e7c3e918"},
-    {file = "pydantic-1.10.7-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e0cfe895a504c060e5d36b287ee696e2fdad02d89e0d895f83037245218a87fe"},
-    {file = "pydantic-1.10.7-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:670bb4683ad1e48b0ecb06f0cfe2178dcf74ff27921cdf1606e527d2617a81ee"},
-    {file = "pydantic-1.10.7-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:950ce33857841f9a337ce07ddf46bc84e1c4946d2a3bba18f8280297157a3fd1"},
-    {file = "pydantic-1.10.7-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:c15582f9055fbc1bfe50266a19771bbbef33dd28c45e78afbe1996fd70966c2a"},
-    {file = "pydantic-1.10.7-cp37-cp37m-win_amd64.whl", hash = "sha256:82dffb306dd20bd5268fd6379bc4bfe75242a9c2b79fec58e1041fbbdb1f7914"},
-    {file = "pydantic-1.10.7-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:8c7f51861d73e8b9ddcb9916ae7ac39fb52761d9ea0df41128e81e2ba42886cd"},
-    {file = "pydantic-1.10.7-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:6434b49c0b03a51021ade5c4daa7d70c98f7a79e95b551201fff682fc1661245"},
-    {file = "pydantic-1.10.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:64d34ab766fa056df49013bb6e79921a0265204c071984e75a09cbceacbbdd5d"},
-    {file = "pydantic-1.10.7-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:701daea9ffe9d26f97b52f1d157e0d4121644f0fcf80b443248434958fd03dc3"},
-    {file = "pydantic-1.10.7-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:cf135c46099ff3f919d2150a948ce94b9ce545598ef2c6c7bf55dca98a304b52"},
-    {file = "pydantic-1.10.7-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:b0f85904f73161817b80781cc150f8b906d521fa11e3cdabae19a581c3606209"},
-    {file = "pydantic-1.10.7-cp38-cp38-win_amd64.whl", hash = "sha256:9f6f0fd68d73257ad6685419478c5aece46432f4bdd8d32c7345f1986496171e"},
-    {file = "pydantic-1.10.7-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:c230c0d8a322276d6e7b88c3f7ce885f9ed16e0910354510e0bae84d54991143"},
-    {file = "pydantic-1.10.7-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:976cae77ba6a49d80f461fd8bba183ff7ba79f44aa5cfa82f1346b5626542f8e"},
-    {file = "pydantic-1.10.7-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7d45fc99d64af9aaf7e308054a0067fdcd87ffe974f2442312372dfa66e1001d"},
-    {file = "pydantic-1.10.7-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d2a5ebb48958754d386195fe9e9c5106f11275867051bf017a8059410e9abf1f"},
-    {file = "pydantic-1.10.7-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:abfb7d4a7cd5cc4e1d1887c43503a7c5dd608eadf8bc615413fc498d3e4645cd"},
-    {file = "pydantic-1.10.7-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:80b1fab4deb08a8292d15e43a6edccdffa5377a36a4597bb545b93e79c5ff0a5"},
-    {file = "pydantic-1.10.7-cp39-cp39-win_amd64.whl", hash = "sha256:d71e69699498b020ea198468e2480a2f1e7433e32a3a99760058c6520e2bea7e"},
-    {file = "pydantic-1.10.7-py3-none-any.whl", hash = "sha256:0cd181f1d0b1d00e2b705f1bf1ac7799a2d938cce3376b8007df62b29be3c2c6"},
-    {file = "pydantic-1.10.7.tar.gz", hash = "sha256:cfc83c0678b6ba51b0532bea66860617c4cd4251ecf76e9846fa5a9f3454e97e"},
+    {file = "pydantic-1.10.9-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e692dec4a40bfb40ca530e07805b1208c1de071a18d26af4a2a0d79015b352ca"},
+    {file = "pydantic-1.10.9-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:3c52eb595db83e189419bf337b59154bdcca642ee4b2a09e5d7797e41ace783f"},
+    {file = "pydantic-1.10.9-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:939328fd539b8d0edf244327398a667b6b140afd3bf7e347cf9813c736211896"},
+    {file = "pydantic-1.10.9-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b48d3d634bca23b172f47f2335c617d3fcb4b3ba18481c96b7943a4c634f5c8d"},
+    {file = "pydantic-1.10.9-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:f0b7628fb8efe60fe66fd4adadd7ad2304014770cdc1f4934db41fe46cc8825f"},
+    {file = "pydantic-1.10.9-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:e1aa5c2410769ca28aa9a7841b80d9d9a1c5f223928ca8bec7e7c9a34d26b1d4"},
+    {file = "pydantic-1.10.9-cp310-cp310-win_amd64.whl", hash = "sha256:eec39224b2b2e861259d6f3c8b6290d4e0fbdce147adb797484a42278a1a486f"},
+    {file = "pydantic-1.10.9-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:d111a21bbbfd85c17248130deac02bbd9b5e20b303338e0dbe0faa78330e37e0"},
+    {file = "pydantic-1.10.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:2e9aec8627a1a6823fc62fb96480abe3eb10168fd0d859ee3d3b395105ae19a7"},
+    {file = "pydantic-1.10.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:07293ab08e7b4d3c9d7de4949a0ea571f11e4557d19ea24dd3ae0c524c0c334d"},
+    {file = "pydantic-1.10.9-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7ee829b86ce984261d99ff2fd6e88f2230068d96c2a582f29583ed602ef3fc2c"},
+    {file = "pydantic-1.10.9-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:4b466a23009ff5cdd7076eb56aca537c745ca491293cc38e72bf1e0e00de5b91"},
+    {file = "pydantic-1.10.9-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:7847ca62e581e6088d9000f3c497267868ca2fa89432714e21a4fb33a04d52e8"},
+    {file = "pydantic-1.10.9-cp311-cp311-win_amd64.whl", hash = "sha256:7845b31959468bc5b78d7b95ec52fe5be32b55d0d09983a877cca6aedc51068f"},
+    {file = "pydantic-1.10.9-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:517a681919bf880ce1dac7e5bc0c3af1e58ba118fd774da2ffcd93c5f96eaece"},
+    {file = "pydantic-1.10.9-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:67195274fd27780f15c4c372f4ba9a5c02dad6d50647b917b6a92bf00b3d301a"},
+    {file = "pydantic-1.10.9-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2196c06484da2b3fded1ab6dbe182bdabeb09f6318b7fdc412609ee2b564c49a"},
+    {file = "pydantic-1.10.9-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:6257bb45ad78abacda13f15bde5886efd6bf549dd71085e64b8dcf9919c38b60"},
+    {file = "pydantic-1.10.9-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:3283b574b01e8dbc982080d8287c968489d25329a463b29a90d4157de4f2baaf"},
+    {file = "pydantic-1.10.9-cp37-cp37m-win_amd64.whl", hash = "sha256:5f8bbaf4013b9a50e8100333cc4e3fa2f81214033e05ac5aa44fa24a98670a29"},
+    {file = "pydantic-1.10.9-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:b9cd67fb763248cbe38f0593cd8611bfe4b8ad82acb3bdf2b0898c23415a1f82"},
+    {file = "pydantic-1.10.9-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:f50e1764ce9353be67267e7fd0da08349397c7db17a562ad036aa7c8f4adfdb6"},
+    {file = "pydantic-1.10.9-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:73ef93e5e1d3c8e83f1ff2e7fdd026d9e063c7e089394869a6e2985696693766"},
+    {file = "pydantic-1.10.9-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:128d9453d92e6e81e881dd7e2484e08d8b164da5507f62d06ceecf84bf2e21d3"},
+    {file = "pydantic-1.10.9-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:ad428e92ab68798d9326bb3e5515bc927444a3d71a93b4a2ca02a8a5d795c572"},
+    {file = "pydantic-1.10.9-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:fab81a92f42d6d525dd47ced310b0c3e10c416bbfae5d59523e63ea22f82b31e"},
+    {file = "pydantic-1.10.9-cp38-cp38-win_amd64.whl", hash = "sha256:963671eda0b6ba6926d8fc759e3e10335e1dc1b71ff2a43ed2efd6996634dafb"},
+    {file = "pydantic-1.10.9-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:970b1bdc6243ef663ba5c7e36ac9ab1f2bfecb8ad297c9824b542d41a750b298"},
+    {file = "pydantic-1.10.9-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:7e1d5290044f620f80cf1c969c542a5468f3656de47b41aa78100c5baa2b8276"},
+    {file = "pydantic-1.10.9-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:83fcff3c7df7adff880622a98022626f4f6dbce6639a88a15a3ce0f96466cb60"},
+    {file = "pydantic-1.10.9-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0da48717dc9495d3a8f215e0d012599db6b8092db02acac5e0d58a65248ec5bc"},
+    {file = "pydantic-1.10.9-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:0a2aabdc73c2a5960e87c3ffebca6ccde88665616d1fd6d3db3178ef427b267a"},
+    {file = "pydantic-1.10.9-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:9863b9420d99dfa9c064042304868e8ba08e89081428a1c471858aa2af6f57c4"},
+    {file = "pydantic-1.10.9-cp39-cp39-win_amd64.whl", hash = "sha256:e7c9900b43ac14110efa977be3da28931ffc74c27e96ee89fbcaaf0b0fe338e1"},
+    {file = "pydantic-1.10.9-py3-none-any.whl", hash = "sha256:6cafde02f6699ce4ff643417d1a9223716ec25e228ddc3b436fe7e2d25a1f305"},
+    {file = "pydantic-1.10.9.tar.gz", hash = "sha256:95c70da2cd3b6ddf3b9645ecaa8d98f3d80c606624b6d245558d202cd23ea3be"},
 ]
 
 [package.dependencies]
@@ -4155,4 +4159,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "5301b7d20abd2ad167ab1d1148e41ab360e44cd754ca938c6108fbb457d7ae9d"
+content-hash = "dab138e37f6453cf163afb60cc4c2942a8bdc5a72253c8f6bf934fb76ceb1ca1"
