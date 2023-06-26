@@ -6,12 +6,10 @@ This page guides you through the process of setting up the Typeform source conne
 
 - [Typeform Account](https://www.typeform.com/)
 - Start Date - Date to start fetching Responses stream data from.
-- form_ids (Optional) - List of Form Ids to sync. If not passed - sync all account`s forms.
-
+- Form IDs (Optional) - If you want to sync data for specific forms, you'll need to have the IDs of those forms. If you want to sync data for all forms in your account you don't need any IDs. Form IDs can be found in the URLs to the forms in Typeform Admin Panel (for example, for URL `https://admin.typeform.com/form/12345/` a `12345` part would your Form ID)
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-- Personal Access Token (see [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/))
 - OAuth
 <!-- /env:cloud -->
 
@@ -25,8 +23,9 @@ This page guides you through the process of setting up the Typeform source conne
 
 ### Step 1: Set up Typeform
 
+<!-- env:oss -->
+**For Airbyte Open Source:**
 To get the API token for your application follow this [steps](https://developer.typeform.com/get-started/personal-access-token/)
-
 * Log in to your account at Typeform.
 * In the upper-right corner, in the drop-down menu next to your profile photo, click My Account.
 * In the left menu, click Personal tokens.
@@ -34,6 +33,12 @@ To get the API token for your application follow this [steps](https://developer.
 * In the Token name field, type a name for the token to help you identify it.
 * Choose needed scopes \(API actions this token can perform - or permissions it has\). See [here](https://www.typeform.com/developers/get-started/scopes/) for more details on scopes.
 * Click Generate token.
+<!-- /env:oss -->
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+* Authorize to your [Typeform Account](https://www.typeform.com/), it will be used during next step to authorize using OAuth.
+<!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
 
