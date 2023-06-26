@@ -5,6 +5,7 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -83,6 +84,20 @@ class RechargeStream(HttpStream, ABC):
             return True
 
         return super().should_retry(response)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date
+
+        now = pendulum.now()
+
+        start_date = pendulum.parse(start_date)
+
+        while start_date <= now:
+            end_date = start_date.add(months=self.period_in_months)
+            yield {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"), "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S")}
+            start_date = end_date
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
