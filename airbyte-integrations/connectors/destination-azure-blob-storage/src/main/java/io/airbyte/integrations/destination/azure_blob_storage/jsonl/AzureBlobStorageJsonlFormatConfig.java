@@ -10,6 +10,11 @@ import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFo
 public class AzureBlobStorageJsonlFormatConfig implements AzureBlobStorageFormatConfig {
 
   @Override
+  public boolean isFileExtensionRequired() {
+    return false;
+  }
+
+  @Override
   public AzureBlobStorageFormat getFormat() {
     return AzureBlobStorageFormat.JSONL;
   }
