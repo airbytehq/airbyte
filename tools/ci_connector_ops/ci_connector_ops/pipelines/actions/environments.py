@@ -7,8 +7,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -17,7 +19,6 @@ from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
-    DEFAULT_PYTHON_EXCLUDE,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
@@ -50,7 +51,6 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
         .with_exec(["pip", "install", "pip==23.1.2"])
     )
 
@@ -113,10 +113,6 @@ def with_python_package(
     Returns:
         Container: A python environment container with the python package source code.
     """
-    if exclude:
-        exclude = DEFAULT_PYTHON_EXCLUDE + exclude
-    else:
-        exclude = DEFAULT_PYTHON_EXCLUDE
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
     container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
         "/" + package_source_code_path
@@ -151,17 +147,20 @@ async def find_local_python_dependencies(context: PipelineContext, package_sourc
                     if "file://" in line:
                         match = re.search(r"file:///(.+)", line)
                         if match:
-                            setup_dependency_paths.append(match.group(1))
+                            setup_dependency_paths += [match.group(1)] + (await find_local_python_dependencies(context, match.group(1)))[0]
                 break
 
     # Find local dependencies in requirements.txt
     requirements_dependency_paths = []
     if requirements_txt := await get_file_contents(container, "requirements.txt"):
         for line in requirements_txt.split("\n"):
-            if line.startswith("-e ."):
+            if line.startswith("-e .") and line != "-e .":
                 local_dependency_path = Path(package_source_code_path + "/" + line[3:]).resolve()
                 local_dependency_path = str(local_dependency_path.relative_to(Path.cwd()))
-                requirements_dependency_paths.append(local_dependency_path)
+                requirements_dependency_paths += [local_dependency_path] + (
+                    await find_local_python_dependencies(context, local_dependency_path)
+                )[1]
+
     return setup_dependency_paths, requirements_dependency_paths
 
 
@@ -190,6 +189,7 @@ async def with_installed_python_package(
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
 
     setup_dependencies, requirements_dependencies = await find_local_python_dependencies(context, package_source_code_path)
+
     for dependency_directory in setup_dependencies + requirements_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
@@ -301,7 +301,8 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
     python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+
+    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:
@@ -368,24 +369,28 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
+    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
 
-    return (
+    cat_container = (
         with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
-        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
-        .with_directory("/test_input/secrets", context.secrets_dir)
+        .with_mounted_directory("/test_input", context.get_connector_dir())
+    )
+    cat_container = (
+        with_mounted_connector_secrets(context, cat_container, "/test_input/secrets")
+        .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
+        .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
+    return cat_container
 
 
 def with_gradle(
@@ -470,6 +475,8 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+    return image_sha
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -850,3 +857,9 @@ def with_crane(
         )
 
     return base_container
+
+
+def with_mounted_connector_secrets(context: PipelineContext, container: Container, secret_directory_path="secrets") -> Container:
+    for secret_file_name, secret in context.connector_secrets.items():
+        container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+    return container

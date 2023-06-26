@@ -7,12 +7,12 @@
 from typing import List
 
 import asyncer
-from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.contexts import ConnectorContext
+from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import Container
@@ -83,7 +83,7 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        connector_under_test_with_secrets = connector_under_test.with_directory("secrets", self.context.secrets_dir)
+        connector_under_test_with_secrets = environments.with_mounted_connector_secrets(self.context, connector_under_test)
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
 
@@ -102,9 +102,9 @@ class IntegrationTests(PytestStep):
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
         connector_under_test = environments.with_bound_docker_host(self.context, connector_under_test)
-        connector_under_test_with_secrets = connector_under_test.with_directory("secrets", self.context.secrets_dir)
+        connector_under_test = environments.with_mounted_connector_secrets(self.context, connector_under_test)
 
-        return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
+        return await self._run_tests_in_directory(connector_under_test, "integration_tests")
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
@@ -129,9 +129,10 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
     connector_container = connector_package_install_results.output_artifact
 
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    context.connector_secrets = await secrets.get_connector_secrets(context)
 
     unit_test_results = await UnitTests(context).run(connector_container)
+
     if unit_test_results.status is StepStatus.FAILURE:
         return step_results + [unit_test_results]
     step_results.append(unit_test_results)
