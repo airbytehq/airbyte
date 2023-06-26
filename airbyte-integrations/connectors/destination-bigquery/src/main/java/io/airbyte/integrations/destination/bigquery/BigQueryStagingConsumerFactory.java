@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.destination.bigquery.BigQueryRecordConsumer.OVERWRITE_TABLE_SUFFIX;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
@@ -25,18 +27,14 @@ import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.*;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
-import static io.airbyte.integrations.destination.bigquery.BigQueryRecordConsumer.OVERWRITE_TABLE_SUFFIX;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class mimics the same functionality as
@@ -141,7 +139,8 @@ public class BigQueryStagingConsumerFactory {
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
           final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : stream.getNamespace();
-          final var targetTableName = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
+          final var targetTableName =
+              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
@@ -255,7 +254,8 @@ public class BigQueryStagingConsumerFactory {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog: %s.\nKeys: %s\ncatalog: %s", pair, writeConfigs.keySet(), Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream that was not in the catalog: %s.\nKeys: %s\ncatalog: %s", pair,
+                writeConfigs.keySet(), Jsons.serialize(catalog)));
       }
 
       final BigQueryWriteConfig writeConfig = writeConfigs.get(pair);
