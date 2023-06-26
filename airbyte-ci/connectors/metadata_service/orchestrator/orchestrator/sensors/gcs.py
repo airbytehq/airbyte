@@ -3,10 +3,10 @@ from dagster import (
     RunRequest,
     SkipReason,
     SensorDefinition,
+    SensorResult,
     SensorEvaluationContext,
     build_resources,
     DefaultSensorStatus,
-    SensorResult,
 )
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
@@ -65,7 +65,7 @@ def new_gcs_blobs_partition_sensor(
     TODO
     """
 
-    sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
+    sensor_name = f"{job.name}_on_new_part_{gcs_blobs_resource_key}"
 
     @sensor(
         name=sensor_name,
@@ -78,8 +78,6 @@ def new_gcs_blobs_partition_sensor(
 
         with build_resources(resources_def) as resources:
             context.log.info(f"Got resources for {sensor_name}")
-
-            context.log.info(f"Old etag cursor: {context.cursor}")
 
             gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
 

@@ -17,7 +17,7 @@ from orchestrator.assets import (
     metadata,
 )
 
-from orchestrator.jobs.registry import generate_registry_reports, generate_registry
+from orchestrator.jobs.registry import generate_registry_reports, generate_registry, generate_registry_entry
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor, new_gcs_blobs_partition_sensor
@@ -107,7 +107,7 @@ SENSORS = [
         interval=(1 * 60 * 60),
     ),
     new_gcs_blobs_partition_sensor(
-        job=generate_registry,
+        job=generate_registry_entry,
         resources_def=RESOURCES,
         partitions_def=registry_entry.metadata_partitions_def,
         gcs_blobs_resource_key="latest_metadata_file_blobs",
