@@ -96,6 +96,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 3.0.0   | 2022-06-23 | [27684](https://github.com/airbytehq/airbyte/pull/27684)                                                              | Stream cursor is now `updated_at` & remove `records_per_sync` option                                            |
 | 2.1.0   | 2022-05-08 | [25903](https://github.com/airbytehq/airbyte/pull/25903)                                                              | Add user.address (object)                                                                                       |
 | 2.0.3   | 2022-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
 | 2.0.2   | 2022-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
