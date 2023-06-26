@@ -70,6 +70,8 @@ class PipelineContext:
         pull_request: PullRequest = None,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -105,8 +107,11 @@ class PipelineContext:
         self.dockerd_service = None
         self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
         self.ci_report_bucket = ci_report_bucket
+        self.ci_git_user = ci_git_user
+        self.ci_github_access_token = ci_github_access_token
         self.started_at = None
         self.stopped_at = None
+        self.secrets_to_mask = []
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -142,6 +147,10 @@ class PipelineContext:
         return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
     @property
+    def ci_github_access_token_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
+
+    @property
     def github_commit_status(self) -> dict:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
         return {
@@ -162,11 +171,7 @@ class PipelineContext:
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
-        If running in the CI:
-        The directory is extracted from the git branch.
-
-        If running locally:
-        The directory is extracted from your host file system.
+        The directory is extracted from the host file system.
         A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
 
         Args:
@@ -258,7 +263,6 @@ class PipelineContext:
             self.report = Report(self, steps_results=[])
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
@@ -284,6 +288,8 @@ class ConnectorContext(PipelineContext):
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -291,6 +297,7 @@ class ConnectorContext(PipelineContext):
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
+        should_save_report: bool = True,
     ):
         """Initialize a connector context.
 
@@ -320,6 +327,7 @@ class ConnectorContext(PipelineContext):
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
+        self.should_save_report = should_save_report
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -334,6 +342,8 @@ class ConnectorContext(PipelineContext):
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
             ci_gcs_credentials=ci_gcs_credentials,
+            ci_git_user=ci_git_user,
+            ci_github_access_token=ci_github_access_token,
         )
 
     @property
@@ -417,9 +427,9 @@ class ConnectorContext(PipelineContext):
             await secrets.upload(self)
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
-        await self.report.save()
+        if self.should_save_report:
+            await self.report.save()
 
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()
@@ -487,6 +497,7 @@ class PublishConnectorContext(ConnectorContext):
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
+            should_save_report=True,
         )
 
     @property

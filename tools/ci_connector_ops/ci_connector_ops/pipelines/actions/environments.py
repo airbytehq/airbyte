@@ -18,6 +18,7 @@ from ci_connector_ops.pipelines.consts import (
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     DEFAULT_PYTHON_EXCLUDE,
+    LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
@@ -67,8 +68,30 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     """
     python_environment: Container = with_python_base(context)
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
+    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
+
+    return (
+        python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
+        .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
+        .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
+    )
+
+
+def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Container:
+    return (
+        dagger_client.container()
+        .from_("alpine:latest")
+        .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
+        .with_exec(["apk", "update"])
+        .with_exec(["apk", "add", "git", "tar", "wget"])
+        .with_workdir("/ghcli")
+        .with_exec(["wget", "https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz", "-O", "ghcli.tar.gz"])
+        .with_exec(["tar", "--strip-components=1", "-xf", "ghcli.tar.gz"])
+        .with_exec(["rm", "ghcli.tar.gz"])
+        .with_exec(["cp", "bin/gh", "/usr/local/bin/gh"])
+        .with_exec(["git", "config", "--global", "user.email", f"{ci_git_user}@users.noreply.github.com"])
+        .with_exec(["git", "config", "--global", "user.name", ci_git_user])
+        .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
     )
 
 
@@ -398,11 +421,12 @@ def with_gradle(
         "buildSrc",
         "tools/bin/build_image.sh",
         "tools/lib/lib.sh",
+        "tools/gradle/codestyle",
+        "pyproject.toml",
     ]
 
     if sources_to_include:
         include += sources_to_include
-
     gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
     gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
@@ -410,7 +434,7 @@ def with_gradle(
         context.dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
         .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_env_variable("GRADLE_HOME", "/root/.gradle")
@@ -442,12 +466,10 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
-    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
-        context.logger.info(docker_tag_output)
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -631,6 +653,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     return (
         with_integration_base_java(context, build_platform)
         .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        .with_exec(["yum", "clean", "all"])
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])

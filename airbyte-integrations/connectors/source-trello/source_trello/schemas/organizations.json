@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -195,6 +195,9 @@
       "type": ["null", "string"]
     },
     "newLicenseInviteRestrict": {
+      "type": ["null", "string"]
+    },
+    "newLicenseInviteRestrictUrl": {
       "type": ["null", "string"]
     }
   }

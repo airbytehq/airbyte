@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg
@@ -14,7 +14,6 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 0.4.2 
     oss:
       enabled: true
   releaseStage: generally_available
