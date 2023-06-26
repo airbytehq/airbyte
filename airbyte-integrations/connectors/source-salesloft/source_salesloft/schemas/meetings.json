@@ -174,7 +174,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
-          "email_address": ["null", "integer"]
+          "email_address": ["null", "string"]
         }
       }
     },
@@ -183,7 +183,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
-          "email_address": ["null", "integer"]
+          "email_address": ["null", "string"]
         }
       }
     }
