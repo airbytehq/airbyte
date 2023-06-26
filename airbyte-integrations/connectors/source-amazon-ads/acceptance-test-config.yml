@@ -25,6 +25,10 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+        ignored_fields:
+          sponsored_product_campaigns:
+            - name: dailyBudget
+              bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl

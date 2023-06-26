@@ -75,7 +75,7 @@ class VersionCheck(Step, ABC):
 
 
 class VersionIncrementCheck(VersionCheck):
-    title = "Connector version increment check."
+    title = "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
         METADATA_FILE_NAME,
@@ -110,7 +110,7 @@ class VersionIncrementCheck(VersionCheck):
 
 
 class VersionFollowsSemverCheck(VersionCheck):
-    title = "Connector version semver check."
+    title = "Connector version semver check"
 
     @property
     def failure_message(self) -> str:
