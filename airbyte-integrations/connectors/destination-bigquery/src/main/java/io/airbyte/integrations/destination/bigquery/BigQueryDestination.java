@@ -7,7 +7,11 @@ package io.airbyte.integrations.destination.bigquery;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
@@ -42,14 +46,13 @@ import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.protocol.models.v0.*;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -57,6 +60,17 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
@@ -263,7 +277,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      putStreamIntoUploaderMapWithRawNamespaceOverride(stream, uploaderConfig, uploaderMap);
+      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
     }
     return uploaderMap;
   }
@@ -271,20 +285,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
                                           final UploaderConfig uploaderConfig,
                                           final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
-      throws IOException {
-    uploaderMap.put(
-        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
-        BigQueryUploaderFactory.getUploader(uploaderConfig));
-  }
-
-  /**
-   * This is a duplicate of {@link #putStreamIntoUploaderMap(AirbyteStream, UploaderConfig, Map)}. It
-   * would be _incredibly_ painful to refactor that method, but for 1s1t we need a method which
-   * preserves the original namespace but also allows us to override the raw namespace.
-   */
-  protected void putStreamIntoUploaderMapWithRawNamespaceOverride(final AirbyteStream stream,
-                                                                  final UploaderConfig uploaderConfig,
-                                                                  final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
