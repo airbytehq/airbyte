@@ -111,6 +111,14 @@ class SourceFacebookMarketing(AbstractSource):
         )
         streams = [
             AdAccounts(api=api),
+            Campaigns(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
             AdSets(
                 api=api,
                 start_date=config.start_date,
@@ -153,14 +161,6 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDemographicsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             AdsInsightsDemographicsDMARegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             AdsInsightsDemographicsGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            Campaigns(
-                api=api,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                include_deleted=config.include_deleted,
-                page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
-            ),
             CustomConversions(
                 api=api,
                 include_deleted=config.include_deleted,

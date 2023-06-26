@@ -50,6 +50,9 @@
     "id": {
       "type": ["null", "string"]
     },
+    "is_skadnetwork_attribution": {
+      "type": ["null", "boolean"]
+    },
     "issues_info": {
       "type": ["null", "array"],
       "items": {
