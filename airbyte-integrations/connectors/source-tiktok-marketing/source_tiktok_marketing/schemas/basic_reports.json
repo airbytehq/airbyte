@@ -164,6 +164,15 @@
         },
         "total_pageview": {
           "type": ["null", "string"]
+        },
+        "complete_payment": {
+          "type": ["null", "string"]
+        },
+        "value_per_complete_payment": {
+          "type": ["null", "string"]
+        },
+        "total_complete_payment_rate": {
+          "type": ["null", "string"]
         }
       }
     },

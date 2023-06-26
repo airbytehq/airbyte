@@ -57,6 +57,9 @@ NOT_AUDIENCE_METRICS = [
     "vta_purchase",
     "cta_purchase",
     "total_pageview",
+    "complete_payment",
+    "value_per_complete_payment",
+    "total_complete_payment_rate",
 ]
 
 T = TypeVar("T")
@@ -662,19 +665,24 @@ class BasicReports(IncrementalTiktokStream, ABC):
             )
 
         if self.report_level == ReportLevel.AD:
-            result.extend([
-                "adgroup_id", 
-                "ad_name", 
-                "ad_text",
-                "total_purchase_value",
-                "total_onsite_shopping_value",
-                "onsite_shopping",
-                "vta_purchase",
-                "vta_conversion",
-                "cta_purchase",
-                "cta_conversion",
-                "total_pageview",
-            ])
+            result.extend(
+                [
+                    "adgroup_id",
+                    "ad_name",
+                    "ad_text",
+                    "total_purchase_value",
+                    "total_onsite_shopping_value",
+                    "onsite_shopping",
+                    "vta_purchase",
+                    "vta_conversion",
+                    "cta_purchase",
+                    "cta_conversion",
+                    "total_pageview",
+                    "complete_payment",
+                    "value_per_complete_payment",
+                    "total_complete_payment_rate",
+                ]
+            )
 
         return result
 
