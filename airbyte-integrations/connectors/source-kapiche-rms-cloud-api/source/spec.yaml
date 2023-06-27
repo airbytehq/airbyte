@@ -27,3 +27,7 @@ connectionSpecification:
       description: Client password for RMS
       title: CLIENT PASSWORD
       type: string
+    start_date:
+      description: Start date for full-refresh. ISO format, e.g. 2011-11-04T00:05:23
+      title: START DATE
+      type: string
