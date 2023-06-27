@@ -25,5 +25,5 @@ COPY source_zendesk_support ./source_zendesk_support
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.6.0
+LABEL io.airbyte.version=0.7.0
 LABEL io.airbyte.name=airbyte/source-zendesk-support
