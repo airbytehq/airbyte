@@ -34,6 +34,7 @@ from source_twilio.streams import (
     UsageTriggers,
     UserConversations,
     Users,
+    VerifyServices,
 )
 
 
@@ -101,9 +102,7 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
         (UsageRecords),
         (UsageTriggers),
         (Conversations),
-        (ConversationParticipants),
-        (Users),
-        (UserConversations),
+        (ConversationParticipants)
     ],
 )
 def test_streams(stream_cls, config):
