@@ -101,20 +101,6 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
-    def list_files(self) -> List[RemoteFile]:
-        """
-        List all files that belong to the stream.
-        """
-        ...
-
-    @abstractmethod
-    def list_files_for_this_sync(self) -> Iterable[RemoteFile]:
-        """
-        Return the subset of this stream's files that will be read in the current sync.
-        """
-        ...
-
-    @abstractmethod
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         """
         Infer the schema for files in the stream.

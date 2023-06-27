@@ -48,8 +48,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified
-        files = sorted(self.list_files_for_this_sync(), key=lambda f: (f.last_modified, f.uri))
-        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f.last_modified)]
+        all_files = self._list_files()
+        files_to_read = self._cursor.get_files_to_sync(all_files, self.logger)
+        sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
+        slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
@@ -90,16 +92,15 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             self.ab_last_mod_col: {"type": "string"},
             self.ab_file_name_col: {"type": "string"},
         }
-        schema = self.get_raw_json_schema()
+        schema = self._get_raw_json_schema()
         schema["properties"] = {**extra_fields, **schema.get("properties", {})}
         return schema
 
-    @cache
-    def get_raw_json_schema(self) -> Mapping[str, Any]:
+    def _get_raw_json_schema(self) -> Mapping[str, Any]:
         if self.config.input_schema:
             type_mapping = self.config.input_schema
         else:
-            files = self.list_files()
+            files = self._list_files()
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if len(files) > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
@@ -109,23 +110,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return type_mapping
 
     @cache
-    def list_files(self) -> List[RemoteFile]:
+    def _list_files(self) -> List[RemoteFile]:
         """
         List all files that belong to the stream as defined by the stream's globs.
+        The output of this method is cached so we don't need to list the files more than once.
+        This means we won't pick up changes to the files during a sync.
         """
         return list(self._stream_reader.get_matching_files(self.config.globs))
-
-    def list_files_for_this_sync(self) -> Iterable[RemoteFile]:
-        """
-        Return the subset of this stream's files that will be read in the current sync.
-
-        Specifically:
-
-        - Take the output of `list_files`
-        - Remove files that have already been read in previous syncs, according to the state
-        """
-        all_files = self._stream_reader.get_matching_files(self.config.globs, self._cursor.get_start_time())
-        yield from self._cursor.get_files_to_sync(all_files, self.logger)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
