@@ -7,11 +7,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-mongodb-strict-encrypt
   githubIssueLabel: source-mongodb-v2
   icon: mongodb.svg
-  license: MIT
+  license: ELv2
   name: MongoDb
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
