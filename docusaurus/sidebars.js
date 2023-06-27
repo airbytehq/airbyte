@@ -371,15 +371,7 @@ const operatorGuide = {
         'operator-guides/transformation-and-normalization/transformations-with-airbyte',
       ],
     },
-    {
-      type: 'category',
-      label: 'Configuring Airbyte',
-      link: {
-        type: 'doc',
-        id: 'operator-guides/configuring-airbyte',
-      },
-      items: ['operator-guides/sentry-integration'],
-    },
+    'operator-guides/configuring-airbyte',
     'operator-guides/using-custom-connectors',
     'operator-guides/scaling-airbyte',
     'operator-guides/configuring-sync-notifications',
@@ -498,6 +490,19 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        /*
+        {
+              type: 'category',
+              label: 'May 2023',
+              link: {
+                  type: 'doc',
+                  id: 'release_notes/may_2023',
+              },
+              items: [
+                'release_notes/upgrading_to_destinations_v2'
+              ],
+        },
+        */
         'release_notes/may_2023',
         'release_notes/april_2023',
         'release_notes/march_2023',
