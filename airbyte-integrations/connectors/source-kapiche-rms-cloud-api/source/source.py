@@ -139,24 +139,20 @@ class RmsCloudApiKapicheSource(Source):
                 "Facility Rating": {"type": "number"},
                 "Site Rating": {"type": "number"},
                 "Value Rating": {"type": "number"},
-                # "Adults": {"type": "integer"},
-                # "Children": {"type": "integer"},
-                # "Infants": {"type": "integer"},
-                "Booking Source": {"type": "string"},
+                "Booking Source": {"type": ["string", "null"]},
+
+                "Adults": {"type": ["integer", "null"]},
+                "Children": {"type": ["integer", "null"]},
+                "Infants": {"type": ["integer", "null"]},
+                "loyaltyNo": {"type": "boolean"},
+                "loyaltyMembershipType": {"type": ["string", "null"]},
+                "postcode": {"type": ["string", "null"]},
+                "totalRate": {"type": ["number", "null"]},
+                # Nights
+                # DateMade_medium
             },
         }
 
-        """
-        Extra:
-            LoyaltyNo – currently this is a unique number but I just want it to be a yes/no. Yes if there is a number, no if there’s not. It’s to know if a guest is a loyalty member or not.
-            TotalGrand – the total cost of the booking.
-            Nights – the number of nights the booking was for.
-            DateMade_medium – the date the booking was made
-            Adults – the number of adults on the booking
-            Children – the number of kids
-            Infants – the number of infants
-            Postcode
-        """
         streams.append(
             AirbyteStream(
                 name=stream_name,
@@ -194,6 +190,7 @@ class RmsCloudApiKapicheSource(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
         stream_name = "RMSNPS"  # Example
+        state_key = "start_date"
 
         if not self.auth_token:
             # This is to handle calling read from the CLI
@@ -203,13 +200,21 @@ class RmsCloudApiKapicheSource(Source):
 
         logger.info(f"catalog: {catalog}")
         logger.info(f"state: {state}")
-        state["last_date"] = 123
+
+        # Obtain the start date from the state
+        if start_date_str := state.get(state_key):
+            start_date = datetime.fromisoformat(start_date_str)
+        else:
+            # Fallback: start from the beginning as defined in the config
+            if start_date_str := config.get(state_key):
+                start_date = datetime.fromisoformat(start_date_str)
+            else:
+                start_date = datetime.now() - timedelta(weeks=52)
 
         properties = self._fetch_properties(logger)
         categories = self._fetch_categories(logger, properties)
 
-        # TODO: add date_from here
-        gen = self._fetch_nps(logger, properties, categories)
+        gen = self._fetch_nps(logger, properties, categories, start_date)
 
         for i, record in enumerate(gen):
             yield AirbyteMessage(
@@ -221,7 +226,7 @@ class RmsCloudApiKapicheSource(Source):
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
-            state["last_date"] = record["Departure Date"]
+            state[state_key] = record["Departure Date"]
 
             if i % 10 == 0:
                 # Emit state record every 10th record.
@@ -295,6 +300,7 @@ class RmsCloudApiKapicheSource(Source):
         logger: logging.Logger,
         properties: dict[int, dict],
         categories: dict[int, dict],
+        start_date: datetime,
     ) -> Iterable[dict[str, Any]]:
         """
         Fetch the responses on a per-property basis
@@ -498,7 +504,7 @@ class RmsCloudApiKapicheSource(Source):
             {
                 "postcode": guest.get("postcode"),
                 "loyaltyNo": bool(guest.get("loyaltyNo", "")),
-                "loyaltyMembershipType": guest.get("loyaltyMembershipType", ""),
+                "loyaltyMembershipType": guest.get("loyaltyMembershipType"),
             }
         )
 
