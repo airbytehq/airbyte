@@ -9,11 +9,11 @@ data:
   dockerRepository: airbyte/source-google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
-  license: MIT
+  license: Elv2
   name: Google Sheets
   registries:
     cloud:
-      dockerImageTag: 0.2.21
+      dockerImageTag: 0.3.0
       enabled: true
     oss:
       enabled: true
