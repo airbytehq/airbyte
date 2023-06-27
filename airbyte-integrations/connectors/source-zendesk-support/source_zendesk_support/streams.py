@@ -343,13 +343,14 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             if original_exception:
                 raise original_exception
             raise DefaultBackoffException(request=request, response=response)
-        sleep_time = self.backoff_time(response)
-        if response is not None and finished_at and sleep_time:
-            current_retry_at = finished_at + timedelta(seconds=sleep_time)
-            global retry_at
-            if not retry_at or (retry_at < current_retry_at):
-                retry_at = current_retry_at
-            self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
+        if response is not None:
+            sleep_time = self.backoff_time(response)
+            if finished_at and sleep_time:
+                current_retry_at = finished_at + timedelta(seconds=sleep_time)
+                global retry_at
+                if not retry_at or (retry_at < current_retry_at):
+                    retry_at = current_retry_at
+                self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
         self.future_requests.append(
             {
                 "future": self._send_request(request, request_kwargs),
