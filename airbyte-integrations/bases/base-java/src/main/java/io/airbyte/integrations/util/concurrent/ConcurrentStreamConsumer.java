@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -24,6 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * This consumer will capture any raised exceptions during execution of each stream. Anu exceptions
  * are stored and made available by calling the {@link #getException()} method.
  */
-public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<AirbyteMessage>>, AutoCloseable {
+public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseableIterator<AirbyteMessage>>>, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentStreamConsumer.class);
 
@@ -53,16 +53,17 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
 
   private final ExecutorService executorService;
   private final List<Exception> exceptions;
-  private final Collection<CompletableFuture> futures;
+  private final Integer parallelism;
   private final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer;
-  private final Optional<Consumer<AirbyteStreamStatusHolder>> streamStatusEmitter = Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace);
+  private final Optional<Consumer<AirbyteStreamStatusHolder>> streamStatusEmitter =
+      Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace);
 
   /**
    * Constructs a new {@link ConcurrentStreamConsumer} that will use the provided stream consumer to
-   * execute each stream submitted to the {@link #accept(AutoCloseableIterator)} method of this
-   * consumer. Streams submitted to the {@link #accept(AutoCloseableIterator)} method will be
-   * converted to a {@link Runnable} and executed on an {@link ExecutorService} configured by this
-   * consumer to ensure concurrent execution of each stream.
+   * execute each stream submitted to the {@link #accept(Collection<AutoCloseableIterator>)} method of
+   * this consumer. Streams submitted to the {@link #accept(Collection<AutoCloseableIterator>)} method
+   * will be converted to a {@link Runnable} and executed on an {@link ExecutorService} configured by
+   * this consumer to ensure concurrent execution of each stream.
    *
    * @param streamConsumer The {@link Consumer} that accepts streams as an
    *        {@link AutoCloseableIterator}.
@@ -70,21 +71,32 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
    *        determine the appropriate number of threads to execute concurrently.
    */
   public ConcurrentStreamConsumer(final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer, final Integer requestedParallelism) {
-    this.executorService = createExecutorService(requestedParallelism);
+    this.parallelism = computeParallelism(requestedParallelism);
+    this.executorService = createExecutorService(parallelism);
     this.exceptions = new ArrayList<>();
-    this.futures = new ArrayList<>();
     this.streamConsumer = streamConsumer;
   }
 
   @Override
-  public void accept(final AutoCloseableIterator<AirbyteMessage> stream) {
+  public void accept(final Collection<AutoCloseableIterator<AirbyteMessage>> streams) {
     /*
-     * Submit the provided stream to the underlying executor service for concurrent execution. This
-     * thread will track the stream's status as well as consuming all messages produced from the stream,
-     * passing them to the provided message consumer for further processing. Any exceptions raised
-     * within the thread will be captured and exposed to the caller.
+     * Submit the provided streams to the underlying executor service for concurrent execution. This
+     * thread will track the status of each stream as well as consuming all messages produced from each
+     * stream, passing them to the provided message consumer for further processing. Any exceptions
+     * raised within the thread will be captured and exposed to the caller.
      */
-    futures.add(CompletableFuture.runAsync(new ConcurrentStreamRunnable(stream, this), executorService));
+    final Collection<CompletableFuture<Void>> futures = streams.stream()
+        .map(stream -> new ConcurrentStreamRunnable(stream, this))
+        .map(runnable -> CompletableFuture.runAsync(runnable, executorService))
+        .collect(Collectors.toList());
+
+    /*
+     * Wait for the submitted streams to complete before returning. This uses the join() method to allow
+     * all streams to complete even if one or more encounters an exception.
+     */
+    LOGGER.debug("Waiting for all streams to complete....");
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
+    LOGGER.debug("Completed consuming from all streams.");
   }
 
   /**
@@ -111,16 +123,13 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
   }
 
   /**
-   * Waits for each submitted stream to complete execution.
+   * Returns the parallelism value that will be used by this consumer to execute the consumption of
+   * data from the provided streams in parallel.
    *
-   * @throws ExecutionException if unable to wait for the execution to complete.
-   * @throws InterruptedException if the wait for the exectuion to complete is interrupted.
+   * @return The parallelism value of this consumer.
    */
-  public void waitFor() throws ExecutionException, InterruptedException {
-    // Wait for all threads to run before closing
-    if (!futures.isEmpty()) {
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get();
-    }
+  public Integer getParallelism() {
+    return computeParallelism(parallelism);
   }
 
   /**
@@ -152,12 +161,10 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
    * Creates the {@link ExecutorService} that will be used by the consumer to consume from the
    * provided streams in parallel.
    *
-   * @param requestedParallelism The requested amount of parallelism that will be used as a hint to
-   *        determine the appropriate number of threads to execute concurrently.
+   * @param nThreads The number of threads to execute concurrently.
    * @return The configured {@link ExecutorService}.
    */
-  private ExecutorService createExecutorService(final Integer requestedParallelism) {
-    final Integer nThreads = computeParallelism(requestedParallelism);
+  private ExecutorService createExecutorService(final Integer nThreads) {
     return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
         new ConcurrentStreamThreadFactory(), new AbortPolicy());
   }
@@ -175,7 +182,7 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
       StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
       stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
     } catch (final Exception e) {
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s));
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s, e));
       StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
       exceptions.add(e);
     }

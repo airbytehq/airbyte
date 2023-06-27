@@ -7,6 +7,7 @@ package io.airbyte.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -17,7 +18,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.integrations.util.concurrent.ConcurrentMessageConsumer;
 import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -79,7 +79,6 @@ public class IntegrationRunner {
   private final Source source;
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
-  private final ConcurrentMessageConsumer concurrentMessageConsumer;
 
   public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
@@ -103,7 +102,6 @@ public class IntegrationRunner {
     this.destination = destination;
     this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
-    concurrentMessageConsumer = new ConcurrentMessageConsumer();
 
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
@@ -121,7 +119,7 @@ public class IntegrationRunner {
   @Trace(operationName = "RUN_OPERATION")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
-    try (concurrentMessageConsumer) {
+    try {
       runInternal(parsed);
     } catch (final Exception e) {
       throw e;
@@ -228,19 +226,33 @@ public class IntegrationRunner {
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     messageIterator.forEachRemaining(recordCollector);
+    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
   private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
+
     try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
-      // Submit each stream for concurrent execution
-      streams.forEach(streamConsumer);
-      // Wait for the streams to complete before checking for exceptions
-      streamConsumer.waitFor();
+      /*
+       * Break the streams into partitions equal to the number of concurrent streams supported by the
+       * stream consumer.
+       */
+      final Integer partitionSize = streamConsumer.getParallelism();
+      final List<List<AutoCloseableIterator<AirbyteMessage>>> partitions = Lists.partition(streams.stream().toList(),
+          partitionSize);
+
+      // Submit each stream partition for concurrent execution
+      partitions.forEach(partition -> {
+        streamConsumer.accept(partition);
+      });
+
       // Check for any exceptions that were raised during the concurrent execution
       if (streamConsumer.getException().isPresent()) {
         throw streamConsumer.getException().get();
       }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to perform concurrent read.", e);
+      throw e;
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
           INTERRUPT_THREAD_DELAY_MINUTES,
@@ -265,10 +277,10 @@ public class IntegrationRunner {
   private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
     try {
       final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
-          concurrentMessageConsumer, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
+          outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
       produceMessages(stream, streamStatusTrackingRecordConsumer);
     } catch (final Exception e) {
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s));
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s, e));
       throw new RuntimeException(e);
     }
   }
