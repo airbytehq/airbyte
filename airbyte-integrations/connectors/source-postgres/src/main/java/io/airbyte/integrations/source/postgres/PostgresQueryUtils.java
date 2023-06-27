@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PostgresQueryUtils {
 
-  public static record TableBlockSize(Long tableSize, Long blockSize) { }
+  public record TableBlockSize(Long tableSize, Long blockSize) { }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQueryUtils.class);
 
@@ -37,14 +37,14 @@ public class PostgresQueryUtils {
         SELECT
           (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
         AND
-          (EXISTS (SELECT from \"%s\".\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+          (EXISTS (SELECT from "%s"."%s" where "%s" IS NULL LIMIT 1)) AS %s
       """;
   public static final String NULL_CURSOR_VALUE_NO_SCHEMA_QUERY =
       """
       SELECT
         (EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
       AND
-        (EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+        (EXISTS (SELECT from "%s" where "%s" IS NULL LIMIT 1)) AS %s
       """;
 
   public static final String TABLE_ESTIMATE_QUERY =
@@ -133,7 +133,7 @@ public class PostgresQueryUtils {
       final long relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
       LOGGER.info("Relation filenode is for stream {} is {}", fullTableName, relationFilenode);
       return relationFilenode;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
@@ -157,7 +157,7 @@ public class PostgresQueryUtils {
               jsonNodes.get(0).get("phase"));
           streamsUnderVacuuming.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
         LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
       }
@@ -179,26 +179,23 @@ public class PostgresQueryUtils {
 
   }
   public static TableBlockSize getTableBlockSizeForStream(final JdbcDatabase database,
-    final AirbyteStreamNameNamespacePair stream,
-    final String quoteString) {
-  try {
-    final String streamName = stream.getName();
-    final String schemaName = stream.getNamespace();
-    final String fullTableName =
-        getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
-    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
-        conn -> conn.prepareStatement(CTID_TABLE_BLOCK_SIZE.formatted(fullTableName)).executeQuery(),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-    Preconditions.checkState(jsonNodes.size() == 1);
-    final long relationSize = jsonNodes.get(0).get("pg_relation_size").asLong();
-    final long blockSize = jsonNodes.get(0).get("current_setting").asLong();
-    LOGGER.info("Stream {} relation size is {}. block size {}", fullTableName, relationSize, blockSize);
-    return new TableBlockSize(relationSize, blockSize);
-  } catch (SQLException e) {
-    throw new RuntimeException(e);
+      final AirbyteStreamNameNamespacePair stream,
+      final String quoteString) {
+    try {
+      final String streamName = stream.getName();
+      final String schemaName = stream.getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+          conn -> conn.prepareStatement(CTID_TABLE_BLOCK_SIZE.formatted(fullTableName)).executeQuery(),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+      final long relationSize = jsonNodes.get(0).get("pg_relation_size").asLong();
+      final long blockSize = jsonNodes.get(0).get("current_setting").asLong();
+      LOGGER.info("Stream {} relation size is {}. block size {}", fullTableName, relationSize, blockSize);
+      return new TableBlockSize(relationSize, blockSize);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
-}
-
-
-
 }
