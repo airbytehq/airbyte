@@ -49,13 +49,15 @@ def chunk_date_range(
     end_date: str = None,
     days_of_data_storage: int = None,
     range_days: int = None,
+    time_zone=None,
 ) -> Iterable[Optional[MutableMapping[str, any]]]:
     """
-    Passing optional parameter end_date for testing
-    Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
-    The return value is a list of dicts {'date': str} which can be used directly with the Slack API
+    Returns `start_date` and `end_date` for the given stream_slice.
+    If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
+    After 2 hours next page tokens will be expired, finally resulting in page token expired error
+    Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
-    yesterday = pendulum.yesterday()
+    yesterday = pendulum.yesterday(tz=time_zone)
     end_date = min(pendulum.parse(end_date), yesterday) if end_date else yesterday
     start_date = pendulum.parse(start_date)
 
@@ -173,6 +175,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 conversion_window=self.conversion_window_days,
                 days_of_data_storage=self.days_of_data_storage,
                 range_days=self.range_days,
+                time_zone=customer.time_zone,
             ):
                 if chunk:
                     chunk["customer_id"] = customer.id
