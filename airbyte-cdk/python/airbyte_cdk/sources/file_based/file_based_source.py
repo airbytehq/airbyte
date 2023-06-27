@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
@@ -76,15 +77,20 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
-            return [
-                DefaultFileBasedStream(
-                    config=FileBasedStreamConfig(**stream),
-                    stream_reader=self.stream_reader,
-                    availability_strategy=self.availability_strategy,
-                    discovery_policy=self.discovery_policy,
-                    parsers=self.parsers,
+            streams = []
+            for stream in config["streams"]:
+                stream_config = FileBasedStreamConfig(**stream)
+                streams.append(
+                    DefaultFileBasedStream(
+                        config=FileBasedStreamConfig(**stream),
+                        stream_reader=self.stream_reader,
+                        availability_strategy=self.availability_strategy,
+                        discovery_policy=self.discovery_policy,
+                        parsers=self.parsers,
+                        cursor=DefaultFileBasedCursor(stream_config.max_history_size, stream_config.days_to_sync_if_history_is_full),
+                    )
                 )
-                for stream in config["streams"]
-            ]
+            return streams
+
         except ValidationError as exc:
             raise ConfigValidationError("Error creating stream config object.") from exc
