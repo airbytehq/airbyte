@@ -10,7 +10,6 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from source_square.components import SquareSubstreamIncrementalSync
