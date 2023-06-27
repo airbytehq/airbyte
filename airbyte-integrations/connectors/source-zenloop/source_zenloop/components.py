@@ -6,7 +6,6 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
