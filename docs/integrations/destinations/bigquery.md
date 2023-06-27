@@ -135,7 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| 1.5.0   | 2023-06-27 | [\#xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | License Update: Elv2                                                                                                     |
+| 1.5.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                     |
 | 1.4.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                                        |
 | 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
 | 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |

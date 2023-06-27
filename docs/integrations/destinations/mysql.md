@@ -116,7 +116,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 0.2.0   | 2023-06-27 | [\#xxx](https://github.com/airbytehq/airbyte/pull/xxx)   | License Update: Elv2                                                                                |
+| 0.2.0   | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.21  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                      |
 | 0.1.20  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                              |
 | 0.1.19  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
