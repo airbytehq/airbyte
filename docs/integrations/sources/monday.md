@@ -48,11 +48,11 @@ Several output streams are available from this source:
 * [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
 
 Important Notes:
-* The `Columns` are available from the `Boards` stream, by syncing the `Boards` stream you have the possability to get the `Columns` for each `Board` synced in the database
-The typical name of the table depends on the `destination` you use like `boards.columns`, for instance or similar.
+* `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
+The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
 
-* The `Column Values` are  available from the `Items` stream, by syncing  the `Items` stream you have the possability to get the `Column Values` for each `Item` (row) of the board.
-The typical name of the table depends on the `destination` you use like `items.column_values`, for instance or similar.
+* `Column Values` are  available from the `Items` stream. By syncing  the `Items` stream you will get the `Column Values` for each `Item` (row) of the board.
+The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
 
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
