@@ -192,6 +192,17 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
+      - run: pip install mypy  # you can pin your preferred version
+      - name: Get Python changed files
+        id: changed-py-files
+        uses: tj-actions/changed-files@v23
+        with:
+          files: |
+            *.py
+            **/*.py
+      - name: Run if any of the listed files above is changed
+        if: steps.changed-py-files.outputs.any_changed == 'true'
+        run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --ignore-missing-imports
 
       - name: Format
         uses: Wandalen/wretry.action@v1.0.42
