@@ -71,6 +71,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 0.4.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | update Activity stream     |
 | 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0          |
 | 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.           |
 | 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
