@@ -239,29 +239,50 @@ def get_last_commit_message() -> str:
     return git.Repo().head.commit.message
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
-    """Create a mapping of modified connectors (key) and modified files (value).
-    As we call connector.get_local_dependency_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    The get_local_dependency_paths function currently computes dependencies for Java connectors only.
-    It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
-    Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
-    We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
-    """
+def _is_ignored_file(file_path: Union[str, Path]) -> bool:
+    """Check if the provided file has an ignored extension."""
+    ignored_file_extensions = [".md"]
+    return Path(file_path).suffix in ignored_file_extensions
+
+def _file_path_starts_with(file_parts: tuple, connector_dependency_parts: tuple) -> bool:
+    """Check if the file path starts with the connector dependency path."""
+    return file_parts[:len(connector_dependency_parts)] == connector_dependency_parts
+
+def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
+    """Find all connectors whose dependencies were modified."""
     modified_connectors = {}
-    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
+    for connector, connector_dependencies in all_dependencies:
+        for connector_dependency in connector_dependencies:
+            connector_dependency_parts = connector_dependency.parts
+            file_parts = Path(file).parts
+
+            if _file_path_starts_with(file_parts, connector_dependency_parts):
+                # Add the connector to the modified connectors
+                modified_connectors.setdefault(connector, [])
+                connector_directory_parts = Path(connector.code_directory).parts
+
+                # If the file is in the connector directory, add it to the modified files
+                if _file_path_starts_with(file_parts, connector_directory_parts):
+                    modified_connectors[connector].append(file)
+                else:
+                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file}'.")
+
+    return modified_connectors
+
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
+    """Create a mapping of modified connectors (key) and modified files (value)."""
+    all_connector_dependencies = [
+        (connector, connector.get_local_dependency_paths())
+        for connector in get_all_released_connectors()
+    ]
+
+    # Ignore files with certain extensions
+    modified_files = [file for file in modified_files if not _is_ignored_file(file)]
+
+    modified_connectors = {}
     for modified_file in modified_files:
-        if str(modified_file).endswith(".md"):
-            continue
-        for connector, connector_dependencies in all_connector_dependencies:
-            for connector_dependency in connector_dependencies:
-                connector_dependency_parts = connector_dependency.parts
-                modified_file_parts = Path(modified_file).parts
-                # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
-                if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
-                    modified_connectors.setdefault(connector, [])
-                    connector_directory_parts = Path(connector.code_directory).parts
-                    if modified_file_parts[: len(connector_directory_parts)] == connector_directory_parts:
-                        modified_connectors[connector].append(modified_file)
+        modified_connectors.update(_find_modified_connectors(modified_file, all_connector_dependencies))
+
     return modified_connectors
 
 
