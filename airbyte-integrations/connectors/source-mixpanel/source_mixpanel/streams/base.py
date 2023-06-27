@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import random
+import time
 from abc import ABC
 from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -94,18 +94,18 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
+        if self.reqs_per_hour_limit > 0:
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
+            self.logger.info("Sleep for %s seconds to match API limitations", 3600 / self.reqs_per_hour_limit)
+            time.sleep(3600 / self.reqs_per_hour_limit)
+
     def backoff_time(self, response: requests.Response) -> float:
         """
         Some API endpoints do not return "Retry-After" header.
-        https://developer.mixpanel.com/reference/import-events#rate-limits (exponential backoff)
         """
 
-        retry_after = response.headers.get("Retry-After")
-        if retry_after:
-            return float(retry_after)
-
-        self.retries += 1
-        return min(random.randint(1, 5) * 2 ^ self.retries, 60)
+        return int(response.headers.get("Retry-After", 60))
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 402:
