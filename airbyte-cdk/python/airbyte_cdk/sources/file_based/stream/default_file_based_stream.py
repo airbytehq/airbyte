@@ -77,7 +77,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
         """
         List all files that belong to the stream as defined by the stream's globs.
         """
-        return list(self._stream_reader.list_matching_files(self.config.globs))
+        return list(self._stream_reader.get_matching_files(self.config.globs))
 
     def list_files_for_this_sync(self, stream_slice: Optional[StreamSlice]) -> Iterable[RemoteFile]:
         """
@@ -89,7 +89,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
         - If `stream_slice.start` is non-None then remove all files with last_modified
           date before `start`
         """
-        return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_slice(stream_slice))
+        yield from self._stream_reader.get_matching_files(self.config.globs, self._get_datetime_from_stream_slice(stream_slice))
 
     def _get_datetime_from_stream_slice(self, stream_slice: Optional[StreamSlice]) -> Optional[datetime]:
         # TODO: implement me
