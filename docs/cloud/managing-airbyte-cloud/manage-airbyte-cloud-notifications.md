@@ -14,7 +14,7 @@ To set up Webhook notifications:
 3. Have a Slack Webhook ready if you plan to use Slack Webhook notifications. [Create an Incoming Webhook for Slack](https://api.slack.com/messaging/webhooks).
 
 4. Toggle type of events you are interested to receive notifications. 
-	1. If using slack webhook, please fill in your webhook address. For your convenience, we provide a 'test' function to send a test message to your slack channel so you can make sure everything has been connected.
+	1. If using slack webhooks, the webhook URL is required. For your convenience, we provide a 'test' function to send a test message to your slack channel so you can make sure it's working as expected.
 
 5. Click **Save changes**.
 
