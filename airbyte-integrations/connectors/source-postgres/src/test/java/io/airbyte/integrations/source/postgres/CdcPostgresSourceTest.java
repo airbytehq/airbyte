@@ -522,7 +522,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertExpectedStateMessages(stateAfterSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
 
     final Long replicationSlotAfterSecondSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
@@ -546,7 +546,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
-    assertExpectedStateMessages(stateAfterThirdBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterThirdBatch);
     final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
         dataFromThirdBatch);
 
@@ -571,7 +571,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(fourthBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
-    assertExpectedStateMessages(stateAfterFourthBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterFourthBatch);
     final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(
         dataFromFourthBatch);
 

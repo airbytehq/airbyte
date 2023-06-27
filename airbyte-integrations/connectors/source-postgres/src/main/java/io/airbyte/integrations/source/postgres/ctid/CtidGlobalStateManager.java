@@ -2,6 +2,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -10,6 +11,7 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,11 +31,23 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final CdcState cdcState;
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
-  public CtidGlobalStateManager(final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes, final JsonNode sharedState) {
-    super(filterOutExpiredFileNodes(pairToCtidStatus, fileNodes));
-    this.cdcState = new CdcState().withState(sharedState);
-    this.streamsThatHaveCompletedSnapshot = new HashSet<>();
+  public CtidGlobalStateManager(final CtidStreams ctidStreams,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes, final CdcState cdcState, final ConfiguredAirbyteCatalog catalog) {
+    super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodes));
+    this.cdcState = cdcState;
+    this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(ctidStreams, catalog);
+  }
+
+  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams, final ConfiguredAirbyteCatalog catalog) {
+    final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
+    catalog.getStreams().forEach(configuredAirbyteStream -> {
+      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream)) {
+        return;
+      }
+      streamsThatHaveCompletedSnapshot.add(
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+    });
+    return streamsThatHaveCompletedSnapshot;
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(
