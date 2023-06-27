@@ -47,7 +47,8 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
       return new UnsupportedOneOf(options);
     } else if (schema.hasNonNull("properties")) {
-      // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a struct.
+      // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a
+      // struct.
       // This is for backwards-compatibility with legacy normalization.
       return getStruct(schema);
     }
