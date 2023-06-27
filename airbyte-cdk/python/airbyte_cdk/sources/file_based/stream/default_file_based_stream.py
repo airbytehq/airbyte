@@ -109,9 +109,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             type_mapping = self.infer_schema(files)
         return type_mapping
 
+    @cache
     def _list_files(self) -> List[RemoteFile]:
         """
         List all files that belong to the stream as defined by the stream's globs.
+        The output of this method is cached so we don't need to list the files more than once.
+        This means we won't pick up changes to the files during a sync.
         """
         return list(self._stream_reader.get_matching_files(self.config.globs))
 
