@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -37,12 +38,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -125,47 +123,8 @@ public class PostgresCtidHandler {
     return iteratorList;
   }
 
-  public static class Ctid {
-    final long page;
-    final long tuple;
-
-     Ctid(final long page, final long tuple) {
-      this.page = page;
-      this.tuple = tuple;
-    }
-     Ctid(final String ctid) {
-      final Pattern p = Pattern.compile("\\d+");
-      final Matcher m = p.matcher(ctid);
-      if (!m.find()) {
-        throw new IllegalArgumentException("Invalid ctid format");
-      }
-        final String ctidPageStr = m.group();
-        this.page = Long.parseLong(ctidPageStr);
-
-      if (!m.find()) {
-        throw new IllegalArgumentException("Invalid ctid format");
-      }
-        final String ctidTupleStr = m.group();
-        this.tuple = Long.parseLong(ctidTupleStr);
-
-      Objects.requireNonNull(this.page);
-      Objects.requireNonNull(this.tuple);
-    }
-
-    @Override
-    public String toString() {
-      return "(%d,%d)".formatted(page, tuple);
-    }
-  }
-  public static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
-//    final Pattern p = Pattern.compile("\\d+");
-//    final Matcher m = p.matcher(startCtid);
-//    m.find();
-//    String ctidPageStr = m.group();
-//    Long ctidPage = Long.parseLong(ctidPageStr);
-//    m.find();
-//    String ctidTupleStr = m.group();
-
+  @VisibleForTesting
+  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound = 0;
@@ -176,11 +135,15 @@ public class PostgresCtidHandler {
     LOGGER.info("Theoretical last page {}", theoreticalLastPage);
     upperBound = lowerBound + eachStep;
 
-    chunks.add(Pair.of(new Ctid(lowerBound, startCtid.tuple), new Ctid(upperBound, 0)));
-    while (upperBound < theoreticalLastPage) {
-      lowerBound = upperBound;
-      upperBound += eachStep;
-      chunks.add(Pair.of(new Ctid(lowerBound, 0), upperBound > theoreticalLastPage ? null : new Ctid(upperBound, 0)));
+    if (upperBound > theoreticalLastPage) {
+      chunks.add(Pair.of(startCtid, null));
+    } else {
+      chunks.add(Pair.of(new Ctid(lowerBound, startCtid.tuple), new Ctid(upperBound, 0)));
+      while (upperBound < theoreticalLastPage) {
+        lowerBound = upperBound;
+        upperBound += eachStep;
+        chunks.add(Pair.of(new Ctid(lowerBound, 0), upperBound > theoreticalLastPage ? null : new Ctid(upperBound, 0)));
+      }
     }
     return chunks;
   }
