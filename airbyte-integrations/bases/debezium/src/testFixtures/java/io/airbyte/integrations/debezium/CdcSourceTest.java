@@ -727,7 +727,8 @@ public abstract class CdcSourceTest {
         randomTableSchema());
   }
 
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages, final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+                                                            final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(2, stateMessages.size());
     final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateMessages.get(0);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
