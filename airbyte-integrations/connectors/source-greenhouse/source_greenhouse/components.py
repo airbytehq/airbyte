@@ -80,7 +80,7 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
     parent_key: str
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        for parent_stream_slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None):
+        for parent_stream_slice in self.parent_stream.stream_slices():
             for parent_record in self.parent_stream.read_records(
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):
