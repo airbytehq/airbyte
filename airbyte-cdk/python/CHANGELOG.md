@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.43.2
+Connector builder module: serialize request body as string
+
 ## 0.43.1
 Fix availability check to handle HttpErrors which happen during slice extraction
 
