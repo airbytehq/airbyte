@@ -59,7 +59,7 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
-  private static final int QUERY_TARGET_SIZE_GB = 1; // TODO: find size
+  private static final int QUERY_TARGET_SIZE_GB = 1; // TODO: find optimal size
   public static final double MEGABYTE = Math.pow(1024, 2);
 
   public PostgresCtidHandler(final JsonNode config,
@@ -123,28 +123,40 @@ public class PostgresCtidHandler {
     return iteratorList;
   }
 
+  /**
+   * Builds a plan for subqueries that will return an approximate size of data.
+   * Using information about a table size and block (page) size.
+   *
+   * @param startCtid starting point
+   * @param relationSize table size
+   * @param blockSize page size
+   * @param chunkSizeGB required amount of data in each partition
+   * @return a list of ctid that can be used to generate queries.
+   */
   @VisibleForTesting
   static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
-    long upperBound = 0;
+    long upperBound;
     final double oneGigaPages = MEGABYTE * 1000 / blockSize;
     final long eachStep = (long)oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
-    LOGGER.info("Theoretical last page {}", theoreticalLastPage);
+    LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
     upperBound = lowerBound + eachStep;
 
     if (upperBound > theoreticalLastPage) {
       chunks.add(Pair.of(startCtid, null));
     } else {
-      chunks.add(Pair.of(new Ctid(lowerBound, startCtid.tuple), new Ctid(upperBound, 0)));
+      chunks.add(Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0)));
       while (upperBound < theoreticalLastPage) {
         lowerBound = upperBound;
         upperBound += eachStep;
-        chunks.add(Pair.of(new Ctid(lowerBound, 0), upperBound > theoreticalLastPage ? null : new Ctid(upperBound, 0)));
+        chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
       }
     }
+    // The last pair is (x,y) -> null to indicate an unbounded "WHERE ctid > (x,y)" query.
+    // The actual last page is approximated. The last subquery will go until the end of table.
     return chunks;
   }
 
@@ -161,21 +173,23 @@ public class PostgresCtidHandler {
 
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
 
-    final List<Pair<Ctid, Ctid>> chunks = ctidQueryPlan((currentCtidStatus == null) ? new Ctid (0,0) : new Ctid(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
-    final List<AutoCloseableIterator<RowDataWithCtid>> its = new ArrayList<>();
-    chunks.forEach(p -> {
-      its.add(AutoCloseableIterators.lazyIterator(() -> {
-        try {
-          final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-              connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
+    // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
+    // We are creating a list of lazy iterators each holding a subquery according to the plan.
+    // All subqueries are then composed in a single composite iterator.
+    // Because list consists of lazy iterators, the query is only executing when needed on after the other.
+    final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
+    final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
+    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<RowDataWithCtid> stream = database.unsafeQuery(
+            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
 
-          return AutoCloseableIterators.fromStream(stream, airbyteStream);
-        } catch (final SQLException e) {
-          throw new RuntimeException(e);
-        }
-      }, airbyteStream));
-    });
-    return AutoCloseableIterators.concatWithEagerClose(its);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }, airbyteStream)));
+    return AutoCloseableIterators.concatWithEagerClose(subQueriesIterators);
   }
 
   private PreparedStatement createCtidQueryStatement(
@@ -183,8 +197,7 @@ public class PostgresCtidHandler {
                                                      final List<String> columnNames,
                                                      final String schemaName,
                                                      final String tableName,
-                                                     final AirbyteStreamNameNamespacePair airbyteStream,
-                                                      final Ctid lowerBound, final Ctid upperBound) {
+      final Ctid lowerBound, final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
