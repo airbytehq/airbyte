@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*"
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
