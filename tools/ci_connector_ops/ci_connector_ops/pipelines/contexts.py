@@ -546,5 +546,5 @@ class PublishConnectorContext(ConnectorContext):
         if self.state is ContextState.SUCCESSFUL:
             message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!channel>"
+            message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message

@@ -49,5 +49,5 @@ RUN /bin/bash -c 'set -e && \
     fi'
 
 RUN yum clean all
-LABEL io.airbyte.version=0.4.2
+LABEL io.airbyte.version=0.5.0
 LABEL io.airbyte.name=airbyte/destination-s3
