@@ -145,18 +145,16 @@ public static final String MAX_CURSOR_VALUE_QUERY =
         final String standardSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
                                                              cursorInfo.getCursorField(),
                                                              name);
-        LOGGER.info("Standard sync status query: {}", standardSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(standardSyncStatusQuery).executeQuery(),
                                                                          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         Preconditions.checkState(jsonNodes.size() == 1);
         final JsonNode result = jsonNodes.get(0);
-        LOGGER.info("RESULTTTT +++++: {}", result.toString());
 
         final StandardStatus standardStatus = new StandardStatus().withStateType(StateType.STANDARD);
 
         standardStatus.setCursorField(ImmutableList.of(cursorField));
         standardStatus.setCursor(result.get("max").asText());
-        standardStatus.setCursorRecordCount(cursorRecordCount);
+        standardStatus.setCursorRecordCount(cursorRecordCount == 0L ? 1 : cursorRecordCount);
         standardStatus.setStreamName(name);
         standardStatus.setStreamNamespace(namespace);
 

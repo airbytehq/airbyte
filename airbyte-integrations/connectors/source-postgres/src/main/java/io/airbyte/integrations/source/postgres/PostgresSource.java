@@ -61,12 +61,11 @@ import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
-import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
-import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils;
 import io.airbyte.integrations.source.postgres.xmin.XminStateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -411,8 +410,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
       final JsonNode state =
-          (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
-              : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+          (stateManager.getCdcStateManager().getCdcState() == null ||
+              stateManager.getCdcStateManager().getCdcState().getState() == null) ? null : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
 
       final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
@@ -438,23 +437,29 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
-            savedOffset,
-            sourceConfig.get("replication_method").get("replication_slot").asText(),
-            sourceConfig.get("replication_method").get("publication").asText(),
-            PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
+                                                              savedOffset,
+                                                              sourceConfig.get("replication_method").get("replication_slot").asText(),
+                                                              sourceConfig.get("replication_method").get("publication").asText(),
+                                                              PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
 
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime, queueSize);
+                                                                                PostgresCdcTargetPosition.targetPosition(database), false,
+                                                                                firstRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new PostgresCdcSavedInfoFetcher(savedOffsetAfterReplicationSlotLSN ? stateManager.getCdcStateManager().getCdcState() : null),
-          postgresCdcStateHandler,
-          new PostgresCdcConnectorMetadataInjector(),
-          PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          emittedAt,
-          false);
+                                                                                                                                new PostgresCdcSavedInfoFetcher(
+                                                                                                                                    savedOffsetAfterReplicationSlotLSN
+                                                                                                                                    ? stateManager.getCdcStateManager()
+                                                                                                                                        .getCdcState()
+                                                                                                                                    : null),
+                                                                                                                                postgresCdcStateHandler,
+                                                                                                                                new PostgresCdcConnectorMetadataInjector(),
+                                                                                                                                PostgresCdcProperties.getDebeziumDefaultProperties(
+                                                                                                                                    database),
+                                                                                                                                emittedAt,
+                                                                                                                                false);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
@@ -464,133 +469,120 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           PostgresCdcProperties.getSnapshotProperties(database), postgresCdcStateHandler, emittedAt);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
-              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
+                                                      AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
-    } else if (PostgresUtils.isXmin(sourceConfig) && isIncrementalSyncMode(catalog)) {
-      final XminCtidUtils.StreamsCategorised streamsCategorised = XminCtidUtils.categoriseStreams(stateManager, catalog, xminStatus);
-
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
-      final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>();
-
-      if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
-        final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
-            streamsCategorised.ctidStreams().streamsForCtidSync(), getQuoteString());
-
-        final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
-            streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync()
-                : streamsCategorised.ctidStreams().streamsForCtidSync().stream()
-                    .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
-                    .toList();
-        LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
-            finalListOfStreamsToBeSyncedViaCtid,
-            getQuoteString());
-        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-            PostgresQueryUtils.getTableBlockSizeForStream(
-                database,
-                finalListOfStreamsToBeSyncedViaCtid,
-                getQuoteString());
-
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
-            fileNodes, tableBlockSizes, ctidStateManager,
-            namespacePair -> Jsons.jsonNode(xminStatus),
-            (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
-        ctidIterators.addAll(ctidHandler.getIncrementalIterators(
-            new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
-      } else {
-        LOGGER.info("No Streams will be synced via ctid.");
-      }
-
-      if (!streamsCategorised.xminStreams().streamsForXminSync().isEmpty()) {
-        LOGGER.info("Streams to be synced via xmin : {}", streamsCategorised.xminStreams().streamsForXminSync().size());
-        final XminStateManager xminStateManager = new XminStateManager(streamsCategorised.xminStreams().statesFromXminSync());
-        final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
-
-        xminIterators.addAll(xminHandler.getIncrementalIterators(
-            new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.xminStreams().streamsForXminSync()), tableNameToTable, emittedAt));
-      } else {
-        LOGGER.info("No Streams will be synced via xmin.");
-      }
-
-      return Stream
-          .of(ctidIterators, xminIterators)
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
-    } else {
-      final StandardCtidUtils.StreamsCategorised streamsCategorised = StandardCtidUtils.categoriseStreams(stateManager, catalog);
-
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
-      final List<AutoCloseableIterator<AirbyteMessage>> standardIterators = new ArrayList<>();
-
-      if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
-        final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
-                                                                                           streamsCategorised.ctidStreams().streamsForCtidSync(),
-                                                                                           getQuoteString());
-
-        final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
-            streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync()
-                                         : streamsCategorised.ctidStreams().streamsForCtidSync().stream()
-                .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
-                .toList();
-        LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
-                                                                                                          finalListOfStreamsToBeSyncedViaCtid,
-                                                                                                          getQuoteString());
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap =
-            getStandardSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, stateManager);
-
-        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(
-            sourceConfig,
-            database,
-            new CtidPostgresSourceOperations(),
-            getQuoteString(),
-            fileNodes,
-            ctidStateManager,
-            namespacePair -> Jsons.jsonNode(standardStatusMap.get(namespacePair)),
-            (namespacePair, jsonState) -> {
-              final AirbyteStreamState airbyteStreamState =
-                  new AirbyteStreamState()
-                      .withStreamDescriptor(
-                          new StreamDescriptor()
-                              .withName(namespacePair.getName())
-                              .withNamespace(namespacePair.getNamespace()))
-                      .withStreamState(Jsons.jsonNode(standardStatusMap.get(namespacePair)));
-
-              // Set state
-              final AirbyteStateMessage stateMessage =
-                  new AirbyteStateMessage()
-                      .withType(AirbyteStateType.STREAM)
-                      .withStream(airbyteStreamState);
-
-              return stateMessage;
-            });
-        ctidIterators.addAll(ctidHandler.getIncrementalIterators(
-            new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
-      } else {
-        LOGGER.info("No Streams will be synced via ctid.");
-      }
-
-      if (!streamsCategorised.standardStreams().streamsForStandardSync().isEmpty()) {
-        LOGGER.info("Streams to be synced via standard method: {}",
-                    streamsCategorised
-                        .standardStreams()
-                        .streamsForStandardSync()
-                        .stream()
-                        .map(stream -> stream.getStream().getName())
-                        .collect(Collectors.joining(", ")));
-        standardIterators.addAll(super.getIncrementalIterators(database,
-            new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.standardStreams().streamsForStandardSync()), tableNameToTable, stateManager, emittedAt));
-      } else {
-        LOGGER.info("No Streams will be synced via standard.");
-      }
-
-      return Stream
-          .of(ctidIterators, standardIterators)
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
     }
+
+    if (isIncrementalSyncMode(catalog)) {
+      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
+      final CtidUtils.StreamsCategorised streamsCategorised = CtidUtils.categoriseStreams(stateManager, catalog, xminStatus);
+      final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
+                                                                                         streamsCategorised.ctidStreams().streamsForCtidSync(),
+                                                                                         getQuoteString());
+      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+          streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync()
+                                       : streamsCategorised.ctidStreams().streamsForCtidSync().stream()
+              .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
+              .toList();
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes =
+          PostgresQueryUtils.fileNodeForStreams(database,
+                                                finalListOfStreamsToBeSyncedViaCtid,
+                                                getQuoteString());
+      final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
+          PostgresQueryUtils.getTableBlockSizeForStream(
+              database,
+              finalListOfStreamsToBeSyncedViaCtid,
+              getQuoteString());
+
+      if (finalListOfStreamsToBeSyncedViaCtid.isEmpty()) {
+        LOGGER.info("No Streams will be synced via ctid.");
+      } else {
+        LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+      }
+
+      if (PostgresUtils.isXmin(sourceConfig)) {
+        final PostgresCtidHandler xminCtidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(),
+                                                                            getQuoteString(),
+                                                                            fileNodes, tableBlockSizes, ctidStateManager,
+                                                                            namespacePair -> Jsons.jsonNode(xminStatus),
+                                                                            (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(
+                                                                                namespacePair, Jsons.object(jsonState, XminStatus.class)));
+        ctidIterators.addAll(xminCtidHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
+        final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>();
+
+        if (!streamsCategorised.xminStreams().streamsForXminSync().isEmpty()) {
+          LOGGER.info("Streams to be synced via xmin : {}", streamsCategorised.xminStreams().streamsForXminSync().size());
+          final XminStateManager xminStateManager = new XminStateManager(streamsCategorised.xminStreams().statesFromXminSync());
+          final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
+
+          xminIterators.addAll(xminHandler.getIncrementalIterators(
+              new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.xminStreams().streamsForXminSync()), tableNameToTable, emittedAt));
+        } else {
+          LOGGER.info("No Streams will be synced via xmin.");
+        }
+
+        return Stream
+            .of(ctidIterators, xminIterators)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+      } else {
+        final List<AutoCloseableIterator<AirbyteMessage>> standardIterators = new ArrayList<>();
+        if (!streamsCategorised.standardStreams().streamsForStandardSync().isEmpty()) {
+          LOGGER.info("Streams to be synced via standard method: {}",
+                      streamsCategorised
+                          .standardStreams()
+                          .streamsForStandardSync()
+                          .stream()
+                          .map(stream -> stream.getStream().getName())
+                          .collect(Collectors.joining(", ")));
+          final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap =
+              getStandardSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, stateManager);
+
+          final PostgresCtidHandler standardCtidHandler =
+              new PostgresCtidHandler(sourceConfig,
+                                      database,
+                                      new CtidPostgresSourceOperations(),
+                                      getQuoteString(),
+                                      fileNodes,
+                                      tableBlockSizes,
+                                      ctidStateManager,
+                                      namespacePair -> Jsons.jsonNode(standardStatusMap.get(namespacePair)),
+                                      (namespacePair, jsonState) -> {
+                                        final AirbyteStreamState airbyteStreamState =
+                                            new AirbyteStreamState()
+                                                .withStreamDescriptor(
+                                                    new StreamDescriptor()
+                                                        .withName(namespacePair.getName())
+                                                        .withNamespace(namespacePair.getNamespace()))
+                                                .withStreamState(Jsons.jsonNode(Jsons.object(jsonState, StandardStatus.class)));
+
+                                        // Set state
+                                        return new AirbyteStateMessage()
+                                            .withType(AirbyteStateType.STREAM)
+                                            .withStream(airbyteStreamState);
+                                      });
+
+          ctidIterators.addAll(standardCtidHandler.getIncrementalIterators(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
+                                                                           tableNameToTable,
+                                                                           emittedAt));
+          standardIterators.addAll(super.getIncrementalIterators(database,
+                                                                 new ConfiguredAirbyteCatalog().withStreams(
+                                                                     streamsCategorised.standardStreams().streamsForStandardSync()), tableNameToTable,
+                                                                 stateManager, emittedAt));
+        } else {
+          LOGGER.info("No Streams will be synced via standard method.");
+        }
+
+
+        return Stream
+            .of(ctidIterators, standardIterators)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+      }
+    }
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
   }
 
 
@@ -783,5 +775,4 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
-
 }
