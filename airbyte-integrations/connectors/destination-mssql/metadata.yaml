@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-mssql
   githubIssueLabel: destination-mssql
   icon: mssql.svg
-  license: MIT
+  license: ELv2
   name: MS SQL Server
   normalizationConfig:
     normalizationIntegrationType: mssql

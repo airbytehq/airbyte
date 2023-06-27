@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-oracle
   githubIssueLabel: destination-oracle
   icon: oracle.svg
-  license: MIT
+  license: ELv2
   name: Oracle
   normalizationConfig:
     normalizationIntegrationType: oracle

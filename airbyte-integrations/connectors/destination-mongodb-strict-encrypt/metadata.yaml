@@ -7,11 +7,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-mongodb-strict-encrypt
   githubIssueLabel: destination-mongodb
   icon: mongodb.svg
-  license: MIT
+  license: ELv2
   name: MongoDB
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb

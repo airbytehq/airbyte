@@ -7,11 +7,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 0.3.27
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/destination-postgres-strict-encrypt
   githubIssueLabel: destination-postgres
   icon: postgresql.svg
-  license: MIT
+  license: ELv2
   name: Postgres
   normalizationConfig:
     normalizationIntegrationType: postgres
