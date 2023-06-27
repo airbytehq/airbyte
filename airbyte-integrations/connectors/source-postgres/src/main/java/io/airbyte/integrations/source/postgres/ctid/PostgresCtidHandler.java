@@ -197,7 +197,7 @@ public class PostgresCtidHandler {
                                                      final List<String> columnNames,
                                                      final String schemaName,
                                                      final String tableName,
-      final Ctid lowerBound, final Ctid upperBound) {
+                                                     final Ctid lowerBound, final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
