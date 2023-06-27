@@ -39,7 +39,11 @@ public class CatalogParser {
       return streams.stream()
           .filter(s -> s.id().originalNamespace().equals(namespace) && s.id().originalName().equals(name))
           .findFirst()
-          .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find stream %s.%s", namespace, name)));
+          .orElseThrow(() -> new IllegalArgumentException(String.format(
+              "Could not find stream %s.%s out of streams %s",
+              namespace,
+              name,
+              streams.stream().map(stream -> stream.id().originalNamespace() + "." + stream.id().originalName()).toList())));
     }
 
   }
