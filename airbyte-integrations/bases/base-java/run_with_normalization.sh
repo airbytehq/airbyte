@@ -7,7 +7,7 @@ destination_exit_code=$?
 echo '{"type": "LOG","log":{"level":"INFO","message":"Destination process done (exit code '"$destination_exit_code"')"}}'
 
 # store original args
-args=("$@")
+args=$@
 
 while [ $# -ne 0 ]; do
   case "$1" in
