@@ -63,6 +63,26 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
 
     return True, None
 
+def is_major_version(version: str) -> bool:
+    return re.match(r"^\d+\.0\.0$", version) is not None
+
+
+def validate_major_version_bump_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
+    metadata_definition_dict = metadata_definition.dict()
+    image_tag = get(metadata_definition_dict, "data.dockerImageTag")
+
+    if not is_major_version(image_tag):
+        return True, None
+
+    releases = get(metadata_definition_dict, "data.releases")
+    if not releases:
+        return False, f"When doing a major version bump ({image_tag}), there must be a 'releases' property that contains 'breakingChanges' entries."
+
+    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
+    if image_tag not in breaking_changes.keys():
+        return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
+
 
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
