@@ -1,5 +1,6 @@
-import yaml
+import re
 import pathlib
+import yaml
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from typing import Optional, Tuple, Union, List, Callable
@@ -83,10 +84,13 @@ def validate_major_version_bump_has_breaking_change_entry(metadata_definition: C
     if image_tag not in breaking_changes.keys():
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
+    return True, None
+
 
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
+    validate_major_version_bump_has_breaking_change_entry,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

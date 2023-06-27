@@ -137,6 +137,8 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
 def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
     for invalid_metadata_file in invalid_metadata_yaml_files:
         metadata_file_path = pathlib.Path(invalid_metadata_file)
+        # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
+        # then your test data passed validation when it shouldn't have!
         with pytest.raises(ValueError, match="Validation error"):
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
