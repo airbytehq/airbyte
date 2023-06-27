@@ -162,6 +162,7 @@ public class IntegrationRunner {
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
           try {
             if (featureFlags.concurrentSourceStreamRead()) {
+              LOGGER.info("Concurrent source stream read enabled.");
               readConcurrent(config, catalog, stateOptional);
             } else {
               readSerial(config, catalog, stateOptional);
