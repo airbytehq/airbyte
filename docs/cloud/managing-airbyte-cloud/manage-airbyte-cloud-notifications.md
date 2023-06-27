@@ -30,7 +30,7 @@ To set up Webhook notifications:
 ## Enable schema update notifications
 
 To get notified when your source schema changes: 
-1. Make sure you have `Automatic Connection Updates` and `Connection Updates Requiring Action` turned up for desired notification channels; If these are off, even if you turned up the settings on connection settings, Airbyte Cloud will *NOT* send out any notifications related to these types of events.
+1. Make sure you have `Automatic Connection Updates` and `Connection Updates Requiring Action` turned on for your desired notification channels; If these are off, even if you turned on schema update notifications in a connection's settings, Airbyte will *NOT* send out any notifications related to these types of events.
 
 2. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
