@@ -6,7 +6,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 
 
