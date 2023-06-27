@@ -10,6 +10,16 @@ from pydash.objects import get
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 
+# TODO: Remove these when each of these connectors ship any new version
+PRECHECK_ON_MAJOR_VERSION_EXCEPETIONS = [
+    ("airbyte/source-prestashop", "1.0.0"),
+    ("airbyte/source-onesignal", "1.0.0"),
+    ("airbyte/source-faker", "3.0.0"),
+    ("airbyte/source-yandex-metrica", "1.0.0"),
+    ("airbyte/destination-meilisearch", "1.0.0"),
+    ("airbyte/destination-csv", "1.0.0")
+]
+
 
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
@@ -74,6 +84,14 @@ def validate_major_version_bump_has_breaking_change_entry(metadata_definition: C
     image_tag = get(metadata_definition_dict, "data.dockerImageTag")
 
     if not is_major_version(image_tag):
+        return True, None
+
+    # Some connectors had just done major version bumps when this check was introduced.
+    # These ones do not need breaking change entries for these specific versions.
+    # Future versions will still be validated to make sure an entry exists.
+    # See comment by PRECHECK_ON_MAJOR_VERSION_EXCEPETIONS for how to get rid of this list.
+    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
+    if (docker_repo, image_tag) in PRECHECK_ON_MAJOR_VERSION_EXCEPETIONS:
         return True, None
 
     releases = get(metadata_definition_dict, "data.releases")
