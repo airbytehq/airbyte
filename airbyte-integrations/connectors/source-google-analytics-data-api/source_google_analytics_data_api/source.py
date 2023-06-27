@@ -68,14 +68,25 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     http_method = "POST"
     raise_on_http_errors = True
 
-    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+    def __init__(self, *, config: Mapping[str, Any], page_size: int = 100_000, **kwargs):
         super().__init__(**kwargs)
         self._config = config
         self._source_defined_primary_key = get_source_defined_primary_key(self.name)
+        # default value is 100 000 due to determination of maximum limit value in official documentation
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+        self._page_size = page_size
 
     @property
     def config(self):
         return self._config
+
+    @property
+    def page_size(self):
+        return self._page_size
+
+    @page_size.setter
+    def page_size(self, value: int):
+        self._page_size = value
 
     # handle the quota errors with prepared values for:
     # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
@@ -99,10 +110,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     """
     https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
     """
-
-    # set page_size to 100000 due to determination of maximum limit value in official documentation
-    # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
-    PAGE_SIZE = 100000
 
     _record_date_format = "%Y%m%d"
     offset = 0
@@ -181,9 +188,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             total_rows = r["rowCount"]
 
             if self.offset == 0:
-                self.offset = self.PAGE_SIZE
+                self.offset = self.page_size
             else:
-                self.offset += self.PAGE_SIZE
+                self.offset += self.page_size
 
             if total_rows <= self.offset:
                 self.offset = 0
@@ -252,7 +259,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(self.PAGE_SIZE),
+            "limit": str(self.page_size),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -415,9 +422,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         metadata = None
         try:
-            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-            # a temporary setting to test if this fixes OOM issue when calling `check()`
-            stream.PAGE_SIZE = 100
+            # explicitly setting small page size for the check operation not to cause OOM issues
+            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"], page_size=100)
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
             error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
