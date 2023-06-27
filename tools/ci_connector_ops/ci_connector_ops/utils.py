@@ -317,7 +317,7 @@ class Connector:
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )
-        return set(dependencies_paths)
+        return sorted(list(set(dependencies_paths)))
 
 
 def get_changed_connectors(
