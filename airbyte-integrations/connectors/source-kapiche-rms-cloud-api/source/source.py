@@ -8,8 +8,7 @@ the "model type" = full, you can pull the fields from the response
 body. Heres a link to that call on our documentation -
 https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.18.1#/guests/getGuestsById
 
-*DateMade_medium
-*Nights I have logged a job for our developers
+*DateMade_medium *Nights I have logged a job for our developers
 to try and get these fields added to our reservation search
 call. The job reference for this is REST-1116. However the
 POST/auditTrail/search will also have this in the response
@@ -61,7 +60,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .utils import cache
+from .utils import cache, http_adapter
 
 logger = logging.getLogger("airbyte")
 
@@ -248,15 +247,24 @@ class RmsCloudApiKapicheSource(Source):
             ),
         )
 
-    def _get(self, url: str, payload: dict) -> dict:
-        response = requests.get(url, headers={"authtoken": self.auth_token})
-        return response.json()
+    def _get(self, url: str) -> dict:
+        with http_adapter(backoff_factor=2) as session:
+            response = session.get(url, headers={"authtoken": self.auth_token})
+            response.raise_for_status()
+            return response.json()
 
     def _post(self, url: str, payload: dict) -> dict | list:
-        response = requests.post(
-            url, json=payload, headers={"authtoken": self.auth_token}
-        )
-        return response.json()
+        with http_adapter(backoff_factor=2) as session:
+            response = session.post(
+                url, json=payload, headers={"authtoken": self.auth_token}
+            )
+            response.raise_for_status()
+            return response.json()
+
+        # response = requests.post(
+        #     url, json=payload, headers={"authtoken": self.auth_token}
+        # )
+        # return response.json()
 
     def get_auth_token(
         self,
@@ -343,8 +351,11 @@ class RmsCloudApiKapicheSource(Source):
                 r["reservationId"]: r
                 for r in self._fetch_reservation_accounts(logger, reservation_ids)
             }
+            guest_lookup = {
+                r["id"]: r for r in self._fetch_guests(logger, reservation_ids)
+            }
 
-            for result in results[:3]:
+            for result in results[:20]:
                 # logger.info(result)
                 # do_once('r', lambda: print(json.dumps(r, indent=2)))
                 # Each "npsResult" will correspond to a single category
@@ -381,6 +392,17 @@ class RmsCloudApiKapicheSource(Source):
                                 reservation,
                                 reservation_account,
                             )
+
+                            guest = guest_lookup.get(reservation["guestId"])
+                            if guest:
+                                logger.info(f"{guest=}")
+                                self.update_record_from_guest(record, guest)
+                            else:
+                                logger.warning(
+                                    f"{reservation_id=} with guest "
+                                    f"{reservation['guestId']=} could not "
+                                    f"be found in the guest lookup map."
+                                )
                         else:
                             logger.warning(
                                 f"{reservation_id=} not found in the lookup table. "
@@ -467,6 +489,19 @@ class RmsCloudApiKapicheSource(Source):
             }
         )
 
+    def update_record_from_guest(
+        self,
+        record: dict[str, Any],
+        guest: dict[str, Any],
+    ) -> None:
+        record.update(
+            {
+                "postcode": guest.get("postcode"),
+                "loyaltyNo": bool(guest.get("loyaltyNo", "")),
+                "loyaltyMembershipType": guest.get("loyaltyMembershipType", ""),
+            }
+        )
+
     def update_record_from_survey_detail(
         self,
         record: dict[str, Any],
@@ -496,6 +531,7 @@ class RmsCloudApiKapicheSource(Source):
         limit = chunk_size_must_be_500_or_less
         if limit > 500:
             raise ValueError(f"The RMS API requires {limit=} to be" "500 or less.")
+
         it = iter(reservation_ids)
         while chunk := list(islice(it, limit)):
             logger.debug(f"Fetching reservations chunk {len(chunk)=}")
@@ -521,6 +557,32 @@ class RmsCloudApiKapicheSource(Source):
             response = self._post(
                 "https://restapi8.rmscloud.com/reservations/actualAccount/search",
                 dict(ids=chunk),
+            )
+            results.extend(response)
+
+        logger.debug("All reservation chunks complete.")
+        return results
+
+    def _fetch_guests(
+        self,
+        logger: logging.Logger,
+        reservation_ids: list[int],
+        chunk_size_must_be_500_or_less: int = 100,
+    ) -> list[dict[str, Any]]:
+        """
+        https://restapidocs.rmscloud.com/#tag/guests/operation/postGuestSearch
+        """
+        results = []
+        limit = chunk_size_must_be_500_or_less
+        if limit > 500:
+            raise ValueError(f"The RMS API requires {limit=} to be" "500 or less.")
+
+        it = iter(reservation_ids)
+        while chunk := list(islice(it, limit)):
+            logger.debug(f"Fetching guests chunk {len(chunk)=}")
+            response = self._post(
+                f"https://restapi8.rmscloud.com/guests/search?limit={limit}&modelType=full",
+                dict(reservationIds=chunk),
             )
             results.extend(response)
 
