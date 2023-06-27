@@ -11,7 +11,7 @@ from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file
+from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES
 
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
@@ -162,25 +162,33 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> Tuple[str, U
     else:
         raise Exception("Could not determine connector type from registry entry")
 
+def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_name: str):
+    metadata_path = metadata_entry.file_path
+    if metadata_path is None:
+        raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
+
+    metadata_folder = os.path.dirname(metadata_path)
+    print(f"metadata_folder: {metadata_folder}")
+    return os.path.join(metadata_folder, registry_name)
+
 def persist_registry_entry_to_json(
-    registry_entry: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition], registry_name: str, metadata_path: str, registry_directory_manager: GCSFileManager
+    registry_entry: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition],
+    registry_name: str,
+    metadata_entry: LatestMetadataEntry,
+    registry_directory_manager: GCSFileManager
 ) -> GCSFileHandle:
     """Persist the registry_entry to a json file on GCS bucket
 
     Args:
         registry_entry (ConnectorRegistryV0): The registry_entry.
         registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
-        metadata_path (str): The path to the metadata file.
+        metadata_entry (LatestMetadataEntry): The related Metadata Entry.
         registry_directory_manager (OutputDataFrame): The registry_entry directory manager.
 
     Returns:
         OutputDataFrame: The registry_entry directory manager.
     """
-    metadata_folder = os.path.dirname(metadata_path)
-    print(f"metadata_folder: {metadata_folder}")
-
-
-    registry_entry_write_path = os.path.join(metadata_folder, registry_name)
+    registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
     return file_handle
@@ -201,10 +209,6 @@ def generate_and_persist_registry_entry(
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
-    metadata_path = metadata_entry.file_path
-    if metadata_path is None:
-        raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
-
     raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
     registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, cached_specs)
 
@@ -212,10 +216,10 @@ def generate_and_persist_registry_entry(
 
     registry_model = ConnectorModel.parse_obj(registry_entry_with_spec)
 
-    file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_path, metadata_directory_manager)
+    file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_entry, metadata_directory_manager)
     return file_handle.public_url
 
-def get_enabled_registries(registry_entry: LatestMetadataEntry) -> List[str]:
+def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List[str], List[str]]:
     """Get the enabled registries for the given metadata entry.
 
     Args:
@@ -231,14 +235,36 @@ def get_enabled_registries(registry_entry: LatestMetadataEntry) -> List[str]:
 
 
     # registries is a dict of registry_name -> {enabled: bool}
-    # we want to return a list of registry names where enabled is true
-    enabled_registries = [
+    all_enabled_registries = [
         registry_name
         for registry_name, registry_data in registries_field.items()
         if registry_data.get("enabled")
     ]
 
-    return enabled_registries
+    valid_enabled_registries = [
+        registry_name
+        for registry_name in all_enabled_registries
+        if registry_name in VALID_REGISTRIES
+    ]
+
+    valid_disabled_registries = [
+        registry_name
+        for registry_name in VALID_REGISTRIES
+        if registry_name not in all_enabled_registries
+    ]
+
+    return valid_enabled_registries, valid_disabled_registries
+
+def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, metadata_directory_manager: GCSFileManager) -> str:
+    """Delete the given registry entry from GCS.
+
+    Args:
+        registry_entry (LatestMetadataEntry): The registry entry.
+        metadata_directory_manager (GCSFileManager): The metadata directory manager.
+    """
+    registry_entry_write_path = get_registry_entry_write_path(registry_entry, registry_name)
+    file_handle = metadata_directory_manager.delete_by_key(key=registry_entry_write_path, ext="json")
+    return file_handle.public_url if file_handle else None
 
 # ASSETS
 
@@ -276,7 +302,7 @@ def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
         bucket_name=matching_blob.bucket.name,
         file_path=metadata_file_path,
     )
-    # import pdb; pdb.set_trace()
+
     return metadata_entry
 
 
@@ -289,16 +315,33 @@ def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEn
     3. update the metadata entry to span all the registry files
     """
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
-    enabled_registries = get_enabled_registries(metadata_entry)
+    enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
+
     persisted_registry_entries = {
         registry_name: generate_and_persist_registry_entry(metadata_entry, cached_specs, root_metadata_directory_manager, registry_name)
         for registry_name
         in enabled_registries
     }
 
-    metadata = {
-        registry_name: MetadataValue.url(registry_url)
+    deleted_registry_entries = {
+        registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
+        for registry_name
+        in disabled_registries
+    }
+
+    metadata_persist = {
+        f"create_{registry_name}": MetadataValue.url(registry_url)
         for registry_name, registry_url in persisted_registry_entries.items()
+    }
+
+    metadata_delete = {
+        f"delete_{registry_name}": MetadataValue.url(registry_url)
+        for registry_name, registry_url in deleted_registry_entries.items()
+    }
+
+    metadata = {
+        **metadata_persist,
+        **metadata_delete,
     }
 
     print(f"Enabled Registries: {enabled_registries}")
