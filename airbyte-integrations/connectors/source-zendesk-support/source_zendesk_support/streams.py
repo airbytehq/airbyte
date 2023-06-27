@@ -699,6 +699,31 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
         return params
 
 
+class TicketSkips(SourceZendeskSupportCursorPaginationStream):
+    """TicketSkips stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/"""
+
+    response_list_name = "skips"
+
+    def path(self, **kwargs):
+        return "skips.json"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
+        return params
+
+
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
