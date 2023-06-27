@@ -23,7 +23,7 @@ while [ $# -ne 0 ]; do
 done
 
 # restore original args after shifts
-set -- args
+set -- $args
 
 USE_1S1T_FORMAT="false"
 if [[ -s "$CONFIG_FILE" ]]; then
