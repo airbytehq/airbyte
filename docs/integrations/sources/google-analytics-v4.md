@@ -18,7 +18,7 @@ For more information, see ["Universal Analytics is going away"](https://support.
 
 :::note
 
-Google Analytics Universal Analytics (UA) connector, uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012. 
+Google Analytics Universal Analytics (UA) connector, uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012.
 
 [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) is the latest version of Google Analytics, which was introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This new model allows for more flexible and customizable reporting, as well as more accurate measurement of user behavior across devices and platforms.
 
@@ -31,6 +31,7 @@ A Google Cloud account with [Viewer permissions](https://support.google.com/anal
 ## Setup guide
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 To set up Google Analytics as a source in Airbyte Cloud:
@@ -40,14 +41,15 @@ To set up Google Analytics as a source in Airbyte Cloud:
 3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
 4. For Name, enter a name for the Google Analytics connector.
 5. Authenticate your Google account via OAuth or Service Account Key Authentication.
-    - To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
-    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission.
+   - To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
+   - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission.
 6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
 8. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 To set up Google Analytics as a source in Airbyte Open Source:
@@ -56,8 +58,8 @@ To set up Google Analytics as a source in Airbyte Open Source:
 2. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
 3. Enter a name for the Google Analytics connector.
 4. Authenticate your Google account via OAuth or Service Account Key Authentication:
-    - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
-    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API and grant [Read and Analyze permissions](https://support.google.com/analytics/answer/2884495).
+   - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
+   - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API and grant [Read and Analyze permissions](https://support.google.com/analytics/answer/2884495).
 5. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
 7. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports)
@@ -78,7 +80,6 @@ The Google Analytics source connector supports the following [sync modes](https:
 You need to add the service account email address on the account level, not the property level. Otherwise, an 403 error will be returned.
 
 :::
-
 
 ## Supported streams
 
@@ -104,16 +105,16 @@ Reach out to us on Slack or [create an issue](https://github.com/airbytehq/airby
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 
-* Number of requests per day per project: 50,000
-* Number of requests per view (profile) per day: 10,000 (cannot be increased)
-* Number of requests per 100 seconds per project: 2,000
-* Number of requests per 100 seconds per user per project: 100 (can be increased in Google API Console to 1,000).
+- Number of requests per day per project: 50,000
+- Number of requests per view (profile) per day: 10,000 (cannot be increased)
+- Number of requests per 100 seconds per project: 2,000
+- Number of requests per 100 seconds per user per project: 100 (can be increased in Google API Console to 1,000).
 
 The Google Analytics connector should not run into the "requests per 100 seconds" limitation under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully and try increasing the `window_in_days` value.
 
 ## Sampled data in reports
 
-If you are not on the Google Analytics 360 tier, the Google Analytics API may return sampled data if the amount of data in your Google Analytics account exceeds Google's [pre-determined compute thresholds](https://support.google.com/analytics/answer/2637192?hl=en&ref_topic=2601030&visit_id=637868645346124317-2833523666&rd=1#thresholds&zippy=%2Cin-this-article). This means the data returned in the report is an estimate which may have some inaccuracy. This [Google page](https://support.google.com/analytics/answer/2637192) provides a comprehensive overview of how Google applies sampling to your data.  
+If you are not on the Google Analytics 360 tier, the Google Analytics API may return sampled data if the amount of data in your Google Analytics account exceeds Google's [pre-determined compute thresholds](https://support.google.com/analytics/answer/2637192?hl=en&ref_topic=2601030&visit_id=637868645346124317-2833523666&rd=1#thresholds&zippy=%2Cin-this-article). This means the data returned in the report is an estimate which may have some inaccuracy. This [Google page](https://support.google.com/analytics/answer/2637192) provides a comprehensive overview of how Google applies sampling to your data.
 
 In order to minimize the chances of sampling being applied to your data, Airbyte makes data requests to Google in one day increments (the smallest allowed date increment). This reduces the amount of data the Google API processes per request, thus minimizing the chances of sampling being applied. The downside of requesting data in one day increments is that it increases the time it takes to export your Google Analytics data. If sampling is not a concern, you can override this behavior by setting the optional `window_in_day` parameter to specify the number of days to look back and avoid sampling.
 When sampling occurs, a warning is logged to the sync log.
@@ -144,56 +145,57 @@ Here is an example input "Custom Reports" field:
 
 To create a list of dimensions, you can use default Google Analytics dimensions (listed below) or custom dimensions if you have some defined. Each report can contain no more than 7 dimensions, and they must all be unique. The default Google Analytics dimensions are:
 
-* `ga:browser`
-* `ga:city`
-* `ga:continent`
-* `ga:country`
-* `ga:date`
-* `ga:deviceCategory`
-* `ga:hostname`
-* `ga:medium`
-* `ga:metro`
-* `ga:operatingSystem`
-* `ga:pagePath`
-* `ga:region`
-* `ga:socialNetwork`
-* `ga:source`
-* `ga:subContinent`
+- `ga:browser`
+- `ga:city`
+- `ga:continent`
+- `ga:country`
+- `ga:date`
+- `ga:deviceCategory`
+- `ga:hostname`
+- `ga:medium`
+- `ga:metro`
+- `ga:operatingSystem`
+- `ga:pagePath`
+- `ga:region`
+- `ga:socialNetwork`
+- `ga:source`
+- `ga:subContinent`
 
-To create a list of metrics, use a default Google Analytics metric (values from the list below) or custom metrics if you have defined them.  
+To create a list of metrics, use a default Google Analytics metric (values from the list below) or custom metrics if you have defined them.
 A custom report can contain no more than 10 unique metrics. The default available Google Analytics metrics are:
 
-* `ga:14dayUsers`
-* `ga:1dayUsers`
-* `ga:28dayUsers`
-* `ga:30dayUsers`
-* `ga:7dayUsers`
-* `ga:avgSessionDuration`
-* `ga:avgTimeOnPage`
-* `ga:bounceRate`
-* `ga:entranceRate`
-* `ga:entrances`
-* `ga:exitRate`
-* `ga:exits`
-* `ga:newUsers`
-* `ga:pageviews`
-* `ga:pageviewsPerSession`
-* `ga:sessions`
-* `ga:sessionsPerUser`
-* `ga:uniquePageviews`
-* `ga:users`
+- `ga:14dayUsers`
+- `ga:1dayUsers`
+- `ga:28dayUsers`
+- `ga:30dayUsers`
+- `ga:7dayUsers`
+- `ga:avgSessionDuration`
+- `ga:avgTimeOnPage`
+- `ga:bounceRate`
+- `ga:entranceRate`
+- `ga:entrances`
+- `ga:exitRate`
+- `ga:exits`
+- `ga:newUsers`
+- `ga:pageviews`
+- `ga:pageviewsPerSession`
+- `ga:sessions`
+- `ga:sessionsPerUser`
+- `ga:uniquePageviews`
+- `ga:users`
 
 Incremental sync is supported only if you add `ga:date` dimension to your custom report.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.1.36  | 2023-04-13 | [22223](https://github.com/airbytehq/airbyte/pull/22223) | Fix custom report with Segments dimensions  |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                         |
+| 0.1.36  | 2023-04-13 | [22223](https://github.com/airbytehq/airbyte/pull/22223) | Fix custom report with Segments dimensions                                                   |
 | 0.1.35  | 2023-05-31 | [26885](https://github.com/airbytehq/airbyte/pull/26885) | Remove `authSpecification` from spec in favour of `advancedAuth`                             |
 | 0.1.34  | 2023-01-27 | [22006](https://github.com/airbytehq/airbyte/pull/22006) | Set `AvailabilityStrategy` for streams explicitly to `None`                                  |
-| 0.1.33  | 2022-12-23 | [20858](https://github.com/airbytehq/airbyte/pull/20858) | Fix check connection                                                                         |  
-| 0.1.32  | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict`   |  
+| 0.1.33  | 2022-12-23 | [20858](https://github.com/airbytehq/airbyte/pull/20858) | Fix check connection                                                                         |
+| 0.1.32  | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict`   |
 | 0.1.31  | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection`                                 |
 | 0.1.30  | 2022-10-13 | [17943](https://github.com/airbytehq/airbyte/pull/17943) | Fix pagination                                                                               |
 | 0.1.29  | 2022-10-12 | [17905](https://github.com/airbytehq/airbyte/pull/17905) | Handle exceeded daily quota gracefully                                                       |
