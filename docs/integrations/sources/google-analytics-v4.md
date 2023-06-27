@@ -190,7 +190,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.2.0   | 2023-06-26 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | License Update: Elv2                                                                         |
+| 0.2.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                         |
 | 0.1.36  | 2023-04-13 | [22223](https://github.com/airbytehq/airbyte/pull/22223) | Fix custom report with Segments dimensions                                                   |
 | 0.1.35  | 2023-05-31 | [26885](https://github.com/airbytehq/airbyte/pull/26885) | Remove `authSpecification` from spec in favour of `advancedAuth`                             |
 | 0.1.34  | 2023-01-27 | [22006](https://github.com/airbytehq/airbyte/pull/22006) | Set `AvailabilityStrategy` for streams explicitly to `None`                                  |
