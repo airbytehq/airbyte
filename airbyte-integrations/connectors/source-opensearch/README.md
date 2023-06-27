@@ -55,7 +55,7 @@ To run unit tests:
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-opensearch:integrationTest
+./gradlew :airbyte-integrations:connectors:source-opensearch:integrationTestJava
 ```
 
 ## Dependency Management
