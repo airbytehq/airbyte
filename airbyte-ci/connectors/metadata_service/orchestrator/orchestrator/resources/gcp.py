@@ -49,6 +49,11 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         key = check.opt_str_param(key, "key", default=str(uuid.uuid4()))
         check_file_like_obj(file_obj)
         gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+
+        # remove the first slash if it exists to prevent double slashes
+        if gcs_key.startswith("/"):
+            gcs_key = gcs_key[1:]
+
         bucket_obj = self._client.bucket(self._gcs_bucket)
         blob = bucket_obj.blob(gcs_key)
 

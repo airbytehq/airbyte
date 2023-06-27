@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import os
-from typing import List, Optional
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output
+from typing import List, Optional, Tuple, Union
+from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
 import yaml
+from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
@@ -31,27 +32,19 @@ class MissingCachedSpecError(Exception):
 
 # HELPERS
 
-def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
-    # TODO just call the get_cached_spec directly
-    entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
-
+def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
     cached_connector_version = {
         (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
         for cached_spec in cached_specs.to_dict(orient="records")
     }
-    registry_with_specs = {"sources": [], "destinations": []}
-    for connector_type, entry in entries:
-        try:
-            spec_path = cached_connector_version[(entry["dockerRepository"], entry["dockerImageTag"])]
-            entry_with_spec = copy.deepcopy(entry)
-            entry_with_spec["spec"] = get_cached_spec(spec_path)
-            if connector_type == "source":
-                registry_with_specs["sources"].append(entry_with_spec)
-            else:
-                registry_with_specs["destinations"].append(entry_with_spec)
-        except KeyError:
-            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']}:{entry['dockerImageTag']}")
-    return registry_with_specs
+
+    try:
+        spec_path = cached_connector_version[(registry_entry["dockerRepository"], registry_entry["dockerImageTag"])]
+        entry_with_spec = copy.deepcopy(registry_entry)
+        entry_with_spec["spec"] = get_cached_spec(spec_path)
+        return entry_with_spec
+    except KeyError:
+        raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
 
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
     """Calculate the migration documentation url for the connector releases.
@@ -111,8 +104,9 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
     return metadata_data
 
+
 @deep_copy_params
-def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_type: str, override_registry_key: str) -> dict:
+def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
 
     Args:
@@ -124,8 +118,8 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
         dict: The registry equivalent of the metadata definition.
     """
     metadata_definition = metadata_entry.metadata_definition.dict()
-
     metadata_data = metadata_definition["data"]
+    connector_type = metadata_data["connectorType"]
 
     # apply overrides from the registry
     overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
@@ -160,12 +154,43 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
 
     return overrode_metadata_data
 
+def get_connector_type_from_registry_entry(registry_entry: dict) -> Tuple[str, Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]]:
+    if registry_entry.get("sourceDefinitionId"):
+        return ("source", ConnectorRegistrySourceDefinition)
+    elif registry_entry.get("destinationDefinitionId"):
+        return ("destination", ConnectorRegistryDestinationDefinition)
+    else:
+        raise Exception("Could not determine connector type from registry entry")
+
+def persist_registry_entry_to_json(
+    registry_entry: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition], registry_name: str, metadata_path: str, registry_directory_manager: GCSFileManager
+) -> GCSFileHandle:
+    """Persist the registry_entry to a json file on GCS bucket
+
+    Args:
+        registry_entry (ConnectorRegistryV0): The registry_entry.
+        registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
+        metadata_path (str): The path to the metadata file.
+        registry_directory_manager (OutputDataFrame): The registry_entry directory manager.
+
+    Returns:
+        OutputDataFrame: The registry_entry directory manager.
+    """
+    metadata_folder = os.path.dirname(metadata_path)
+    print(f"metadata_folder: {metadata_folder}")
+
+
+    registry_entry_write_path = os.path.join(metadata_folder, registry_name)
+    registry_entry_json = registry_entry.json(exclude_none=True)
+    file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
+    return file_handle
+
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
     cached_specs: OutputDataFrame,
-    registry_directory_manager: GCSFileManager,
+    metadata_directory_manager: GCSFileManager,
     registry_name: str,
-) -> Output[ConnectorRegistrySourceDefinition | ConnectorRegistryDestinationDefinition]:
+) -> str:
     """Generate the selected registry from the metadata files, and persist it to GCS.
 
     Args:
@@ -176,18 +201,44 @@ def generate_and_persist_registry_entry(
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
+    metadata_path = metadata_entry.file_path
+    if metadata_path is None:
+        raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
 
-    from_metadata = metadata_to_registry_entry(metadata_entry, registry_name)
-    registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
+    raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
+    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, cached_specs)
 
-    file_handle = persist_registry_to_json(registry_model, registry_name, registry_directory_manager)
+    _, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_with_spec)
 
-    metadata = {
-        "gcs_path": MetadataValue.url(file_handle.public_url),
-    }
+    registry_model = ConnectorModel.parse_obj(registry_entry_with_spec)
 
-    return Output(metadata=metadata, value=registry_model)
+    file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_path, metadata_directory_manager)
+    return file_handle.public_url
+
+def get_enabled_registries(registry_entry: LatestMetadataEntry) -> List[str]:
+    """Get the enabled registries for the given metadata entry.
+
+    Args:
+        registry_entry (LatestMetadataEntry): The metadata entry.
+
+    Returns:
+        List[str]: The enabled registries.
+    """
+    metadata_data_dict = registry_entry.metadata_definition.dict()
+    registries_field = metadata_data_dict["data"].get("registries", {})
+
+    print(f"registries_field: {registries_field}")
+
+
+    # registries is a dict of registry_name -> {enabled: bool}
+    # we want to return a list of registry names where enabled is true
+    enabled_registries = [
+        registry_name
+        for registry_name, registry_data in registries_field.items()
+        if registry_data.get("enabled")
+    ]
+
+    return enabled_registries
 
 # ASSETS
 
@@ -228,14 +279,33 @@ def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
     # import pdb; pdb.set_trace()
     return metadata_entry
 
-@asset(group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
-def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEntry) -> OutputDataFrame:
+
+@asset(required_resource_keys={"root_metadata_directory_manager"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
+def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEntry, cached_specs: pd.DataFrame) -> Output[dict]:
     """
     TODO
     1. parse into the individual registry files
     2. update registry sensor to use these files
     3. update the metadata entry to span all the registry files
     """
-    metadata_entry_df = pd.DataFrame(metadata_entry.dict())
-    return output_dataframe(metadata_entry_df)
+    root_metadata_directory_manager = context.resources.root_metadata_directory_manager
+    enabled_registries = get_enabled_registries(metadata_entry)
+    persisted_registry_entries = {
+        registry_name: generate_and_persist_registry_entry(metadata_entry, cached_specs, root_metadata_directory_manager, registry_name)
+        for registry_name
+        in enabled_registries
+    }
+
+    metadata = {
+        registry_name: MetadataValue.url(registry_url)
+        for registry_name, registry_url in persisted_registry_entries.items()
+    }
+
+    print(f"Enabled Registries: {enabled_registries}")
+    print(f"Persisted registry entries: {persisted_registry_entries}")
+    print(f"Persisted registry metadata: {metadata}")
+    print(f"Persisted registry entries: {metadata}")
+
+    return Output(metadata=metadata, value=persisted_registry_entries)
+
 
