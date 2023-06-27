@@ -50,8 +50,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         # Sort files by last_modified, uri and return them grouped by last_modified
         all_files = self._list_files()
         files_to_read = self._cursor.get_files_to_sync(all_files, self.logger)
-        files = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
-        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f.last_modified)]
+        sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
+        slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
