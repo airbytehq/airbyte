@@ -3,9 +3,8 @@
 #
 
 from abc import abstractmethod
-from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional
+from typing import Iterable, List
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pydantic import BaseModel
@@ -30,11 +29,9 @@ class AbstractFileBasedStreamReader(BaseModel):
     def get_matching_files(
         self,
         globs: List[str],
-        from_date: Optional[datetime] = None,
     ) -> Iterable[RemoteFile]:
         """
-        Return all files that match any of the globs. If a from_date provided,
-        return only files last modified after that date.
+        Return all files that match any of the globs.
 
         Example:
 
