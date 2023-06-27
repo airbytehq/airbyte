@@ -57,7 +57,7 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
         .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
-        .withEnv("logger.org.elasticsearch", "INFO")
+        .withEnv("logger.org.opensearch", "INFO")
         .withEnv("ingest.geoip.downloader.enabled", "false")
         .withEnv("xpack.security.enabled", "false")
         .withExposedPorts(9200)
