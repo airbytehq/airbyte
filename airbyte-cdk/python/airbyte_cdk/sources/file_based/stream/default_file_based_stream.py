@@ -53,7 +53,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
                 raise RecordParseError(f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?") from exc
 
     @cache
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, any]:
         """
         Return the JSON Schema for a stream.
 
