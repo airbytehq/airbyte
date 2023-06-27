@@ -2,11 +2,11 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
-  license: MIT
+  license: ELv2
   name: S3
   registries:
     cloud:

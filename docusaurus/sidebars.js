@@ -371,15 +371,7 @@ const operatorGuide = {
         'operator-guides/transformation-and-normalization/transformations-with-airbyte',
       ],
     },
-    {
-      type: 'category',
-      label: 'Configuring Airbyte',
-      link: {
-        type: 'doc',
-        id: 'operator-guides/configuring-airbyte',
-      },
-      items: ['operator-guides/sentry-integration'],
-    },
+    'operator-guides/configuring-airbyte',
     'operator-guides/using-custom-connectors',
     'operator-guides/scaling-airbyte',
     'operator-guides/configuring-sync-notifications',
