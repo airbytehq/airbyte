@@ -42,11 +42,11 @@ public class OpenSearchDestinationTest {
   @BeforeAll
   public static void beforeAll() {
     container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
-            .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+            .withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
             .withEnv("discovery.type", "single-node")
             .withEnv("network.host", "0.0.0.0")
             .withExposedPorts(9200)
-            .withStartupTimeout(Duration.ofSeconds(60));
+            .withStartupTimeout(Duration.ofSeconds(600));
 
     container.start();
 
