@@ -20,6 +20,8 @@ from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
+    AccountAttributes,
+    AttributeDefinitions,
     AuditLogs,
     BaseSourceZendeskSupportStream,
     Brands,
@@ -27,8 +29,8 @@ from source_zendesk_support.streams import (
     GroupMemberships,
     Groups,
     Macros,
-    Organizations,
     OrganizationMemberships,
+    Organizations,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -137,7 +139,7 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 20, []),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 22, []),
         (
             {"error": "Not sufficient permissions"},
             403,
@@ -284,6 +286,8 @@ class TestAllStreams:
             (Brands),
             (CustomRoles),
             (Schedules),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "AuditLogs",
@@ -306,6 +310,8 @@ class TestAllStreams:
             "Brands",
             "CustomRoles",
             "Schedules",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_streams(self, expected_stream_cls):
@@ -339,6 +345,8 @@ class TestAllStreams:
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
             (Schedules, "business_hours/schedules.json"),
+            (AccountAttributes, "routing/attributes"),
+            (AttributeDefinitions, "routing/attributes/definitions"),
         ],
         ids=[
             "AuditLogs",
@@ -361,6 +369,8 @@ class TestAllStreams:
             "Brands",
             "CustomRoles",
             "Schedules",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_path(self, stream_cls, expected):
@@ -502,6 +512,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions)
         ],
         ids=[
             "Tags",
@@ -510,6 +522,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_url_base(self, stream_cls):
@@ -526,6 +540,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "Tags",
@@ -534,6 +550,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls):
@@ -553,6 +571,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "Tags",
@@ -561,6 +581,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_request_params(self, stream_cls):
