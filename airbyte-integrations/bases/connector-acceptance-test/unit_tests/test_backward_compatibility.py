@@ -1354,6 +1354,7 @@ assert all([not transition.should_fail for transition in VALID_CATALOG_TRANSITIO
 
 ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
 
+
 @pytest.mark.parametrize("previous_discovered_catalog, discovered_catalog, should_fail", ALL_CATALOG_TRANSITIONS_PARAMS)
 def test_catalog_backward_compatibility(previous_discovered_catalog, discovered_catalog, should_fail):
     t = _TestDiscovery()
