@@ -61,7 +61,7 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
-  private static final int QUERY_TARGET_SIZE_GB = 1; // TEMP
+  private static final int QUERY_TARGET_SIZE_GB = 1; // TODO: find size
   public static final double MEGABYTE = Math.pow(1024, 2);
 
   public PostgresCtidHandler(final JsonNode config,
@@ -125,7 +125,7 @@ public class PostgresCtidHandler {
     return iteratorList;
   }
 
-  class Ctid {
+  public static class Ctid {
     final long page;
     final long tuple;
 
@@ -136,29 +136,38 @@ public class PostgresCtidHandler {
      Ctid(final String ctid) {
       final Pattern p = Pattern.compile("\\d+");
       final Matcher m = p.matcher(ctid);
-      if (m.find()) {
+      if (!m.find()) {
+        throw new IllegalArgumentException("Invalid ctid format");
+      }
         final String ctidPageStr = m.group();
         this.page = Long.parseLong(ctidPageStr);
+
+      if (!m.find()) {
+        throw new IllegalArgumentException("Invalid ctid format");
       }
-      if (m.find()) {
         final String ctidTupleStr = m.group();
         this.tuple = Long.parseLong(ctidTupleStr);
-      }
+
       Objects.requireNonNull(this.page);
       Objects.requireNonNull(this.tuple);
     }
-  }
-  public static List<Pair<String, String>> ctidQueryBounds(final String startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
-    final Pattern p = Pattern.compile("\\d+");
-    final Matcher m = p.matcher(startCtid);
-    m.find();
-    String ctidPageStr = m.group();
-    Long ctidPage = Long.parseLong(ctidPageStr);
-    m.find();
-    String ctidTupleStr = m.group();
 
-    final List<Pair<String, String>> chunks = new ArrayList<>();
-    long lowerBound = ctidPage;
+    @Override
+    public String toString() {
+      return "(%d,%d)".formatted(page, tuple);
+    }
+  }
+  public static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
+//    final Pattern p = Pattern.compile("\\d+");
+//    final Matcher m = p.matcher(startCtid);
+//    m.find();
+//    String ctidPageStr = m.group();
+//    Long ctidPage = Long.parseLong(ctidPageStr);
+//    m.find();
+//    String ctidTupleStr = m.group();
+
+    final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
+    long lowerBound = startCtid.page;
     long upperBound = 0;
     final double oneGigaPages = MEGABYTE * 1000 / blockSize;
     final long eachStep = (long)oneGigaPages * chunkSizeGB;
@@ -166,11 +175,12 @@ public class PostgresCtidHandler {
     final long theoreticalLastPage = relationSize / blockSize;
     LOGGER.info("Theoretical last page {}", theoreticalLastPage);
     upperBound = lowerBound + eachStep;
-    chunks.add(Pair.of("(%d,%s)".formatted(lowerBound, ctidTupleStr), "(%d,%d)".formatted(upperBound, 0)));
+
+    chunks.add(Pair.of(new Ctid(lowerBound, startCtid.tuple), new Ctid(upperBound, 0)));
     while (upperBound < theoreticalLastPage) {
       lowerBound = upperBound;
       upperBound += eachStep;
-      chunks.add(Pair.of("(%d,%d)".formatted(lowerBound, 0), upperBound > theoreticalLastPage ? null : "(%d,%d)".formatted(upperBound, 0)));
+      chunks.add(Pair.of(new Ctid(lowerBound, 0), upperBound > theoreticalLastPage ? null : new Ctid(upperBound, 0)));
     }
     return chunks;
   }
@@ -188,7 +198,7 @@ public class PostgresCtidHandler {
 
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
 
-    final List<Pair<String, String>> chunks = ctidQueryBounds((currentCtidStatus == null) ? "(0,0)" : currentCtidStatus.getCtid(), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
+    final List<Pair<Ctid, Ctid>> chunks = ctidQueryPlan((currentCtidStatus == null) ? new Ctid (0,0) : new Ctid(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> its = new ArrayList<>();
     chunks.forEach(p -> {
       its.add(AutoCloseableIterators.lazyIterator(() -> {
@@ -211,7 +221,7 @@ public class PostgresCtidHandler {
                                                      final String schemaName,
                                                      final String tableName,
                                                      final AirbyteStreamNameNamespacePair airbyteStream,
-                                                      final String lowerBound, final String upperBound) {
+                                                      final Ctid lowerBound, final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
@@ -220,14 +230,14 @@ public class PostgresCtidHandler {
       if (upperBound != null) {
         final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setObject(1, lowerBound);
-        preparedStatement.setObject(2, upperBound);
+        preparedStatement.setObject(1, lowerBound.toString());
+        preparedStatement.setObject(2, upperBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
         final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setObject(1, lowerBound);
+        preparedStatement.setObject(1, lowerBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       }
