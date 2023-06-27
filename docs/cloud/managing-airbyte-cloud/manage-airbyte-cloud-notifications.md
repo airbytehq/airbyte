@@ -20,7 +20,7 @@ To set up Webhook notifications:
 
 ## Notification Event Types
 
-1. Failed syncs and Successful syncs: When a connection sync has finished, you can choose to be notified with if the sync has failed, successful or both. Note if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy.
+1. Failed syncs and successful syncs: When a connection sync has finished, you can choose to be notified whether the sync has failed, succeeded or both. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy.
 1. Automated Connection Updates: when Airbyte detects that the connection's source schema has changed and can be updated automatically, Airbyte will update your connection and send you a notification message.
 1. Connection Updates Requiring Action: When Airbyte detects some updates that requires your action to run syncs. Since this will affect your sync from running as scheduled, you cannot disable this type of email notification.
 1. Sync Disabled and Sync Disabled Warning: If a sync has been failing for multiple days or many times consecutively, Airbyte will disable the connection to prevent it from running further. Airbyte will send a Sync Disabled Warning notification when we detect the trend, and once the failure counts hits a threshold Airbyte will send a Sync Disabled notification and will actually disable the connection. Again, because the sync will not continue to run as you have configured, the Sync Disabled notification cannot be disabled.
