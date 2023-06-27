@@ -31,6 +31,7 @@ from source_zendesk_support.streams import (
     Macros,
     OrganizationMemberships,
     Organizations,
+    Posts,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -140,11 +141,11 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 23, []),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 24, []),
         (
             {"error": "Not sufficient permissions"},
             403,
-            20,
+            21,
             ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
         ),
     ],
@@ -272,6 +273,7 @@ class TestAllStreams:
             (Groups),
             (Macros),
             (Organizations),
+            (Posts),
             (OrganizationMemberships),
             (SatisfactionRatings),
             (SlaPolicies),
@@ -297,6 +299,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
             "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
@@ -333,6 +336,7 @@ class TestAllStreams:
             (Groups, "groups"),
             (Macros, "macros"),
             (Organizations, "organizations"),
+            (Posts, "community/posts"),
             (OrganizationMemberships, "organization_memberships"),
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
@@ -358,6 +362,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
             "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
@@ -390,6 +395,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -398,6 +404,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -418,6 +425,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -426,6 +434,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -441,6 +450,7 @@ class TestSourceZendeskSupportStream:
         "stream_cls, current_state, last_record, expected",
         [
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
                 Organizations,
                 {"updated_at": "2022-03-17T16:03:07Z"},
@@ -454,6 +464,7 @@ class TestSourceZendeskSupportStream:
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "SatisfactionRatings",
@@ -470,12 +481,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
+            (Posts, None),
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -490,12 +503,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, {"start_time": 1622505600}),
+            (Posts, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
