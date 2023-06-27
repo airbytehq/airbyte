@@ -32,14 +32,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     if (topLevelType != null) {
       if (topLevelType.isTextual()) {
         if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
-          final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-          final JsonNode properties = schema.get("properties");
-          properties.fields().forEachRemaining(property -> {
-            final String key = property.getKey();
-            final JsonNode value = property.getValue();
-            propertiesMap.put(key, fromJsonSchema(value));
-          });
-          return new Struct(propertiesMap);
+          return getStruct(schema);
         } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
           final JsonNode items = schema.get("items");
           return new Array(fromJsonSchema(items));
@@ -53,8 +46,23 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       final List<AirbyteType> options = new ArrayList<>();
       schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
       return new UnsupportedOneOf(options);
+    } else if (schema.hasNonNull("properties")) {
+      // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a struct.
+      // This is for backwards-compatibility with legacy normalization.
+      return getStruct(schema);
     }
     return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+  }
+
+  private static Struct getStruct(JsonNode schema) {
+    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+    final JsonNode properties = schema.get("properties");
+    properties.fields().forEachRemaining(property -> {
+      final String key = property.getKey();
+      final JsonNode value = property.getValue();
+      propertiesMap.put(key, fromJsonSchema(value));
+    });
+    return new Struct(propertiesMap);
   }
 
   enum AirbyteProtocolType implements AirbyteType {

@@ -92,6 +92,25 @@ public class AirbyteTypeTest {
   }
 
   @Test
+  public void testImplicitStruct() {
+    final String structSchema = """
+                                {
+                                  "properties": {
+                                    "key1": {
+                                      "type": "boolean"
+                                    }
+                                  }
+                                }
+                                """;
+
+    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
+
+    final AirbyteType struct = new Struct(propertiesMap);
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
   public void testArray() {
     final String arraySchema = """
                                {
