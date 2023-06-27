@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class represents a postgres ctid records in the form of "(number,number)"
+ * Class represents a postgres ctid record in the form of "(number,number)"
  * Used to simplify code dealing with ctid calculations.
  */
 public class Ctid {
