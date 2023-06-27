@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple, Union
 from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
 import yaml
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
+from google.cloud import storage
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
@@ -20,6 +21,9 @@ from orchestrator.utils.object_helpers import deep_copy_params
 from metadata_service.spec_cache import get_cached_spec
 
 import copy
+
+PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
+TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
 
 GROUP_NAME = "registry_entry"
 
@@ -154,7 +158,16 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     return overrode_metadata_data
 
-def get_connector_type_from_registry_entry(registry_entry: dict) -> Tuple[str, Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]]:
+def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
+    yaml_string = registry_entry_blob.download_as_string().decode("utf-8")
+    registry_entry_dict = yaml.safe_load(yaml_string)
+
+    connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
+    registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
+
+    return registry_entry, connector_type
+
+def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegistryEntry:
     if registry_entry.get("sourceDefinitionId"):
         return ("source", ConnectorRegistrySourceDefinition)
     elif registry_entry.get("destinationDefinitionId"):
@@ -172,7 +185,7 @@ def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_
     return os.path.join(metadata_folder, registry_name)
 
 def persist_registry_entry_to_json(
-    registry_entry: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition],
+    registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
     metadata_entry: LatestMetadataEntry,
     registry_directory_manager: GCSFileManager
@@ -232,7 +245,6 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     registries_field = metadata_data_dict["data"].get("registries", {})
 
     print(f"registries_field: {registries_field}")
-
 
     # registries is a dict of registry_name -> {enabled: bool}
     all_enabled_registries = [

@@ -17,7 +17,7 @@ from orchestrator.assets import (
     metadata,
 )
 
-from orchestrator.jobs.registry import generate_registry_reports, generate_registry, generate_registry_entry
+from orchestrator.jobs.registry import generate_registry_reports,  generate_oss_registry, generate_cloud_registry, generate_registry_entry
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor, new_gcs_blobs_partition_sensor
@@ -72,6 +72,12 @@ RESOURCES = {
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
     ),
+    "latest_cloud_registry_entries_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/cloud.json$"}
+    ),
+    "latest_oss_registry_entries_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/oss.json$"}
+    ),
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
     ),
@@ -96,9 +102,15 @@ RESOURCES = {
 SENSORS = [
     registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
     new_gcs_blobs_sensor(
-        job=generate_registry,
+        job=generate_oss_registry,
         resources_def=RESOURCES,
-        gcs_blobs_resource_key="latest_metadata_file_blobs",
+        gcs_blobs_resource_key="latest_oss_registry_entries_file_blobs",
+        interval=30,
+    ),
+    new_gcs_blobs_sensor(
+        job=generate_cloud_registry,
+        resources_def=RESOURCES,
+        gcs_blobs_resource_key="latest_cloud_registry_entries_file_blobs",
         interval=30,
     ),
     new_gcs_blobs_sensor(
@@ -118,7 +130,7 @@ SENSORS = [
 
 SCHEDULES = [ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly")]
 
-JOBS = [generate_registry_reports, generate_registry]
+JOBS = [generate_registry_reports, generate_oss_registry, generate_cloud_registry]
 
 """
 START HERE

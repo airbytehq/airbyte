@@ -176,8 +176,4 @@ def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
     if match_regex:
         gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(match_regex, blob.name)]
 
-    # TODO remove
-    # Limit to 20
-    gcs_file_blobs = gcs_file_blobs[:20]
-
     return gcs_file_blobs
