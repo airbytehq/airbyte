@@ -7,13 +7,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
+from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
-class GreenHouseSlicer(StreamSlicer):
+class GreenHouseSlicer(Cursor):
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: str
     request_cursor_field: str
@@ -24,8 +24,8 @@ class GreenHouseSlicer(StreamSlicer):
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._state = {}
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState, *args, **kwargs) -> Iterable[StreamSlice]:
-        yield {self.request_cursor_field: stream_state.get(self.cursor_field, self.START_DATETIME)}
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        yield {self.request_cursor_field: self._state.get(self.cursor_field, self.START_DATETIME)}
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
         new_state_candidates = list(map(lambda x: datetime.datetime.strptime(x, self.DATETIME_FORMAT), filter(None, args)))
@@ -36,7 +36,12 @@ class GreenHouseSlicer(StreamSlicer):
         (dt, micro) = max_dt.strftime(self.DATETIME_FORMAT).split(".")
         return "%s.%03dZ" % (dt, int(micro[:-1:]) / 1000)
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        cursor_value = stream_state.get(self.cursor_field)
+        if cursor_value:
+            self._state[self.cursor_field] = cursor_value
+
+    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
         # stream_state can be passed in as a stream_slice parameter - it's a framework flaw, so we have to workaround it
         slice_state = stream_slice.get(self.cursor_field)
         current_state = self._state.get(self.cursor_field)
@@ -74,18 +79,18 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
     stream_slice_field: str
     parent_key: str
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
-        for parent_stream_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for parent_stream_slice in self.parent_stream.stream_slices():
             for parent_record in self.parent_stream.read_records(
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):
                 parent_state_value = parent_record.get(self.parent_key)
                 yield {
                     self.stream_slice_field: parent_state_value,
-                    self.request_cursor_field: stream_state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME),
+                    self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME),
                 }
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
         if last_record:
             # stream_slice is really a stream slice
             substream_id = str(stream_slice[self.stream_slice_field])
