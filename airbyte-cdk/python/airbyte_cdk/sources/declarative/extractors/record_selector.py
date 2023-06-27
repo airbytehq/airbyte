@@ -18,7 +18,7 @@ class RecordSelector(HttpSelector):
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.
 
-    Attributes:
+    Attributes:f
         extractor (RecordExtractor): The record extractor responsible for extracting records from a response
         record_filter (RecordFilter): The record filter responsible for filtering extracted records
     """
