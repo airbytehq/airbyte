@@ -34,12 +34,14 @@ public class CatalogParser {
   }
 
   public record ParsedCatalog(List<StreamConfig> streams) {
+
     public StreamConfig getStream(String namespace, String name) {
-        return streams.stream()
-            .filter(s -> s.id().originalNamespace().equals(namespace) && s.id().originalName().equals(name))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find stream %s.%s", namespace, name)));
+      return streams.stream()
+          .filter(s -> s.id().originalNamespace().equals(namespace) && s.id().originalName().equals(name))
+          .findFirst()
+          .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find stream %s.%s", namespace, name)));
     }
+
   }
 
   public record StreamConfig(StreamId id,

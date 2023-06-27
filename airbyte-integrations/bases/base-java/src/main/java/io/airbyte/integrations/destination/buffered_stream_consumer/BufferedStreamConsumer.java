@@ -96,8 +96,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final String defaultNamespace;
 
   /**
-   * Feel free to continue using this in non-1s1t destinations - it may be easier to use. However, 1s1t
-   * destinations should prefer the version which accepts a {@code defaultNamespace}.
+   * Feel free to continue using this in non-1s1t destinations - it may be easier to use. However,
+   * 1s1t destinations should prefer the version which accepts a {@code defaultNamespace}.
    */
   @Deprecated
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
