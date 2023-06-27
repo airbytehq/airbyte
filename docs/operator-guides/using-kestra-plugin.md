@@ -20,11 +20,11 @@ These are the two main tasks to orchestrate Airbyte syncs:
 
 First, make sure you have Docker installed. We'll be using the `docker-compose` command, so your installation should contain `docker-compose`. When you use [Docker Desktop](https://docs.docker.com/compose/install/#scenario-one-install-docker-desktop), Docker Compose is already included.
 
-### Start Airbyte[](https://docs.airbyte.com/operator-guides/using-dagster-integration#start-airbyte)
+### Start Airbyte
 
 If this is your first time using Airbyte, we suggest following the [Quickstart Guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md). When creating Airbyte connections intended to be orchestrated with Kestra, set your Connection's **sync frequency** to **manual**. Kestra will automate triggering Airbyte jobs in response to external events or based on a schedule you’ll provide.
 
-### Install Kestra[](https://docs.airbyte.com/operator-guides/using-dagster-integration#install-dagster)
+### Install Kestra
 
 If you haven’t started Kestra yet, download [the Docker Compose file](https://raw.githubusercontent.com/kestra-io/kestra/develop/docker-compose.yml):
 
