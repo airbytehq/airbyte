@@ -41,5 +41,9 @@ public class PostgresCtidHandlerTest {
         Pair.of(Ctid.of(9876, 5432), null));
     assertEquals(chunks, expected);
 
+    chunks = PostgresCtidHandler.ctidQueryPlan(Ctid.of(0,0),4096L, 8192L, 45);
+    expected = List.of(
+        Pair.of(Ctid.of(0, 0), null));
+    assertEquals(chunks, expected);
   }
 }
