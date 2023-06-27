@@ -702,6 +702,8 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
 class TicketSkips(SourceZendeskSupportCursorPaginationStream):
     """TicketSkips stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/"""
 
+    response_list_name = "skips"
+
     def path(self, **kwargs):
         return "skips.json"
 
