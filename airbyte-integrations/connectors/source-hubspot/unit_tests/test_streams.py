@@ -132,6 +132,22 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+    object_reponse = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-06-25T16:43:11Z",
+                        "properties": {
+                            "hs_merged_object_ids": "test_id"
+                        }
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
     read_batch_contact_v1_response = [
         {
             "json": {
@@ -141,7 +157,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                         {
                             'canonical-vid': 2,
                             'vid-to-merge': 5608,
-                            'timestamp': 1576188219693
+                            'timestamp': 1653322839932
                         }
                     ]
                 }
@@ -155,11 +171,11 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", object_reponse)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
-    requests_mock.register_uri("POST", f"/crm/v3/objects/{endpoint}/search", responses)
 
     records = read_full_refresh(stream)
     assert records
