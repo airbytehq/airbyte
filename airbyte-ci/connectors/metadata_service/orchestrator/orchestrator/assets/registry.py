@@ -54,7 +54,8 @@ def generate_and_persist_registry(
     registry_dict = {"sources": [], "destinations": []}
     for blob in registry_entry_file_blobs:
         registry_entry, connector_type = read_registry_entry_blob(blob)
-        registry_dict[connector_type].append(registry_entry)
+        plural_connector_type = f"{connector_type}s"
+        registry_dict[plural_connector_type].append(registry_entry)
 
     registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 
