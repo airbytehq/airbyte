@@ -66,7 +66,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       final PreparedStatement statement = statementCreator.apply(connection);
       final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
       streamingConfig.initialize(connection, statement);
-      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig, connection)
+      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);
@@ -89,8 +89,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    */
   protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
                                          final CheckedFunction<ResultSet, T, SQLException> mapper,
-                                         final JdbcStreamingQueryConfig streamingConfig,
-                                         final Connection connection) {
+                                         final JdbcStreamingQueryConfig streamingConfig) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
