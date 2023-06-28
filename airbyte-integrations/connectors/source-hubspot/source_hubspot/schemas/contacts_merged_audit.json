@@ -6,30 +6,41 @@
   ],
   "additionalProperties": true,
   "properties": {
-    "id": {
+    "canonical-vid": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "vid-to-merge": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "timestamp": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "entity-id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "updatedAt": {
+    "user-id": {
       "type": [
         "null",
-        "string"
-      ],
-      "format": "date-time"
+        "integer"
+      ]
     },
-    "companies": {
+    "num-properties-moved": {
       "type": [
         "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
+        "integer"
+      ]
     },
     "merged_from_email": {
       "type": [
@@ -80,7 +91,7 @@
             "string"
           ]
         },
-        "source-selected": {
+        "selected": {
           "type": [
             "null",
             "boolean"
@@ -131,7 +142,7 @@
             "string"
           ]
         },
-        "source-selected": {
+        "selected": {
           "type": [
             "null",
             "boolean"
@@ -145,30 +156,6 @@
         }
       }
     },
-    "canonical-vid": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "vid-to-merge": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "entity-id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "num-properties-moved": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
     "first-name": {
       "type": [
         "null",
@@ -179,12 +166,6 @@
       "type": [
         "null",
         "string"
-      ]
-    },
-    "timestamp": {
-      "type": [
-        "null",
-        "integer"
       ]
     }
   }
