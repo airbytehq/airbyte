@@ -452,6 +452,9 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
     cat_container = (
         with_mounted_connector_secrets(context, cat_container, "/test_input/secrets")
         .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
+        # This bursts the CAT cached results everyday.
+        # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
+        # We keep the guarantee that a CAT runs everyday.
         .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
