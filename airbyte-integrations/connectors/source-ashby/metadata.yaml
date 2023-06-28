@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
@@ -13,6 +8,14 @@ data:
   icon: ashby.svg
   license: MIT
   name: Ashby
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/ashby
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ashby
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

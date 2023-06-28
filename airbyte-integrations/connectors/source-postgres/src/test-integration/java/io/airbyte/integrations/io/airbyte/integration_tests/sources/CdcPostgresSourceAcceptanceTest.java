@@ -15,8 +15,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
@@ -26,7 +24,6 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
@@ -48,7 +45,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final int INITIAL_WAITING_SECONDS = 30;
 
   protected PostgreSQLContainer<?> container;
   protected JsonNode config;
@@ -66,6 +63,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .put("publication", PUBLICATION)
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.tempo.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
@@ -16,6 +11,14 @@ data:
   icon: tempo.svg
   license: MIT
   name: Tempo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/tempo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

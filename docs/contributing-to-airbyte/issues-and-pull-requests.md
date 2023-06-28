@@ -12,20 +12,25 @@ _subpar PR title_: `Update tests`. Which tests? What was the update?
 
 _good PR title_: `Source MySQL: update acceptance tests to connect to SSL-enabled database`. Specific about the domain and change that was made.
 
-**PR title conventions** When creating a PR, follow the naming conventions depending on the change being made:
+### Pull Request Title Convention
 
-* Notable updates to Airbyte Core: "🎉"
-  * e.g: `🎉 enable configuring un-nesting in normalization`
-* New connectors: “🎉 New source or destination: ” e.g: `🎉 New Source: Okta`
-* New connector features: “🎉 :  E.g:
-  * `🎉 Destination Redshift: write JSONs as SUPER type instead of VARCHAR`
-  * `🎉 Source MySQL: enable logical replication`
-* Bugfixes should start with the  🐛 emoji
-  * `🐛 Source Facebook Marketing: fix incorrect parsing of lookback window`
-* Documentation improvements should start with any of the book/paper emojis: 📚 📝 etc…
-* Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis
+When creating a pull request follow the naming conventions depending on the change being made.
+In general the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`).
+Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
 
-The emojis help us identify which commits should be included in the product release notes.
+| Pull Request Type | Emoji | Examples |
+| ----------------- | ----- | ---------|
+| New Connector (Source or Destination)  | 🎉 | 🎉 New Destination: Database                           |
+| Add a feature to an existing connector | ✨ | ✨ Source E-Commerce: add new stream `Users`           |
+| Fix a bug                              | 🐛 | 🐛 Source E-Commerce: fix start date parameter in spec |
+| Documentation (updates or new entries) | 📝 | 📝 Fix Database connector changelog                    |
+| It's a breaking change                 | 🚨 | 🚨🚨🐛 Source Kafka: fix a complex bug                  |
+
+For more information about [breaking changes](README.md#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
+
+Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis.
+
+If you're code change is doing more than one change type at once we strongly recommend to break into multiple pull requests. It helps us to review and merge your contribution.
 
 ## Descriptions
 

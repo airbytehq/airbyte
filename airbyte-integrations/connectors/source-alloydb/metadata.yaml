@@ -3,22 +3,23 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  registries:
-    cloud:
-      dockerImageTag: 2.0.15
-      dockerRepository: airbyte/source-alloydb-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
-  dockerImageTag: 2.0.17
+  dockerImageTag: 2.0.28
   dockerRepository: airbyte/source-alloydb
   githubIssueLabel: source-alloydb
   icon: alloydb.svg
   license: MIT
   name: AlloyDB for PostgreSQL
+  registries:
+    cloud:
+      dockerRepository: airbyte/source-alloydb-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

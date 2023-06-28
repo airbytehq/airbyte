@@ -1,0 +1,18 @@
+{
+  "_airbyte_ab_id" : "varchar",
+  "_airbyte_emitted_at" : "timestamp(6) with time zone",
+  "string_type" : "varchar",
+  "number_integer_type" : "integer",
+  "string_big_integer_type" : "varchar",
+  "number_float_type" : "real",
+  "number_type" : "double",
+  "integer_type" : "bigint",
+  "boolean_type" : "boolean",
+  "date_time_without_tz_type" : "timestamp(6) with time zone",
+  "date_time_with_tz_type" : "timestamp(6) with time zone",
+  "date_type" : "date",
+  "time_type" : "time(6)",
+  "array_type" : "array(varchar)",
+  "row_type" : "row(first_name varchar, last_name varchar, _airbyte_additional_properties map(varchar, varchar))",
+  "_airbyte_additional_properties" : "map(varchar, varchar)"
+}

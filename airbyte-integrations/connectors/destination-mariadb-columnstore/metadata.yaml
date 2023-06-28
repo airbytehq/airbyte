@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 294a4790-429b-40ae-9516-49826b9702e1
@@ -13,6 +8,13 @@ data:
   icon: mariadb.svg
   license: MIT
   name: MariaDB ColumnStore
+  registries:
+    cloud:
+      enabled: false # hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/mariadb-columnstore
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mariadb-columnstore
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

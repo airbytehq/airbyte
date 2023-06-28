@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * The {@link io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer} class
  * abstracts the {@link io.airbyte.integrations.destination.record_buffer.BufferStorage} from the
  * details of the format the data is going to be stored in.
- *
+ * <p>
  * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us
  * to go through {@link HadoopOutputFile} instead. So we can't benefit from the abstraction
  * described above. Therefore, we re-implement the necessary methods to be used as
@@ -72,7 +72,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration avroConfig = new Configuration();
+    final Configuration avroConfig = new Configuration();
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
@@ -91,14 +91,19 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+  public long accept(final AirbyteRecordMessage record) throws Exception {
     if (inputStream == null && !isClosed) {
       final long startCount = getByteCount();
-      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
       return getByteCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
     }
+  }
+
+  @Override
+  public long accept(final String recordString, final long emittedAt) throws Exception {
+    throw new UnsupportedOperationException("This method is not supported for ParquetSerializedBuffer");
   }
 
   @Override
@@ -161,7 +166,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     }
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig) {
+  public static BufferCreateFunction createFunction(final S3DestinationConfig s3DestinationConfig) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
         stream, catalog);
   }

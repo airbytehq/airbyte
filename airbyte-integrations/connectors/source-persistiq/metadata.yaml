@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
@@ -13,6 +8,13 @@ data:
   icon: persistiq.svg
   license: MIT
   name: PersistIq
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/persistiq
+  documentationUrl: https://docs.airbyte.com/integrations/sources/persistiq
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

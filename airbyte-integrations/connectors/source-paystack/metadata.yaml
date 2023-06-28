@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.paystack.co
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
@@ -16,6 +11,13 @@ data:
   icon: paystack.svg
   license: MIT
   name: Paystack
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/paystack
+  documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2446953b-b794-429b-a9b3-c821ba992a48
@@ -13,6 +8,14 @@ data:
   icon: twilio.svg
   license: MIT
   name: Twilio Taskrouter
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

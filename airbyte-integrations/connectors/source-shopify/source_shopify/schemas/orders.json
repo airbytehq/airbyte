@@ -254,6 +254,9 @@
     "email": {
       "type": ["null", "string"]
     },
+    "estimated_taxes": {
+      "type": ["null", "boolean"]
+    },
     "financial_status": {
       "type": ["null", "string"]
     },
@@ -271,6 +274,9 @@
     },
     "location_id": {
       "type": ["null", "integer"]
+    },
+    "merchant_of_record_app_id": {
+      "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]
@@ -309,6 +315,9 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "payment_terms": {
+      "type": ["null", "string"]
     },
     "phone": {
       "type": ["null", "string"]

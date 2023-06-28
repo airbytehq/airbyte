@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 0efee448-6948-49e2-b786-17db50647908
@@ -13,6 +8,13 @@ data:
   icon: rss.svg
   license: MIT
   name: RSS
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/rss
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rss
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

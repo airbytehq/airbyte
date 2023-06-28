@@ -56,7 +56,7 @@ public class InMemoryRecordBufferingStrategyTest {
     buffering.addRecord(stream2, message4);
 
     // force flush to terminate test
-    buffering.flushAll();
+    buffering.flushAllBuffers();
     verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
   }
 

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
@@ -13,6 +8,13 @@ data:
   icon: pulsar.svg
   license: MIT
   name: Pulsar
+  registries:
+    cloud:
+      enabled: false # hide Pulsar Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/pulsar
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/pulsar
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

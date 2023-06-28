@@ -39,15 +39,14 @@ def test_pagination(count, expected):
 
 
 @pytest.mark.parametrize(
-    "site_urls, sync_mode",
+    "site_urls",
     [
-        (["https://example1.com", "https://example2.com"], SyncMode.full_refresh),
-        (["https://example1.com", "https://example2.com"], SyncMode.incremental),
-        (["https://example.com"], SyncMode.full_refresh),
-        (["https://example.com"], SyncMode.incremental),
+        ["https://example1.com", "https://example2.com"], ["https://example.com"]
     ],
 )
-def test_slice(site_urls, sync_mode):
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+@pytest.mark.parametrize("data_state", ["all", "final"])
+def test_slice(site_urls, sync_mode, data_state):
     stream = SearchAnalyticsByDate(None, site_urls, "2021-09-01", "2021-09-07")
 
     search_types = stream.search_types
@@ -61,6 +60,7 @@ def test_slice(site_urls, sync_mode):
                 {"start_date": "2021-09-07", "end_date": "2021-09-07"},
             ]:
                 expected = {
+                    "data_state": "final",
                     "site_url": quote_plus(site_url),
                     "search_type": search_type,
                     "start_date": range_["start_date"],

@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte-types/blob/master/models/src/main/resources/NormalizationDestinationDefinitionConfig.yaml
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/NormalizationDestinationDefinitionConfig.yaml
 title: NormalizationDestinationDefinitionConfig
 description: describes a normalization config for destination definition
 type: object

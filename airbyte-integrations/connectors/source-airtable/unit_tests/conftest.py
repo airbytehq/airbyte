@@ -4,9 +4,10 @@
 
 
 import pytest
-from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_airtable.streams import AirtableStream
 
 
 @pytest.fixture
@@ -149,3 +150,48 @@ def prepared_stream():
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
         )
     }
+
+
+@pytest.fixture
+def make_airtable_stream(prepared_stream):
+    def make(name):
+        return AirtableStream(
+            stream_path=prepared_stream["stream_path"],
+            stream_name=name,
+            stream_schema=prepared_stream["stream"].json_schema,
+            authenticator=fake_auth
+        )
+    return make
+
+
+@pytest.fixture
+def make_stream(prepared_stream):
+    def make(name):
+        return {
+            "stream_path": prepared_stream["stream_path"],
+            "stream": AirbyteStream(
+                name=name,
+                json_schema=prepared_stream["stream"].json_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
+            ),
+            "sync_mode": SyncMode.full_refresh,
+            "destination_sync_mode": DestinationSyncMode.overwrite
+        }
+    return make
+
+
+@pytest.fixture
+def fake_catalog(make_stream):
+    stream1 = make_stream(name="test_base/test_table1/abcdef")
+    stream2 = make_stream(name="test_base/test_table2/qwerty")
+    return ConfiguredAirbyteCatalog(
+        streams=[stream1, stream2],
+    )
+
+
+@pytest.fixture
+def fake_streams(make_airtable_stream):
+    stream1 = make_airtable_stream(name="test_base/test_table1/abcdef")
+    stream2 = make_airtable_stream(name="test_base/test_table2_renamed/qwerty")
+    yield [stream1, stream2]

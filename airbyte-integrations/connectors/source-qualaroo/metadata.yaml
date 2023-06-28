@@ -1,18 +1,20 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b08e4776-d1de-4e80-ab5c-1e51dad934a2
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
   license: MIT
   name: Qualaroo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/qualaroo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qualaroo
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

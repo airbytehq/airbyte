@@ -21,6 +21,15 @@
     },
     "permissions": {
       "type": ["null", "array"]
+    },
+    "visibility_user_lcf_behavior": {
+      "type": ["null", "string"]
+    },
+    "visibility_user_lcf_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

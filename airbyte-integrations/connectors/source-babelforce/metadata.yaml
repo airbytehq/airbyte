@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
@@ -13,6 +8,13 @@ data:
   icon: babelforce.svg
   license: MIT
   name: Babelforce
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/babelforce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

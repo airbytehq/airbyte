@@ -49,8 +49,7 @@ To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run
   * When running `connectorAcceptanceTest` `gradle` task
   * When running or `./acceptance-test-docker.sh` in a connector project
 * When running `/test` command on a GitHub pull request.
-* When running `/publish` command on a GitHub pull request.
-* When running ` integration-test` GitHub action that is creating the JSON files linked to from [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
+* When running ` integration-test` GitHub action. This is the same action that creates and uploads the test report JSON files that power the badges in the [connector registry summary report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
 
 ## Developing on the acceptance tests
 You may want to iterate on the acceptance test project itself: adding new tests, fixing a bug etc.
@@ -71,7 +70,7 @@ These iterations are more conveniently achieved by remaining in the current dire
 10. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 11. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 12. Open a PR on our GitHub repository
-13. Run the unit test on the CI by running `/test connector=bases/connector-acceptance-test` in a GitHub comment
+13. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
 14. Publish the new acceptance test version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
 15. Merge your PR
 

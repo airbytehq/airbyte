@@ -11,7 +11,6 @@ application {
 
 dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
-    //implementation project(':airbyte-protocol:protocol-models')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-config-oss:config-models-oss')

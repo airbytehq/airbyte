@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
@@ -13,6 +8,13 @@ data:
   icon: uscensus.svg
   license: MIT
   name: US Census
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/us-census
+  documentationUrl: https://docs.airbyte.com/integrations/sources/us-census
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

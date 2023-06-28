@@ -69,6 +69,9 @@ and types in the destination table as in the source except for the following typ
 
 ## Changelog
 
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.3 | 2023-03-28 | [\#24642](https://github.com/airbytehq/airbyte/pull/24642) | Prefer airbyte type for complex types when available |
 | 0.1.2 | 2022-09-26 | [\#17193](https://github.com/airbytehq/airbyte/pull/17193) | Fix schema keyerror and add parquet support |
 | 0.1.1 | 2022-04-20 | [\#11811](https://github.com/airbytehq/airbyte/pull/11811) | Fix name of required param in specification |
 | 0.1.0 | 2022-03-29 | [\#10760](https://github.com/airbytehq/airbyte/pull/10760) | Initial release |

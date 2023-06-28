@@ -30,12 +30,11 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
   }
 
   private final Map<String, List<String>> charsetsCollationsMap = Map.of(
-              "UTF8", Arrays.asList("UTF8_bin", "UTF8_general_ci"),
-              "UTF8MB4", Arrays.asList("UTF8MB4_general_ci", "utf8mb4_0900_ai_ci"),
-              "UTF16", Arrays.asList("UTF16_bin", "UTF16_general_ci"),
-              "binary", Arrays.asList("binary"),
-              "CP1250", Arrays.asList("CP1250_general_ci", "cp1250_czech_cs")
-              );
+      "UTF8", Arrays.asList("UTF8_bin", "UTF8_general_ci"),
+      "UTF8MB4", Arrays.asList("UTF8MB4_general_ci", "utf8mb4_0900_ai_ci"),
+      "UTF16", Arrays.asList("UTF16_bin", "UTF16_general_ci"),
+      "binary", Arrays.asList("binary"),
+      "CP1250", Arrays.asList("CP1250_general_ci", "cp1250_czech_cs"));
 
   @Override
   protected Database setupDatabase() throws Exception {
@@ -82,13 +81,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
     for (final MysqlType mst : MysqlType.values()) {
       switch (mst) {
         case DECIMAL -> {
-          /* https://github.com/airbytehq/airbyte/issues/25027 */
-//          addDataTypeTestData(
-//              TestDataHolder.builder()
-//                  .sourceType(mst.name())
-//                  .airbyteType(JsonSchemaType.INTEGER)
-//                  .fullSourceDataType("%s(1,0)".formatted(mst.getName()))
-//                  .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("%s(10,0)".formatted(mst.getName()))
+                  .build());
 
           addDataTypeTestData(
               TestDataHolder.builder()
@@ -98,12 +96,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
                   .build());
         }
         case DECIMAL_UNSIGNED -> {
-//          addDataTypeTestData(
-//              TestDataHolder.builder()
-//                  .sourceType(mst.name())
-//                  .airbyteType(JsonSchemaType.INTEGER)
-//                  .fullSourceDataType("DECIMAL(1,0) UNSIGNED")
-//                  .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("DECIMAL(32,0) UNSIGNED")
+                  .build());
 
           addDataTypeTestData(
               TestDataHolder.builder()
@@ -326,13 +324,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
                   .build());
         }
         case YEAR -> {
-          /* https://github.com/airbytehq/airbyte/issues/8722 */
-//          addDataTypeTestData(
-//              TestDataHolder.builder()
-//                  .sourceType(mst.name())
-//                  .airbyteType(JsonSchemaType.INTEGER)
-//                  .fullSourceDataType("%s".formatted(mst.getName()))
-//                  .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("%s".formatted(mst.getName()))
+                  .build());
         }
         case VARCHAR -> {
           for (final Entry entry : charsetsCollationsMap.entrySet()) {
@@ -399,7 +396,8 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
                   TestDataHolder.builder()
                       .sourceType(mst.name())
                       .airbyteType(JsonSchemaType.STRING)
-                      .fullSourceDataType("%s('value1', 'value2', 'value3') CHARACTER SET %s COLLATE %s".formatted(mst.getName(), entry.getKey(), collation))
+                      .fullSourceDataType(
+                          "%s('value1', 'value2', 'value3') CHARACTER SET %s COLLATE %s".formatted(mst.getName(), entry.getKey(), collation))
                       .build());
             }
           }
@@ -501,4 +499,5 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
       }
     }
   }
+
 }

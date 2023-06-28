@@ -370,6 +370,36 @@ acceptance_tests:
 We cache discovered catalogs by default for performance and reuse the same discovered catalog through all tests.
 You can disable this behavior by setting `cached_discovered_catalog: False` at the root of the configuration.
 
+## Breaking Changes and Backwards Compatibility
+
+Breaking changes are modifications that make previous versions of the connector incompatible, requiring a major version bump. Here are the various types of changes that we consider breaking:
+
+1. **Changes to Stream Schema**
+    - **Removing a Field**: If a field is removed from the stream's schema, it's a breaking change. Clients expecting the field may fail when it's absent.
+    - **Changing Field Type**: If the data type of a field is changed, it could break clients expecting the original type. For instance, changing a field from string to integer would be a breaking change.
+    - **Renaming a Field**: If a field is renamed, it can break existing clients that expect the field by its original name.
+
+2. **Changes to Stream Behaviour**
+    - **Changing the Cursor**: Changing the cursor field for incremental streams can cause data discrepancies or synchronization issues. Therefore, it's considered a breaking change.
+    - **Renaming a Stream**: If a stream is renamed, it could cause failures for clients expecting the stream with its original name. Hence, this is a breaking change.
+    - **Changing Sync Mechanism**: If a stream's sync mechanism changes, such as switching from full refresh sync to incremental sync (or vice versa), it's a breaking change. Existing workflows may fail or behave unexpectedly due to this change.
+
+3. **Changes to Configuration Options**
+    - **Removing or Renaming Options**: If configuration options are removed or renamed, it could break clients using those options, hence, is considered a breaking change.
+    - **Changing Default Values or Behaviours**: Altering default values or behaviours of configuration options can break existing clients that rely on previous defaults.
+
+4. **Changes to Authentication Mechanism**
+    - Any change to the connector's authentication mechanism that isn't backwards compatible is a breaking change. For example, switching from API key authentication to OAuth without supporting both is a breaking change.
+
+5. **Changes to Error Handling**
+    - Altering the way errors are handled can be a breaking change. For example, if a certain type of error was previously ignored and now causes the connector to fail, it could break user's existing workflows.
+
+6. **Changes That Require User Intervention**
+    - If a change requires user intervention, such as manually updating settings or reconfiguring workflows, it would be considered a breaking change.
+
+Please note that this is an exhaustive but not an exclusive list. Other changes could be considered breaking if they disrupt the functionality of the connector or alter user expectations in a significant way.
+
+
 ## Additional Checks
 
 While not necessarily related to Connector Acceptance Testing, Airbyte employs a number of additional checks which run on connector Pull Requests which check the following items:
@@ -380,31 +410,37 @@ Generally Available Connectors must enable high-strictness testing for the Conne
 
 ### Allowed Hosts
 
-GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
+GA and Beta connectors are required to provide an entry for Allowed Hosts in the [metadata.yaml](../connector-metadata-file.md) for the connector. You can provide:
 
 A list of static hostnames or IP addresses. Wildcards are valid.
 
 ```yaml
-allowedHosts:
-  hosts:
-    - "api.github.com"
-    - "*.hubspot.com"
+data:
+  # ...
+  allowedHosts:
+    hosts:
+      - "api.github.com"
+      - "*.hubspot.com"
 ```
 
 A list of dynamic hostnames or IP addresses which reference values from the connector's configuration. The variable names need to match the connector's config exactly. In this example, `subdomain` is a required option defined by the connector's SPEC response. It is also possible to refrence sub-fields with dot-notation, e.g. `networking_options.tunnel_host`.
 
 ```yaml
-allowedHosts:
-  hosts:
-    - "${subdomain}.vendor.com"
-    - "${networking_options.tunnel_host}"
+data:
+  # ...
+  allowedHosts:
+    hosts:
+      - "${subdomain}.vendor.com"
+      - "${networking_options.tunnel_host}"
 ```
 
 or prevent network access for this connector entirely
 
 ```yaml
-allowedHosts:
-  hosts: []
+data:
+  # ...
+  allowedHosts:
+    hosts: []
 ```
 
 ## Custom environment variable

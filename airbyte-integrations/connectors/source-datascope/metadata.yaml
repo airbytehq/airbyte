@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8e1ae2d2-4790-44d3-9d83-75b3fc3940ff
@@ -13,6 +8,14 @@ data:
   icon: datascope.svg
   license: MIT
   name: Datascope
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/datascope
+  documentationUrl: https://docs.airbyte.com/integrations/sources/datascope
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 72d405a3-56d8-499f-a571-667c03406e43
@@ -13,6 +8,13 @@ data:
   icon: dockerhub.svg
   license: MIT
   name: Dockerhub
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dockerhub
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

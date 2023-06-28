@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.databricks;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -25,11 +24,9 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Disabled
 public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksS3DestinationAcceptanceTest.class);
@@ -56,8 +53,6 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     final String randomString = RandomStringUtils.randomAlphanumeric(5);
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     ((ObjectNode) configJson).put(DATABRICKS_SCHEMA_KEY, "integration_test_" + randomString);
-    final JsonNode dataSource = configJson.get(DATABRICKS_DATA_SOURCE_KEY);
-    ((ObjectNode) dataSource).put(S_3_BUCKET_PATH, "test_" + randomString);
 
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);

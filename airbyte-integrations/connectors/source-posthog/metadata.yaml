@@ -3,20 +3,23 @@ data:
     hosts:
       - ${base_url}
       - app.posthog.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/source-posthog
   githubIssueLabel: source-posthog
   icon: posthog.svg
   license: MIT
   name: PostHog
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/posthog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
