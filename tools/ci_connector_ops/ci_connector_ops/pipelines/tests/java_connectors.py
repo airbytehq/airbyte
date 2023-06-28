@@ -19,16 +19,15 @@ from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
 
 
-class UnitTests(GradleTask):
-    title = "Unit tests"
-    gradle_task_name = "test"
-
-
-class IntegrationTestJava(GradleTask):
+class IntegrationTest(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    title = "Integration tests"
-    gradle_task_name = "integrationTestJava"
+    gradle_task_name = "integrationTest"
+    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker", "connectorAcceptanceTest"]
+
+    @property
+    def title(self) -> str:
+        return f"./gradlew :airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -81,11 +80,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     if build_connector_image_results.status is StepStatus.FAILURE:
         return step_results
 
-    unit_tests_results = await UnitTests(context).run()
-    step_results.append(unit_tests_results)
-    if unit_tests_results.status is StepStatus.FAILURE:
-        return step_results
-
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
@@ -100,7 +94,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
-    integration_tests_results = await IntegrationTestJava(context).run(connector_image_tar_file, normalization_tar_file)
+    integration_tests_results = await IntegrationTest(context).run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_tests_results)
 
     acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
