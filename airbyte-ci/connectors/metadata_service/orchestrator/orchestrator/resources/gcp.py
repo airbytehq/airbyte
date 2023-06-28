@@ -1,5 +1,5 @@
 import json
-
+import re
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -13,11 +13,13 @@ from dagster._core.storage.file_manager import (
     check_file_like_obj,
 )
 
+from orchestrator.config import get_public_url_for_gcs_file
+
 
 class PublicGCSFileHandle(GCSFileHandle):
     @property
     def public_url(self):
-        return f"https://storage.googleapis.com/{self.gcs_bucket}/{self.gcs_key}"
+        return get_public_url_for_gcs_file(self.gcs_bucket, self.gcs_key)
 
 
 class ContentTypeAwareGCSFileManager(GCSFileManager):
@@ -49,7 +51,13 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
         bucket_obj = self._client.bucket(self._gcs_bucket)
         blob = bucket_obj.blob(gcs_key)
+
+        # Set Cache-Control header to no-cache to avoid caching issues
+        # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
+        # and the next time we try to download it, we will get the stale version
+        blob.cache_control = "no-cache"
         blob.content_type = self.get_content_type(ext)
+
         blob.upload_from_file(file_obj)
         return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 
@@ -66,20 +74,6 @@ def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
         credentials=credentials,
         project=credentials.project_id,
     )
-
-
-@resource(
-    required_resource_keys={"gcp_gcs_client"},
-    config_schema={"gcs_bucket": StringSource},
-)
-def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
-    """Create a connection to a gcs bucket."""
-
-    gcs_bucket = resource_context.resource_config["gcs_bucket"]
-    resource_context.log.info(f"retrieving gcs_bucket_manager for {gcs_bucket}")
-
-    storage_client = resource_context.resources.gcp_gcs_client
-    return storage_client.get_bucket(gcs_bucket)
 
 
 @resource(
@@ -102,8 +96,9 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 
 
 @resource(
-    required_resource_keys={"gcs_bucket_manager"},
+    required_resource_keys={"gcp_gcs_client"},
     config_schema={
+        "gcs_bucket": StringSource,
         "prefix": Noneable(StringSource),
         "gcs_filename": StringSource,
     },
@@ -115,13 +110,16 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     This is implemented so we are able to retrieve the metadata of a file
     before committing to downloading the file.
     """
-    bucket = resource_context.resources.gcs_bucket_manager
+    gcs_bucket = resource_context.resource_config["gcs_bucket"]
+    storage_client = resource_context.resources.gcp_gcs_client
+
+    bucket = storage_client.get_bucket(gcs_bucket)
 
     prefix = resource_context.resource_config["prefix"]
     gcs_filename = resource_context.resource_config["gcs_filename"]
     gcs_file_path = f"{prefix}/{gcs_filename}" if prefix else gcs_filename
 
-    resource_context.log.info(f"retrieving gcs file blob for {gcs_file_path}")
+    resource_context.log.info(f"retrieving gcs file blob {gcs_file_path} in bucket: {gcs_bucket}")
 
     gcs_file_blob = bucket.get_blob(gcs_file_path)
     if not gcs_file_blob or not gcs_file_blob.exists():
@@ -131,24 +129,28 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
 
 
 @resource(
-    required_resource_keys={"gcs_bucket_manager"},
+    required_resource_keys={"gcp_gcs_client"},
     config_schema={
+        "gcs_bucket": StringSource,
         "prefix": StringSource,
-        "suffix": StringSource,
+        "match_regex": StringSource,
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
     """
     List all blobs in a bucket that match the prefix.
     """
-    bucket = resource_context.resources.gcs_bucket_manager
+    gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
-    suffix = resource_context.resource_config["suffix"]
+    match_regex = resource_context.resource_config["match_regex"]
 
-    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, suffix: {suffix}")
+    storage_client = resource_context.resources.gcp_gcs_client
+    bucket = storage_client.get_bucket(gcs_bucket)
+
+    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, match_regex: {match_regex}, in bucket: {gcs_bucket}")
 
     gcs_file_blobs = bucket.list_blobs(prefix=prefix)
-    if suffix:
-        gcs_file_blobs = [blob for blob in gcs_file_blobs if blob.name.endswith(suffix)]
+    if match_regex:
+        gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(match_regex, blob.name)]
 
     return gcs_file_blobs

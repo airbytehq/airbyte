@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +75,8 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, TestHarnessException {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot, final Map<String, String> additionalEnvironmentVariables)
+      throws IOException, TestHarnessException {
     Preconditions.checkState(destinationProcess == null);
 
     LOGGER.info("Running destination...");
@@ -83,7 +85,8 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        protocolSerializer.serialize(destinationConfig.getCatalog()));
+        protocolSerializer.serialize(destinationConfig.getCatalog()),
+        additionalEnvironmentVariables);
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 

@@ -36,9 +36,13 @@ from source_twilio.streams import (
     OutgoingCallerIds,
     Queues,
     Recordings,
+    Roles,
+    Services,
     Transcriptions,
+    Trunks,
     UsageRecords,
     UsageTriggers,
+    VerifyServices,
 )
 
 RETENTION_WINDOW_LIMIT = 400
@@ -110,8 +114,12 @@ class SourceTwilio(AbstractSource):
             OutgoingCallerIds(**full_refresh_stream_kwargs),
             Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
+            Roles(**full_refresh_stream_kwargs),
+            Services(**full_refresh_stream_kwargs),
             Transcriptions(**full_refresh_stream_kwargs),
+            Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
+            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams

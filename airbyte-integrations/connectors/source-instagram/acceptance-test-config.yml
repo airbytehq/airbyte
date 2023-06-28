@@ -43,7 +43,7 @@ acceptance_tests:
           - name: value
             bypass_reason: Contains PII data
           - name: date
-            bypass_reason: Depend on curent date
+            bypass_reason: Depend on current date
           user_insights:
           - name: date
             bypass_reason: Anonymization for exactly for which date statistics anonymization

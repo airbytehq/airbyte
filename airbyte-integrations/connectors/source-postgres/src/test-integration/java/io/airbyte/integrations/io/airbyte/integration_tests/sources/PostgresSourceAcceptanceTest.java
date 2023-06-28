@@ -63,6 +63,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
 
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
+
     final String username = container.getUsername();
     final String password = container.getPassword();
     final List<String> schemas = List.of("public");
@@ -94,6 +95,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))

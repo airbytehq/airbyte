@@ -1,0 +1,111 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": true,
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "currency": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "metadata": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {}
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "balance_transaction": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "destination_balance": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "expected_availability_date": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "failure_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "failure_message": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "livemode": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "source": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {}
+        },
+        "statement_descriptor": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "transfer_group": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

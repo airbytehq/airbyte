@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.29
   dockerRepository: airbyte/source-iterable
   githubIssueLabel: source-iterable
   icon: iterable.svg
@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/iterable
+  documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
