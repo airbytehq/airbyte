@@ -2,11 +2,11 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-google-sheets
   githubIssueLabel: destination-google-sheets
   icon: google-sheets.svg
-  license: MIT
+  license: ELv2
   name: Google Sheets
   registries:
     cloud:
