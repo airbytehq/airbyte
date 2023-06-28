@@ -62,5 +62,6 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                              | Subject             |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------|
+| 0.2.0   | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784)  | Add necessary fields to schemas |
 | 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies|
 | 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog |
