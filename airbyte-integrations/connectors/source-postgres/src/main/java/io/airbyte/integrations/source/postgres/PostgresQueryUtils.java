@@ -134,7 +134,7 @@ public static final String MAX_CURSOR_VALUE_QUERY =
         final String name = stream.getStream().getName();
         final String namespace = stream.getStream().getNamespace();
         final Optional<CursorInfo> cursorInfoOptional =
-            stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name,namespace));
+            stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
         if (cursorInfoOptional.isEmpty()) {
           standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), new StandardStatus());
         }
@@ -150,8 +150,9 @@ public static final String MAX_CURSOR_VALUE_QUERY =
         Preconditions.checkState(jsonNodes.size() == 1);
         final JsonNode result = jsonNodes.get(0);
 
-        final StandardStatus standardStatus = new StandardStatus().withStateType(StateType.STANDARD);
+        final StandardStatus standardStatus = new StandardStatus();
 
+        standardStatus.setStateType(StateType.STANDARD);
         standardStatus.setCursorField(ImmutableList.of(cursorField));
         standardStatus.setCursor(result.get("max").asText());
         standardStatus.setCursorRecordCount(cursorRecordCount == 0L ? 1 : cursorRecordCount);
