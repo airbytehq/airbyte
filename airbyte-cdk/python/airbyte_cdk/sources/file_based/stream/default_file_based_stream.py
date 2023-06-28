@@ -8,10 +8,9 @@ import logging
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
-from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
@@ -48,7 +47,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified
-        all_files = self._list_files()
+        all_files = self.list_files()
         files_to_read = self._cursor.get_files_to_sync(all_files, self.logger)
         sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
@@ -61,14 +60,14 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         schema = self._catalog_schema
         if schema is None:
             # On read requests we should always have the catalog available
-            raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
+            raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
         parser = self.get_parser(self.config.file_type)
         for file in stream_slice["files"]:
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
             try:
                 for record in parser.parse_records(file, self._stream_reader):
-                    if not record_passes_validation_policy(self.config.validation_policy, record, schema):
+                    if not self.record_passes_validation_policy(record):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
                     record[self.ab_last_mod_col] = file_datetime_string
@@ -76,7 +75,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     yield stream_data_to_airbyte_message(self.name, record)
                 self._cursor.add_file(file)
             except Exception as exc:
-                raise RecordParseError(f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?") from exc
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_FILE, stream=self.name) from exc
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -100,7 +99,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         if self.config.input_schema:
             type_mapping = self.config.input_schema
         else:
-            files = self._list_files()
+            files = self.list_files()
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if len(files) > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
@@ -110,7 +109,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return type_mapping
 
     @cache
-    def _list_files(self) -> List[RemoteFile]:
+    def list_files(self) -> List[RemoteFile]:
         """
         List all files that belong to the stream as defined by the stream's globs.
         The output of this method is cached so we don't need to list the files more than once.
@@ -150,4 +149,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         try:
             return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
         except Exception as exc:
-            raise SchemaInferenceError(f"Error inferring schema for file: {file.uri}. Is the file valid {self.config.file_type}?") from exc
+            raise SchemaInferenceError(
+                FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
+                file=file.uri,
+                stream_file_type=self.config.file_type,
+                stream=self.name,
+            ) from exc
