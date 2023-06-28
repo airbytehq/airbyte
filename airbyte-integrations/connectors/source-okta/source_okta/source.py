@@ -244,8 +244,7 @@ class Users(IncrementalOktaStream):
         return params
 
 
-class ResourceSets(IncrementalOktaStream):
-    cursor_field = "id"
+class ResourceSets(OktaStream):
     primary_key = "id"
     min_id = "iam00000000000000000"
 
@@ -269,19 +268,6 @@ class ResourceSets(IncrementalOktaStream):
             return dict(parse.parse_qsl(parsed_link.query))
 
         return None
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
-            params["after"] = latest_entry
-        return params
-
 
 class CustomRoles(OktaStream):
     # https://developer.okta.com/docs/reference/api/roles/#list-roles

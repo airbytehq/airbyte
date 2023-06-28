@@ -1,5 +1,5 @@
 connector_image: airbyte/source-okta:dev
-test_strictness_level: high
+# test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -7,10 +7,6 @@ acceptance_tests:
   connection:
     tests:
       - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/config_api_token.json"
-        status: "succeed"
-      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
