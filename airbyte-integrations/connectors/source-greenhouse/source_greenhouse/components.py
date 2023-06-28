@@ -41,15 +41,19 @@ class GreenHouseSlicer(Cursor):
         if cursor_value:
             self._state[self.cursor_field] = cursor_value
 
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
-        # stream_state can be passed in as a stream_slice parameter - it's a framework flaw, so we have to workaround it
-        slice_state = stream_slice.get(self.cursor_field)
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
         current_state = self._state.get(self.cursor_field)
         last_cursor = last_record and last_record[self.cursor_field]
-        max_dt = self._max_dt_str(slice_state, current_state, last_cursor)
+        max_dt = self._max_dt_str(current_state, last_cursor)
         if not max_dt:
             return
         self._state[self.cursor_field] = max_dt
+
+    def should_be_synced(self, record: Record) -> bool:
+        return self._parse_to_datetime(record[self.cursor_field]) >= self._parse_to_datetime(self._state.get(self.cursor_field, self.START_DATETIME))
+
+    def _parse_to_datetime(self, datetime_str: str) -> datetime.datetime:
+        return datetime.datetime.strptime(datetime_str, self.DATETIME_FORMAT)
 
     def get_stream_state(self) -> StreamState:
         return self._state
@@ -103,16 +107,18 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
                 )
             }
 
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
-        # FIXME logic here to have per partition state
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
         if last_record:
-            # stream_slice is really a stream slice
             substream_id = str(stream_slice[self.stream_slice_field])
             current_state = self._state.get(substream_id, {}).get(self.cursor_field)
             last_state = last_record[self.cursor_field]
             max_dt = self._max_dt_str(last_state, current_state)
             self._state[substream_id] = {self.cursor_field: max_dt}
             return
+
+    def should_be_synced(self, record: Record) -> bool:
+        state_cursor = self._state.get(record.associated_slice[self.stream_slice_field], {}).get(self.cursor_field)
+        return not state_cursor or self._parse_to_datetime(state_cursor) > self._parse_to_datetime(record[self.cursor_field])
 
     def get_request_params(
         self,

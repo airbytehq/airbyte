@@ -14,7 +14,7 @@ def test_slicer():
     date_time = "2022-09-05T10:10:10.000000Z"
     date_time_dict = {date_time: date_time}
     slicer = GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
-    slicer.update_state(stream_slice=date_time_dict, last_record=date_time_dict)
+    slicer.close_slice(stream_slice=date_time_dict, last_record=date_time_dict)
     assert slicer.get_stream_state() == {date_time: "2022-09-05T10:10:10.000Z"}
     assert slicer.get_request_headers() == {}
     assert slicer.get_request_body_data() == {}
@@ -46,5 +46,5 @@ def test_sub_slicer(last_record, expected, records):
         parent_key="parent_key",
     )
     stream_slice = next(slicer.stream_slices()) if records else {}
-    slicer.update_state(stream_slice=stream_slice, last_record=last_record)
+    slicer.close_slice(stream_slice=stream_slice, last_record=last_record)
     assert slicer.get_stream_state() == expected
