@@ -1,0 +1,7 @@
+{
+    "properties": {
+      "CAMPAIGN_ID": {
+        "type": ["null", "string"]
+      }
+    }
+}
