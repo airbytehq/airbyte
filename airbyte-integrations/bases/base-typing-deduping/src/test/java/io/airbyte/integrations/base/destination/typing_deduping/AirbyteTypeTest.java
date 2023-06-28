@@ -92,6 +92,148 @@ public class AirbyteTypeTest {
   }
 
   @Test
+  public void testSingletonListDecl() {
+    final String structSchema = """
+                                {
+                                  "type": ["object"],
+                                  "properties": {
+                                    "key1": {
+                                      "type": ["boolean"]
+                                    },
+                                    "key2": {
+                                      "type": ["integer"]
+                                    },
+                                    "key3": {
+                                      "type": ["number"],
+                                      "airbyte_type": "integer"
+                                    },
+                                    "key4": {
+                                      "type": ["number"]
+                                    },
+                                    "key5": {
+                                      "type": ["string"],
+                                      "format": "date"
+                                    },
+                                    "key6": {
+                                      "type": ["string"],
+                                      "format": "time",
+                                      "airbyte_type": "timestamp_without_timezone"
+                                    },
+                                    "key7": {
+                                      "type": ["string"],
+                                      "format": "time",
+                                      "airbyte_type": "timestamp_with_timezone"
+                                    },
+                                    "key8": {
+                                      "type": ["string"],
+                                      "format": "date-time",
+                                      "airbyte_type": "timestamp_without_timezone"
+                                    },
+                                    "key9": {
+                                      "type": ["string"],
+                                      "format": ["date-time", "foo"],
+                                      "airbyte_type": "timestamp_with_timezone"
+                                    },
+                                    "key10": {
+                                      "type": ["string"],
+                                      "format": "date-time"
+                                    },
+                                    "key11": {
+                                      "type": ["string"]
+                                    }
+                                  }
+                                }
+                                """;
+
+    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
+    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
+    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
+    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
+    propertiesMap.put("key5", AirbyteProtocolType.DATE);
+    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key11", AirbyteProtocolType.STRING);
+
+    final AirbyteType struct = new Struct(propertiesMap);
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
+  public void testNullableSingletonListDecl() {
+    final String structSchema = """
+                                {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "key1": {
+                                      "type": ["null", "boolean"]
+                                    },
+                                    "key2": {
+                                      "type": ["null", "integer"]
+                                    },
+                                    "key3": {
+                                      "type": ["null", "number"],
+                                      "airbyte_type": "integer"
+                                    },
+                                    "key4": {
+                                      "type": ["null", "number"]
+                                    },
+                                    "key5": {
+                                      "type": ["null", "string"],
+                                      "format": "date"
+                                    },
+                                    "key6": {
+                                      "type": ["null", "string"],
+                                      "format": "time",
+                                      "airbyte_type": "timestamp_without_timezone"
+                                    },
+                                    "key7": {
+                                      "type": ["null", "string"],
+                                      "format": "time",
+                                      "airbyte_type": "timestamp_with_timezone"
+                                    },
+                                    "key8": {
+                                      "type": ["null", "string"],
+                                      "format": "date-time",
+                                      "airbyte_type": "timestamp_without_timezone"
+                                    },
+                                    "key9": {
+                                      "type": ["null", "string"],
+                                      "format": ["date-time", "foo"],
+                                      "airbyte_type": "timestamp_with_timezone"
+                                    },
+                                    "key10": {
+                                      "type": ["null", "string"],
+                                      "format": "date-time"
+                                    },
+                                    "key11": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                                """;
+
+    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
+    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
+    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
+    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
+    propertiesMap.put("key5", AirbyteProtocolType.DATE);
+    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key11", AirbyteProtocolType.STRING);
+
+    final AirbyteType struct = new Struct(propertiesMap);
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
   public void testImplicitStruct() {
     final String structSchema = """
                                 {
