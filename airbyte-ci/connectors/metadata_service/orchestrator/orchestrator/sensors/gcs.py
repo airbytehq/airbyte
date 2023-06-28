@@ -3,10 +3,10 @@ from dagster import (
     RunRequest,
     SkipReason,
     SensorDefinition,
-    SensorResult,
     SensorEvaluationContext,
     build_resources,
     DefaultSensorStatus,
+    SensorResult,
 )
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
@@ -65,7 +65,7 @@ def new_gcs_blobs_partition_sensor(
     TODO
     """
 
-    sensor_name = f"{job.name}_on_new_part_{gcs_blobs_resource_key}"
+    sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
 
     @sensor(
         name=sensor_name,
@@ -74,10 +74,13 @@ def new_gcs_blobs_partition_sensor(
         default_status=DefaultSensorStatus.STOPPED,
     )
     def new_gcs_blobs_sensor_definition(context: SensorEvaluationContext):
+        BLOB_CHUNK_SIZE = 25
         context.log.info(f"Starting {sensor_name}")
 
         with build_resources(resources_def) as resources:
             context.log.info(f"Got resources for {sensor_name}")
+
+            context.log.info(f"Old etag cursor: {context.cursor}")
 
             gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
 
@@ -94,6 +97,12 @@ def new_gcs_blobs_partition_sensor(
 
             if not new_etags_found:
                 return SkipReason(f"No new {gcs_blobs_resource_key} in GCS bucket")
+
+            # if there are more than the BLOB_CHUNK_SIZE, we need to split them into multiple runs
+            if len(new_etags_found) > BLOB_CHUNK_SIZE:
+                new_etags_found = new_etags_found[:BLOB_CHUNK_SIZE]
+                new_blobs = new_blobs[:BLOB_CHUNK_SIZE]
+                context.log.info(f"Only processing first {BLOB_CHUNK_SIZE} new blobs: {new_etags_found}")
 
             return SensorResult(
                 run_requests=[

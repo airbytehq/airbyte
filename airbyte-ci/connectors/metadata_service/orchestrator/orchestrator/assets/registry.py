@@ -1,25 +1,16 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import copy
 import json
-from typing import List, Optional
-from pydash.objects import get
-
-import pandas as pd
-from dagster import asset, OpExecutionContext, MetadataValue, Output
 from google.cloud import storage
 
-from metadata_service.spec_cache import get_cached_spec
-
-from orchestrator.models.metadata import LatestMetadataEntry
-from orchestrator.assets.registry_entry import read_registry_entry_blob
-from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.utils.object_helpers import deep_copy_params
-
+from dagster import asset, OpExecutionContext, MetadataValue, Output
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from orchestrator.assets.registry_entry import read_registry_entry_blob
+
+from typing import List
 
 
 GROUP_NAME = "registry"

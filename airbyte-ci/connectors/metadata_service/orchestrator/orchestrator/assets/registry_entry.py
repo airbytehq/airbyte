@@ -1,26 +1,23 @@
-import pandas as pd
-import numpy as np
-import os
-from typing import List, Optional, Tuple, Union
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
 import yaml
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-from google.cloud import storage
+import pandas as pd
+import os
+import copy
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from google.cloud import storage
+from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
+from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
+
+from metadata_service.spec_cache import get_cached_spec
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 
-from orchestrator.utils.object_helpers import are_values_equal, merge_values
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
+from orchestrator.utils.object_helpers import deep_copy_params
+from orchestrator.utils.dagster_helpers import OutputDataFrame
+from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES
 
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from orchestrator.utils.object_helpers import deep_copy_params
-from metadata_service.spec_cache import get_cached_spec
-
-import copy
+from typing import List, Optional, Tuple, Union
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
@@ -282,6 +279,7 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
 def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
+    """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
@@ -321,10 +319,7 @@ def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
 @asset(required_resource_keys={"root_metadata_directory_manager"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
 def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEntry, cached_specs: pd.DataFrame) -> Output[dict]:
     """
-    TODO
-    1. parse into the individual registry files
-    2. update registry sensor to use these files
-    3. update the metadata entry to span all the registry files
+    Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
@@ -355,11 +350,6 @@ def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEn
         **metadata_persist,
         **metadata_delete,
     }
-
-    print(f"Enabled Registries: {enabled_registries}")
-    print(f"Persisted registry entries: {persisted_registry_entries}")
-    print(f"Persisted registry metadata: {metadata}")
-    print(f"Persisted registry entries: {metadata}")
 
     return Output(metadata=metadata, value=persisted_registry_entries)
 
