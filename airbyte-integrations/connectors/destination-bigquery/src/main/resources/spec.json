@@ -11,16 +11,6 @@
     "required": ["project_id", "dataset_location", "dataset_id"],
     "additionalProperties": true,
     "properties": {
-      "use_1s1t_format": {
-        "type": "boolean",
-        "description": "TODO delete this option before merging anything to master",
-        "title": "Use new 1s1t format"
-      },
-      "raw_data_dataset": {
-        "type": "string",
-        "description": "TODO delete this option before merging anything to master",
-        "title": "override raw table dataset"
-      },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
