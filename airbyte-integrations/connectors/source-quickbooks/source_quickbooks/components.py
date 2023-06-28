@@ -66,7 +66,7 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     To adopt this change to the LowCode CDK, this issue was created - https://github.com/airbytehq/airbyte/issues/25008.
     """
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: typing.Optional[Record] = None):
+    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
         super(CustomDatetimeBasedCursor, self).update_cursor(
             stream_slice=stream_slice,
             last_record=LastRecordDictProxy(last_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
