@@ -3,14 +3,14 @@
 #
 
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Mapping, Union
+from typing import Any, List, Literal, Mapping, MutableMapping, Union
 
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
 
 type_widths = {str: 0}
 
 JsonSchemaSupportedType = Union[List, Literal["string"], str]
-SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
+SchemaType = Mapping[str, Mapping[str, JsonSchemaSupportedType]]
 supported_types = {"null", "string"}
 
 
@@ -33,7 +33,7 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
     for k, t in list(schema1.items()) + list(schema2.items()):
         assert _is_valid_type(t["type"]), f"Unsupported type in schema at {k}: {t}"
 
-    merged_schema = deepcopy(schema1)
+    merged_schema: MutableMapping[str, Any] = dict(deepcopy(schema1))
     for k2, t2 in schema2.items():
         t1 = merged_schema.get(k2)
         t1_type = t1["type"] if t1 else None
@@ -73,11 +73,11 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, str]) -> 
     - For every column in the record, that column's type is equal to or narrower than the same column's
       type in the schema.
     """
-    ...
+    raise NotImplementedError()
 
 
 def type_mapping_to_jsonschema(type_mapping: Mapping[str, Any]) -> Mapping[str, str]:
     """
     Return the user input schema (type mapping), transformed to JSON Schema format.
     """
-    ...
+    raise NotImplementedError()

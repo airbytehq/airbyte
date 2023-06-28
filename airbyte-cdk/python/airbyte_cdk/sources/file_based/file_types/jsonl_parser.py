@@ -14,7 +14,7 @@ class JsonlParser(FileTypeParser):
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
 
     async def infer_schema(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError()
 
     def parse_records(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Iterable[Dict[str, Any]]:
-        ...
+        raise NotImplementedError()

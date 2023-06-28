@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from functools import cached_property
+from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -44,7 +44,7 @@ class AbstractFileBasedStream(Stream):
     ):
         super().__init__()
         self.config = config
-        self._catalog_schema = {}  # TODO: wire through configured catalog
+        self._catalog_schema: Mapping[str, Any] = {}  # TODO: wire through configured catalog
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
@@ -59,7 +59,7 @@ class AbstractFileBasedStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -69,6 +69,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         Return the JSON Schema for a stream.
@@ -103,7 +104,7 @@ class AbstractFileBasedStream(Stream):
             raise UndefinedParserError(f"No parser is defined for file type {file_type}.")
 
     @cached_property
-    def availability_strategy(self):
+    def availability_strategy(self) -> AvailabilityStrategy:
         return self._availability_strategy
 
     @property

@@ -16,6 +16,7 @@ from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
 
@@ -30,7 +31,7 @@ class FileBasedSource(AbstractSource, ABC):
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Dict[str, FileTypeParser] = None,
+        parsers: Optional[Dict[str, FileTypeParser]] = None,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
@@ -58,6 +59,8 @@ class FileBasedSource(AbstractSource, ABC):
 
         errors = []
         for stream in streams:
+            if not isinstance(stream, AbstractFileBasedStream):
+                raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
                 (
                     stream_is_available,
@@ -66,12 +69,12 @@ class FileBasedSource(AbstractSource, ABC):
             except Exception:
                 errors.append(f"Unable to connect to stream {stream} - {traceback.format_exc()}")
             else:
-                if not stream_is_available:
+                if not stream_is_available and reason:
                     errors.append(reason)
 
         return not bool(errors), (errors or None)
 
-    def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Return a list of this source's streams.
         """

@@ -11,7 +11,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError()
 
     def parse_records(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Iterable[Dict[str, Any]]:
-        ...
+        raise NotImplementedError()

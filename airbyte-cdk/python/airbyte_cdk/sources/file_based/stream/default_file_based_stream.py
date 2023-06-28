@@ -6,7 +6,7 @@ import asyncio
 import logging
 from datetime import datetime
 from functools import cache
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Set, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -30,7 +30,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -53,7 +53,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
                 raise RecordParseError(f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?") from exc
 
     @cache
-    def get_json_schema(self) -> Mapping[str, any]:
+    def get_json_schema(self) -> Mapping[str, Any]:
         """
         Return the JSON Schema for a stream.
 
@@ -106,13 +106,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
-        base_schema = {}
-        pending_tasks = set()
+        base_schema: Mapping[str, Any] = {}
+        pending_tasks: Set[asyncio.tasks.Task[Mapping[str, Any]]] = set()
 
         n_started, n_files = 0, len(files)
-        files = iter(files)
+        files_iterator = iter(files)
         while pending_tasks or n_started < n_files:
-            while len(pending_tasks) <= self._discovery_policy.n_concurrent_requests and (file := next(files, None)):
+            while len(pending_tasks) <= self._discovery_policy.n_concurrent_requests and (file := next(files_iterator, None)):
                 pending_tasks.add(asyncio.create_task(self._infer_file_schema(file)))
                 n_started += 1
             # Return when the first task is completed so that we can enqueue a new task as soon as the

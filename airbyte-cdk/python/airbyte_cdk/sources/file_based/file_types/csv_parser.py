@@ -14,10 +14,10 @@ class CsvParser(FileTypeParser):
     async def infer_schema(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Dict[str, Any]:
 
         with stream_reader.open_file(file) as fp:
-            reader = csv.DictReader(fp)
+            reader = csv.DictReader(fp) # type: ignore
             return {field.strip(): {"type": ["null", "string"]} for field in next(reader)}
 
     def parse_records(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file) as fp:
-            reader = csv.DictReader(fp)
+            reader = csv.DictReader(fp) # type: ignore
             yield from reader

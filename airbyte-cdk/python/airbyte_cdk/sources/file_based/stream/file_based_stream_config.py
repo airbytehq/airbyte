@@ -14,7 +14,7 @@ PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 class FileBasedStreamConfig(BaseModel):
     name: str
     file_type: str
-    globs: Optional[List[str]]
+    globs: List[str]
     validation_policy: UserValidationPolicies
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
     input_schema: Optional[Mapping[str, Any]]
