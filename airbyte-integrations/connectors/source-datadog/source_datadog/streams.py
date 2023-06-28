@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
-from dateutil.parser import parse
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from dateutil.parser import parse
 from pydantic.datetime_parse import timedelta
 
 
@@ -310,6 +310,7 @@ class SeriesStream(IncrementalSearchableStream, ABC):
     """
     https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products
     """
+
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = "data"
 
@@ -376,12 +377,8 @@ class SeriesStream(IncrementalSearchableStream, ABC):
         if self.data_source in ["metrics", "cloud_cost"]:
             payload["data"]["attributes"]["queries"][0]["query"] = self.query_string
         elif self.data_source in ["logs", "rum"]:
-            payload["data"]["attributes"]["queries"][0]["search"] = {
-                "query": self.query_string
-            }
-            payload["data"]["attributes"]["queries"][0]["compute"] = {
-                "aggregation": "count"
-            }
+            payload["data"]["attributes"]["queries"][0]["search"] = {"query": self.query_string}
+            payload["data"]["attributes"]["queries"][0]["compute"] = {"aggregation": "count"}
             print(payload)
         return payload
 

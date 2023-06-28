@@ -19,9 +19,9 @@ from source_datadog.streams import (
     IncidentTeams,
     Logs,
     Metrics,
+    SeriesStream,
     SyntheticTests,
     Users,
-    SeriesStream,
 )
 
 

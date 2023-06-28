@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
-import logging
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -88,7 +88,7 @@ class SourceDatadog(AbstractSource):
             "end_date": config.get("end_date", (datetime.now() + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")),
             "query_start_date": config.get("start_date", ""),
             "query_end_date": config.get("end_date", ""),
-            "queries": config.get("queries", [])
+            "queries": config.get("queries", []),
         }
 
 
