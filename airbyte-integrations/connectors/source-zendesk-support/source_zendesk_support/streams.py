@@ -584,6 +584,13 @@ class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
 
+class Posts(SourceZendeskSupportStream):
+    """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
+
+    def path(self, **kwargs):
+        return "community/posts"
+
+
 class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 

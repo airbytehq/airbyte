@@ -22,7 +22,6 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "licenseheaders==0.8.8",
 ]
 
-DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
