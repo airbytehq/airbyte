@@ -124,7 +124,7 @@ public class PostgresCtidHandler {
   }
 
   /**
-   * Builds a plan for subqueries that will return an approximate size of data.
+   * Builds a plan for subqueries. Each query returning an approximate amount of data.
    * Using information about a table size and block (page) size.
    *
    * @param startCtid starting point
@@ -204,14 +204,14 @@ public class PostgresCtidHandler {
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       if (upperBound != null) {
-        final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         preparedStatement.setObject(2, upperBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
-        final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);

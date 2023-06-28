@@ -301,6 +301,18 @@
                 "order": 7
               }
             }
+          },
+          {
+            "title": "Xmin",
+            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Xmin",
+                "order": 8
+              }
+            }
           }
         ]
       }
