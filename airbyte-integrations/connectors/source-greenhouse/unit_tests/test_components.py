@@ -3,9 +3,10 @@
 #
 
 
-from unittest.mock import MagicMock
+from unittest.mock import Mock, MagicMock
 
 import pytest
+from airbyte_cdk.sources.streams import Stream
 from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 
 
@@ -33,13 +34,14 @@ def test_slicer():
 )
 def test_sub_slicer(last_record, expected, records):
     date_time = "2022-09-05T10:10:10.000000Z"
-    parent_slicer = GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
-    GreenHouseSlicer.read_records = MagicMock(return_value=records)
+    parent_stream = Mock(spec=Stream)
+    parent_stream.stream_slices.return_value = [{"a slice": "value"}]
+    parent_stream.read_records = MagicMock(return_value=records)
     slicer = GreenHouseSubstreamSlicer(
         cursor_field=date_time,
         parameters={},
         request_cursor_field=None,
-        parent_stream=parent_slicer,
+        parent_stream=parent_stream,
         stream_slice_field=date_time,
         parent_key="parent_key",
     )
