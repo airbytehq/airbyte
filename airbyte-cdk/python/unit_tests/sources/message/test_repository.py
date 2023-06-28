@@ -6,10 +6,8 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
-    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
-    Level,
     OrchestratorType,
     Type,
 )
