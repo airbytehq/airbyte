@@ -124,6 +124,10 @@ class FBMarketingStream(Stream, ABC):
                     # To force eager release of memory
                     job.value.clear()
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 500
+
     def read_records(
             self,
             sync_mode: SyncMode,
