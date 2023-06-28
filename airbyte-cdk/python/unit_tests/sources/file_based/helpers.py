@@ -2,15 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from datetime import datetime
-from typing import List, Optional, Tuple
+from io import IOBase
+from typing import Any, List, Mapping, Optional
 
-from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
 
 
 class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
@@ -19,9 +18,25 @@ class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
         return 1
 
 
-class DefaultTestAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:
-        return True, None
+class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamReader):
+    def get_matching_files(
+        self,
+        globs: List[str],
+        from_date: Optional[datetime] = None,
+    ) -> List[RemoteFile]:
+        raise Exception("Error listing files")
+
+
+class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
+    def open_file(self, file: RemoteFile) -> IOBase:
+        raise Exception("Error opening file")
+
+
+class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):
+    ALWAYS_FAIL = "always_fail"
+
+    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
+        return False
 
 
 def make_remote_files(files: List[str]) -> List[RemoteFile]:
