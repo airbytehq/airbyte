@@ -66,8 +66,8 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     To adopt this change to the LowCode CDK, this issue was created - https://github.com/airbytehq/airbyte/issues/25008.
     """
 
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
-        super(CustomDatetimeBasedCursor, self).update_state(
+    def close_slice(self, stream_slice: StreamSlice, last_record: typing.Optional[Record]) -> None:
+        super(CustomDatetimeBasedCursor, self).close_slice(
             stream_slice=stream_slice,
             last_record=LastRecordDictProxy(last_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )
@@ -77,3 +77,10 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
 
     def parse_date(self, date: str) -> datetime.datetime:
         return datetime.datetime.strptime(date, self.datetime_format).astimezone(self._timezone)
+
+    def should_be_synced(self, record: Record) -> bool:
+        """
+        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for quickbooks
+        """
+        return True
