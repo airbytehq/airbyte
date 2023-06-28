@@ -1,4 +1,4 @@
-# Airbyte Support - Getting Help
+# Airbyte Support
 
 Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there! 
 
