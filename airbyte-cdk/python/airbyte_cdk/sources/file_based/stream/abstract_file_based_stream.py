@@ -7,13 +7,13 @@ from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
+from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
@@ -55,7 +55,6 @@ class AbstractFileBasedStream(Stream):
     def primary_key(self) -> PrimaryKeyType:
         ...
 
-    @abstractmethod
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -65,6 +64,32 @@ class AbstractFileBasedStream(Stream):
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
+        This method acts as an adapter between the generic Stream interface and the file-based's
+        stream since file-based streams manage their own states.
+        """
+        return self.read_records_from_slice(stream_slice)
+
+    @abstractmethod
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+        """
+        Yield all records from all remote files in `list_files_for_this_sync`.
+        """
+        ...
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: StreamState = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        This method acts as an adapter between the generic Stream interface and the file-based's
+        stream since file-based streams manage their own states.
+        """
+        return self.compute_slices()
+
+    @abstractmethod
+    def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
+        """
+        Return a list of slices that will be used to read files in the current sync.
+        :return: The slices to use for the current sync.
         """
         ...
 
@@ -72,20 +97,6 @@ class AbstractFileBasedStream(Stream):
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         Return the JSON Schema for a stream.
-        """
-        ...
-
-    @abstractmethod
-    def list_files(self) -> List[RemoteFile]:
-        """
-        List all files that belong to the stream.
-        """
-        ...
-
-    @abstractmethod
-    def list_files_for_this_sync(self, stream_slice: Optional[StreamSlice]) -> Iterable[RemoteFile]:
-        """
-        Return the subset of this stream's files that will be read in the current sync.
         """
         ...
 
