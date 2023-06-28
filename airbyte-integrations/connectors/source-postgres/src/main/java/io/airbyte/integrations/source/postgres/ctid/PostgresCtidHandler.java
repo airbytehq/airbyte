@@ -138,7 +138,7 @@ public class PostgresCtidHandler {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
-    final double oneGigaPages = MEGABYTE * 1000 / blockSize;
+    final double oneGigaPages = MEGABYTE * 1024 / blockSize;
     final long eachStep = (long)oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
