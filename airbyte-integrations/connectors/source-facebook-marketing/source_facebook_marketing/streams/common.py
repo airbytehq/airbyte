@@ -43,7 +43,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
             and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
         ):
-            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
+            details["kwargs"]["params"]["limit"] = max(1, int(int(details["kwargs"]["params"]["limit"]) / 2))
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
