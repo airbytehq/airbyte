@@ -5,7 +5,7 @@
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Record
@@ -275,8 +275,8 @@ def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data
                 config={}
             )
         ],
-        parameters = {},
-        config = {}
+        parameters={},
+        config={}
     )
 
     slices = list(partition_router.stream_slices())
@@ -295,8 +295,8 @@ def test_given_record_is_record_object_when_stream_slices_then_use_record_data()
                 config={}
             )
         ],
-        parameters = {},
-        config = {}
+        parameters={},
+        config={}
     )
 
     slices = list(partition_router.stream_slices())

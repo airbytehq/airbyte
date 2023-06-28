@@ -6,7 +6,7 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteLogMessage, Level, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -241,8 +241,10 @@ class DatetimeBasedCursor(Cursor):
         cursor_field = self.cursor_field.eval(self.config)
         record_cursor_value = record.get(cursor_field)
         if not record_cursor_value:
-            self._send_log(Level.WARN, f"Could not find cursor field `{cursor_field}` in record. "
-                                       f"The incremental sync will assume it needs to be synced")
+            self._send_log(
+                Level.WARN,
+                f"Could not find cursor field `{cursor_field}` in record. The incremental sync will assume it needs to be synced",
+            )
             return True
 
         latest_possible_cursor_value = self._select_best_end_datetime()
