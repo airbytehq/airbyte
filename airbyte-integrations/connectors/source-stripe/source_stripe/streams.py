@@ -25,6 +25,7 @@ STRIPE_ERROR_CODES: List = [
     "account_invalid",
 ]
 
+STRIPE_RECORD_ID = "stripe_record_id"
 
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
@@ -240,7 +241,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
          Sets the primary_key of the record to a new field (i.e. {subscription_id: "..."}) and replace
          the actual id with a unique value
         """
-        record["record_id"] = record[self.primary_key]
+        record[STRIPE_RECORD_ID] = record[self.primary_key]
         # Change the original id to random uuid to avoid warehouse deduplication
         record[self.primary_key] = uuid.uuid1()
 
@@ -513,13 +514,13 @@ class StripeSubStream(StripeStream, ABC):
         # get next pages
         items_next_pages = []
         if items_obj.get("has_more") and items:
-            stream_slice = {self.parent_id: parent_record["record_id"], "starting_after": items[-1]["id"]}
+            stream_slice = {self.parent_id: parent_record[STRIPE_RECORD_ID], "starting_after": items[-1]["id"]}
             items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
         for item in chain(items, items_next_pages):
             if self.add_parent_id:
                 # add reference to parent object when item doesn't have it already
-                item[self.parent_id] = parent_record["record_id"]
+                item[self.parent_id] = parent_record[STRIPE_RECORD_ID]
             yield item
 
 
