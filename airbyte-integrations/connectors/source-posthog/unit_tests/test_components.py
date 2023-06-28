@@ -70,10 +70,10 @@ stream_slicers = [
 def test_update_cursor(test_name, initial_state, stream_slice, last_record, expected_state):
     slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
     # set initial state
-    slicer.update_cursor(initial_state, None)
+    slicer.set_initial_state(initial_state)
 
     if last_record:
-        slicer.update_cursor(stream_slice, last_record)
+        slicer.update_state(stream_slice, last_record)
 
     updated_state = slicer.get_stream_state()
     assert updated_state == expected_state
