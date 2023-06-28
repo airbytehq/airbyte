@@ -79,7 +79,7 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     actual_records = record_selector.select_records(
         response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
     )
-    assert list(actual_records) == [Record(data, stream_slice) for data in expected_data]
+    assert actual_records == [Record(data, stream_slice) for data in expected_data]
 
 
 def create_response(body):

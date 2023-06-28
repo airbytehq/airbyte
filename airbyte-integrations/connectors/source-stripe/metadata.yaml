@@ -5,11 +5,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 3.10.0
+  dockerImageTag: 3.11.0
   dockerRepository: airbyte/source-stripe
   githubIssueLabel: source-stripe
   icon: stripe.svg
-  license: MIT
+  license: ELv2
   name: Stripe
   registries:
     cloud:

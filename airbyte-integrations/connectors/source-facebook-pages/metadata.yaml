@@ -5,11 +5,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-facebook-pages
   githubIssueLabel: source-facebook-pages
   icon: facebook.svg
-  license: MIT
+  license: ELv2
   name: Facebook Pages
   registries:
     cloud:

@@ -128,13 +128,15 @@
   <h2>Summary</h2>
   <table>
     <tr>
-      <th>Step Name</th>
+      <th>Step</th>
       <th>Status</th>
+      <th>Duration</th>
     </tr>
     {% for step_result in step_results %}
     <tr>
       <td>{{ step_result.step.title }}</td>
       <td>{{ step_result.status }}</td>
+      <td>{{ format_duration(step_result.step.run_duration) }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -143,11 +145,11 @@
   <div class="wrap-collabsible">
     <input id="{{ step_result.step.title }}" class="toggle" type="checkbox">
     {% if step_result.status == StepStatus.SUCCESS %}
-      <label for="{{ step_result.step.title }}" class="lbl-toggle success">{{ step_result.step.title }}</label>
+      <label for="{{ step_result.step.title }}" class="lbl-toggle success">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% elif step_result.status == StepStatus.FAILURE %}
-      <label for="{{ step_result.step.title }}" class="lbl-toggle failure">{{ step_result.step.title }}</label>
+      <label for="{{ step_result.step.title }}" class="lbl-toggle failure">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% else %}
-      <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }}</label>
+      <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% endif %}
     <div class="collapsible-content">
       <div class="content-inner">
