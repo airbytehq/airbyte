@@ -1,4 +1,5 @@
 import re
+import semver
 import pathlib
 import yaml
 from pydantic import ValidationError
@@ -74,8 +75,11 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
 
     return True, None
 
+
 def is_major_version(version: str) -> bool:
-    return re.match(r"^\d+\.0\.0$", version) is not None
+    """Check whether the version is of format N.0.0"""
+    semver_version = semver.Version.parse(version)
+    return semver_version.minor == 0 and semver_version.patch == 0
 
 
 def validate_major_version_bump_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
