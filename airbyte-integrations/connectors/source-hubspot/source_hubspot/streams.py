@@ -1676,18 +1676,15 @@ class Contacts(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-class ContactsMergedAudit(HttpSubStream, Stream):
+class ContactsMergedAudit(IncrementalStream):
 
-    primary_key = "vid-to-merge"
-    scopes = {"crm.objects.contacts.read"}
     url = "/contacts/v1/contact/vids/batch/"
-    filter_old_records = False
+    updated_at_field = "timestamp"
+    scopes = {"crm.objects.contacts.read"}
 
     def __init__(self, **kwargs):
-        super().__init__(parent=Contacts, **kwargs)
-        self.parent = Contacts(**kwargs)
-        self.parent.associations = []
-        self.parent._sync_mode = "incremental"
+        super().__init__(**kwargs)
+        self.config = kwargs
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Override get_json_schema defined in Stream class
@@ -1707,15 +1704,20 @@ class ContactsMergedAudit(HttpSubStream, Stream):
 
         counter = 0
         contact_batch = []
-        for contact in self.parent.read_records(sync_mode=SyncMode.incremental):
+
+        contacts = Contacts(**self.config)
+        contacts._sync_mode = SyncMode.incremental
+        contacts.filter_old_records = False
+
+        for contact in contacts.read_records(sync_mode=sync_mode):
             if contact["properties"].get("hs_merged_object_ids"):
                 if counter < max_contacts:
                     contact_batch.append(contact["id"])
                     counter += 1
                 else:
-                    slices.extend([{"vid": contact_batch}])
+                    slices.append({"vid": contact_batch})
                     counter = 0
-                    contact_batch = []
+                    contact_batch = [contact["id"]]
 
         if contact_batch:
             slices.append({"vid": contact_batch})
