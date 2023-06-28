@@ -259,7 +259,19 @@ class CatalogDiffChecker(BaseDiffChecker):
         self.check_if_stream_was_removed(self.streams_json_schemas_diff)
         self.check_if_value_of_type_field_changed(self.streams_json_schemas_diff)
         self.check_if_type_of_type_field_changed(self.streams_json_schemas_diff, allow_type_widening=False)
+        self.check_if_field_removed(self.streams_json_schemas_diff)
         self.check_if_cursor_field_was_changed(self.streams_cursor_fields_diff)
+
+    def check_if_field_removed(self, diff: DeepDiff):
+        """Check if a property was removed from the catalog."""
+        removed_properties = []
+        for removal in diff.get("dictionary_item_removed", []):
+            removal_path_parts = removal.path(output_format="list")
+            if "properties" in removal_path_parts:
+                removal_path_human_readable = ".".join(removal_path_parts)
+                removed_properties.append(removal_path_human_readable)
+        if removed_properties:
+            self._raise_error(f"The following properties were removed: {', '.join(removed_properties)}", diff)
 
     def check_if_stream_was_removed(self, diff: DeepDiff):
         """Check if a stream was removed from the catalog."""
