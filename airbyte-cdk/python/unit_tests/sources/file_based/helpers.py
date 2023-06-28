@@ -26,6 +26,6 @@ class DefaultTestAvailabilityStrategy(AvailabilityStrategy):
 
 def make_remote_files(files: List[str]) -> List[RemoteFile]:
     return [
-        RemoteFile(f, datetime.strptime("2023-06-05T03:54:07.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"))
+        RemoteFile(uri=f, last_modified=datetime.strptime("2023-06-05T03:54:07.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"))
         for f in files
     ]
