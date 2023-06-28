@@ -66,7 +66,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the tests steps.
     """
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)

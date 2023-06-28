@@ -41,7 +41,7 @@ class PipelineContext:
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
     DEFAULT_EXCLUDED_FILES = (
-        [".git"]
+        [".git", "tools/ci_connector_ops/pipeline_reports/*", "tools/ci_connector_ops/ci_connector_ops/pipelines/*"]
         + glob("**/build", recursive=True)
         + glob("**/.venv", recursive=True)
         + glob("**/secrets", recursive=True)
@@ -187,6 +187,7 @@ class PipelineContext:
         else:
             exclude += self.DEFAULT_EXCLUDED_FILES
             exclude = list(set(exclude))
+        exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
         if subdir != ".":
             subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
             exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
