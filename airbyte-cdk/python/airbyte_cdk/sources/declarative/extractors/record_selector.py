@@ -37,7 +37,7 @@ class RecordSelector(HttpSelector):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
-        all_records = self.extractor.extract_records(response)
+        all_records = [Record(data, stream_slice) for data in self.extractor.extract_records(response)]
         if self.record_filter:
             return self.record_filter.filter_records(
                 all_records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
