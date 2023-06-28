@@ -60,7 +60,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-kapiche-export-api:dev
+docker build . -t airbyte/source-kapiche-rms-api:dev
 ```
 
 You can also build the connector image via Gradle:

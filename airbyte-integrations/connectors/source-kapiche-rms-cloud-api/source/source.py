@@ -220,7 +220,6 @@ class RmsCloudApiKapicheSource(Source):
             yield AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    namespace=None,
                     stream=stream_name,
                     data=record,
                     emitted_at=int(datetime.now().timestamp()) * 1000,
