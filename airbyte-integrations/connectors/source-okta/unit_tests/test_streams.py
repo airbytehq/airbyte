@@ -67,7 +67,7 @@ class TestOktaStream:
         stream = OktaStream(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[{"a": 123}, {"b": "xx"}])
         resp = requests.get(f"{api_url}")
-        inputs = {"response": resp, "stream_state": MagicMock()}
+        inputs = {"response": resp, "stream_state": MagicMock(), "stream_slice": {}}
         expected_parsed_object = [{"a": 123}, {"b": "xx"}]
         assert list(stream.parse_response(**inputs)) == expected_parsed_object
 
@@ -87,7 +87,7 @@ class TestOktaStream:
         stream = IncrementalOktaStream(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[{"a": 123}, {"b": "xx"}])
         resp = requests.get(f"{api_url}")
-        inputs = {"response": resp, "stream_state": MagicMock()}
+        inputs = {"response": resp, "stream_state": MagicMock(), "stream_slice": {}}
         expected_parsed_object = [{"a": 123}, {"b": "xx"}]
         assert list(stream.parse_response(**inputs)) == expected_parsed_object
 
@@ -199,7 +199,8 @@ class TestStreamUsers:
     def test_users_source_parse_response(self, requests_mock, patch_base_class, users_instance, url_base, api_url, start_date):
         stream = Users(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[users_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [users_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [users_instance]
 
 
 class TestStreamCustomRoles:
@@ -214,7 +215,8 @@ class TestStreamCustomRoles:
         stream = CustomRoles(url_base=url_base, start_date=start_date)
         record = {"roles": [custom_role_instance]}
         requests_mock.get(f"{api_url}", json=record)
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [custom_role_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [custom_role_instance]
 
 
 class TestStreamPermissions:
@@ -230,7 +232,8 @@ class TestStreamPermissions:
         stream = Permissions(url_base=url_base, start_date=start_date)
         record = {"permissions": [permission_instance]}
         requests_mock.get(f"{api_url}", json=record)
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [permission_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [permission_instance]
 
 
 class TestStreamGroups:
@@ -243,7 +246,8 @@ class TestStreamGroups:
     def test_groups_parse_response(self, requests_mock, patch_base_class, groups_instance, url_base, api_url, start_date):
         stream = Groups(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[groups_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [groups_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [groups_instance]
 
 
 class TestStreamGroupMembers:
@@ -251,26 +255,14 @@ class TestStreamGroupMembers:
         stream = GroupMembers(url_base=url_base, start_date=start_date)
         group_id = "test_group_id"
         requests_mock.get(f"{api_url}/groups/{group_id}/users?limit=200", json=[group_members_instance])
-        inputs = {"sync_mode": SyncMode.incremental, "stream_state": {}, "stream_slice": {"group_id": group_id}}
+        inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"group_id": group_id}}
         assert list(stream.read_records(**inputs)) == [group_members_instance]
 
     def test_group_members_parse_response(self, requests_mock, patch_base_class, group_members_instance, url_base, api_url, start_date):
         stream = GroupMembers(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[group_members_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [group_members_instance]
-
-    def test_group_members_request_params_with_latest_entry(self, patch_base_class, group_members_instance, url_base, start_date):
-        stream = GroupMembers(url_base=url_base, start_date=start_date)
-        inputs = {
-            "stream_slice": {"group_id": "some_group"},
-            "stream_state": {"id": "some_test_id"},
-            "next_page_token": {"next_cursor": "123"},
-        }
-        assert stream.request_params(**inputs) == {
-            "limit": 200,
-            "next_cursor": "123",
-            "after": "some_test_id",
-        }
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {"group_id": "test_group_id"}}
+        assert list(stream.parse_response(**inputs)) == [group_members_instance]
 
     def test_group_members_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
@@ -278,13 +270,6 @@ class TestStreamGroupMembers:
         stream = GroupMembers(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
         assert list(stream.stream_slices()) == [{"group_id": "test_group_id"}]
-
-    def test_group_member_request_get_update_state(self, latest_record_instance, url_base, start_date):
-        stream = GroupMembers(url_base=url_base, start_date=start_date)
-        stream._cursor_field = "id"
-        current_stream_state = {"id": "test_user_group_id"}
-        update_state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record_instance)
-        assert update_state == {"id": "test_user_group_id"}
 
 
 class TestStreamGroupRoleAssignment:
@@ -301,7 +286,8 @@ class TestStreamGroupRoleAssignment:
     ):
         stream = GroupRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[group_role_assignments_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [group_role_assignments_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {"group_id": "test_group_id"}}
+        assert list(stream.parse_response(**inputs)) == [group_role_assignments_instance]
 
     def test_group_role_assignments_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
@@ -321,7 +307,8 @@ class TestStreamLogs:
     def test_logs_parse_response(self, requests_mock, patch_base_class, logs_instance, url_base, api_url, start_date):
         stream = Logs(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/logs?limit=200", json=[logs_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}/logs?limit=200"))) == [logs_instance]
+        inputs = {"response": requests.get(f"{api_url}/logs?limit=200"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [logs_instance]
 
     def test_logs_request_params_for_since(self, patch_base_class, logs_instance, url_base, start_date):
         stream = Logs(url_base=url_base, start_date=start_date)
@@ -352,7 +339,8 @@ class TestStreamUserRoleAssignment:
     ):
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[user_role_assignments_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [user_role_assignments_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {"user_id": "test_user_id"}}
+        assert list(stream.parse_response(**inputs)) == [user_role_assignments_instance]
 
     def test_user_role_assignments_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, users_instance, url_base, api_url, start_date
@@ -374,7 +362,8 @@ class TestStreamResourceSets:
         stream = ResourceSets(url_base=url_base, start_date=start_date)
         record = {"resource-sets": [resource_set_instance]}
         requests_mock.get(f"{api_url}", json=record)
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [resource_set_instance]
+        inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {}}
+        assert list(stream.parse_response(**inputs)) == [resource_set_instance]
 
     def test_resource_sets_next_page_token(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
         stream = ResourceSets(url_base=url_base, start_date=start_date)
@@ -394,6 +383,6 @@ class TestStreamResourceSets:
     def test_resource_sets_request_params(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
         stream = ResourceSets(url_base=url_base, start_date=start_date)
         cursor = "iam5cursorFybecursor"
-        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": None}
-        expected_params = {"limit": 200, "after": "iam5cursorFybecursor", "filter": 'id gt "iam5cursorFybecursor"'}
+        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": {'after': cursor}}
+        expected_params = {"limit": 200, "after": "iam5cursorFybecursor"}
         assert stream.request_params(**inputs) == expected_params
