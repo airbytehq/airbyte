@@ -28,10 +28,13 @@ metadata_partitions_def = DynamicPartitionsDefinition(name="metadata")
 
 # ERRORS
 
+
 class MissingCachedSpecError(Exception):
     pass
 
+
 # HELPERS
+
 
 def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
     cached_connector_version = {
@@ -46,6 +49,7 @@ def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataF
         return entry_with_spec
     except KeyError:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
+
 
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
     """Calculate the migration documentation url for the connector releases.
@@ -83,6 +87,7 @@ def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
             )
 
     return metadata_releases
+
 
 @deep_copy_params
 def apply_overrides_from_registry(metadata_data: dict, override_registry_key: str) -> dict:
@@ -155,6 +160,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     return overrode_metadata_data
 
+
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     yaml_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = yaml.safe_load(yaml_string)
@@ -164,6 +170,7 @@ def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistr
 
     return registry_entry, connector_type
 
+
 def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegistryEntry:
     if registry_entry.get("sourceDefinitionId"):
         return ("source", ConnectorRegistrySourceDefinition)
@@ -171,6 +178,7 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegist
         return ("destination", ConnectorRegistryDestinationDefinition)
     else:
         raise Exception("Could not determine connector type from registry entry")
+
 
 def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_name: str):
     metadata_path = metadata_entry.file_path
@@ -181,11 +189,12 @@ def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_
     print(f"metadata_folder: {metadata_folder}")
     return os.path.join(metadata_folder, registry_name)
 
+
 def persist_registry_entry_to_json(
     registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
     metadata_entry: LatestMetadataEntry,
-    registry_directory_manager: GCSFileManager
+    registry_directory_manager: GCSFileManager,
 ) -> GCSFileHandle:
     """Persist the registry_entry to a json file on GCS bucket
 
@@ -202,6 +211,7 @@ def persist_registry_entry_to_json(
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
     return file_handle
+
 
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
@@ -229,6 +239,7 @@ def generate_and_persist_registry_entry(
     file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_entry, metadata_directory_manager)
     return file_handle.public_url
 
+
 def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List[str], List[str]]:
     """Get the enabled registries for the given metadata entry.
 
@@ -244,25 +255,14 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     print(f"registries_field: {registries_field}")
 
     # registries is a dict of registry_name -> {enabled: bool}
-    all_enabled_registries = [
-        registry_name
-        for registry_name, registry_data in registries_field.items()
-        if registry_data.get("enabled")
-    ]
+    all_enabled_registries = [registry_name for registry_name, registry_data in registries_field.items() if registry_data.get("enabled")]
 
-    valid_enabled_registries = [
-        registry_name
-        for registry_name in all_enabled_registries
-        if registry_name in VALID_REGISTRIES
-    ]
+    valid_enabled_registries = [registry_name for registry_name in all_enabled_registries if registry_name in VALID_REGISTRIES]
 
-    valid_disabled_registries = [
-        registry_name
-        for registry_name in VALID_REGISTRIES
-        if registry_name not in all_enabled_registries
-    ]
+    valid_disabled_registries = [registry_name for registry_name in VALID_REGISTRIES if registry_name not in all_enabled_registries]
 
     return valid_enabled_registries, valid_disabled_registries
+
 
 def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, metadata_directory_manager: GCSFileManager) -> str:
     """Delete the given registry entry from GCS.
@@ -275,7 +275,9 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
     file_handle = metadata_directory_manager.delete_by_key(key=registry_entry_write_path, ext="json")
     return file_handle.public_url if file_handle else None
 
+
 # ASSETS
+
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
 def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
@@ -284,9 +286,7 @@ def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
     # find the blob with the matching etag
-    matching_blob = next(
-        (blob for blob in latest_metadata_file_blobs if blob.etag == etag), None
-    )
+    matching_blob = next((blob for blob in latest_metadata_file_blobs if blob.etag == etag), None)
 
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
@@ -326,24 +326,20 @@ def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEn
 
     persisted_registry_entries = {
         registry_name: generate_and_persist_registry_entry(metadata_entry, cached_specs, root_metadata_directory_manager, registry_name)
-        for registry_name
-        in enabled_registries
+        for registry_name in enabled_registries
     }
 
     deleted_registry_entries = {
         registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
-        for registry_name
-        in disabled_registries
+        for registry_name in disabled_registries
     }
 
     metadata_persist = {
-        f"create_{registry_name}": MetadataValue.url(registry_url)
-        for registry_name, registry_url in persisted_registry_entries.items()
+        f"create_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in persisted_registry_entries.items()
     }
 
     metadata_delete = {
-        f"delete_{registry_name}": MetadataValue.url(registry_url)
-        for registry_name, registry_url in deleted_registry_entries.items()
+        f"delete_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in deleted_registry_entries.items()
     }
 
     metadata = {
@@ -352,5 +348,3 @@ def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEn
     }
 
     return Output(metadata=metadata, value=persisted_registry_entries)
-
-

@@ -49,7 +49,6 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
 
         return full_key
 
-
     def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None) -> PublicGCSFileHandle:
         """
         Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write

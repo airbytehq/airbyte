@@ -7,6 +7,7 @@ from orchestrator.config import NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, NIGHTL
 
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
+
 def debug_nightly_report():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
@@ -18,7 +19,11 @@ def debug_nightly_report():
             {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
         ),
         "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
-            {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$"}
+            {
+                "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
+                "prefix": NIGHTLY_FOLDER,
+                "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
+            }
         ),
     }
 
@@ -41,7 +46,8 @@ def debug_badges():
     context = build_op_context(resources=resources)
     persist_connectors_test_summary_files(context).value
 
-def test_debug_registry_entry():
+
+def debug_registry_entry():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
@@ -50,11 +56,10 @@ def test_debug_registry_entry():
         ),
         "latest_metadata_file_blobs": gcs_directory_blobs.configured(
             {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
-        )
+        ),
     }
 
     part_key = "CPuD29SE4v8CEAE="
 
-    context = build_op_context(resources=resources , partition_key=part_key)
+    context = build_op_context(resources=resources, partition_key=part_key)
     metadata_entry_val = metadata_entry(context)
-

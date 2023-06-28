@@ -1,14 +1,10 @@
 from dagster import define_asset_job, AssetSelection
 from orchestrator.assets import registry_entry
 
-oss_registry_inclusive = AssetSelection.keys(
-    "persist_oss_registry_from_entries", "specs_secrets_mask_yaml"
-).upstream()
+oss_registry_inclusive = AssetSelection.keys("persist_oss_registry_from_entries", "specs_secrets_mask_yaml").upstream()
 generate_oss_registry = define_asset_job(name="generate_oss_registry", selection=oss_registry_inclusive)
 
-cloud_registry_inclusive = AssetSelection.keys(
-    "persist_cloud_registry_from_entries", "specs_secrets_mask_yaml"
-).upstream()
+cloud_registry_inclusive = AssetSelection.keys("persist_cloud_registry_from_entries", "specs_secrets_mask_yaml").upstream()
 generate_cloud_registry = define_asset_job(name="generate_cloud_registry", selection=cloud_registry_inclusive)
 
 registry_reports_inclusive = AssetSelection.keys("connector_registry_report").upstream()

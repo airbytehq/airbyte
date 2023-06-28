@@ -69,6 +69,7 @@ def generate_and_persist_registry(
 
 # Registry Generation
 
+
 @asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
@@ -83,6 +84,7 @@ def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[Con
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
     )
+
 
 @asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persist_cloud_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:

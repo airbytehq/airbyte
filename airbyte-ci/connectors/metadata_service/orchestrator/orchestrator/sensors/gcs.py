@@ -54,6 +54,7 @@ def new_gcs_blobs_sensor(
 
     return new_gcs_blobs_sensor_definition
 
+
 def new_gcs_blobs_partition_sensor(
     gcs_blobs_resource_key,
     job,
@@ -84,13 +85,7 @@ def new_gcs_blobs_partition_sensor(
 
             gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
 
-            new_blobs = [
-                blob
-                for blob in gcs_blobs_resource
-                if not context.instance.has_dynamic_partition(
-                    partitions_def.name, blob.etag
-                )
-            ]
+            new_blobs = [blob for blob in gcs_blobs_resource if not context.instance.has_dynamic_partition(partitions_def.name, blob.etag)]
 
             new_etags_found = [blob.etag for blob in new_blobs]
             context.log.info(f"New etags found: {new_etags_found}")
@@ -105,14 +100,8 @@ def new_gcs_blobs_partition_sensor(
                 context.log.info(f"Only processing first {BLOB_CHUNK_SIZE} new blobs: {new_etags_found}")
 
             return SensorResult(
-                run_requests=[
-                    RunRequest(partition_key=blob.etag) for blob in new_blobs
-                ],
-                dynamic_partitions_requests=[
-                    partitions_def.build_add_request(new_etags_found)
-                ],
+                run_requests=[RunRequest(partition_key=blob.etag) for blob in new_blobs],
+                dynamic_partitions_requests=[partitions_def.build_add_request(new_etags_found)],
             )
 
     return new_gcs_blobs_sensor_definition
-
-
