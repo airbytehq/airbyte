@@ -73,7 +73,7 @@ def test_update_cursor(test_name, initial_state, stream_slice, last_record, expe
     slicer.set_initial_state(initial_state)
 
     if last_record:
-        slicer.update_state(stream_slice, last_record)
+        slicer.close_slice(stream_slice, last_record)
 
     updated_state = slicer.get_stream_state()
     assert updated_state == expected_state

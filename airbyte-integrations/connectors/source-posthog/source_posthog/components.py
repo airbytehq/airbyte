@@ -84,7 +84,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
     def set_initial_state(self, stream_state: StreamState) -> None:
         self._cursor = stream_state
 
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
         project_id = str(stream_slice.get("project_id", ""))
         if project_id:
             current_cursor_value = self._cursor.get(project_id, {}).get("timestamp", "")
@@ -127,3 +127,10 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
             slices.extend(project_datetime_slices)
 
         return slices
+
+    def should_be_synced(self, record: Record) -> bool:
+        """
+        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for posthog
+        """
+        return True
