@@ -461,6 +461,7 @@ class ModelToComponentFactory:
             start_time_option=start_time_option,
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
+            message_repository=self._message_repository,
             config=config,
             parameters=model.parameters,
         )

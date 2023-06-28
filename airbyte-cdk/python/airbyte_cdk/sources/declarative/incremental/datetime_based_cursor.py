@@ -6,6 +6,7 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
+from airbyte_cdk.models import AirbyteMessage, AirbyteLogMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
 
@@ -59,6 +61,7 @@ class DatetimeBasedCursor(Cursor):
     partition_field_start: Optional[str] = None
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
+    message_repository: Optional[MessageRepository] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
@@ -235,10 +238,22 @@ class DatetimeBasedCursor(Cursor):
         return options
 
     def should_be_synced(self, record: Record) -> bool:
-        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        cursor_field = self.cursor_field.eval(self.config)
+        record_cursor_value = record.get(cursor_field)
         if not record_cursor_value:
+            self._send_log(Level.WARN, f"Could not find cursor field `{cursor_field}` in record. "
+                                       f"The incremental sync will assume it needs to be synced")
             return True
 
         latest_possible_cursor_value = self._select_best_end_datetime()
         earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
         return earliest_possible_cursor_value <= self.parse_date(record_cursor_value) <= latest_possible_cursor_value
+
+    def _send_log(self, level: Level, message: str) -> None:
+        if self.message_repository:
+            self.message_repository.emit_message(
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=level, message=message),
+                )
+            )
