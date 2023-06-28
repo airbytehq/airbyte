@@ -240,14 +240,14 @@ def get_last_commit_message() -> str:
 
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
-    As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
+    As we call connector.get_local_dependency_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    The get_local_dependency_paths function currently computes dependencies for Java connectors only.
     It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
     modified_connectors = {}
-    all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
+    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
     for modified_file in modified_files:
         if str(modified_file).endswith(".md"):
             continue

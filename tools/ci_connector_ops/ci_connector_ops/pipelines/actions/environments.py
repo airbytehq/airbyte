@@ -12,7 +12,7 @@ import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional
 
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
@@ -120,48 +120,99 @@ def with_python_package(
     return container
 
 
-async def find_local_python_dependencies(context: PipelineContext, package_source_code_path: str) -> Tuple[List[str], List[str]]:
-    """Retrieve the list of local dependencies of a python package source code.
-    Returns both the list of local dependencies found in setup.py and requirements.txt.
+async def find_local_python_dependencies(
+    context: PipelineContext,
+    package_source_code_path: str,
+    search_dependencies_in_setup_py: bool = True,
+    search_dependencies_in_requirements_txt: bool = True,
+) -> List[str]:
+    """Find local python dependencies of a python package. The dependencies are found in the setup.py and requirements.txt files.
 
     Args:
-        context (PipelineContext): The current pipeline context.
-        package_source_code_path (str): Path to the package source code in airbyte repo .
+        context (PipelineContext): The current pipeline context, providing a dagger client and a repository directory.
+        package_source_code_path (str): The local path to the python package source code.
+        search_dependencies_in_setup_py (bool, optional): Whether to search for local dependencies in the setup.py file. Defaults to True.
+        search_dependencies_in_requirements_txt (bool, optional): Whether to search for local dependencies in the requirements.txt file. Defaults to True.
 
     Returns:
-        Tuple[List[str], List[str]]: A tuple containing the list of local dependencies found in setup.py and requirements.txt.
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
     """
     python_environment = with_python_base(context)
     container = with_python_package(context, python_environment, package_source_code_path)
 
-    # Find local dependencies in setup.py
-    setup_dependency_paths = []
-    if await get_file_contents(container, "setup.py"):
-        container_with_egg_info = container.with_exec(["python", "setup.py", "egg_info"])
-        egg_info_output = await container_with_egg_info.stdout()
-        for line in egg_info_output.split("\n"):
-            if line.startswith("writing requirements to"):
-                requires_txt_path = line.replace("writing requirements to", "").strip()
-                requires_txt = await container_with_egg_info.file(requires_txt_path).contents()
-                for line in requires_txt.split("\n"):
-                    if "file://" in line:
-                        match = re.search(r"file:///(.+)", line)
-                        if match:
-                            setup_dependency_paths += [match.group(1)] + (await find_local_python_dependencies(context, match.group(1)))[0]
-                break
+    local_dependency_paths = []
+    if search_dependencies_in_setup_py:
+        local_dependency_paths += await find_local_dependencies_in_setup_py(container)
+    if search_dependencies_in_requirements_txt:
+        local_dependency_paths += await find_local_dependencies_in_requirements_txt(container, package_source_code_path)
 
-    # Find local dependencies in requirements.txt
-    requirements_dependency_paths = []
-    if requirements_txt := await get_file_contents(container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e .") and line != "-e .":
-                local_dependency_path = Path(package_source_code_path + "/" + line[3:]).resolve()
-                local_dependency_path = str(local_dependency_path.relative_to(Path.cwd()))
-                requirements_dependency_paths += [local_dependency_path] + (
-                    await find_local_python_dependencies(context, local_dependency_path)
-                )[1]
+    transitive_dependency_paths = []
+    for local_dependency_path in local_dependency_paths:
+        # Transitive local dependencies installation is achieved by calling their setup.py file, not their requirements.txt file.
+        transitive_dependency_paths += await find_local_python_dependencies(context, local_dependency_path, True, False)
 
-    return setup_dependency_paths, requirements_dependency_paths
+    all_dependency_paths = local_dependency_paths + transitive_dependency_paths
+    if all_dependency_paths:
+        context.logger.debug(f"Found local dependencies for {package_source_code_path}: {all_dependency_paths}")
+    return all_dependency_paths
+
+
+async def find_local_dependencies_in_setup_py(python_package: Container) -> List[str]:
+    """Find local dependencies of a python package in its setup.py file.
+
+    Args:
+        python_package (Container): A python package container.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    setup_file_content = await get_file_contents(python_package, "setup.py")
+    if not setup_file_content:
+        return []
+
+    local_setup_dependency_paths = []
+    with_egg_info = python_package.with_exec(["python", "setup.py", "egg_info"])
+    egg_info_output = await with_egg_info.stdout()
+    dependency_in_requires_txt = []
+    for line in egg_info_output.split("\n"):
+        if line.startswith("writing requirements to"):
+            # Find the path to the requirements.txt file that was generated by calling egg_info
+            requires_txt_path = line.replace("writing requirements to", "").strip()
+            requirements_txt_content = await with_egg_info.file(requires_txt_path).contents()
+            dependency_in_requires_txt = requirements_txt_content.split("\n")
+
+    for dependency_line in dependency_in_requires_txt:
+        if "file://" in dependency_line:
+            match = re.search(r"file:///(.+)", dependency_line)
+            if match:
+                local_setup_dependency_paths.append([match.group(1)][0])
+    return local_setup_dependency_paths
+
+
+async def find_local_dependencies_in_requirements_txt(python_package: Container, package_source_code_path: str) -> List[str]:
+    """Find local dependencies of a python package in a requirements.txt file.
+
+    Args:
+        python_package (Container): A python environment container with the python package source code.
+        package_source_code_path (str): The local path to the python package source code.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    requirements_txt_content = await get_file_contents(python_package, "requirements.txt")
+    if not requirements_txt_content:
+        return []
+
+    local_requirements_dependency_paths = []
+    for line in requirements_txt_content.split("\n"):
+        # Some package declare themselves as a requirement in requirements.txt,
+        # #Without line != "-e ." the package will be considered a dependency of itself which can cause an infinite loop
+        if line.startswith("-e .") and line != "-e .":
+            local_dependency_path = Path(line[3:])
+            package_source_code_path = Path(package_source_code_path)
+            local_dependency_path = str((package_source_code_path / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_requirements_dependency_paths.append(local_dependency_path)
+    return local_requirements_dependency_paths
 
 
 async def with_installed_python_package(
@@ -188,9 +239,9 @@ async def with_installed_python_package(
 
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
 
-    setup_dependencies, requirements_dependencies = await find_local_python_dependencies(context, package_source_code_path)
+    local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
-    for dependency_directory in setup_dependencies + requirements_dependencies:
+    for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
     if await get_file_contents(container, "setup.py"):
@@ -793,7 +844,9 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
 
 
 async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
-    setup_dependencies_to_mount, _ = await find_local_python_dependencies(context, str(context.connector.code_directory))
+    setup_dependencies_to_mount = await find_local_python_dependencies(
+        context, str(context.connector.code_directory), search_dependencies_in_setup_py=True, search_dependencies_in_requirements_txt=False
+    )
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")

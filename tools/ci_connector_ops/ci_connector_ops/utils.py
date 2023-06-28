@@ -311,7 +311,7 @@ class Connector:
         return self.technical_name
 
     @functools.lru_cache(maxsize=2)
-    def get_local_dependencies_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = [self.code_directory]
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(

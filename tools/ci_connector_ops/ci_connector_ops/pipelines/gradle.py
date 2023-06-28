@@ -47,7 +47,7 @@ class GradleTask(Step, ABC):
         """
         return [
             str(dependency_directory)
-            for dependency_directory in self.context.connector.get_local_dependencies_paths(with_test_dependencies=True)
+            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
     async def _get_patched_connector_dir(self) -> Directory:
