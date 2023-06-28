@@ -42,15 +42,20 @@ class GreenHouseSlicer(Cursor):
             self._state[self.cursor_field] = cursor_value
 
     def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+        stream_slice_value = stream_slice.get(self.cursor_field)
         current_state = self._state.get(self.cursor_field)
         last_cursor = last_record and last_record[self.cursor_field]
-        max_dt = self._max_dt_str(current_state, last_cursor)
+        max_dt = self._max_dt_str(stream_slice_value, current_state, last_cursor)
         if not max_dt:
             return
         self._state[self.cursor_field] = max_dt
 
     def should_be_synced(self, record: Record) -> bool:
-        return self._parse_to_datetime(record[self.cursor_field]) >= self._parse_to_datetime(self._state.get(self.cursor_field, self.START_DATETIME))
+        """
+        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for greenhouse
+        """
+        return True
 
     def _parse_to_datetime(self, datetime_str: str) -> datetime.datetime:
         return datetime.datetime.strptime(datetime_str, self.DATETIME_FORMAT)
@@ -117,8 +122,11 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
             return
 
     def should_be_synced(self, record: Record) -> bool:
-        state_cursor = self._state.get(record.associated_slice[self.stream_slice_field], {}).get(self.cursor_field)
-        return not state_cursor or self._parse_to_datetime(state_cursor) > self._parse_to_datetime(record[self.cursor_field])
+        """
+        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for greenhouse
+        """
+        return True
 
     def get_request_params(
         self,
