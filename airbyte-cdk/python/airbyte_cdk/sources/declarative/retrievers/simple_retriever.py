@@ -71,7 +71,8 @@ class SimpleRetriever(Retriever, HttpStream):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
-        self._last_records = None
+        self._records_from_last_response = None
+        self._latest_record = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -165,6 +166,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -358,7 +360,9 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._records_from_last_response = records
+        if records:
+            self._latest_record = records[-1]
         return records
 
     @property
@@ -379,7 +383,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self.paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._records_from_last_response)
 
     def read_records(
         self,
@@ -408,23 +412,14 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        records_generator = self._read_pages(
+        yield from self._read_pages(
             self.parse_records,
             stream_slice,
             slice_state,
         )
-        cursor_updated = False
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=record)
-                cursor_updated = True
-            yield record
-        if self.cursor and not cursor_updated:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=last_record)
-            yield from []
+        if self.cursor:
+            self.cursor.close_slice(stream_slice, self._latest_record)
+        return
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -446,7 +441,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
+            self.cursor.set_initial_state(value)
 
     def parse_records(
         self,
