@@ -75,6 +75,8 @@ class SourceGoogleSearchConsole(AbstractSource):
         config["end_date"] = end_date or pendulum.now().to_date_string()
 
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
+
+        config["data_state"] = config.get("data_state", "final")
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -109,6 +111,9 @@ class SourceGoogleSearchConsole(AbstractSource):
         else:
             response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
         response_data = response.json()
+
+        if response.status_code != 200:
+            raise Exception(f"Unable to connect to Google Search Console API - {response_data}")
 
         remote_site_urls = {s["siteUrl"] for s in response_data["siteEntry"]}
         invalid_site_url = set(site_urls) - remote_site_urls
@@ -149,6 +154,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             "start_date": config["start_date"],
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
+            "data_state": config["data_state"],
         }
 
     def get_authenticator(self, config):

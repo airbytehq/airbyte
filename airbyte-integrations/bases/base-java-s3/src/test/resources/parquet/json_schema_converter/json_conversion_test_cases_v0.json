@@ -381,7 +381,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "string", "int", "boolean"]
+              "items": ["null", "string", "long", "boolean"]
             }
           ],
           "default": null
@@ -436,15 +436,7 @@
       "fields": [
         {
           "name": "created_at",
-          "type": [
-            "null",
-            {
-              "type": "long",
-              "logicalType": "timestamp-micros"
-            },
-            "string",
-            "int"
-          ],
+          "type": ["null", "string", "long"],
           "default": null
         },
         {
@@ -481,10 +473,10 @@
                   "format": "date-time"
                 },
                 {
-                  "type": ["null", "string"]
+                  "type": "integer"
                 },
                 {
-                  "type": "integer"
+                  "type": ["null", "string"]
                 }
               ]
             }
@@ -513,15 +505,7 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": [
-                    "null",
-                    {
-                      "type": "long",
-                      "logicalType": "timestamp-micros"
-                    },
-                    "string",
-                    "int"
-                  ],
+                  "type": ["null", "long", "string"],
                   "default": null
                 },
                 {
@@ -601,7 +585,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "int", "string", "boolean"]
+              "items": ["null", "long", "string", "boolean"]
             }
           ],
           "default": null
@@ -978,7 +962,7 @@
               "fields": [
                 {
                   "name": "id",
-                  "type": ["null", "int"],
+                  "type": ["null", "long"],
                   "default": null
                 },
                 {
@@ -1267,7 +1251,7 @@
                       "type": "array",
                       "items": [
                         "null",
-                        "int",
+                        "long",
                         "boolean",
                         {
                           "type": "record",
@@ -1285,12 +1269,12 @@
                                   "fields": [
                                     {
                                       "name": "id_part_1",
-                                      "type": ["null", "int", "string"],
+                                      "type": ["null", "long", "string"],
                                       "default": null
                                     },
                                     {
                                       "name": "id_part_2",
-                                      "type": ["null", "string", "int"],
+                                      "type": ["null", "string", "long"],
                                       "default": null
                                     },
                                     {

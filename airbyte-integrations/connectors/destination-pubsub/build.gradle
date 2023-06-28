@@ -12,7 +12,7 @@ application {
 dependencies {
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.114.7'
 
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

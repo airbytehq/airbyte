@@ -7,7 +7,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar
+from typing import Generic, List, Mapping, Optional, Set, TypeVar, Union
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -128,6 +128,7 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
@@ -159,7 +160,7 @@ class FutureStateConfig(BaseConfig):
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    cursor_paths: Optional[Mapping[str, List[str]]] = Field(
+    cursor_paths: Optional[Mapping[str, List[Union[int, str]]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
     future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
@@ -172,6 +173,9 @@ class IncrementalConfig(BaseConfig):
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
+
+    class Config:
+        smart_union = True
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):

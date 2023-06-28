@@ -21,6 +21,10 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
+          - name: media_insights
+            bypass_reason: Media statistic changed frequently
+          - name: user_insights
+            bypass_reason: User statistic changed frequently
           - name: stories
             bypass_reason: Stories available only 24 hours
           - name: story_insights
@@ -39,7 +43,7 @@ acceptance_tests:
           - name: value
             bypass_reason: Contains PII data
           - name: date
-            bypass_reason: Depend on curent date
+            bypass_reason: Depend on current date
           user_insights:
           - name: date
             bypass_reason: Anonymization for exactly for which date statistics anonymization

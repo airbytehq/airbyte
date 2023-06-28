@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
+from .utils import parse_url
+
 
 class GitlabStream(HttpStream, ABC):
     primary_key = "id"
@@ -21,6 +23,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
+    non_retriable_codes: List[int] = (403, 404)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -51,7 +54,8 @@ class GitlabStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.api_url}/api/v4/"
+        _, scheme, host = parse_url(self.api_url)
+        return f"{scheme}://{host}/api/v4/"
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -59,17 +63,17 @@ class GitlabStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(
-                f"Got 403 error when accessing URL {response.request.url}."
+                f"Got {response.status_code} error when accessing URL {response.request.url}."
                 f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
             )
             return False
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.status_code != 200:
+        if response.status_code in self.non_retriable_codes:
             return
         response_data = response.json()
         if isinstance(response_data, dict):
@@ -79,7 +83,7 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             return []
         response_data = response.json()
         if isinstance(response_data, list):
@@ -100,7 +104,7 @@ class GitlabStream(HttpStream, ABC):
         return record
 
     def _flatten_id(self, record: Dict[str, Any], target: str):
-        target_value = record.pop(target, None)
+        target_value = record.get(target, None)
         record[target + "_id"] = target_value.get("id") if target_value else None
 
     def _flatten_list(self, record: Dict[str, Any], target: str):

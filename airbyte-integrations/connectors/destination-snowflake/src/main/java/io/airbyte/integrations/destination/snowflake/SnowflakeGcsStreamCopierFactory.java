@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import com.google.cloud.storage.Storage;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
@@ -25,7 +25,7 @@ public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
                              final Storage storageClient,
                              final JdbcDatabase db,
                              final GcsConfig gcsConfig,
-                             final ExtendedNameTransformer nameTransformer,
+                             final StandardNameTransformer nameTransformer,
                              final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeGcsStreamCopier(

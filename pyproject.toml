@@ -42,7 +42,7 @@ extend-ignore = [
 [tool.isort]
 profile = "black"
 color_output = false
-skip_gitignore = true
+# skip_gitignore = true
 line_length = 140
 multi_line_output = 3
 include_trailing_comma = true
@@ -82,6 +82,6 @@ error_summary = true
 
 [tool.pytest.ini_options]
 minversion = "6.2.5"
-addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
+addopts ="-r a --capture=no -vv --color=yes"
 
 

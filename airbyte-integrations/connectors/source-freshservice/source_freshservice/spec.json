@@ -5,7 +5,7 @@
     "title": "Freshservice Spec",
     "type": "object",
     "required": ["domain_name", "api_key", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain_name": {
         "type": "string",

@@ -16,8 +16,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
@@ -30,11 +28,14 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,7 @@ public class BufferedStreamConsumerTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
+  private static final int PERIODIC_BUFFER_FREQUENCY = 5;
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -64,18 +66,18 @@ public class BufferedStreamConsumerTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
 
   private BufferedStreamConsumer consumer;
-  private VoidCallable onStart;
+  private OnStartFunction onStart;
   private RecordWriter<AirbyteRecordMessage> recordWriter;
-  private CheckedConsumer<Boolean, Exception> onClose;
+  private OnCloseFunction onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws Exception {
-    onStart = mock(VoidCallable.class);
+    onStart = mock(OnStartFunction.class);
     recordWriter = mock(RecordWriter.class);
-    onClose = mock(CheckedConsumer.class);
+    onClose = mock(OnCloseFunction.class);
     isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     consumer = new BufferedStreamConsumer(
@@ -293,6 +295,73 @@ public class BufferedStreamConsumerTest {
     verify(outputRecordCollector, times(1)).accept(STATE_MESSAGE2);
   }
 
+  // Periodic Buffer Flush Tests
+  @Test
+  void testSlowStreamReturnsState() throws Exception {
+    // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(500L);
+    final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
+
+    // Overrides flush frequency for testing purposes to 5 seconds
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
+    // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    flushConsumer.close();
+
+    verifyStartAndClose();
+    // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+  }
+
+  @Test
+  void testSlowStreamReturnsMultipleStates() throws Exception {
+    // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(500L);
+    final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
+    // creates records equal to size that triggers buffer flush
+    final List<AirbyteMessage> expectedRecordsStream1Batch3 = generateRecords(1_000L);
+
+    // Overrides flush frequency for testing purposes to 5 seconds
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
+    // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch3);
+    flushConsumer.accept(STATE_MESSAGE2);
+    flushConsumer.close();
+
+    verifyStartAndClose();
+    // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3);
+    // expects two STATE messages returned since one will be flushed after periodic flushing occurs
+    // and the other after buffer has been filled
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+    verify(outputRecordCollector).accept(STATE_MESSAGE2);
+  }
+
+  private BufferedStreamConsumer getConsumerWithFlushFrequency() {
+    final BufferedStreamConsumer flushFrequencyConsumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
+        onClose,
+        CATALOG,
+        isValidRecord,
+        Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY));
+    return flushFrequencyConsumer;
+  }
+
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
     verify(onClose).accept(false);
@@ -314,6 +383,7 @@ public class BufferedStreamConsumerTest {
     });
   }
 
+  // NOTE: Generates records at chunks of 160 bytes
   private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
     final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;

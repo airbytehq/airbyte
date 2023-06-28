@@ -125,7 +125,6 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
     var projectionAttributes = String.join(", ", copyAttributes);
 
-
     ScanRequest.Builder scanRequestBuilder = ScanRequest.builder()
         .tableName(tableName)
         .projectionExpression(projectionAttributes);
@@ -158,8 +157,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         comparator = ">";
       }
 
-      String filterPlaceholder = dynamodbConfig.reservedAttributeNames().contains(filterName) ?
-          "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
+      String filterPlaceholder =
+          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
       scanRequestBuilder
           .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
           .expressionAttributeValues(Map.of(":timestamp", attributeValue));

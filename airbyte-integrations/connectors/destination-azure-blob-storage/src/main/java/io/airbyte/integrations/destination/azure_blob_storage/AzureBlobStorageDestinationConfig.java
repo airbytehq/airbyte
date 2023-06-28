@@ -74,7 +74,7 @@ public class AzureBlobStorageDestinationConfig {
   }
 
   public static SpecializedBlobClientBuilder createSpecializedBlobClientBuilder(
-      AzureBlobStorageDestinationConfig destinationConfig) {
+                                                                                AzureBlobStorageDestinationConfig destinationConfig) {
 
     // Init the client itself here
     final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
@@ -118,8 +118,9 @@ public class AzureBlobStorageDestinationConfig {
     final String containerNameComputed =
         containerName == null ? DEFAULT_STORAGE_CONTAINER_NAME : containerName.asText();
 
-    final int blobSpillSize =  config.get("azure_blob_storage_spill_size") != null
-        ? config.get("azure_blob_storage_spill_size").asInt(0) : 0;
+    final int blobSpillSize = config.get("azure_blob_storage_spill_size") != null
+        ? config.get("azure_blob_storage_spill_size").asInt(0)
+        : 0;
 
     return new AzureBlobStorageDestinationConfig(
         endpointComputed,

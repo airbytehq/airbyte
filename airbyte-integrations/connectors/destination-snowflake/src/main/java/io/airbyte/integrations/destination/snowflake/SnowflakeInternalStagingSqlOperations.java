@@ -9,7 +9,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
@@ -88,7 +87,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return recordsData.getFilename();
   }
 
-  private void uploadRecordsToBucket(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData)
+  private void uploadRecordsToBucket(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final SerializableBuffer recordsData)
       throws Exception {
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
@@ -161,7 +163,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
       final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -191,7 +193,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -212,7 +214,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }

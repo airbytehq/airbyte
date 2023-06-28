@@ -6,8 +6,6 @@ The Commercetools source supports both Full Refresh and Incremental syncs. You c
 
 This source can sync data for the [Commercetools API](https://docs.commercetools.com/api/).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-
 ### Output schema
 
 This Source is capable of syncing the following core Streams:

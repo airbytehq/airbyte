@@ -18,6 +18,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -46,7 +47,6 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from docker.errors import ContainerError
 from jsonschema._utils import flatten
 
 
@@ -412,6 +412,73 @@ class TestSpec(BaseTest):
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
+    def test_duplicate_order(self, connector_spec: ConnectorSpecification):
+        """
+        Custom ordering of field (via the "order" property defined in the field) is not allowed to have duplicates within the same group.
+        `{ "a": { "order": 1 }, "b": { "order": 1 } }` is invalid because there are two fields with order 1
+        `{ "a": { "order": 1 }, "b": { "order": 1, "group": "x" } }` is valid because the fields with the same order are in different groups
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for properties_path, properties in dpath.util.search(connector_spec.connectionSpecification, "**/properties", yielded=True):
+            definition = schema_helper.get_parent(properties_path)
+            if definition.get("type") != "object":
+                # unrelated "properties", not an actual object definition
+                continue
+            used_orders: Dict[str, Set[int]] = {}
+            for property in properties.values():
+                if "order" not in property:
+                    continue
+                order = property.get("order")
+                group = property.get("group", "")
+                if group not in used_orders:
+                    used_orders[group] = set()
+                orders_for_group = used_orders[group]
+                if order in orders_for_group:
+                    errors.append(f"{properties_path} has duplicate order: {order}")
+                orders_for_group.add(order)
+        self._fail_on_errors(errors)
+
+    def test_nested_group(self, connector_spec: ConnectorSpecification):
+        """
+        Groups can only be defined on the top level properties
+        `{ "a": { "group": "x" }}` is valid because field "a" is a top level field
+        `{ "a": { "oneOf": [{ "type": "object", "properties": { "b": { "group": "x" } } }] }}` is invalid because field "b" is nested in a oneOf
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
+            group_path = result[0]
+            parent_path = schema_helper.get_parent_path(group_path)
+            is_property_named_group = parent_path.endswith("properties")
+            grandparent_path = schema_helper.get_parent_path(parent_path)
+            if grandparent_path != "/properties" and not is_property_named_group:
+                errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
+        self._fail_on_errors(errors)
+
+    def test_required_always_show(self, connector_spec: ConnectorSpecification):
+        """
+        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
+            always_show_path = result[0]
+            parent_path = schema_helper.get_parent_path(always_show_path)
+            is_property_named_always_show = parent_path.endswith("properties")
+            if is_property_named_always_show:
+                continue
+            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
+            properties_path = schema_helper.get_parent_path(parent_path)
+            parent_object = schema_helper.get_parent(properties_path)
+            if (
+                "required" in parent_object
+                and isinstance(parent_object.get("required"), List)
+                and property_name in parent_object.get("required")
+            ):
+                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+        self._fail_on_errors(errors)
+
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
@@ -488,15 +555,37 @@ class TestConnection(BaseTest):
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            with pytest.raises(ContainerError) as err:
-                docker_runner.call_check(config=connector_config)
-
-            assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr, "Connector should print exception"
+            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            trace_messages = filter_output(output, Type.TRACE)
+            assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
+            trace = trace_messages[0].trace
+            assert isinstance(trace, AirbyteTraceMessage)
+            assert trace.error is not None
+            assert trace.error.message is not None
 
 
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
+
+    VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
+    VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
+    VALID_FORMATS = {"date-time", "date"}
+    VALID_TYPE_FORMAT_COMBINATIONS = [
+        ({"string"}, "date"),
+        ({"string"}, "date-time"),
+        ({"string", "null"}, "date"),
+        ({"string", "null"}, "date-time"),
+    ]
+    VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS = [
+        ({"string"}, "timestamp_with_timezone"),
+        ({"string"}, "timestamp_without_timezone"),
+        ({"string", "null"}, "timestamp_with_timezone"),
+        ({"integer"}, "integer"),
+        ({"integer", "null"}, "integer"),
+        ({"number"}, "integer"),
+        ({"number", "null"}, "integer"),
+    ]
+
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
         self,
@@ -603,6 +692,52 @@ class TestDiscovery(BaseTest):
         checker = CatalogDiffChecker(previous_discovered_catalog, discovered_catalog)
         checker.assert_is_backward_compatible()
 
+    @pytest.mark.skip("This tests currently leads to too much failures. We need to fix the connectors at scale first.")
+    def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
+        """Check that all streams have supported data types, format and airbyte_types.
+        Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+        """
+        for stream_name, stream_data in discovered_catalog.items():
+            schema_helper = JsonSchemaHelper(stream_data.json_schema)
+
+            for type_path, type_value in dpath.util.search(stream_data.json_schema, "**^^type", yielded=True, separator="^^"):
+                parent_path = schema_helper.get_parent_path(type_path)
+                parent = schema_helper.get_parent(type_path, separator="^^")
+                if not isinstance(type_value, list) and not isinstance(type_value, str):
+                    # Skip when type is the name of a property.
+                    continue
+                type_values = set(type_value) if isinstance(type_value, list) else {type_value}
+
+                # Check unsupported type
+                has_unsupported_type = any(t not in self.VALID_TYPES for t in type_values)
+                if has_unsupported_type:
+                    raise AssertionError(f"Found unsupported type ({type_values}) in {stream_name} stream on property {parent_path}")
+
+                # Check unsupported format
+                property_format = parent.get("format")
+                if property_format and property_format not in self.VALID_FORMATS:
+                    raise AssertionError(f"Found unsupported format ({property_format}) in {stream_name} stream on property {parent_path}")
+
+                # Check unsupported airbyte_type and type/airbyte_type combination
+                airbyte_type = parent.get("airbyte_type")
+                if airbyte_type and airbyte_type not in self.VALID_AIRBYTE_TYPES:
+                    raise AssertionError(
+                        f"Found unsupported airbyte_type ({airbyte_type}) in {stream_name} stream on property {parent_path}"
+                    )
+                if airbyte_type:
+                    type_airbyte_type_combination = (type_values, airbyte_type)
+                    if type_airbyte_type_combination not in self.VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS:
+                        raise AssertionError(
+                            f"Found unsupported type/airbyte_type combination {type_airbyte_type_combination} in {stream_name} stream on property {parent_path}"
+                        )
+                # Check unsupported type/format combination
+                if property_format:
+                    type_format_combination = (type_values, property_format)
+                    if type_format_combination not in self.VALID_TYPE_FORMAT_COMBINATIONS:
+                        raise AssertionError(
+                            f"Found unsupported type/format combination {type_format_combination} in {stream_name} stream on property {parent_path}"
+                        )
+
 
 def primary_keys_for_records(streams, records):
     streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
@@ -649,13 +784,13 @@ class TestBasicRead(BaseTest):
             ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
-    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
-        streams_errors = verify_records_schema(records, configured_catalog)
+        streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns)
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
@@ -697,7 +832,7 @@ class TestBasicRead(BaseTest):
 
         return sorted(list(expected_paths))
 
-    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_field_appears_at_least_once(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Validate if each field in a stream has appeared at least once in some record.
         """
@@ -758,6 +893,11 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_fail_on_extra_columns")
+    def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
+        # TODO (Ella): enforce this param once all connectors are passing
+        return inputs.fail_on_extra_columns
+
     @pytest.fixture(name="should_validate_data_points")
     def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
         # TODO: we might want to enforce this when Config.TestStrictnessLevel.high
@@ -802,6 +942,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
@@ -814,7 +955,9 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:
-            self._validate_schema(records=records, configured_catalog=configured_catalog)
+            self._validate_schema(
+                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
+            )
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):

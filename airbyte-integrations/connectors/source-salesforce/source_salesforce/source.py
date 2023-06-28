@@ -3,6 +3,7 @@
 #
 
 import logging
+from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from dateutil.relativedelta import relativedelta
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -25,6 +27,9 @@ class AirbyteStopSync(AirbyteTracedException):
 
 
 class SourceSalesforce(AbstractSource):
+    DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+    START_DATE_OFFSET_IN_YEARS = 2
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.catalog = None
@@ -92,7 +97,10 @@ class SourceSalesforce(AbstractSource):
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date"))
+                start_date = config.get(
+                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
+                )
+                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:
                 stream = full_refresh(**streams_kwargs)
             if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
@@ -139,7 +147,8 @@ class SourceSalesforce(AbstractSource):
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
+            url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error

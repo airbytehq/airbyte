@@ -1,4 +1,4 @@
-version: "0.3.0"
+version: "0.29.0"
 
 definitions:
   selector:
@@ -28,6 +28,9 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_prestashop.components.CustomFieldTransformation
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:

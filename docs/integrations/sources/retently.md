@@ -8,27 +8,27 @@ The Retently source supports full refresh sync.
 
 Several output streams are available from this source:
 
-* [Customers](https://www.retently.com/api/#api-get-customers-get)
-* [Companies](https://www.retently.com/api/#api-get-companies-get)
-* [Reports](https://www.retently.com/api/#api-get-reports-get)
+- [Customers](https://www.retently.com/api/#api-get-customers-get)
+- [Companies](https://www.retently.com/api/#api-get-companies-get)
+- [Reports](https://www.retently.com/api/#api-get-reports-get)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| SSL connection | No |
-| Namespaces | No |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| SSL connection    | No         |
+| Namespaces        | No         |
 
 ## Getting started
 
 ### Requirements
 
-* Retently Account
-* Retently API Token
+- Retently Account
+- Retently API Token
 
 ### Setup guide
 
@@ -39,9 +39,12 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2022-11-15 | [19456](https://github.com/airbytehq/airbyte/pull/19456) | Add campaign, feedback, outbox and templates streams |
-| 0.1.2 | 2021-12-28 | [9045](https://github.com/airbytehq/airbyte/pull/9045)   | Update titles and descriptions |
-| 0.1.1 | 2021-12-06 | [8043](https://github.com/airbytehq/airbyte/pull/8043)   | 🎉 Source Retently: add OAuth 2.0 |
-| 0.1.0 | 2021-11-02 | [6966](https://github.com/airbytehq/airbyte/pull/6966)   | 🎉 New Source: Retently |
+| Version | Date       | Pull Request                                             | Subject                                              |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.6   | 2023-05-10 | [25714](https://github.com/airbytehq/airbyte/pull/25714) | Fix invalid json schema for nps stream               |
+| 0.1.5   | 2023-05-08 | [25900](https://github.com/airbytehq/airbyte/pull/25900) | Fix integration tests                                |
+| 0.1.4   | 2023-05-08 | [25900](https://github.com/airbytehq/airbyte/pull/25900) | Fix integration tests                                |
+| 0.1.3   | 2022-11-15 | [19456](https://github.com/airbytehq/airbyte/pull/19456) | Add campaign, feedback, outbox and templates streams |
+| 0.1.2   | 2021-12-28 | [9045](https://github.com/airbytehq/airbyte/pull/9045)   | Update titles and descriptions                       |
+| 0.1.1   | 2021-12-06 | [8043](https://github.com/airbytehq/airbyte/pull/8043)   | 🎉 Source Retently: add OAuth 2.0                    |
+| 0.1.0   | 2021-11-02 | [6966](https://github.com/airbytehq/airbyte/pull/6966)   | 🎉 New Source: Retently                              |
