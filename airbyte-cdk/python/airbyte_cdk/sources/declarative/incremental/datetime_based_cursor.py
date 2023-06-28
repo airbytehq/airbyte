@@ -6,21 +6,20 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeBasedCursor(StreamSlicer):
+class DatetimeBasedCursor(Cursor):
     """
-    Slices the stream over a datetime range.
+    Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
     Given a start time, end time, a step function, and an optional lookback window,
     the stream slicer will partition the date range from start time - lookback window to end time.
@@ -34,10 +33,10 @@ class DatetimeBasedCursor(StreamSlicer):
     Attributes:
         start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
         end_datetime (Optional[Union[MinMaxDatetime, str]]): the datetime that determines the last record that should be synced
-        step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
-        cursor_granularity (str): smallest increment the datetime_format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
+        step (Optional[str]): size of the timewindow (ISO8601 duration)
+        cursor_granularity (Optional[str]): smallest increment the datetime_format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
         end_time_option (Optional[RequestOption]): request option for end time
@@ -52,7 +51,6 @@ class DatetimeBasedCursor(StreamSlicer):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
-    _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -97,59 +95,51 @@ class DatetimeBasedCursor(StreamSlicer):
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
+        before calling anything else
+
+        :param stream_state: The state of the stream as returned by get_stream_state
+        """
+        self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
+
+    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
         """
         Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
-        Update the cursor_end value with the stream_slice's end time.
 
         :param stream_slice: current stream slice
         :param last_record: last record read
         :return: None
         """
-        stream_slice_value = stream_slice.get(self.cursor_field.eval(self.config))
-        stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-        cursor = None
-        if stream_slice_value and last_record_value:
-            cursor = max(stream_slice_value, last_record_value)
-        elif stream_slice_value:
-            cursor = stream_slice_value
-        else:
-            cursor = last_record_value
-        if self._cursor and cursor:
-            self._cursor = max(cursor, self._cursor)
-        elif cursor:
-            self._cursor = cursor
-        if self.partition_field_end:
-            self._cursor_end = stream_slice_value_end
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        possible_cursor_values = list(filter(lambda item: item, [last_record_value, self._cursor]))
+        self._cursor = max(possible_cursor_values) if possible_cursor_values else None
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Partition the daterange into slices of size = step.
 
         The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
 
-        :param sync_mode:
-        :param stream_state: current stream state. If set, the start_date will be the day following the stream_state.
         :return:
         """
-        stream_state = stream_state or {}
-        kwargs = {"stream_state": stream_state}
-        end_datetime = self._select_best_end_datetime(kwargs)
-        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "P0D")
+        end_datetime = self._select_best_end_datetime()
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
 
-        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config, **kwargs), end_datetime)
-        cursor_datetime = self._calculate_cursor_datetime_from_state(stream_state)
+        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
+        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
         start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
-    def _select_best_end_datetime(self, kwargs):
+    def _select_best_end_datetime(self):
         now = datetime.datetime.now(tz=self._timezone)
         if not self.end_datetime:
             return now
-        return min(self.end_datetime.get_datetime(self.config, **kwargs), now)
+        return min(self.end_datetime.get_datetime(self.config), now)
 
     def _calculate_cursor_datetime_from_state(self, stream_state: Mapping[str, Any]) -> datetime.datetime:
         if self.cursor_field.eval(self.config, stream_state=stream_state) in stream_state:

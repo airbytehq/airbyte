@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/destination-clickhouse-strict-encrypt
   githubIssueLabel: destination-clickhouse
   icon: clickhouse.svg

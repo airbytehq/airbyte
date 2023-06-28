@@ -136,6 +136,7 @@ class GoogleAdsStream(Stream, ABC):
             for response in response_records:
                 yield from self.parse_response(response)
         except GoogleAdsException as exc:
+            exc.customer_id = customer_id
             if not self.CATCH_API_ERRORS:
                 raise
             for error in exc.failure.errors:
