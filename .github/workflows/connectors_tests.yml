@@ -1,8 +1,7 @@
 name: Connectors tests
 
-# TODO uncomment this before merging!!!
-#concurrency:
-#  group: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 on:
   workflow_dispatch:
