@@ -13,6 +13,10 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters)
+        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+
     def request_params(
         self,
         stream_state: StreamSlice,
