@@ -49,6 +49,7 @@ class CatalogParserTest {
    * Both these streams want the same raw table name ("a_b_c"). Verify that they don't actually use
    * the same raw table.
    */
+  @Disabled("This feature is not yet supported; see https://github.com/airbytehq/airbyte/issues/27798")
   @Test
   public void rawNameCollision() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
@@ -66,7 +67,6 @@ class CatalogParserTest {
    * Both these streams will write to the same final table name ("foofoo"). Verify that they don't
    * actually use the same tablename.
    */
-  @Disabled("This feature is not yet supported; see https://github.com/airbytehq/airbyte/issues/27798")
   @Test
   public void finalNameCollision() {
     when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
