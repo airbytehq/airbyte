@@ -94,7 +94,19 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
                     self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME),
                 }
 
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        if self.stream_slice_field in stream_state:
+            return
+        substream_ids = map(lambda x: str(x), set(stream_state.keys()) | set(self._state.keys()))
+        for id_ in substream_ids:
+            self._state[id_] = {
+                self.cursor_field: self._max_dt_str(
+                    stream_state.get(id_, {}).get(self.cursor_field), self._state.get(id_, {}).get(self.cursor_field)
+                )
+            }
+
     def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
+        # FIXME logic here to have per partition state
         if last_record:
             # stream_slice is really a stream slice
             substream_id = str(stream_slice[self.stream_slice_field])
@@ -103,16 +115,6 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
             max_dt = self._max_dt_str(last_state, current_state)
             self._state[substream_id] = {self.cursor_field: max_dt}
             return
-        # stream_slice here may be a stream slice or a state
-        if self.stream_slice_field in stream_slice:
-            return
-        substream_ids = map(lambda x: str(x), set(stream_slice.keys()) | set(self._state.keys()))
-        for id_ in substream_ids:
-            self._state[id_] = {
-                self.cursor_field: self._max_dt_str(
-                    stream_slice.get(id_, {}).get(self.cursor_field), self._state.get(id_, {}).get(self.cursor_field)
-                )
-            }
 
     def get_request_params(
         self,
