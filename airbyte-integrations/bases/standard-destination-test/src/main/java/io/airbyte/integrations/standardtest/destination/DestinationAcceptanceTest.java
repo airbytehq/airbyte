@@ -1081,11 +1081,11 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final var namespace1 = "sourcenamespace";
+    final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = "diff_source_namespace";
+    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);;
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream),
