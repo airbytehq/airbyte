@@ -219,27 +219,8 @@ const contributeToAirbyte = {
   },
   items: [
     'contributing-to-airbyte/code-of-conduct',
-    'contributing-to-airbyte/issues-and-pull-requests',
-    'contributing-to-airbyte/developing-locally',
-    'contributing-to-airbyte/developing-on-docker',
-    'contributing-to-airbyte/python-gradle-setup',
-    'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/gradle',
-    {
-      type: 'category',
-      label: 'Updating documentation',
-      link: {
-        type: 'doc',
-        id: 'contributing-to-airbyte/contribute-documentation',
-      },
-      items: [
-        {
-          type: 'link',
-          label: 'Connector doc template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
-      ],
-    },
+    'contributing-to-airbyte/how-to-contribute-pr',
+    'contributing-to-airbyte/how-to-contribute-docs',
   ],
 };
 

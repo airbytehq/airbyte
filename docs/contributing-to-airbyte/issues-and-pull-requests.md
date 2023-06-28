@@ -1,4 +1,4 @@
-# Issues & Pull Requests
+# Pull Requests Conventions
 
 ## Titles
 
