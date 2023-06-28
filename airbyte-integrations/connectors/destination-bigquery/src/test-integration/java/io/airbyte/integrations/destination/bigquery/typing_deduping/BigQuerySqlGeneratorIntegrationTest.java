@@ -44,8 +44,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO this proooobably belongs in test-integration? make sure to update the build.gradle
-// concurrent runner stuff if you do this
 // TODO write test case for multi-column PK
 @Execution(ExecutionMode.CONCURRENT)
 public class BigQuerySqlGeneratorIntegrationTest {
