@@ -69,6 +69,9 @@ RESOURCES = {
     "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
     "root_metadata_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": ""}),
+    "all_metadata_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*/{METADATA_FILE_NAME}$"}
+    ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
     ),
@@ -123,7 +126,7 @@ SENSORS = [
         job=generate_registry_entry,
         resources_def=RESOURCES,
         partitions_def=registry_entry.metadata_partitions_def,
-        gcs_blobs_resource_key="latest_metadata_file_blobs",
+        gcs_blobs_resource_key="all_metadata_file_blobs",
         interval=30,
     ),
 ]
