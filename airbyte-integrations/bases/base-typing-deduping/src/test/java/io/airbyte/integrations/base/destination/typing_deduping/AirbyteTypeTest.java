@@ -92,7 +92,7 @@ public class AirbyteTypeTest {
   }
 
   @Test
-  public void testSingletonListDecl() {
+  public void testStructSingletonListDecl() {
     final String structSchema = """
                                 {
                                   "type": ["object"],
@@ -163,7 +163,7 @@ public class AirbyteTypeTest {
   }
 
   @Test
-  public void testNullableSingletonListDecl() {
+  public void testStructNullableSingletonListDecl() {
     final String structSchema = """
                                 {
                                   "type": ["null", "object"],
@@ -259,6 +259,40 @@ public class AirbyteTypeTest {
                                  "type": "array",
                                  "items": {
                                    "type": "string",
+                                   "format": "date-time",
+                                   "airbyte_type": "timestamp_with_timezone"
+                                 }
+                               }
+                               """;
+
+    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+  }
+
+  @Test
+  public void testArraySingletonListDecl() {
+    final String arraySchema = """
+                               {
+                                 "type": ["array"],
+                                 "items": {
+                                   "type": ["string"],
+                                   "format": "date-time",
+                                   "airbyte_type": "timestamp_with_timezone"
+                                 }
+                               }
+                               """;
+
+    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+  }
+
+  @Test
+  public void testArrayNullableSingletonListDecl() {
+    final String arraySchema = """
+                               {
+                                 "type": ["null", "array"],
+                                 "items": {
+                                   "type": ["null", "string"],
                                    "format": "date-time",
                                    "airbyte_type": "timestamp_with_timezone"
                                  }

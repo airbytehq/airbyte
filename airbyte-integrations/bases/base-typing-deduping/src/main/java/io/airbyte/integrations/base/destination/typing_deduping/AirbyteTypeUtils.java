@@ -75,17 +75,17 @@ public class AirbyteTypeUtils {
       return AirbyteProtocolType.matches(node.asText());
     }
 
-    if (nodeIsType(propertyType, "boolean")) {
+    if (nodeIsOrContainsType(propertyType, "boolean")) {
       return AirbyteProtocolType.BOOLEAN;
-    } else if (nodeIsType(propertyType, "integer")) {
+    } else if (nodeIsOrContainsType(propertyType, "integer")) {
       return AirbyteProtocolType.INTEGER;
-    } else if (nodeIsType(propertyType, "number")) {
+    } else if (nodeIsOrContainsType(propertyType, "number")) {
       if (nodeIsType(airbyteType, "integer")) {
         return AirbyteProtocolType.INTEGER;
       } else {
         return AirbyteProtocolType.NUMBER;
       }
-    } else if (nodeIsType(propertyType, "string")) {
+    } else if (nodeIsOrContainsType(propertyType, "string")) {
       if (nodeIsOrContainsType(format, "date")) {
         return AirbyteProtocolType.DATE;
       } else if (nodeIsType(format, "time")) {

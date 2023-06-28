@@ -38,11 +38,30 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
           return new Array(fromJsonSchema(items));
         }
       } else if (topLevelType.isArray()) {
-        final List<AirbyteType> options = new ArrayList<>();
-        topLevelType.elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
-        return new OneOf(options);
+        final List<JsonNode> elements = new ArrayList<>();
+        topLevelType.elements().forEachRemaining(element -> {
+          // ignore "null" type
+          if (!element.asText("").equals("null")) {
+            elements.add(element);
+          }
+        });
+
+        // we encounter an array of types that actually represents a single type rather than a OneOf
+        if (elements.size() == 1) {
+          if (elements.get(0).asText("").equals("object")) {
+            return getStruct(schema);
+          } else if (elements.get(0).asText("").equals("array")) {
+            final JsonNode items = schema.get("items");
+            return new Array(fromJsonSchema(items));
+          } else {
+              return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+          }
+        }
+
+        final List<AirbyteType> typeOptions = elements.stream().map(AirbyteType::fromJsonSchema).toList();
+        return new OneOf(typeOptions);
       }
-    } else if (schema.get("oneOf") != null) {
+    } else if (schema.hasNonNull("oneOf")) {
       final List<AirbyteType> options = new ArrayList<>();
       schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
       return new UnsupportedOneOf(options);
@@ -55,7 +74,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     return AirbyteTypeUtils.getAirbyteProtocolType(schema);
   }
 
-  private static Struct getStruct(JsonNode schema) {
+  private static Struct getStruct(final JsonNode schema) {
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
     final JsonNode properties = schema.get("properties");
     properties.fields().forEachRemaining(property -> {
