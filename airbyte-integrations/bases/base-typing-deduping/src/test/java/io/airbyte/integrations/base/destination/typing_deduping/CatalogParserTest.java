@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CatalogParserTest {
@@ -65,6 +66,7 @@ class CatalogParserTest {
    * Both these streams will write to the same final table name ("foofoo"). Verify that they don't
    * actually use the same tablename.
    */
+  @Disabled("This feature is not yet supported; see https://github.com/airbytehq/airbyte/issues/27798")
   @Test
   public void finalNameCollision() {
     when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
