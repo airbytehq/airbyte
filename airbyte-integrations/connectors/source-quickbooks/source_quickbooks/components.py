@@ -67,7 +67,7 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     """
 
     def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
-        super(CustomDatetimeBasedCursor, self).update_cursor(
+        super(CustomDatetimeBasedCursor, self).update_state(
             stream_slice=stream_slice,
             last_record=LastRecordDictProxy(last_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )

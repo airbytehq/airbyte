@@ -58,7 +58,7 @@ def test_custom_datetime_based_cursor__update_cursor():
         parameters={}
     )
 
-    date_time_based_cursor_component.update_cursor(
+    date_time_based_cursor_component.update_state(
         {
             "start_time": "2023-02-01T00:00:00+00:00",
             "end_time": "2023-03-03T00:00:00+00:00"
