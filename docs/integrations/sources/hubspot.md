@@ -4,14 +4,14 @@ This page guides you through setting up the HubSpot source connector.
 
 ## Prerequisite
 
-You can use OAuth or a Private App to authenticate your HubSpot account. 
+You can use OAuth or a Private App to authenticate your HubSpot account.
 
-In Airbyte Cloud, we highly recommend you use OAuth and not Private App authentication as it significantly simplifies the setup process. 
+In Airbyte Cloud, we highly recommend you use OAuth and not Private App authentication as it significantly simplifies the setup process.
 
 If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                                               |
-|:----------------------------|:-------------------------------------------------------------------------------------------------------------|
+| :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.objects.lists.read`                                                                                     |
@@ -27,7 +27,7 @@ If you are using either OAuth in Airbyte OSS or Private App authentication, you 
 | `engagements_emails`        | `sales-email-read`                                                                                           |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
-| `goals`                     | `crm.objects.goals.read`                                                                              |
+| `goals`                     | `crm.objects.goals.read`                                                                                     |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -36,76 +36,78 @@ If you are using either OAuth in Airbyte OSS or Private App authentication, you 
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-
 ## Set up the HubSpot source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
-    - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
-    - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).    
+   - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+   - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).
 7. Click **Set up source**.
 
 ## Supported sync modes
 
 The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
- - Full Refresh
- - Incremental
+- Full Refresh
+- Incremental
 
 ## Supported Streams
 
 :::note
 There are two types of incremental sync:
+
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-:::
+   :::
 
 The HubSpot source connector supports the following streams:
 
-* [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
-* [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
-* [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
-* [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-* [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-* [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
-* [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
-  * Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
-* [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
-* [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
-* [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
-* [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
-* [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
-* [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
-* [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
-* [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
-* [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
-* [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
-* [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
-* [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
-* [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
-* [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
-* [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
-* [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
-* [Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-* [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
-* [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
-* [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
-* [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
+- [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
+- [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
+- [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
+- [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
+- [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
+- [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
+  - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
+- [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
+- [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
+- [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
+- [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
+- [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
+- [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
+- [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
+- [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
+- [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
+- [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
+- [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
+- [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
+- [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
+- [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
+- [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
+- [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+- [Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
+- [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
+- [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
+- [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
+- [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
 
 ### Custom CRM Objects
-Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above. 
+
+Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
 If you setup your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
-First you need to give the connector some additional permissions: 
-* **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects. 
-* **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your private app or oauth application and add the `crm.objects.custom.read` scope to your app's scopes. See Hubspot's instructions here. 
+First you need to give the connector some additional permissions:
 
-Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing. 
+- **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
+- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your private app or oauth application and add the `crm.objects.custom.read` scope to your app's scopes. See Hubspot's instructions here.
+
+Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing.
 
 ### A note on the `engagements` stream
 
@@ -144,9 +146,11 @@ Now that you have set up the Hubspot source connector, check out the following H
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
 ## Changelog
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.8.4   | 2023-05-17 | [25667](https://github.com/airbytehq/airbyte/pull/26082) | Fixed bug with wrong parsing of boolean encoded like "false" parsed as True
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.9.0   | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                                                                                       |
+| 0.8.4   | 2023-05-17 | [25667](https://github.com/airbytehq/airbyte/pull/26082) | Fixed bug with wrong parsing of boolean encoded like "false" parsed as True                                                                                |
 | 0.8.3   | 2023-05-31 | [26831](https://github.com/airbytehq/airbyte/pull/26831) | Remove authSpecification from connector specification in favour of advancedAuth                                                                            |
 | 0.8.2   | 2023-05-16 | [26418](https://github.com/airbytehq/airbyte/pull/26418) | Added custom availability strategy which catches permission errors from parent streams                                                                     |
 | 0.8.1   | 2023-05-29 | [26719](https://github.com/airbytehq/airbyte/pull/26719) | Handle issue when `state` value is literally `"" (empty str)`                                                                                              |
@@ -236,7 +240,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 | 0.1.17  | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995)   | Update `discover` method: disable `quotes` stream when using OAuth config                                                                                  |
 | 0.1.16  | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465)   | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator                                                                 |
 | 0.1.15  | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374)   | Use correct schema for `owners` stream                                                                                                                     |
-| 0.1.14  | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693)   | Include deal\_to\_contact association when pulling deal stream and include contact ID in contact stream                                                    |
+| 0.1.14  | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693)   | Include deal_to_contact association when pulling deal stream and include contact ID in contact stream                                                      |
 | 0.1.13  | 2021-09-08 | [5834](https://github.com/airbytehq/airbyte/pull/5834)   | Fixed array fields without items property in schema                                                                                                        |
 | 0.1.12  | 2021-09-02 | [5798](https://github.com/airbytehq/airbyte/pull/5798)   | Treat empty string values as None for field with format to fix normalization errors                                                                        |
 | 0.1.11  | 2021-08-26 | [5685](https://github.com/airbytehq/airbyte/pull/5685)   | Remove all date-time format from schemas                                                                                                                   |

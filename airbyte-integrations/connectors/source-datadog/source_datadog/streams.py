@@ -3,12 +3,15 @@
 #
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from dateutil.parser import parse
+from pydantic.datetime_parse import timedelta
 
 
 class DatadogStream(HttpStream, ABC):
@@ -19,17 +22,32 @@ class DatadogStream(HttpStream, ABC):
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = None
 
-    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
+    def __init__(
+        self,
+        site: str,
+        query: str,
+        max_records_per_request: int,
+        start_date: str,
+        end_date: str,
+        query_start_date: str,
+        query_end_date: str,
+        queries: List[Dict[str, str]] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
+        self.site = site
         self.query = query
         self.max_records_per_request = max_records_per_request
         self.start_date = start_date
         self.end_date = end_date
+        self.query_start_date = query_start_date
+        self.query_end_date = query_end_date
+        self.queries = queries or []
         self._cursor_value = None
 
     @property
     def url_base(self) -> str:
-        return "https://api.datadoghq.com/api"
+        return f"https://api.{self.site}/api"
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {
@@ -111,8 +129,8 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     primary_key: Optional[str] = "id"
     parse_response_root: Optional[str] = "data"
 
-    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
-        super().__init__(query, max_records_per_request, start_date, end_date, **kwargs)
+    def __init__(self, site: str, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
+        super().__init__(site, query, max_records_per_request, start_date, end_date, **kwargs)
         self._cursor_value = ""
 
     @property
@@ -286,3 +304,96 @@ class Users(PaginatedBasedListStream):
             self.current_page += 1
             next_page_token = {"offset": self.current_page}
         return next_page_token
+
+
+class SeriesStream(IncrementalSearchableStream, ABC):
+    """
+    https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products
+    """
+
+    primary_key: Optional[str] = None
+    parse_response_root: Optional[str] = "data"
+
+    def __init__(self, name, data_source, query_string, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
+        self.data_source = data_source
+        self.query_string = query_string
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(self, **kwargs) -> str:
+        return "query/timeseries"
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "sync_date"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+
+        if self.query_end_date:
+            end_date = int(parse(self.query_end_date).timestamp() * 1000)
+        else:
+            end_date = int(datetime.now().timestamp()) * 1000
+
+        if self.query_start_date:
+            start_date = int(parse(self.query_start_date).timestamp() * 1000)
+        elif self._cursor_value:
+            start_date = int(parse(self._cursor_value).timestamp() * 1000)
+        else:
+            start_date = int((datetime.now() - timedelta(hours=24)).timestamp()) * 1000
+
+        payload = {
+            "data": {
+                "type": "timeseries_request",
+                "attributes": {
+                    "to": end_date,
+                    "from": start_date,
+                    "queries": [
+                        {
+                            "data_source": self.data_source,
+                            "name": self.name,
+                        }
+                    ],
+                },
+            }
+        }
+
+        if self.data_source in ["metrics", "cloud_cost"]:
+            payload["data"]["attributes"]["queries"][0]["query"] = self.query_string
+        elif self.data_source in ["logs", "rum"]:
+            payload["data"]["attributes"]["queries"][0]["search"] = {"query": self.query_string}
+            payload["data"]["attributes"]["queries"][0]["compute"] = {"aggregation": "count"}
+            print(payload)
+        return payload
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        local_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": True,
+        }
+        return local_json_schema
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return [response.json()]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        self._cursor_value = self.end_date
+        return None
