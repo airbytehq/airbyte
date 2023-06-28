@@ -11,16 +11,17 @@ However, for those who want a bit more guidance on the best way to contribute to
 We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)! Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to do if you're hunger to start contributing.
 ## Code of Conduct
 
-Please follow our [Code of conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
+Please follow our [Code of Conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
 
-## Ways of Contribute
+## Ways to Contribute
 
 ### Contributing to the Codebase with Bug Fixes or Features
 
 We gladly welcome improvements to the codebase.
-Most of the issues that are open for contributions will be tagged with good-first-issue or help-wanted. A great place to start looking will be our GitHub projects for:
+Most of the issues that are open for contributions will be tagged with `good first issue` or `help-welcome`. 
 
-[Community connector issues and features dashboard]()
+A great place to start looking will be our GitHub projects for:
+[Community connector issues and features dashboard](https://github.com/orgs/airbytehq/projects/50)
 
 ### Improve our documentation
 Help us enhance our documentation by:
@@ -31,6 +32,19 @@ Help us enhance our documentation by:
 - Suggesting improvements to organization and structure.
 - Creating new documentation where needed.
 
+The contributing guide for docs can be found [here](how-to-contribute-docs.md).
+
+## Contributing community content
+
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.com/tutorials):
+
+* Fix errors in existing tutorials
+* Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
+* Request tutorials
+
+We have a repo dedicated to community content. Everything is documented [there](https://github.com/airbytehq/community-content/).
+
+Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
 ### Requesting New Features or Connectors
 
@@ -52,31 +66,3 @@ You are welcome to add your own reactions to the existing issues. We will take t
 
 ❤️ means that this task is CRITICAL to you.
 👍 means it is important to you.
-
-
-
-
------
-
-## Contributing to documentation
-
-Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
-
-* Report missing content
-* Fix errors in existing docs
-* Help us in adding to the docs
-
-The contributing guide for docs can be found [here](contribute-documentation.md).
-
-## Contributing community content
-
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.com/tutorials):
-
-* Fix errors in existing tutorials
-* Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
-* Request tutorials
-
-We have a repo dedicated to community content. Everything is documented [there](https://github.com/airbytehq/community-content/).
-
-Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
-
