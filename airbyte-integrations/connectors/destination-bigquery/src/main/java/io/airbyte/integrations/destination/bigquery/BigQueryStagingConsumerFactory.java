@@ -141,7 +141,7 @@ public class BigQueryStagingConsumerFactory {
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : stream.getNamespace();
+          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
           final var targetTableName =
               TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
 
