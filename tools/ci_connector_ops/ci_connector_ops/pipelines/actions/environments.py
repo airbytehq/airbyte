@@ -7,17 +7,18 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import uuid
+from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional
 
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
-    DEFAULT_PYTHON_EXCLUDE,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
@@ -50,7 +51,6 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
         .with_exec(["pip", "install", "pip==23.1.2"])
     )
 
@@ -113,10 +113,6 @@ def with_python_package(
     Returns:
         Container: A python environment container with the python package source code.
     """
-    if exclude:
-        exclude = DEFAULT_PYTHON_EXCLUDE + exclude
-    else:
-        exclude = DEFAULT_PYTHON_EXCLUDE
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
     container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
         "/" + package_source_code_path
@@ -124,45 +120,99 @@ def with_python_package(
     return container
 
 
-async def find_local_python_dependencies(context: PipelineContext, package_source_code_path: str) -> Tuple[List[str], List[str]]:
-    """Retrieve the list of local dependencies of a python package source code.
-    Returns both the list of local dependencies found in setup.py and requirements.txt.
+async def find_local_python_dependencies(
+    context: PipelineContext,
+    package_source_code_path: str,
+    search_dependencies_in_setup_py: bool = True,
+    search_dependencies_in_requirements_txt: bool = True,
+) -> List[str]:
+    """Find local python dependencies of a python package. The dependencies are found in the setup.py and requirements.txt files.
 
     Args:
-        context (PipelineContext): The current pipeline context.
-        package_source_code_path (str): Path to the package source code in airbyte repo .
+        context (PipelineContext): The current pipeline context, providing a dagger client and a repository directory.
+        package_source_code_path (str): The local path to the python package source code.
+        search_dependencies_in_setup_py (bool, optional): Whether to search for local dependencies in the setup.py file. Defaults to True.
+        search_dependencies_in_requirements_txt (bool, optional): Whether to search for local dependencies in the requirements.txt file. Defaults to True.
 
     Returns:
-        Tuple[List[str], List[str]]: A tuple containing the list of local dependencies found in setup.py and requirements.txt.
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
     """
     python_environment = with_python_base(context)
     container = with_python_package(context, python_environment, package_source_code_path)
 
-    # Find local dependencies in setup.py
-    setup_dependency_paths = []
-    if await get_file_contents(container, "setup.py"):
-        container_with_egg_info = container.with_exec(["python", "setup.py", "egg_info"])
-        egg_info_output = await container_with_egg_info.stdout()
-        for line in egg_info_output.split("\n"):
-            if line.startswith("writing requirements to"):
-                requires_txt_path = line.replace("writing requirements to", "").strip()
-                requires_txt = await container_with_egg_info.file(requires_txt_path).contents()
-                for line in requires_txt.split("\n"):
-                    if "file://" in line:
-                        match = re.search(r"file:///(.+)", line)
-                        if match:
-                            setup_dependency_paths.append(match.group(1))
-                break
+    local_dependency_paths = []
+    if search_dependencies_in_setup_py:
+        local_dependency_paths += await find_local_dependencies_in_setup_py(container)
+    if search_dependencies_in_requirements_txt:
+        local_dependency_paths += await find_local_dependencies_in_requirements_txt(container, package_source_code_path)
 
-    # Find local dependencies in requirements.txt
-    requirements_dependency_paths = []
-    if requirements_txt := await get_file_contents(container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e ."):
-                local_dependency_path = Path(package_source_code_path + "/" + line[3:]).resolve()
-                local_dependency_path = str(local_dependency_path.relative_to(Path.cwd()))
-                requirements_dependency_paths.append(local_dependency_path)
-    return setup_dependency_paths, requirements_dependency_paths
+    transitive_dependency_paths = []
+    for local_dependency_path in local_dependency_paths:
+        # Transitive local dependencies installation is achieved by calling their setup.py file, not their requirements.txt file.
+        transitive_dependency_paths += await find_local_python_dependencies(context, local_dependency_path, True, False)
+
+    all_dependency_paths = local_dependency_paths + transitive_dependency_paths
+    if all_dependency_paths:
+        context.logger.debug(f"Found local dependencies for {package_source_code_path}: {all_dependency_paths}")
+    return all_dependency_paths
+
+
+async def find_local_dependencies_in_setup_py(python_package: Container) -> List[str]:
+    """Find local dependencies of a python package in its setup.py file.
+
+    Args:
+        python_package (Container): A python package container.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    setup_file_content = await get_file_contents(python_package, "setup.py")
+    if not setup_file_content:
+        return []
+
+    local_setup_dependency_paths = []
+    with_egg_info = python_package.with_exec(["python", "setup.py", "egg_info"])
+    egg_info_output = await with_egg_info.stdout()
+    dependency_in_requires_txt = []
+    for line in egg_info_output.split("\n"):
+        if line.startswith("writing requirements to"):
+            # Find the path to the requirements.txt file that was generated by calling egg_info
+            requires_txt_path = line.replace("writing requirements to", "").strip()
+            requirements_txt_content = await with_egg_info.file(requires_txt_path).contents()
+            dependency_in_requires_txt = requirements_txt_content.split("\n")
+
+    for dependency_line in dependency_in_requires_txt:
+        if "file://" in dependency_line:
+            match = re.search(r"file:///(.+)", dependency_line)
+            if match:
+                local_setup_dependency_paths.append([match.group(1)][0])
+    return local_setup_dependency_paths
+
+
+async def find_local_dependencies_in_requirements_txt(python_package: Container, package_source_code_path: str) -> List[str]:
+    """Find local dependencies of a python package in a requirements.txt file.
+
+    Args:
+        python_package (Container): A python environment container with the python package source code.
+        package_source_code_path (str): The local path to the python package source code.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    requirements_txt_content = await get_file_contents(python_package, "requirements.txt")
+    if not requirements_txt_content:
+        return []
+
+    local_requirements_dependency_paths = []
+    for line in requirements_txt_content.split("\n"):
+        # Some package declare themselves as a requirement in requirements.txt,
+        # #Without line != "-e ." the package will be considered a dependency of itself which can cause an infinite loop
+        if line.startswith("-e .") and line != "-e .":
+            local_dependency_path = Path(line[3:])
+            package_source_code_path = Path(package_source_code_path)
+            local_dependency_path = str((package_source_code_path / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_requirements_dependency_paths.append(local_dependency_path)
+    return local_requirements_dependency_paths
 
 
 async def with_installed_python_package(
@@ -189,8 +239,9 @@ async def with_installed_python_package(
 
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
 
-    setup_dependencies, requirements_dependencies = await find_local_python_dependencies(context, package_source_code_path)
-    for dependency_directory in setup_dependencies + requirements_dependencies:
+    local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
+
+    for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
     if await get_file_contents(container, "setup.py"):
@@ -206,7 +257,7 @@ async def with_installed_python_package(
     return container
 
 
-def with_python_connector_installed(context: ConnectorContext) -> Container:
+def with_python_connector_source(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
@@ -216,10 +267,11 @@ def with_python_connector_installed(context: ConnectorContext) -> Container:
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
-    return with_python_package(context, testing_environment, connector_source_path, exclude=["secrets"])
+
+    return with_python_package(context, testing_environment, connector_source_path)
 
 
-async def with_installed_airbyte_connector(context: ConnectorContext) -> Container:
+async def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
     Args:
@@ -229,8 +281,23 @@ async def with_installed_airbyte_connector(context: ConnectorContext) -> Contain
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
+    exclude = [
+        f"{context.connector.code_directory}/{item}"
+        for item in [
+            "secrets",
+            "metadata.yaml",
+            "bootstrap.md",
+            "icon.svg",
+            "README.md",
+            "Dockerfile",
+            "acceptance-test-docker.sh",
+            "build.gradle",
+            ".hypothesis",
+            ".dockerignore",
+        ]
+    ]
     return await with_installed_python_package(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=["secrets"]
+        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
 
 
@@ -301,7 +368,8 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
     python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+
+    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:
@@ -368,24 +436,31 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
+    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
 
-    return (
+    cat_container = (
         with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
-        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
-        .with_directory("/test_input/secrets", context.secrets_dir)
+        .with_mounted_directory("/test_input", context.get_connector_dir())
+    )
+    cat_container = (
+        with_mounted_connector_secrets(context, cat_container, "/test_input/secrets")
+        .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
+        # This bursts the CAT cached results everyday.
+        # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
+        # We keep the guarantee that a CAT runs everyday.
+        .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
+    return cat_container
 
 
 def with_gradle(
@@ -470,6 +545,8 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+    return image_sha
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -786,7 +863,9 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
 
 
 async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
-    setup_dependencies_to_mount, _ = await find_local_python_dependencies(context, str(context.connector.code_directory))
+    setup_dependencies_to_mount = await find_local_python_dependencies(
+        context, str(context.connector.code_directory), search_dependencies_in_setup_py=True, search_dependencies_in_requirements_txt=False
+    )
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")
@@ -850,3 +929,9 @@ def with_crane(
         )
 
     return base_container
+
+
+def with_mounted_connector_secrets(context: PipelineContext, container: Container, secret_directory_path="secrets") -> Container:
+    for secret_file_name, secret in context.connector_secrets.items():
+        container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+    return container

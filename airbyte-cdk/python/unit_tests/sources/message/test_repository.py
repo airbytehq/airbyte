@@ -6,9 +6,8 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
-    AirbyteLogMessage,
     AirbyteMessage,
-    Level,
+    AirbyteStateMessage,
     OrchestratorType,
     Type,
 )
@@ -59,7 +58,7 @@ def test_given_message_is_consumed_when_consume_queue_then_remove_message_from_q
     assert list(second_message_generator) == [second_message]
 
 
-def test_given_message_is_not_control_message_when_emit_message_then_raise_error():
+def test_given_message_is_not_control_nor_log_message_when_emit_message_then_raise_error():
     repo = InMemoryMessageRepository()
     with pytest.raises(ValueError):
-        repo.emit_message(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="any log message")))
+        repo.emit_message(AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "state value"})))
