@@ -21,7 +21,11 @@ An API key is required as well as an API application key. See the [Datadog API a
 7. Enter your `limit` - Number of records to collect per request.
 8. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
 9. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
-10. Click **Set up source**.
+10. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
+    1. Enter the `name`- Optional. Query Name.
+    2. Select the `data_source` from dropdown - Optional. Supported data sources - metrics, cloud_cost, logs, rum.
+    3. Enter the `query`- Optional. A classic query string. Example - _"kubernetes_state.node.count{*}"_, _"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"_
+11. Click **Set up source**.
 
 ### For Airbyte OSS:
 
@@ -33,6 +37,10 @@ An API key is required as well as an API application key. See the [Datadog API a
 7. Enter your `limit` - Number of records to collect per request.
 8. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
 9. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
+10. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
+    1. Enter the `name`- Required. Query Name.
+    2. Select the `data_source` - Required. Supported data sources - metrics, cloud_cost, logs, rum.
+    3. Enter the `query`- Required. A classic query string. Example - _"kubernetes_state.node.count{*}"_, _"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"_
 10. Click **Set up source**.
 
 ## Supported sync modes
@@ -57,11 +65,13 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 * [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
 * [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
 * [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
+* [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject             |
-|:--------|:-----------|:----------------------------------------------------------|:--------------------|
-| 0.2.0   | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784)  | Add necessary fields to schemas |
-| 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies|
-| 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog |
+| Version | Date       | Pull Request                                              | Subject                                                                      |
+|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.2.1   | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534)  | Support multiple query streams and pulling data from different datadog sites |
+| 0.2.0   | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784)  | Add necessary fields to schemas                                              |
+| 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies                                                  |
+| 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog                                                          |

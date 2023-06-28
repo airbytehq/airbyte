@@ -613,6 +613,17 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+      start_datetime:
+        title: Start Datetime
+        description: The datetime that determines the earliest record that should be synced.
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
+        examples:
+          - "2020-01-1T00:00:00Z"
+          - "{{ config['start_time'] }}"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -633,28 +644,14 @@ definitions:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
           - "{{ day_delta(-1) }}"
-      start_datetime:
-        title: Start Datetime
-        description: The datetime that determines the earliest record that should be synced.
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/MinMaxDatetime"
-        interpolation_context:
-          - config
-        examples:
-          - "2020-01-1T00:00:00Z"
-          - "{{ config['start_time'] }}"
-      step:
-        title: Step
-        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
-        type: string
-        examples:
-          - "P1W"
-          - "{{ config['step_increment'] }}"
       end_time_option:
         title: Inject End Time Into Outgoing HTTP Request
         description: Optionally configures how the end datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      is_data_feed:
+        title: Whether the target API is formatted as a data feed
+        description: A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.
+        type: boolean
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -680,6 +677,13 @@ definitions:
         title: Inject Start Time Into Outgoing HTTP Request
         description: Optionally configures how the start datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      step:
+        title: Step
+        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
+        type: string
+        examples:
+          - "P1W"
+          - "{{ config['step_increment'] }}"
       $parameters:
         type: object
         additionalProperties: true

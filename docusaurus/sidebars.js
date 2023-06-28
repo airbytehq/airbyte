@@ -418,6 +418,11 @@ const security = {
   id: 'operator-guides/security',
 };
 
+const support = {
+  type: 'doc',
+  id: 'operator-guides/contact-support',
+};
+
 module.exports = {
   mySidebar: [
     {
@@ -450,6 +455,7 @@ module.exports = {
     understandingAirbyte,
     contributeToAirbyte,
     sectionHeader('Resources'),
+    support,
     security,
     {
       type: 'category',

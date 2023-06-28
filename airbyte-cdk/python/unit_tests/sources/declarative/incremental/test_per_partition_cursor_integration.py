@@ -7,6 +7,7 @@ from unittest.mock import patch
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http import HttpStream
 
 CURSOR_FIELD = "cursor_field"
@@ -145,11 +146,12 @@ def test_given_record_for_partition_when_read_then_update_state():
     stream_instance = source.streams({})[0]
     list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
 
-    with patch.object(HttpStream, "_read_pages", side_effect=[[{"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}]]):
+    stream_slice = PerPartitionStreamSlice({"partition_field": "1"}, {"start_time": "2022-01-01", "end_time": "2022-01-31"})
+    with patch.object(HttpStream, "_read_pages", side_effect=[[Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]):
         list(
             stream_instance.read_records(
                 sync_mode=SYNC_MODE,
-                stream_slice=PerPartitionStreamSlice({"partition_field": "1"}, {"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+                stream_slice=stream_slice,
                 stream_state={"states": []},
                 cursor_field=CURSOR_FIELD,
             )
@@ -158,6 +160,6 @@ def test_given_record_for_partition_when_read_then_update_state():
     assert stream_instance.state == {"states": [
         {
             "partition": {"partition_field": "1"},
-            "cursor": {CURSOR_FIELD: "2022-01-15"},
+            "cursor": {CURSOR_FIELD: "2022-01-31"},
         }
     ]}
