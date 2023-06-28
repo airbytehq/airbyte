@@ -10,7 +10,7 @@ from typing import ClassVar, List, Tuple
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult
-from dagger import CacheVolume, Container, Directory
+from dagger import CacheVolume, Container, Directory, QueryError
 
 
 class GradleTask(Step, ABC):
@@ -100,7 +100,10 @@ class GradleTask(Step, ABC):
         Returns:
             Container: The Gradle container, with the updated cache.
         """
-        cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
+        try:
+            cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
+        except QueryError:
+            cache_dirs = []
         if "modules-2" in cache_dirs:
             with_cache = gradle_container.with_exec(
                 [
