@@ -18,6 +18,9 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.types import Record
+
+SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
 
 def test_declarative_stream():
@@ -90,9 +93,16 @@ def test_declarative_stream_with_add_fields_transform():
     schema_loader.get_json_schema.return_value = json_schema
 
     state = MagicMock()
+    stream_slices = [
+        {"date": "2021-01-01"},
+        {"date": "2021-01-02"},
+        {"date": "2021-01-03"},
+    ]
+    input_slice = stream_slices[0]
+
     retriever_records = [
         {"pk": 1234, "field": "value"},
-        {"pk": 4567, "field": "different_value"},
+        Record({"pk": 4567, "field": "different_value"}, input_slice),
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"pk": 1357, "field": "a_value"}, emitted_at=12344, stream="stream")),
         AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
         AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
@@ -104,11 +114,6 @@ def test_declarative_stream_with_add_fields_transform():
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"pk": 1357, "field": "a_value", "added_key": "added_value"}, emitted_at=12344, stream="stream")),
         AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
         AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
-    ]
-    stream_slices = [
-        {"date": "2021-01-01"},
-        {"date": "2021-01-02"},
-        {"date": "2021-01-03"},
     ]
 
     retriever = MagicMock()
@@ -136,5 +141,19 @@ def test_declarative_stream_with_add_fields_transform():
     assert stream.name == name
     assert stream.get_json_schema() == json_schema
     assert stream.state == state
-    input_slice = stream_slices[0]
     assert list(stream.read_records(SyncMode.full_refresh, cursor_field, input_slice, state)) == expected_records
+
+
+def test_state_checkpoint_interval():
+    stream = DeclarativeStream(
+        name="any name",
+        primary_key="any primary key",
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        config={},
+        transformations=MagicMock(),
+        parameters={},
+    )
+
+    assert stream.state_checkpoint_interval is None
