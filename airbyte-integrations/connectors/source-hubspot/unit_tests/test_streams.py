@@ -132,7 +132,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
-    object_reponse = [
+    contact_reponse = [
         {
             "json": {
                 stream.data_field: [
@@ -171,7 +171,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
-    requests_mock.register_uri("GET", "/crm/v3/objects/contact", object_reponse)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_reponse)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
