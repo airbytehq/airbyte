@@ -106,10 +106,10 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.stream_slices() == stream_slices
 
     assert retriever._last_response is None
-    assert retriever._last_records is None
+    assert retriever._records_from_last_response is None
     assert retriever.parse_response(response, stream_state={}) == records
     assert retriever._last_response == response
-    assert retriever._last_records == records
+    assert retriever._records_from_last_response == records
 
     assert retriever.http_method == "GET"
     assert not retriever.raise_on_http_errors
@@ -190,10 +190,11 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     )
 
     assert retriever._last_response is None
-    assert retriever._last_records is None
+    assert retriever._records_from_last_response is None
     assert retriever.parse_response(response, stream_state={}) == request_response_logs
     assert retriever._last_response == response
-    assert retriever._last_records == request_response_logs
+    assert retriever._records_from_last_response == request_response_logs
+    assert retriever._latest_record == request_response_logs[-1]
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
@@ -726,36 +727,65 @@ def test_limit_stream_slices():
 
 
 @pytest.mark.parametrize(
-    "test_name, last_records, records, expected_stream_slicer_update_count",
+    "test_name, last_records, records, latest_record",
     [
-        ("test_two_records", [{"id": -1}], records, 2),
-        ("test_no_records", [{"id": -1}], [], 1),
-        ("test_no_records_no_previous_records", [], [], 0)
+        ("test_two_records", [{"id": -1}], records, records[-1]),
+        ("test_no_records", [{"id": -1}], [], None),
+        ("test_no_records_no_previous_records", [], [], None)
     ]
 )
-def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_records, records, expected_stream_slicer_update_count):
-    with patch.object(HttpStream, "_read_pages", return_value=iter(records)):
-        requester = MagicMock()
-        paginator = MagicMock()
-        record_selector = MagicMock()
-        cursor = MagicMock(spec=Cursor)
+def test_read_records_then_cursor_close_slice(test_name, last_records, records, latest_record):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = records
+    cursor = MagicMock(spec=Cursor)
 
-        retriever = SimpleRetriever(
-            name="stream_name",
-            primary_key=primary_key,
-            requester=requester,
-            paginator=paginator,
-            record_selector=record_selector,
-            stream_slicer=cursor,
-            cursor=cursor,
-            parameters={},
-            config={},
-        )
-        retriever._last_records = last_records
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+    stream_slice = {"repository": "airbyte"}
+    with patch.object(HttpStream, "_read_pages", return_value=iter(records), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        cursor.close_slice.assert_called_once_with(stream_slice, latest_record)
 
-        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
 
-        assert cursor.update_state.call_count == expected_stream_slicer_update_count
+def parse_two_pages_and_return_records(retriever, stream_slice, records):
+    list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
+    list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
+    return records
+
+
+def test_given_latest_response_has_no_records_when_read_records_then_close_slice_using_latest_record_from_previous_response():
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.side_effect = [records, []]
+    cursor = MagicMock(spec=Cursor)
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+    stream_slice = {"repository": "airbyte"}
+    with patch.object(HttpStream, "_read_pages", side_effect=lambda _, __, ___: parse_two_pages_and_return_records(retriever, stream_slice, records)):
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        cursor.close_slice.assert_called_once_with(stream_slice, records[-1])
 
 
 def _generate_slices(number_of_slices):
