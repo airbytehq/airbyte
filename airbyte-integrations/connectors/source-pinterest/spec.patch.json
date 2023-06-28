@@ -1,4 +1,5 @@
 {
+  "required": ["start_date", "credentials"],
   "properties": {
     "credentials": {
       "discriminator": {
