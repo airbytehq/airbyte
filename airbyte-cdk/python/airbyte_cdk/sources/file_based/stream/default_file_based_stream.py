@@ -61,7 +61,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
 
         Use no more than `_discovery_policy.max_n_files_for_schema_inference` files.
         """
-        return list()
+        if self.config.input_schema:
+            return type_mapping_to_jsonschema(self.config.input_schema)
+
+        files = self.list_files()
+        max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
+        if len(files) > max_n_files_for_schema_inference:
+            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+            logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
+        return self.infer_schema(files)
 
     @cache
     def list_files(self) -> List[RemoteFile]:
