@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.43.3
+Fix return type of RecordFilter: changed from generator to list
+
 ## 0.43.2
 Connector builder module: serialize request body as string
 
