@@ -279,14 +279,14 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
 # ASSETS
 
 
-@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
+@asset(required_resource_keys={"all_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
 def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
-    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    all_metadata_file_blobs = context.resources.all_metadata_file_blobs
 
     # find the blob with the matching etag
-    matching_blob = next((blob for blob in latest_metadata_file_blobs if blob.etag == etag), None)
+    matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
 
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
