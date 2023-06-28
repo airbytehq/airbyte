@@ -10,7 +10,7 @@ from typing import ClassVar, List, Tuple
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult
-from dagger import CacheVolume, Container, Directory
+from dagger import CacheVolume, Container, Directory, QueryError
 
 
 class GradleTask(Step, ABC):
@@ -47,7 +47,7 @@ class GradleTask(Step, ABC):
         """
         return [
             str(dependency_directory)
-            for dependency_directory in self.context.connector.get_local_dependencies_paths(with_test_dependencies=True)
+            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
     async def _get_patched_connector_dir(self) -> Directory:
@@ -76,14 +76,17 @@ class GradleTask(Step, ABC):
 
     async def _run(self) -> StepResult:
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
-            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST).with_mounted_directory(
+                str(self.context.connector.code_directory), await self._get_patched_connector_dir()
+            )
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            .with_directory(f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir)
-            .with_exec(self._get_gradle_command())
         )
-        results = await self.get_step_result(connector_under_test)
+        connector_under_test_with_secrets = environments.with_mounted_connector_secrets(
+            self.context, connector_under_test, f"{self.context.connector.code_directory}/secrets"
+        )
+        results = await self.get_step_result(connector_under_test_with_secrets.with_exec(self._get_gradle_command()))
+
         await self._export_gradle_dependency_cache(connector_under_test)
         return results
 
@@ -97,19 +100,25 @@ class GradleTask(Step, ABC):
         Returns:
             Container: The Gradle container, with the updated cache.
         """
-        with_cache = gradle_container.with_exec(
-            [
-                "rsync",
-                "--archive",
-                "--quiet",
-                "--times",
-                "--exclude",
-                "*.lock",
-                "--exclude",
-                "gc.properties",
-                f"{consts.GRADLE_CACHE_PATH}/modules-2/",
-                f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
-            ]
-        )
-        await with_cache.exit_code()
-        return with_cache
+        try:
+            cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
+        except QueryError:
+            cache_dirs = []
+        if "modules-2" in cache_dirs:
+            with_cache = gradle_container.with_exec(
+                [
+                    "rsync",
+                    "--archive",
+                    "--quiet",
+                    "--times",
+                    "--exclude",
+                    "*.lock",
+                    "--exclude",
+                    "gc.properties",
+                    f"{consts.GRADLE_CACHE_PATH}/modules-2/",
+                    f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
+                ]
+            )
+            await with_cache.exit_code()
+            return with_cache
+        return gradle_container
