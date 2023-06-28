@@ -54,7 +54,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
             final JsonNode items = schema.get("items");
             return new Array(fromJsonSchema(items));
           } else {
-              return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+            return AirbyteTypeUtils.getAirbyteProtocolType(schema);
           }
         }
 
