@@ -67,12 +67,8 @@ class OktaStream(HttpStream, ABC):
                 yield self.transform(record=record, **kwargs)
         else:
             yield self.transform(record=response_json, **kwargs)
-    
-    def transform(
-        self, record: MutableMapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        **kwargs
-    ) -> MutableMapping[str, Any]:
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -159,6 +155,7 @@ class GroupRoleAssignments(OktaStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["groupId"] = stream_slice["group_id"]
         return record
+
 
 class Logs(IncrementalOktaStream):
 
@@ -268,6 +265,7 @@ class ResourceSets(OktaStream):
             return dict(parse.parse_qsl(parsed_link.query))
 
         return None
+
 
 class CustomRoles(OktaStream):
     # https://developer.okta.com/docs/reference/api/roles/#list-roles
