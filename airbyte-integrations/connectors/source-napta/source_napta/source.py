@@ -45,8 +45,6 @@ from .streams import (
     Projectstatus,
     ProjectTag,
     ProjectTagType,
-    ResumeTemplate,
-    RexTemplate,
     Skill,
     SkillCategory,
     Timesheet,
@@ -83,6 +81,7 @@ from .streams import (
     UserTag,
     UserTagType,
     UserUserTag,
+    Staffing,
 )
 
 
@@ -138,6 +137,7 @@ class SourceNapta(AbstractSource):
             Client(authenticator=authenticator, config=config),
             Grade(authenticator=authenticator, config=config),
             GradeGroup(authenticator=authenticator, config=config),
+            Staffing(authenticator=authenticator, config=config),
             Location(authenticator=authenticator, config=config),
             MetadataField(authenticator=authenticator, config=config),
             MinimalUser(authenticator=authenticator, config=config),
@@ -163,9 +163,13 @@ class SourceNapta(AbstractSource):
             UserHolidayCategory(authenticator=authenticator, config=config),
             UserPosition(authenticator=authenticator, config=config),
             UserProject(authenticator=authenticator, config=config),
-            UserProjectBusinessUnitPreference(authenticator=authenticator, config=config),
+            UserProjectBusinessUnitPreference(
+                authenticator=authenticator, config=config
+            ),
             UserProjectLocationPreference(authenticator=authenticator, config=config),
-            UserProjectUserPositionPreference(authenticator=authenticator, config=config),
+            UserProjectUserPositionPreference(
+                authenticator=authenticator, config=config
+            ),
             UserProjectUserTagPreference(authenticator=authenticator, config=config),
             UserSkill(authenticator=authenticator, config=config),
             UserTag(authenticator=authenticator, config=config),

@@ -4,20 +4,25 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.streams.http.http import HttpStream
+import math
+import datetime
 
 
 class NaptaStream(HttpStream, ABC):
     primary_key = "id"
     url_base = "https://app.napta.io/api/v1/"
 
-    def __init__(self, authenticator: Oauth2Authenticator, config: Mapping[str, Any]) -> None:
+    def __init__(
+        self, authenticator: Oauth2Authenticator, config: Mapping[str, Any]
+    ) -> None:
         self.config = config
         super().__init__(authenticator=authenticator)
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
-        next_page = response_json.get("links").get("next")
-        if next_page:
+        if next_page := response_json.get("links").get("next"):
             return {"next_url": next_page}
         return None
 
@@ -30,15 +35,155 @@ class NaptaStream(HttpStream, ABC):
         if next_page_token:
             # Here's the pagination logic
             # As I have not found a way to insert the next url directly, I split it to get the page number
-            return {"page[number]": next_page_token["next_url"].split("=")[-1], "page[size]": self.config["page_size"]}
+            return {
+                "page[number]": next_page_token["next_url"].split("=")[-1],
+                "page[size]": self.config["page_size"],
+            }
         return {"page[size]": self.config["page_size"]}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
         yield from response.json()["data"]
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if "Retry-After" in response.headers:
+            if int(response.headers["Retry-After"]) > 0:
+                self.logger.info(
+                    f'API Limit hit, backing off for {response.headers["Retry-After"]}'
+                )
+                return int(response.headers["Retry-After"])
+            else:
+                self.logger.info(
+                    "API Limit hit, backing off for 5s because Retry-After header content is invalid"
+                )
+                return 5
+        else:
+            self.logger.info(
+                "Retry-after header not found. Using default backoff value"
+            )
+            return 5
 
-class IncrementalNaptaStream(NaptaStream):
-    pass
+
+# Standard json body request
+# {
+#   "availability": { "start_date": "2020-01-01", "end_date": "2021-01-01" },
+#   "unit": "TO",
+#   "period": "day",
+#   "user_id": [],
+#   "user_tag_id": [],
+#   "skills": [],
+#   "project_id": [],
+#   "user_position_id": [],
+#   "location_id": [],
+#   "client_id": [],
+#   "business_unit_id": [],
+#   "projectstatus_id": [],
+#   "projectcategory_id": [],
+#   "userproject_status_id": [],
+#   "userprojectperiod_status_id": [],
+#   "staffing_type": [],
+# }
+
+# Answer has a meta.count field which gives the number of people in total in the slice.
+# meta.count / 30 = max page
+
+
+class Staffing(NaptaStream):
+    http_method = "POST"
+
+    def __init__(
+        self, authenticator: Oauth2Authenticator, config: Mapping[str, Any]
+    ) -> None:
+        self.start_date = "2018-01-01"
+        self.end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.current_page = 0
+        super().__init__(authenticator=authenticator, config=config)
+
+    def path(self, **kwargs) -> str:
+        return "staffing"
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        data = response.json()
+
+        output_data = []
+        try:
+            for date, data in data["data"].items():
+                for user_id, user_data in data["user"].items():
+                    transformed_data = {
+                        "user_id": int(user_id),
+                        "date": date,
+                        "user_project": {},
+                        "holiday": {},
+                        **user_data["global"],
+                    }
+
+                    # Check if "user_project" is not empty
+                    if "user_project" in user_data:
+                        if user_data["user_project"]:
+                            # Extract project_id and add to transformed_data
+                            project_id = list(user_data["user_project"].keys())[0]
+                            transformed_data["user_project"] = {
+                                "project_id": int(project_id),
+                                **user_data["user_project"][project_id],
+                            }
+
+                    # Ditto with holiday
+                    if "holiday" in user_data:
+                        if user_data["holiday"]:
+                            holiday_id = list(user_data["holiday"].keys())[0]
+                            transformed_data["holiday"] = {
+                                "type": holiday_id,
+                                **user_data["holiday"][holiday_id],
+                            }
+
+                    output_data.append(transformed_data)
+        except Exception as e:
+            self.logger.info(f"ERROR on stream staffing: {e}")
+            return {}
+        return output_data
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,  # type: ignore
+        next_page_token: Mapping[str, Any] = None,  # type: ignore
+    ) -> Optional[Mapping]:
+        return {
+            "availability": {
+                "start_date": self.start_date,  # Ici à remplacer par une fenêtre qui change
+                "end_date": self.end_date,
+            },
+            "unit": "TO",
+            "period": "day",
+        }
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            # Here's the pagination logic
+            return {
+                "page[number]": next_page_token["next_page"],
+                "page[size]": 1,
+            }
+        return {"page[size]": 1}
+
+    def next_page_token(
+        self, response: requests.Response, next_page_token: Mapping[str, Any] = None  # type: ignore
+    ) -> Optional[Mapping[str, Any]]:
+        response_json = response.json()
+        if self.current_page < response_json["meta"]["count"]:
+            self.current_page += 1
+            return {
+                "next_page": self.current_page,
+            }
+        return None
 
 
 class UserConfig(NaptaStream):

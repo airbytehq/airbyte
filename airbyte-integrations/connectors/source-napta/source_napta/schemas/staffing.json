@@ -1,0 +1,66 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"properties": {
+		"date": {
+			"type": "string"
+		},
+		"global": {
+			"properties": {
+				"forecast": {
+					"properties": {
+						"details": {
+							"type": ["null", "number"]
+						},
+						"rate": {
+							"type": ["null", "number"]
+						}
+					},
+					"type": "object"
+				}
+			},
+			"type": "object"
+		},
+		"user_id": {
+			"type": "integer"
+		},
+		"user_project": {
+			"properties": {
+				"forecast": {
+					"properties": {
+						"details": {
+							"type": "number"
+						},
+						"rate": {
+							"type": "number"
+						}
+					},
+					"type": "object"
+				},
+				"project_id": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"holiday": {
+			"properties": {
+				"forecast": {
+					"properties": {
+						"details": {
+							"type": "number"
+						},
+						"rate": {
+							"type": "number"
+						}
+					},
+					"type": "object"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		}
+	},
+	"type": "object"
+}
