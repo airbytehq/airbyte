@@ -820,8 +820,6 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
         if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,

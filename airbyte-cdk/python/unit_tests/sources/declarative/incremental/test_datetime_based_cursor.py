@@ -391,7 +391,7 @@ def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_dat
     assert expected_state == updated_state
 
 
-def test_given_partition_end_is_specified_when_then_():
+def test_given_partition_end_is_specified_and_greater_than_record_when_close_slice_then_use_partition_end():
     partition_field_end = "partition_field_end"
     cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
