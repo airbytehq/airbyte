@@ -3,7 +3,7 @@
 #
 
 
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from airbyte_cdk.sources.streams import Stream
