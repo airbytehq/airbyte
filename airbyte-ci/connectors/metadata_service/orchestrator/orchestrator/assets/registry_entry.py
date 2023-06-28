@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import copy
 
+from pydantic import ValidationError
 from google.cloud import storage
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
@@ -276,44 +277,74 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
     return file_handle.public_url if file_handle else None
 
 
+def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
+    """
+    Safely parse the metadata definition from the given metadata entry.
+    Handles the case where the metadata definition is invalid for in old versions of the metadata.
+    """
+    yaml_string = metadata_blob.download_as_string().decode("utf-8")
+    metadata_dict = yaml.safe_load(yaml_string)
+    try:
+        return MetadataDefinition.parse_obj(metadata_dict)
+
+    except ValidationError as e:
+        # only raise the error if "latest" is in the path
+        if "latest" in metadata_blob.name:
+            raise e
+        else:
+            print(f"WARNING: Could not parse metadata definition for {metadata_blob.name}. Error: {e}")
+            return None
+
+
 # ASSETS
 
 
-@asset(required_resource_keys={"all_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
-def metadata_entry(context: OpExecutionContext) -> LatestMetadataEntry:
+@asset(
+    required_resource_keys={"all_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def, output_required=False
+)
+def metadata_entry(context: OpExecutionContext) -> Output[LatestMetadataEntry]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
 
+
     # find the blob with the matching etag
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
+    metadata_file_path = matching_blob.name
 
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
 
-    # read the matching_blob
-    yaml_string = matching_blob.download_as_string().decode("utf-8")
-    metadata_dict = yaml.safe_load(yaml_string)
-    metadata_def = MetadataDefinition.parse_obj(metadata_dict)
+    dagster_metadata = {
+        "bucket_name": matching_blob.bucket.name,
+        "file_path": metadata_file_path,
+        "partition_key": etag,
+    }
 
-    metadata_file_path = matching_blob.name
-    icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
-    icon_blob = matching_blob.bucket.blob(icon_file_path)
+    # read the matching_blob into a metadata definition
+    metadata_def = safe_parse_metadata_definition(matching_blob)
 
-    icon_url = (
-        get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
-        if icon_blob.exists()
-        else None
-    )
+    # return only if the metadata definition is valid
+    if not metadata_def:
+        context.log.warn(f"Could not parse metadata definition for {metadata_file_path}")
+    else:
+        icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
+        icon_blob = matching_blob.bucket.blob(icon_file_path)
 
-    metadata_entry = LatestMetadataEntry(
-        metadata_definition=metadata_def,
-        icon_url=icon_url,
-        bucket_name=matching_blob.bucket.name,
-        file_path=metadata_file_path,
-    )
+        icon_url = (
+            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+            if icon_blob.exists()
+            else None
+        )
 
-    return metadata_entry
+        metadata_entry = LatestMetadataEntry(
+            metadata_definition=metadata_def,
+            icon_url=icon_url,
+            bucket_name=matching_blob.bucket.name,
+            file_path=metadata_file_path,
+        )
+
+        yield Output(value=metadata_entry, metadata=dagster_metadata)
 
 
 @asset(required_resource_keys={"root_metadata_directory_manager"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)

@@ -63,9 +63,9 @@ def new_gcs_blobs_partition_sensor(
     partitions_def,
 ) -> SensorDefinition:
     """
-    TODO
+    This sensor is responsible for polling a list of gcs blobs and triggering a partitioned job when the list changes.
     """
-
+    BLOB_CHUNK_SIZE = 30
     sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
 
     @sensor(
@@ -75,7 +75,6 @@ def new_gcs_blobs_partition_sensor(
         default_status=DefaultSensorStatus.STOPPED,
     )
     def new_gcs_blobs_sensor_definition(context: SensorEvaluationContext):
-        BLOB_CHUNK_SIZE = 25
         context.log.info(f"Starting {sensor_name}")
 
         with build_resources(resources_def) as resources:
