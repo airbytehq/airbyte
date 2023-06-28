@@ -576,7 +576,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
     "destination-oracle": {
