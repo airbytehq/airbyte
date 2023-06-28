@@ -41,7 +41,8 @@ class CodeFormatChecks(Step):
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
         """
-        connector_under_test = environments.with_python_connector_installed(self.context)
+        connector_under_test = environments.with_python_connector_source(self.context)
+
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
             .with_exec(self.RUN_BLACK_CMD)
@@ -65,7 +66,7 @@ class ConnectorPackageInstall(Step):
         Returns:
             StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
         """
-        connector_under_test = await environments.with_installed_airbyte_connector(self.context)
+        connector_under_test = await environments.with_python_connector_installed(self.context)
         return await self.get_step_result(connector_under_test)
 
 

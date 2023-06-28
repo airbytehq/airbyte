@@ -257,7 +257,7 @@ async def with_installed_python_package(
     return container
 
 
-def with_python_connector_installed(context: ConnectorContext) -> Container:
+def with_python_connector_source(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
@@ -267,10 +267,11 @@ def with_python_connector_installed(context: ConnectorContext) -> Container:
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
-    return with_python_package(context, testing_environment, connector_source_path, exclude=["secrets"])
+
+    return with_python_package(context, testing_environment, connector_source_path)
 
 
-async def with_installed_airbyte_connector(context: ConnectorContext) -> Container:
+async def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
     Args:
@@ -280,8 +281,23 @@ async def with_installed_airbyte_connector(context: ConnectorContext) -> Contain
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
+    exclude = [
+        f"{context.connector.code_directory}/{item}"
+        for item in [
+            "secrets",
+            "metadata.yaml",
+            "bootstrap.md",
+            "icon.svg",
+            "README.md",
+            "Dockerfile",
+            "acceptance-test-docker.sh",
+            "build.gradle",
+            ".hypothesis",
+            ".dockerignore",
+        ]
+    ]
     return await with_installed_python_package(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=["secrets"]
+        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
 
 
