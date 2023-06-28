@@ -86,6 +86,7 @@ class GradleTask(Step, ABC):
             self.context, connector_under_test, f"{self.context.connector.code_directory}/secrets"
         )
         results = await self.get_step_result(connector_under_test_with_secrets.with_exec(self._get_gradle_command()))
+
         await self._export_gradle_dependency_cache(connector_under_test)
         return results
 
@@ -99,19 +100,22 @@ class GradleTask(Step, ABC):
         Returns:
             Container: The Gradle container, with the updated cache.
         """
-        with_cache = gradle_container.with_exec(
-            [
-                "rsync",
-                "--archive",
-                "--quiet",
-                "--times",
-                "--exclude",
-                "*.lock",
-                "--exclude",
-                "gc.properties",
-                f"{consts.GRADLE_CACHE_PATH}/modules-2/",
-                f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
-            ]
-        )
-        await with_cache.exit_code()
-        return with_cache
+        cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
+        if "modules-2" in cache_dirs:
+            with_cache = gradle_container.with_exec(
+                [
+                    "rsync",
+                    "--archive",
+                    "--quiet",
+                    "--times",
+                    "--exclude",
+                    "*.lock",
+                    "--exclude",
+                    "gc.properties",
+                    f"{consts.GRADLE_CACHE_PATH}/modules-2/",
+                    f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
+                ]
+            )
+            await with_cache.exit_code()
+            return with_cache
+        return gradle_container
