@@ -6,6 +6,7 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
 
@@ -50,7 +52,7 @@ class DatetimeBasedCursor(Cursor):
     datetime_format: str
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    _cursor: dict = field(repr=False, default=None)  # tracks current datetime
+    _cursor: str = field(repr=False, default=None)  # tracks current datetime
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -59,6 +61,7 @@ class DatetimeBasedCursor(Cursor):
     partition_field_start: Optional[str] = None
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
+    message_repository: Optional[MessageRepository] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
@@ -104,18 +107,16 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
-        """
-        Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
-
-        :param stream_slice: current stream slice
-        :param last_record: last record read
-        :return: None
-        """
-        last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-
-        possible_cursor_values = list(filter(lambda item: item, [last_record_value, self._cursor]))
-        self._cursor = max(possible_cursor_values) if possible_cursor_values else None
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+        last_record_cursor_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+        stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
+        possible_cursor_values = list(
+            map(
+                lambda datetime_str: self.parse_date(datetime_str),
+                filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end]),
+            )
+        )
+        self._cursor = self._format_datetime(max(possible_cursor_values)) if possible_cursor_values else None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
@@ -127,15 +128,16 @@ class DatetimeBasedCursor(Cursor):
         :return:
         """
         end_datetime = self._select_best_end_datetime()
-        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
-
-        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
-        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
-        start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
-
+        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
-    def _select_best_end_datetime(self):
+    def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
+        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
+        return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
+
+    def _select_best_end_datetime(self) -> datetime.datetime:
         now = datetime.datetime.now(tz=self._timezone)
         if not self.end_datetime:
             return now
@@ -234,3 +236,26 @@ class DatetimeBasedCursor(Cursor):
         if self.end_time_option and self.end_time_option.inject_into == option_type:
             options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options
+
+    def should_be_synced(self, record: Record) -> bool:
+        cursor_field = self.cursor_field.eval(self.config)
+        record_cursor_value = record.get(cursor_field)
+        if not record_cursor_value:
+            self._send_log(
+                Level.WARN,
+                f"Could not find cursor field `{cursor_field}` in record. The incremental sync will assume it needs to be synced",
+            )
+            return True
+
+        latest_possible_cursor_value = self._select_best_end_datetime()
+        earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
+        return earliest_possible_cursor_value <= self.parse_date(record_cursor_value) <= latest_possible_cursor_value
+
+    def _send_log(self, level: Level, message: str) -> None:
+        if self.message_repository:
+            self.message_repository.emit_message(
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=level, message=message),
+                )
+            )

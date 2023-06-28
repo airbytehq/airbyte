@@ -24,28 +24,6 @@
     },
     {
       "stream": {
-        "name": "group_members",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["id"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "resource_sets",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["id"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
         "name": "logs",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
