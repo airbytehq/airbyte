@@ -1,54 +1,54 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_customer": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_operating_system": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_web_browser": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "javascript": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "screen_resolution_x": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "screen_resolution_y": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "screen_color": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "sun_java": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "adobe_flash": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "adobe_director": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "apple_quicktime": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "real_player": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "windows_media": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "accept_language": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "mobile_theme": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

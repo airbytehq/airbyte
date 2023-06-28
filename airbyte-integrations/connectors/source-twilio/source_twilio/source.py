@@ -42,6 +42,7 @@ from source_twilio.streams import (
     Trunks,
     UsageRecords,
     UsageTriggers,
+    VerifyServices,
 )
 
 RETENTION_WINDOW_LIMIT = 400
@@ -119,5 +120,6 @@ class SourceTwilio(AbstractSource):
             Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
+            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams
