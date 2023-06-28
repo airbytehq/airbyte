@@ -1,6 +1,9 @@
 {
   "required": ["start_date", "credentials"],
   "properties": {
+    "start_date": {
+      "pattern_descriptor": null
+    },
     "credentials": {
       "discriminator": {
         "propertyName": "auth_method"
