@@ -503,10 +503,9 @@ class TestIncrementalFileStream:
         with patch("source_s3.stream.make_s3_client", s3_client_mock):
             stream_instance = IncrementalFileStreamS3(
                 dataset="dummy",
-                provider={"bucket": bucket, "path_prefix": path_prefix, **provider},
+                provider={"bucket": bucket, "path_prefix": path_prefix, "start_date":start_date, **provider},
                 format={},
-                path_pattern="**/prefix*.png",
-                start_date=start_date
+                path_pattern="**/prefix*.png"
             )
             assert len(list(stream_instance.filepath_iterator())) == expected_files_count
 

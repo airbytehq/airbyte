@@ -84,6 +84,7 @@ properties:
         description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
         items:
           type: string
+        default: []
       registries:
         anyOf:
           - type: object

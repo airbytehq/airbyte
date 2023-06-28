@@ -22,9 +22,8 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.JAVA: java_connectors.run_all_tests,
     },
     "run_code_format_checks": {
-        # TODO: re-enable when we have a code formatter
-        # ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
-        # ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
+        ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
+        ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
         # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
     },
 }
@@ -38,7 +37,6 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
     Returns:
         List[StepResult]: The results of the metadata validation steps.
     """
-    context.logger.info("Run metadata validation.")
     return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
 
 
@@ -51,7 +49,6 @@ async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of the version checks steps.
     """
-    context.logger.info("Run version checks.")
     return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
 
 
@@ -64,7 +61,6 @@ async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of the QA checks steps.
     """
-    context.logger.info("Run QA checks.")
     return [await QaChecks(context).run()]
 
 
@@ -78,7 +74,6 @@ async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
         List[StepResult]: The results of the code format checks steps.
     """
     if _run_code_format_checks := LANGUAGE_MAPPING["run_code_format_checks"].get(context.connector.language):
-        context.logger.info("Run code format checks.")
         return await _run_code_format_checks(context)
     else:
         context.logger.warning(f"No code format checks defined for connector language {context.connector.language}!")

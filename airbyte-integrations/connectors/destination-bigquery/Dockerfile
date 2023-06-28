@@ -18,7 +18,7 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
 FROM airbyte/integration-base-java:dev
 
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-bigquery==1.0.0
@@ -44,7 +44,7 @@ ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.4.4
+LABEL io.airbyte.version=1.4.5
 LABEL io.airbyte.name=airbyte/destination-bigquery
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
