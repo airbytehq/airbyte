@@ -65,7 +65,7 @@ def new_gcs_blobs_partition_sensor(
     """
     This sensor is responsible for polling a list of gcs blobs and triggering a partitioned job when the list changes.
     """
-    BLOB_CHUNK_SIZE = 30
+    MAX_RUN_REQUEST = 30
     sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
 
     @sensor(
@@ -84,22 +84,21 @@ def new_gcs_blobs_partition_sensor(
 
             gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
 
-            new_blobs = [blob for blob in gcs_blobs_resource if not context.instance.has_dynamic_partition(partitions_def.name, blob.etag)]
-
-            new_etags_found = [blob.etag for blob in new_blobs]
+            new_etags_found = [
+                blob.etag for blob in gcs_blobs_resource if not context.instance.has_dynamic_partition(partitions_def.name, blob.etag)
+            ]
             context.log.info(f"New etags found: {new_etags_found}")
 
             if not new_etags_found:
                 return SkipReason(f"No new {gcs_blobs_resource_key} in GCS bucket")
 
-            # if there are more than the BLOB_CHUNK_SIZE, we need to split them into multiple runs
-            if len(new_etags_found) > BLOB_CHUNK_SIZE:
-                new_etags_found = new_etags_found[:BLOB_CHUNK_SIZE]
-                new_blobs = new_blobs[:BLOB_CHUNK_SIZE]
-                context.log.info(f"Only processing first {BLOB_CHUNK_SIZE} new blobs: {new_etags_found}")
+            # if there are more than the MAX_RUN_REQUEST, we need to split them into multiple runs
+            if len(new_etags_found) > MAX_RUN_REQUEST:
+                new_etags_found = new_etags_found[:MAX_RUN_REQUEST]
+                context.log.info(f"Only processing first {MAX_RUN_REQUEST} new blobs: {new_etags_found}")
 
             return SensorResult(
-                run_requests=[RunRequest(partition_key=blob.etag) for blob in new_blobs],
+                run_requests=[RunRequest(partition_key=etag) for etag in new_etags_found],
                 dynamic_partitions_requests=[partitions_def.build_add_request(new_etags_found)],
             )
 

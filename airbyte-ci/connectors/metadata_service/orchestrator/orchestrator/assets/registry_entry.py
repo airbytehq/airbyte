@@ -307,7 +307,6 @@ def metadata_entry(context: OpExecutionContext) -> Output[LatestMetadataEntry]:
     etag = context.partition_key
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
 
-
     # find the blob with the matching etag
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
     metadata_file_path = matching_blob.name
