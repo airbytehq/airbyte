@@ -339,7 +339,6 @@ class TestStreamUserRoleAssignment:
     ):
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[user_role_assignments_instance])
-        slice = MagicMock()
         inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {"user_id": "test_user_id"}}
         assert list(stream.parse_response(**inputs)) == [user_role_assignments_instance]
 
