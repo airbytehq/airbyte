@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import abstractmethod
-from enum import Enum
+from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
 
-class AbstractSchemaValidationPolicy(Enum):
+class AbstractSchemaValidationPolicy(ABC):
+    name: str
+
     @abstractmethod
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
         """

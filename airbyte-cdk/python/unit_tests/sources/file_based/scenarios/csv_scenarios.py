@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError, SchemaInferenceError
-from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
+from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 single_csv_scenario = (
@@ -16,7 +16,7 @@ single_csv_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -43,10 +43,10 @@ single_csv_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -83,7 +83,7 @@ multi_csv_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -118,13 +118,13 @@ multi_csv_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -165,7 +165,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -200,9 +200,9 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -236,7 +236,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
 
 invalid_csv_scenario = (
     TestScenarioBuilder()
-    .set_name("invalid_csv_stream")
+    .set_name("invalid_csv_scenario")
     .set_config(
         {
             "streams": [
@@ -244,7 +244,7 @@ invalid_csv_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -253,7 +253,7 @@ invalid_csv_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    (),
+                    ("col1",),
                     ("val11", "val12"),
                     ("val21", "val22"),
                 ],
@@ -271,9 +271,9 @@ invalid_csv_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -290,19 +290,21 @@ invalid_csv_scenario = (
             ]
         }
     )
-    .set_expected_records(
+    .set_expected_records([])
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_logs(
         [
-            {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
-            {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+            {
+                "level": "ERROR",
+                "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+            },
         ]
     )
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_read_error(RecordParseError, FileBasedSourceError.ERROR_PARSING_FILE.value)
 ).build()
 
 csv_single_stream_scenario = (
     TestScenarioBuilder()
-    .set_name("csv_single_stream")
+    .set_name("csv_single_stream_scenario")
     .set_config(
         {
             "streams": [
@@ -310,7 +312,7 @@ csv_single_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -343,10 +345,10 @@ csv_single_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -384,13 +386,13 @@ csv_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -424,13 +426,13 @@ csv_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -450,7 +452,7 @@ csv_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string"
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -486,6 +488,7 @@ csv_multi_stream_scenario = (
     )
 ).build()
 
+
 csv_custom_format_scenario = (
     TestScenarioBuilder()
     .set_name("csv_custom_format")
@@ -496,7 +499,7 @@ csv_custom_format_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "format": {
                         "filetype": "csv",
                         "delimiter": "#",
@@ -531,13 +534,13 @@ csv_custom_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -573,6 +576,7 @@ csv_custom_format_scenario = (
     )
 ).build()
 
+
 multi_stream_custom_format = (
     TestScenarioBuilder()
     .set_name("multi_stream_custom_format_scenario")
@@ -583,7 +587,7 @@ multi_stream_custom_format = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "format": {
                         "filetype": "csv",
                         "delimiter": "#",
@@ -596,7 +600,7 @@ multi_stream_custom_format = (
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["b.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "format": {
                         "filetype": "csv",
                         "delimiter": "#",
@@ -638,13 +642,13 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -664,7 +668,7 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -702,5 +706,75 @@ multi_stream_custom_format = (
         {
             "delimiter": "#",
         }
+    )
+).build()
+
+
+empty_schema_inference_scenario = (
+    TestScenarioBuilder()
+    .set_name("empty_schema_inference_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_parsers({'csv': EmptySchemaParser()})
+    .set_expected_discover_error(InvalidSchemaError, FileBasedSourceError.INVALID_SCHEMA_ERROR.value)
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
     )
 ).build()
