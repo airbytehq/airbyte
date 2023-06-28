@@ -5,11 +5,11 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.2.39
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
-  license: MIT
+  license: Elv2
   name: Google Sheets
   registries:
     cloud:
