@@ -10,9 +10,10 @@ application {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
 
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
@@ -22,6 +23,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
@@ -49,3 +51,12 @@ configurations.all {
     force 'com.google.api-client:google-api-client:1.31.5'
   }
 }
+
+integrationTestJava {
+    systemProperties = [
+        'junit.jupiter.execution.parallel.enabled': 'true'
+        // TODO what's preventing us from turning this on? (probably a lot of things)
+        // 'junit.jupiter.execution.parallel.mode.default': 'concurrent'
+    ]
+}
+
