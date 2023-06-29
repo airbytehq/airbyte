@@ -110,13 +110,19 @@ class DatetimeBasedCursor(Cursor):
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         last_record_cursor_value = most_recent_record.get(self.cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
-        possible_cursor_values = list(
+        cursor_value_str_by_cursor_value_datetime = dict(
             map(
-                lambda datetime_str: self.parse_date(datetime_str),
+                # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
+                # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
+                lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
                 filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end]),
             )
         )
-        self._cursor = self._format_datetime(max(possible_cursor_values)) if possible_cursor_values else None
+        self._cursor = (
+            cursor_value_str_by_cursor_value_datetime[max(cursor_value_str_by_cursor_value_datetime.keys())]
+            if cursor_value_str_by_cursor_value_datetime
+            else None
+        )
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
