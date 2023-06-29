@@ -10,6 +10,7 @@ data:
   name: OpenWeather
   registries:
     cloud:
+      version: 12
       enabled: true
     oss:
       enabled: true
