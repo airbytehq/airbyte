@@ -122,6 +122,7 @@
     {% endif %}
     <li><b>Branch:</b> {{ git_branch }}</li>
     {% if gha_workflow_run_url %}
+    <br>
     <li><b><a href="{{ gha_workflow_run_url }}">Github Actions logs</a></b></li>
     {% endif %}
     {% if dagger_logs_url %}
