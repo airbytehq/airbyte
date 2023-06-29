@@ -148,6 +148,7 @@ class Campaigns(FBMarketingIncrementalStream):
         log = {
             "source": "facebook-marketing-custom",
             "account_id": str(account_id)[0:5],
+            "stream": "campaigns",
             "time": str(datetime.datetime.now()),
             "unix_time": time.time(),
             "previous_time_diff_seconds": time.time() - previous_unix_time if (previous_unix_time) else None
