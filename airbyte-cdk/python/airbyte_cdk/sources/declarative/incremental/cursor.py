@@ -25,7 +25,7 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         """
         Update state based on the stream slice and the latest record. Note that `stream_slice.cursor_slice` and
         `last_record.associated_slice` are expected to be the same but we make it explicit here that `stream_slice` should be leveraged to

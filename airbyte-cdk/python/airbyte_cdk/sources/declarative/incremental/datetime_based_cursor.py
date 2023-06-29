@@ -107,8 +107,8 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
-        last_record_cursor_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        last_record_cursor_value = most_recent_record.get(self.cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         possible_cursor_values = list(
             map(

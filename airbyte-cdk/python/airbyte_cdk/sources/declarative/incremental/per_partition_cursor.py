@@ -144,11 +144,13 @@ class PerPartitionCursor(Cursor):
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         try:
-            cursor_last_record = Record(last_record.data, stream_slice.cursor_slice) if last_record else last_record
+            cursor_most_recent_record = (
+                Record(most_recent_record.data, stream_slice.cursor_slice) if most_recent_record else most_recent_record
+            )
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
-                stream_slice.cursor_slice, cursor_last_record
+                stream_slice.cursor_slice, cursor_most_recent_record
             )
         except KeyError as exception:
             raise ValueError(
