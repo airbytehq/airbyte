@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 | :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1.0           | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                                                |
 | 1.0.6           | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                                                                   |
 | 1.0.5           | 2023-05-31 | [\#25782](https://github.com/airbytehq/airbyte/pull/25782) | Internal scaffolding for future development                                                                                                         |
 | 1.0.4           | 2023-05-19 | [\#26323](https://github.com/airbytehq/airbyte/pull/26323) | Prevent infinite retry loop under specific circumstances                                                                                            |
