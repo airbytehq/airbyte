@@ -374,12 +374,12 @@ class Report:
         return len(self.failed_steps) == 0
 
     @property
-    def run_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+    def run_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+    def lead_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
     def remote_storage_enabled(self) -> bool:  # noqa D102
@@ -429,7 +429,7 @@ class Report:
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -450,7 +450,7 @@ class Report:
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
@@ -465,8 +465,8 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time_seconds = round((step_result.created_at - step_result.step.started_at).total_seconds())
-                step_results_table.add_row(step, result, f"{run_time_seconds}s")
+                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]
         if self.failed_steps:
@@ -524,7 +524,7 @@ class ConnectorReport(Report):
                 "connector_technical_name": self.pipeline_context.connector.technical_name,
                 "connector_version": self.pipeline_context.connector.version,
                 "run_timestamp": self.created_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -546,7 +546,7 @@ class ConnectorReport(Report):
         global_status_emoji = "✅" if self.success else "❌"
         commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
         markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
-        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} seconds\n\n"
         report_data = [
             [step_result.step.title, step_result.status.get_emoji()]
             for step_result in self.steps_results
@@ -570,10 +570,11 @@ class ConnectorReport(Report):
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
-            "run_duration": round(self.run_duration),
+            "run_duration": self.run_duration,
             "created_at": self.created_at.isoformat(),
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
+            "dagger_logs_url": None,
             "git_branch": self.pipeline_context.git_branch,
             "git_revision": self.pipeline_context.git_revision,
             "commit_url": None,
@@ -583,6 +584,7 @@ class ConnectorReport(Report):
         if self.pipeline_context.is_ci:
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
@@ -605,7 +607,7 @@ class ConnectorReport(Report):
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
