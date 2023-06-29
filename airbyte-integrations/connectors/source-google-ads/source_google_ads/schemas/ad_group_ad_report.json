@@ -422,6 +422,9 @@
     },
     "segments.year": {
       "type": ["null", "integer"]
+    },
+   "segments.keyword.ad_group_criterion": {
+      "type": ["null", "string"]
     }
   }
 }
