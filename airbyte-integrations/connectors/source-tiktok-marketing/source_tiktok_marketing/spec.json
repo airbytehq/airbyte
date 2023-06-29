@@ -94,7 +94,9 @@
       "attribution_window": {
         "title": "Attribution Window",
         "description": "The attribution window in days.",
-        "default": 0,
+        "minimum": 0,
+        "maximum": 364,
+        "default": 3,
         "order": 3,
         "type": "integer"
       }

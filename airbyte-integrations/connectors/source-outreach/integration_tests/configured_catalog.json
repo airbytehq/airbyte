@@ -41,6 +41,19 @@
     },
     {
       "stream": {
+        "name": "sequence_steps",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["updatedAt"]
+    },
+    {
+      "stream": {
         "name": "accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -120,6 +133,58 @@
     {
       "stream": {
         "name": "calls",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["updatedAt"]
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["updatedAt"]
+    },
+    {
+      "stream": {
+        "name": "tasks",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["updatedAt"]
+    },
+    {
+      "stream": {
+        "name": "templates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["updatedAt"]
+    },
+    {
+      "stream": {
+        "name": "snippets",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

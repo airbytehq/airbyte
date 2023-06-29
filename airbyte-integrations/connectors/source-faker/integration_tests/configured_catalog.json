@@ -48,6 +48,16 @@
             "id": { "type": "number" },
             "user_id": { "type": "number" },
             "product_id": { "type": "number" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
             "added_to_cart_at": {
               "type": ["null", "string"],
               "format": "date-time",
@@ -86,10 +96,15 @@
               "type": "string",
               "format": "date-time",
               "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             }
           }
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created_at"]
       },

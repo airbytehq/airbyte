@@ -5,9 +5,10 @@
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.core import Stream
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
@@ -160,45 +161,8 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
         except ValueError:
             return
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
-    slices = [s for s in partition_router.stream_slices(SyncMode.incremental, stream_state=None)]
+    slices = [s for s in partition_router.stream_slices()]
     assert slices == expected_slices
-
-
-@pytest.mark.parametrize(
-    "test_name, stream_slice, expected_state",
-    [
-        ("test_update_cursor_no_state_no_record", {}, {}),
-        ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"first_stream_id": "1234"}),
-        ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, {}),
-        (
-            "test_update_cursor_with_state_from_both_parents",
-            {"first_stream_id": "1234", "second_stream_id": "4567"},
-            {"first_stream_id": "1234", "second_stream_id": "4567"},
-        ),
-    ],
-)
-def test_update_cursor(test_name, stream_slice, expected_state):
-    parent_stream_name_to_config = [
-        ParentStreamConfig(
-            stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
-            parent_key="id",
-            partition_field="first_stream_id",
-            parameters={},
-            config={},
-        ),
-        ParentStreamConfig(
-            stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
-            parent_key="id",
-            partition_field="second_stream_id",
-            parameters={},
-            config={},
-        ),
-    ]
-
-    partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_name_to_config, parameters={}, config={})
-    partition_router.update_cursor(stream_slice, None)
-    updated_state = partition_router.get_stream_state()
-    assert expected_state == updated_state
 
 
 @pytest.mark.parametrize(
@@ -297,3 +261,43 @@ def test_request_option(
     assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+
+
+def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data():
+    parent_slice = {}
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockStream([parent_slice], [AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"id": "record value"}, emitted_at=0, stream="stream"))], "first_stream"),
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={}
+            )
+        ],
+        parameters={},
+        config={}
+    )
+
+    slices = list(partition_router.stream_slices())
+    assert slices == [{"partition_field": "record value", "parent_slice": parent_slice}]
+
+
+def test_given_record_is_record_object_when_stream_slices_then_use_record_data():
+    parent_slice = {}
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockStream([parent_slice], [Record({"id": "record value"}, {})], "first_stream"),
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={}
+            )
+        ],
+        parameters={},
+        config={}
+    )
+
+    slices = list(partition_router.stream_slices())
+    assert slices == [{"partition_field": "record value", "parent_slice": parent_slice}]

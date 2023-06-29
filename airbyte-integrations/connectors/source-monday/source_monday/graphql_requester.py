@@ -3,6 +3,7 @@
 #
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -63,12 +64,12 @@ class MondayGraphqlRequester(HttpRequester):
 
         return f"{object_name}{arguments}{{{fields}}}"
 
-    def _build_items_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
+    def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
         """
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE)
+        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 
@@ -96,8 +97,11 @@ class MondayGraphqlRequester(HttpRequester):
         Combines queries to a single GraphQL query.
         """
         limit = self.limit.eval(self.config)
+        page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "items":
-            query_builder = self._build_items_query
+            # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
+            page, sub_page = page if page else (None, None)
+            query_builder = partial(self._build_items_query, sub_page=sub_page)
         elif self.name == "teams":
             query_builder = self._build_teams_query
         else:
@@ -106,7 +110,7 @@ class MondayGraphqlRequester(HttpRequester):
             object_name=self.name,
             field_schema=self._get_schema_root_properties(),
             limit=limit or None,
-            page=next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME],
+            page=page,
         )
         return {"query": f"query{{{query}}}"}
 

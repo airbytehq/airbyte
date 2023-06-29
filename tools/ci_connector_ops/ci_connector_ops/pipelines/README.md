@@ -31,6 +31,8 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
   * [Options](#options)
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
+- [`connectors list` command](#connectors-list-command)
+- [`connectors format` command](#connectors-format-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -60,16 +62,16 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
 
 #### Options
 
-| Option                       | Default value                   | Mapped environment variable   | Description                                                                                 |
-| ---------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--is-local/--is-ci`         | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
-| `--git-branch`               | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
-| `--git-revision`             | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`            | `origin/master`                 |                               | Branch to which the git diff will happen to detect new or modified files.                   |
-| `--gha-workflow-run-id`      |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`               | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
-| `--pipeline-start-timestamp` | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
-
+| Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
+| --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
+| `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
+| `--git-revision`                        | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
+| `--diffed-branch`                       | `origin/master`                 |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--gha-workflow-run-id`                 |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
+| `--ci-context`                          | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--pipeline-start-timestamp`            | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
+| `--show-dagger-logs/--hide-dagger-logs` | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                       |
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
@@ -87,6 +89,57 @@ Available commands:
 | `--language`           | True     |               | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+
+### <a id="connectors-list-command"></a>`connectors list` command
+Retrieve the list of connectors satisfying the provided filters.
+
+#### Examples
+List all connectors:
+
+`airbyte-ci connectors list`
+
+List generally available connectors:
+
+`airbyte-ci connectors --release-stage=generally_available list`
+
+List connectors changed on the current branch:
+
+`airbyte-ci connectors --modified list`
+
+List connectors with a specific language:
+
+`airbyte-ci connectors --language=python list`
+
+List connectors with multiple filters:
+
+`airbyte-ci connectors --language=low-code --release-stage=generally_available list`
+
+### <a id="connectors-list-command"></a>`connectors format` command
+Run a code formatter on one or multiple connectors.
+
+For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
+* `black` for code formatting
+* `isort` for import sorting
+* `licenseheaders` for adding license headers
+
+For Java connectors we run `./gradlew format`.
+
+In local CLI execution the formatted code is exported back the local repository. No commit or push is performed.
+In CI execution the formatted code is pushed to the remote branch. One format commit per connector.
+
+#### Examples
+Format a specific connector:
+
+`airbyte-ci connectors --name=source-pokeapi format`
+
+Format all Python connectors:
+
+`airbyte-ci connectors --language=python format`
+
+Format all connectors modified on the current branch:
+
+`airbyte-ci connectors --modified format`
+
 
 ### <a id="connectors-test-command"></a>`connectors test` command
 Run a test pipeline for one or multiple connectors.
@@ -109,14 +162,13 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
-    subgraph version ["Connector version checks"]
-        sem["Check version follows semantic versionning"]
-        incr["Check version is incremented"]
-        sem --> incr
-    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
+      sem["Check version follows semantic versionning"]
+      incr["Check version is incremented"]
+      metadata_validation["Run metadata validation on metadata.yaml"]
+      sem --> incr
     end
     subgraph tests ["Tests"]
         build[Build connector docker image]
@@ -132,9 +184,8 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->version
-    version-->static
-    version-->tests
+    entrypoint-->static
+    entrypoint-->tests
     report["Build test report"]
     tests-->report
     static-->report
@@ -196,17 +247,20 @@ It's mainly purposed for CI use to release a connector update.
 Publish all connectors modified in the head commit: `airbyte-ci connectors --modified publish`
 
 ### Options
-| Option                               | Required | Mapped environment variable        | Description                                                                           |
-| ------------------------------------ | -------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| `--spec-cache-gcs-credentials`       | True     | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.         |
-| `--spec-cache-bucket-name`           | True     | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                |
-| `--metadata-service-gcs-credentials` | True     | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files. |
-| `--metadata-service-bucket-name`     | True     | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                     |
-| `--docker-hub-username`              | True     | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                |
-| `--docker-hub-password`              | True     | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                |
-| `--slack-webhook`                    | False    | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                       |
-| `--slack-channel`                    | False    | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                      |
 
+| Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                               |
+| ------------------------------------ | -------- | --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
+| `--docker-hub-username`              | True     |                 | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                                                                                                                    |
+| `--docker-hub-password`              | True     |                 | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                                                                                                                    |
+| `--spec-cache-gcs-credentials`       | False    |                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                             |
+| `--spec-cache-bucket-name`           | False    |                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                                    |
+| `--metadata-service-gcs-credentials` | False    |                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                                     |
+| `--metadata-service-bucket-name`     | False    |                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                         |
+| `--slack-webhook`                    | False    |                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                           |
+| `--slack-channel`                    | False    |                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                          |
+
+I've added an empty "Default" column, and you can fill in the default values as needed.
 #### What it runs
 ```mermaid
 flowchart TD
@@ -214,10 +268,11 @@ flowchart TD
     check[Check if the connector image already exists]
     build[Build the connector image for all platform variants]
     upload_spec[Upload connector spec to the spec cache bucket]
-    push[Push the connector to DockerHub, with platform variants]
+    push[Push the connector image from DockerHub, with platform variants]
+    pull[Pull the connector image from DockerHub to check SPEC can be run and the image layers are healthy]
     upload_metadata[Upload its metadata file to the metadata service bucket]
 
-    validate-->check-->build-->upload_spec-->push-->upload_metadata
+    validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
 ```
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
