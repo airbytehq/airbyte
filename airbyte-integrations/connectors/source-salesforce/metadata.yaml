@@ -5,11 +5,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.0.14
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-salesforce
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
-  license: MIT
+  license: ELv2
   name: Salesforce
   registries:
     cloud:

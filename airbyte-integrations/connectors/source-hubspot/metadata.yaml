@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-hubspot
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
-  license: MIT
+  license: ELv2
   name: HubSpot
   registries:
     cloud:

@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-tidb
   githubIssueLabel: destination-tidb
   icon: tidb.svg

@@ -14,7 +14,7 @@ Before you can start working on this project, you will need to have Poetry insta
 2. Install Poetry using the recommended installation method:
 
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
 ```
 
 Alternatively, you can use `pip` to install Poetry:
