@@ -570,7 +570,7 @@ class ConnectorReport(Report):
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
-            "run_duration": round(self.run_duration),
+            "run_duration": self.run_duration,
             "created_at": self.created_at.isoformat(),
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
