@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import itertools
+import json
 import logging
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import partial
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Dict
 
 import gevent
 import pendulum
@@ -155,6 +157,35 @@ class FBMarketingStream(Stream, ABC):
         :param params: params to make request
         :return: list of FB objects to load
         """
+
+    def generate_facebook_stream_log(self, log_dict: Dict, previous_unix_time = None):
+        log = {
+            "source": "facebook-marketing-custom",
+            "time": str(datetime.now()),
+            "unix_time": time.time(),
+            "previous_time_diff_seconds": time.time() - previous_unix_time if previous_unix_time else None
+        }
+        log.update(log_dict)
+        return json.dumps(log)
+
+    def _list_objects(self, api_wrapper, **kwargs):
+        previous_now = time.time()
+        count = 0
+        jobs = [gevent.spawn(api_wrapper, account=account, **kwargs) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
+                for value in job.value:
+                    count += 1
+                    yield value
+                job.value.clear()
+            logger.info(self.generate_facebook_stream_log({
+                "token": self._api._token[0:10],
+                "stream": "campaign",
+                "accounts_count": len(self._api.accounts),
+                "count": count
+            }, previous_now))
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Parameters that should be passed to query_records method"""
