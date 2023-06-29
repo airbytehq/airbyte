@@ -6,12 +6,12 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 2.0.34
+  dockerImageTag: 2.1.0
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-postgres
   githubIssueLabel: source-postgres
   icon: postgresql.svg
-  license: MIT
+  license: ELv2
   name: Postgres
   registries:
     cloud:
