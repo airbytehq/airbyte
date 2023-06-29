@@ -5,7 +5,7 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Literal, Mapping, Union
 
-from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, SchemaInferenceError
 
 type_widths = {str: 0}
 
@@ -31,7 +31,8 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
     and nothing else.
     """
     for k, t in list(schema1.items()) + list(schema2.items()):
-        assert _is_valid_type(t["type"]), f"Unsupported type in schema at {k}: {t}"
+        if not _is_valid_type(t["type"]):
+            raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=k, type=t)
 
     merged_schema = deepcopy(schema1)
     for k2, t2 in schema2.items():
@@ -57,11 +58,11 @@ def _is_valid_type(t: JsonSchemaSupportedType) -> bool:
 def _choose_wider_type(key: str, t1: JsonSchemaSupportedType, t2: JsonSchemaSupportedType) -> JsonSchemaSupportedType:
     # TODO: update with additional types.
     if t1 is None and t2 is None:
-        raise SchemaInferenceError(f"Null value found in schema at {key}.")
+        raise SchemaInferenceError(FileBasedSourceError.NULL_VALUE_IN_SCHEMA, key=key)
     elif t1 is None or t2 is None:
         return t1 or t2
     else:
-        raise SchemaInferenceError(f"Unrecognized type while merging schema field '{key}': {t1}, {t2}")
+        raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=key, detected_types=f"{t1},{t2}")
 
 
 def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, str]) -> bool:

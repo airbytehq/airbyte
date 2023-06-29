@@ -110,7 +110,8 @@ This connector outputs the following incremental streams:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| 1.1.1   | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()`                                    |
 | 1.1.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                          |
 | 1.0.0   | 2023-06-22 | [26283](https://github.com/airbytehq/airbyte/pull/26283) | Added primary_key and lookback window                                         |
 | 0.2.7   | 2023-06-21 | [27531](https://github.com/airbytehq/airbyte/pull/27531) | Fix formatting                                                                |
