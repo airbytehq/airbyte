@@ -374,12 +374,12 @@ class Report:
         return len(self.failed_steps) == 0
 
     @property
-    def run_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+    def run_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+    def lead_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
     def remote_storage_enabled(self) -> bool:  # noqa D102
@@ -429,7 +429,7 @@ class Report:
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
