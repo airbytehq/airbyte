@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FormContainer } from "components/ConnectorBlocks";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead } from "core/request/AirbyteClient";
 import { SourceCloneRequestBody } from "core/request/AirbyteClient";
@@ -13,8 +15,6 @@ import { useGetSourceDefinitionSpecification } from "services/connector/SourceDe
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
-
-import styles from "./SourceCopy.module.scss";
 
 interface SourceSettingsProps {
   currentSource: SourceRead;
@@ -76,7 +76,7 @@ const SourceCopy: React.FC<SourceSettingsProps> = ({
     : { ...currentSource, serviceType: currentSource.sourceDefinitionId, name: `${currentSource.name} (Copy)` };
 
   return (
-    <div className={styles.content}>
+    <FormContainer>
       <ConnectorCard
         formId={formId}
         title={<FormattedMessage id="sources.sourceSettings" />}
@@ -91,7 +91,7 @@ const SourceCopy: React.FC<SourceSettingsProps> = ({
         onShowLoading={onShowLoading}
         errorMessage={errorMessage}
       />
-    </div>
+    </FormContainer>
   );
 };
 

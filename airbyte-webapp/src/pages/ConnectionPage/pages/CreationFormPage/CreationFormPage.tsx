@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { LoadingPage } from "components";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
-import { FormPageContent } from "components/ConnectorBlocks";
+import { ConnectionFormPageContent, FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import HeadTitle from "components/HeadTitle";
 
@@ -259,7 +259,7 @@ export const CreationFormPage: React.FC<{
     }
 
     return (
-      <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
+      <ConnectionFormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
         <CreateConnectionContent
           onBack={() => {
             push(`../${RoutePaths.SelectConnection}`, {
@@ -274,7 +274,7 @@ export const CreationFormPage: React.FC<{
           afterSubmitConnection={afterSubmitConnection}
           onListenAfterSubmit={onListenAfterSubmit}
         />
-      </FormPageContent>
+      </ConnectionFormPageContent>
     );
   };
   return (

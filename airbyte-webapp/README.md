@@ -33,6 +33,9 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.06.26
+1. Add source/destination/connection pages UI updates
+2. Update payment on payment fail add loading indicator
 #### 2023.04.20
 1. Fixed inviteUserModal
 #### 2023.04.19
