@@ -323,5 +323,5 @@ class SourceSalesloft(AbstractSource):
             CallDispositions(*args),
             CallSentiments(*args),
             Meetings(*args),
-            Searches(*args)
+            Searches(*args),
         ]
