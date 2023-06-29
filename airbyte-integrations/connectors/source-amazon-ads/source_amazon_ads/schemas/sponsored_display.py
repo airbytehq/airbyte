@@ -51,7 +51,8 @@ class DisplayCreatives(CatalogModel):
     name: str
     adGroupId: Decimal
     creativeId: Decimal
-     
+
+
 class DisplayBudgetRuleDetailsPerformanceMeasureCondition(CatalogModel):
     metricName: str
     comparisonOperator: str
