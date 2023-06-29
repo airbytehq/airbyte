@@ -1701,8 +1701,7 @@ class ContactsMergedAudit(IncrementalStream):
 
         # we can query a max of 100 contacts at a time
         max_contacts = 100
-
-        counter = 0
+        slices = []
         contact_batch = []
 
         contacts = Contacts(**self.config)
@@ -1711,13 +1710,11 @@ class ContactsMergedAudit(IncrementalStream):
 
         for contact in contacts.read_records(sync_mode=sync_mode):
             if contact["properties"].get("hs_merged_object_ids"):
-                if counter < max_contacts:
-                    contact_batch.append(contact["id"])
-                    counter += 1
-                else:
+                contact_batch.append(contact["id"])
+
+                if len(contact_batch) == max_contacts:
                     slices.append({"vid": contact_batch})
-                    counter = 0
-                    contact_batch = [contact["id"]]
+                    contact_batch = []
 
         if contact_batch:
             slices.append({"vid": contact_batch})
