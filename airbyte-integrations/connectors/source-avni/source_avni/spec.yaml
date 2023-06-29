@@ -10,7 +10,7 @@ connectionSpecification:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     AUTH_TOKEN:
       type: string
-      description: Authorization tokento verify user
+      description: Authorization token to verify user
     lastdateandtimemodify:
       type: string
       description: From which date and time you want the data

@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 import requests
@@ -31,47 +31,60 @@ class TokenHeadAuthenticator(AbstractHeaderAuthenticator):
         self._token = token
 
 
-
 class AvniStream(HttpStream, ABC):
     
     url_base = "https://app.avniproject.org/api/"
+    primary_key = None
     
     def __init__(self, lastdateandtimemodify: str, **kwargs):
+            self.logger.info("Into avni stream")
             super().__init__(**kwargs)
             self.lastdateandtimemodify = lastdateandtimemodify
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = {"lastModifiedDateTime": self.lastdateandtimemodify}
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield {}
 
+
+
 class Subjects(AvniStream):
-    
-    def primary_key(self) -> Optional[str]:
-            return None
         
     def path(self,**kwargs) -> str:
         return "subjects"
     
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        params = {"lastModifiedDateTime": self.lastdateandtimemodify}
-        return params
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json()["content"]
+        yield from data
+        
+        
+
+class Programs(AvniStream):
+
+    def path(self,**kwargs) -> str:
+        return "programEnrolments"
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info("Parsing response...")
-        data = response.json()
-        return data["content"]
+        data = response.json()["content"]
+        yield from data
+        
+class ProgramEncounters(AvniStream):
     
-
-
+    def path(self,**kwargs) -> str:
+        return "programEncounters"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json()["content"]
+        yield from data
+    
 class SourceAvni(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        print("check connection")
         auth_token=config['AUTH_TOKEN']
         url = 'https://app.avniproject.org/api/subjects'
         params = {
@@ -93,6 +106,5 @@ class SourceAvni(AbstractSource):
             "authenticator": authenticator,
             "lastdateandtimemodify":config['lastdateandtimemodify']
         }
-        return [Subjects(**stream_kwargs)]
-
-
+        return [Subjects(**stream_kwargs),Programs(**stream_kwargs),ProgramEncounters(**stream_kwargs)]
+    

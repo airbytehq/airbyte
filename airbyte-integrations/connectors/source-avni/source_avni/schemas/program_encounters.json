@@ -1,0 +1,153 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "totalElements": {
+        "type": "integer"
+      },
+      "totalPages": {
+        "type": "integer"
+      },
+      "pageSize": {
+        "type": "integer"
+      },
+      "content": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "External ID": {
+                "type": "string"
+              },
+              "Voided": {
+                "type": "boolean"
+              },
+              "Subject ID": {
+                "type": "string"
+              },
+              "Subject external ID": {
+                "type": "string"
+              },
+              "Subject type": {
+                "type": "string"
+              },
+              "Enrolment ID": {
+                "type": "string"
+              },
+              "Enrolment external ID": {
+                "type": "string"
+              },
+              "Program": {
+                "type": "string"
+              },
+              "Encounter type": {
+                "type": "string"
+              },
+              "Encounter location": {
+                "type": "object",
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "Y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "X",
+                  "Y"
+                ]
+              },
+              "Encounter date time": {
+                "type": "string"
+              },
+              "Earliest scheduled date": {
+                "type": "string"
+              },
+              "Max scheduled date": {
+                "type": "string"
+              },
+              "observations": {
+                "type": "object"
+              },
+              "Cancel location": {
+                "type": "object",
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "Y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "X",
+                  "Y"
+                ]
+              },
+              "Cancel datetime": {
+                "type": "string"
+              },
+              "cancelObservations": {
+                "type": "object"
+              },
+              "audit": {
+                "type": "object",
+                "properties": {
+                  "Created at": {
+                    "type": "string"
+                  },
+                  "Last modified at": {
+                    "type": "string"
+                  },
+                  "Created by": {
+                    "type": "string"
+                  },
+                  "Last modified by": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Created at",
+                  "Last modified at",
+                  "Created by",
+                  "Last modified by"
+                ]
+              }
+            },
+            "required": [
+              "ID",
+              "External ID",
+              "Voided",
+              "Subject ID",
+              "Subject external ID",
+              "Subject type",
+              "Enrolment ID",
+              "Enrolment external ID",
+              "Program",
+              "Encounter type",
+              "Encounter location",
+              "Encounter date time",
+              "Earliest scheduled date",
+              "Max scheduled date",
+              "observations",
+              "Cancel location",
+              "Cancel datetime",
+              "cancelObservations",
+              "audit"
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "totalElements",
+      "totalPages",
+      "pageSize",
+      "content"
+    ]
+  }

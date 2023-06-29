@@ -1,0 +1,142 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "totalElements": {
+        "type": "integer"
+      },
+      "totalPages": {
+        "type": "integer"
+      },
+      "pageSize": {
+        "type": "integer"
+      },
+      "content": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "External ID": {
+                "type": "string"
+              },
+              "Voided": {
+                "type": "boolean"
+              },
+              "Subject ID": {
+                "type": "string"
+              },
+              "Subject external ID": {
+                "type": "string"
+              },
+              "Subject type": {
+                "type": "string"
+              },
+              "Program": {
+                "type": "string"
+              },
+              "Enrolment datetime": {
+                "type": "string"
+              },
+              "Enrolment location": {
+                "type": "object",
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "Y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "X",
+                  "Y"
+                ]
+              },
+              "Exit datetime": {
+                "type": "string"
+              },
+              "Exit location": {
+                "type": "object",
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "Y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "X",
+                  "Y"
+                ]
+              },
+              "observations": {
+                "type": "object"
+              },
+              "exitObservations": {
+                "type": "object"
+              },
+              "encounters": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "audit": {
+                "type": "object",
+                "properties": {
+                  "Created at": {
+                    "type": "string"
+                  },
+                  "Last modified at": {
+                    "type": "string"
+                  },
+                  "Created by": {
+                    "type": "string"
+                  },
+                  "Last modified by": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Created at",
+                  "Last modified at",
+                  "Created by",
+                  "Last modified by"
+                ]
+              }
+            },
+            "required": [
+              "ID",
+              "External ID",
+              "Voided",
+              "Subject ID",
+              "Subject external ID",
+              "Subject type",
+              "Program",
+              "Enrolment datetime",
+              "Enrolment location",
+              "Exit datetime",
+              "Exit location",
+              "observations",
+              "exitObservations",
+              "encounters",
+              "audit"
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "totalElements",
+      "totalPages",
+      "pageSize",
+      "content"
+    ]
+  }
