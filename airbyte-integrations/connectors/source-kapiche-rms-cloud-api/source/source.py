@@ -203,12 +203,15 @@ class RmsCloudApiKapicheSource(Source):
 
         # Obtain the start date from the state
         if start_date_str := state.get(state_key):
+            logger.info(f"Got previous state: {start_date_str=}")
             start_date = datetime.fromisoformat(start_date_str)
         else:
             # Fallback: start from the beginning as defined in the config
             if start_date_str := config.get(state_key):
+                logger.info(f"Fall back to get config start date: {start_date_str=}")
                 start_date = datetime.fromisoformat(start_date_str)
             else:
+                logger.info("Fall way back to setting start date to a year ago.")
                 start_date = datetime.now() - timedelta(weeks=52)
 
         properties = self._fetch_properties(logger)
@@ -229,25 +232,37 @@ class RmsCloudApiKapicheSource(Source):
 
             if i % 10 == 0:
                 # Emit state record every 10th record.
+                # yield AirbyteMessage(
+                #     type=Type.STATE,
+                #     state=AirbyteStateMessage(
+                #         state_type=AirbyteStateType.STREAM,
+                #         stream=AirbyteStreamState(
+                #             stream_descriptor=StreamDescriptor(name=stream_name),
+                #             stream_state=state,
+                #         ),
+                #     ),
+                # )
                 yield AirbyteMessage(
                     type=Type.STATE,
                     state=AirbyteStateMessage(
-                        state_type=AirbyteStateType.STREAM,
-                        stream=AirbyteStreamState(
-                            stream_descriptor=StreamDescriptor(name=stream_name),
-                            stream_state=state,
-                        ),
+                        data=state,
                     ),
                 )
 
+        # yield AirbyteMessage(
+        #     type=Type.STATE,
+        #     state=AirbyteStateMessage(
+        #         state_type=AirbyteStateType.STREAM,
+        #         stream=AirbyteStreamState(
+        #             stream_descriptor=StreamDescriptor(name=stream_name),
+        #             stream_state=state,
+        #         ),
+        #     ),
+        # )
         yield AirbyteMessage(
             type=Type.STATE,
             state=AirbyteStateMessage(
-                state_type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name),
-                    stream_state=state,
-                ),
+                data=state,
             ),
         )
 
@@ -319,7 +334,6 @@ class RmsCloudApiKapicheSource(Source):
         """
         all_property_ids = list(properties)
         logger.info(all_property_ids)
-        start_date = datetime(year=2022, month=8, day=1)
         end_date = datetime(year=2022, month=8, day=31)
 
         for date_from, date_to in date_ranges_generator(start_date, end=end_date):
@@ -400,7 +414,7 @@ class RmsCloudApiKapicheSource(Source):
 
                             guest = guest_lookup.get(reservation["guestId"])
                             if guest:
-                                logger.info(f"{guest=}")
+                                logger.debug(f"{guest=}")
                                 self.update_record_from_guest(record, guest)
                             else:
                                 logger.warning(
