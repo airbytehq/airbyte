@@ -82,6 +82,7 @@ def upload(ctx: click.Context, gcs_bucket_name: str, modified_only: bool) -> boo
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
         metadata_to_upload,
@@ -107,6 +108,7 @@ def deploy_orchestrator(ctx: click.Context) -> bool:
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
     )
@@ -130,6 +132,7 @@ def test_lib(ctx: click.Context) -> bool:
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
     )
@@ -144,6 +147,7 @@ def test_orchestrator(ctx: click.Context) -> bool:
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
     )

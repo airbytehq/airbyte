@@ -574,6 +574,7 @@ class ConnectorReport(Report):
             "created_at": self.created_at.isoformat(),
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
+            "dagger_logs_url": None,
             "git_branch": self.pipeline_context.git_branch,
             "git_revision": self.pipeline_context.git_revision,
             "commit_url": None,
@@ -583,6 +584,7 @@ class ConnectorReport(Report):
         if self.pipeline_context.is_ci:
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"

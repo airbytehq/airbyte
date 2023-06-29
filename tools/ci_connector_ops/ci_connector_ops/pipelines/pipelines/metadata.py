@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Optional, Set
 
 import dagger
-from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext
+from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
@@ -159,6 +159,7 @@ async def run_metadata_validation_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_validate: Set[Path],
@@ -169,6 +170,7 @@ async def run_metadata_validation_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -191,6 +193,7 @@ async def run_metadata_lib_test_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -200,6 +203,7 @@ async def run_metadata_lib_test_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -226,6 +230,7 @@ async def run_metadata_orchestrator_test_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -235,6 +240,7 @@ async def run_metadata_orchestrator_test_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -256,6 +262,7 @@ async def run_metadata_upload_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_upload: Set[Path],
@@ -267,6 +274,7 @@ async def run_metadata_upload_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -301,6 +309,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -310,6 +319,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
