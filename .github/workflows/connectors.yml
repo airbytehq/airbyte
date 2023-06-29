@@ -150,6 +150,7 @@ jobs:
           - name: source-oracle
           - name: source-postgres-heroku
           - name: source-pinterest
+          - name: source-aircall
 
     steps:
       - uses: actions/checkout@v2
