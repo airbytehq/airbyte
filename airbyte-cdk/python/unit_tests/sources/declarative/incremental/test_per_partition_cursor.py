@@ -299,3 +299,41 @@ def test_given_unknown_partition_when_should_be_synced_then_raise_error():
                 )
             )
         )
+
+
+def test_given_records_with_different_slice_when_is_greater_than_or_equal_then_raise_error():
+    any_cursor_factory = Mock()
+    any_partition_router = Mock()
+    cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
+    with pytest.raises(ValueError):
+        cursor.is_greater_than_or_equal(
+            Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={})),
+            Record({}, PerPartitionStreamSlice(partition={"another slice": "value"}, cursor_slice={}))
+        )
+
+
+def test_given_slice_is_unknown_when_is_greater_than_or_equal_then_raise_error():
+    any_cursor_factory = Mock()
+    any_partition_router = Mock()
+    cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
+    with pytest.raises(ValueError):
+        cursor.is_greater_than_or_equal(
+            Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={})),
+            Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={}))
+        )
+
+
+def test_when_is_greater_than_or_equal_then_return_underlying_cursor_response(mocked_cursor_factory, mocked_partition_router):
+    underlying_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
+    mocked_cursor_factory.create.side_effect = [underlying_cursor]
+    stream_slice = PerPartitionStreamSlice(partition={"partition key": "first partition"}, cursor_slice={})
+    mocked_partition_router.stream_slices.return_value = [stream_slice.partition]
+    cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
+    first_record = Record({"first": "value"}, stream_slice)
+    second_record = Record({"second": "value"}, stream_slice)
+    list(cursor.stream_slices())  # generate internal state
+
+    result = cursor.is_greater_than_or_equal(first_record, second_record)
+
+    assert result == underlying_cursor.is_greater_than_or_equal.return_value
+    underlying_cursor.is_greater_than_or_equal.assert_called_once_with(first_record, second_record)

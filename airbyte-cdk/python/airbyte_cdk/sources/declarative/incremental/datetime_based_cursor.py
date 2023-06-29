@@ -259,3 +259,14 @@ class DatetimeBasedCursor(Cursor):
                     log=AirbyteLogMessage(level=level, message=message),
                 )
             )
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        cursor_field = self.cursor_field.eval(self.config)
+        first_cursor_value = first.get(cursor_field)
+        second_cursor_value = second.get(cursor_field)
+        if first_cursor_value and second_cursor_value:
+            return self.parse_date(first_cursor_value) >= self.parse_date(second_cursor_value)
+        elif first_cursor_value:
+            return True
+        else:
+            return False

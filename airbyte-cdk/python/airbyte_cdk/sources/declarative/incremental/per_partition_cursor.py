@@ -253,7 +253,25 @@ class PerPartitionCursor(Cursor):
         )
 
     def should_be_synced(self, record: Record) -> bool:
+        return self._get_cursor(record).should_be_synced(self._convert_record_to_cursor_record(record))
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        if first.associated_slice.partition != second.associated_slice.partition:
+            raise ValueError(
+                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
+            )
+
+        return self._get_cursor(first).is_greater_than_or_equal(
+            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second)
+        )
+
+    @staticmethod
+    def _convert_record_to_cursor_record(record: Record):
+        return Record(record.data, record.associated_slice.cursor_slice)
+
+    def _get_cursor(self, record: Record) -> Cursor:
         partition_key = self._to_partition_key(record.associated_slice.partition)
         if partition_key not in self._cursor_per_partition:
             raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
-        return self._cursor_per_partition[partition_key].should_be_synced(Record(record.data, record.associated_slice.cursor_slice))
+        cursor = self._cursor_per_partition[partition_key]
+        return cursor

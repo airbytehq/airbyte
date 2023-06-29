@@ -653,5 +653,49 @@ def test_given_record_without_cursor_value_when_should_be_synced_then_return_tru
     assert cursor.should_be_synced(Record({"record without cursor value": "any"}, ANY_SLICE))
 
 
+def test_given_first_greater_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2023-01-01"}, {}), Record({"cursor_field": "2021-01-01"}, {}))
+
+
+def test_given_first_lesser_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({"cursor_field": "2023-01-01"}, {}))
+
+
+def test_given_no_cursor_value_for_second_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({}, {}))
+
+
+def test_given_no_cursor_value_for_first_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({}, {}), Record({"cursor_field": "2021-01-01"}, {}))
+
+
 if __name__ == "__main__":
     unittest.main()
