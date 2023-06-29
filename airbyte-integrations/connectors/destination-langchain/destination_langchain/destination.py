@@ -66,6 +66,9 @@ class DestinationLangchain(Destination):
         for i, id in enumerate(ids):
             if id not in id_counts:
                 id_counts[id] = 0
+                if self.pinecone_index:
+                    # delete all existing chunks with this id
+                    self.pinecone_index.delete(filter={"_natural_id": id})
             else:
                 id_counts[id] += 1
             ids[i] = id + "_" + str(id_counts[id])
@@ -77,12 +80,13 @@ class DestinationLangchain(Destination):
     ) -> Iterable[AirbyteMessage]:
         self.catalog = configured_catalog
         self.batch: List[AirbyteRecordMessage] = []
-        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=config.get("processing").get("chunk_size", 1000))
+        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=config.get("processing").get("chunk_size", 1000), chunk_overlap=config.get("processing").get("chunk_overlap", None))
         self.text_fields = config.get("processing").get("text_fields")
         self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("embedding").get("openai_key"))
         if not config.get("storing").get("mode") == "DocArrayHnswSearch":
             pinecone.init(api_key=config.get("storing").get("pinecone_key"), environment=config.get("storing").get("pinecone_environment"))
             index = pinecone.Index(config.get("storing").get("index"))
+            self.pinecone_index = index
             # check whether the catalog is using full_refresh mode. If yes, clear the index
             if self.catalog.streams[0].sync_mode == "full_refresh":
                 index.delete(delete_all=True)

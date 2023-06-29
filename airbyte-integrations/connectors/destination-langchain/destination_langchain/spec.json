@@ -25,6 +25,11 @@
               "maximum": 8191,
               "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)"
             },
+            "chunk_overlap": {
+              "type": "integer",
+              "title": "Chunk overlap",
+              "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context"
+            },
             "text_fields": {
               "type": "array",
               "title": "Text fields to embed",
@@ -85,11 +90,6 @@
                 "type": "string",
                 "title": "Index",
                 "description": "Pinecone index to use"
-              },
-              "id_field": {
-                "type": "string",
-                "title": "ID field",
-                "description": "Field in the record to use as ID"
               }
             }
           },
@@ -126,7 +126,7 @@
       },
       {
         "id": "storing",
-        "title": "Storing"
+        "title": "Indexing"
       }
     ]
   }
