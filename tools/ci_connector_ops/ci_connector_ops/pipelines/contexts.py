@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.actions import secrets
 from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
 from github import PullRequest
@@ -553,7 +553,7 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
-            message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
+            message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}s\n"
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message
