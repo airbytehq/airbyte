@@ -4,65 +4,62 @@ description: 'We love contributions to Airbyte, big or small.'
 
 # Contributing to Airbyte
 
-Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the `#contributions` channel.
+Thank you for your interest in contributing! We love community contributions. 
+Read on to learn how to contribute to Airbyte.
+We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
-However, for those who want a bit more guidance on the best way to contribute to Airbyte, read on. This document will cover what we're looking for. By addressing the points below, the chances that we can quickly merge or address your contributions will increase.
 
-We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)! Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to do if you're hunger to start contributing.
-## Code of Conduct
+Before getting started, please make sure you review our [Code of Conduct](../project-overview/code-of-conduct.md). 
+## Code Contributions
 
-Please follow our [Code of Conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
-
-## Ways to Contribute
-
-### Contributing to the Codebase with Bug Fixes or Features
-
-We gladly welcome improvements to the codebase.
-Most of the issues that are open for contributions will be tagged with `good first issue` or `help-welcome`. 
-
+Most of the issues that are open for contributions are tagged with `good first issue` or `help-welcome`. 
 A great place to start looking will be our GitHub projects for:
-[Community connector issues and features dashboard](https://github.com/orgs/airbytehq/projects/50)
 
-### Improve our documentation
-Help us enhance our documentation by:
+[**Community Connector Issues Project**](https://github.com/orgs/airbytehq/projects/50)
 
-- Clarifying and expanding existing content.
-- Fixing typos, grammatical errors, and formatting issues.
-- Providing practical examples and use cases.
-- Suggesting improvements to organization and structure.
-- Creating new documentation where needed.
+Due to project priorities, we may not be able to accept all contributions at this time. 
+We are prioritizing the following contributions: 
+* Make changes to existing Source API connector
+* Submit a New Source Connector using the low-code CDK
+* Helm Charts features and bug fixes
 
-The contributing guide for docs can be found [here](how-to-contribute-docs.md).
+Contributions outside of these will be evaluated on a case-by-case basis by our engineering team.
 
-## Contributing community content
+Here is the workflow of code contributions:
+1. Fork the Airbyte repository
+2. Clone the repository locally
+3. Make changes and commit them
+4. Push your local branch to your fork
+5. Submit a Pull Request so that we can review your changes
+6. Write a commit message
+7. An Airbyte maintainer will trigger the CI tests for you
 
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.com/tutorials):
+Pull Request reviews are done on a regular basis. 
 
-* Fix errors in existing tutorials
-* Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
-* Request tutorials
+Please make sure you respond to our feedback/questions and sign our CLA.
+
+Guidelines to common code contributions:
+- [Submit code change to existing Source Connector](change-cdk-connector.md)
+- [Submit a New Connector](submit-new-connector.md)
+
+## Documentation
+
+We welcome Pull Requests that enhance the grammar, structure, or fix typos in our documentation.
+
+- Check the [guidelines](writing-docs.md) to submit documentation changes
+
+## Community Content
+
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our tutorials page.
 
 We have a repo dedicated to community content. Everything is documented [there](https://github.com/airbytehq/community-content/).
 
 Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
-### Requesting New Features or Connectors
+## Engage with the Community
 
+Another crucial way to contribute is by reporting bugs and helping other users in the community.
 
-### Reporting Bugs
+You're welcome to enter the Community Slack and help other users or report bugs in Github.
 
-**‌**Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need.
-
-‌Please search within our [already reported bugs](https://github.com/airbytehq/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one to make sure you're not raising a duplicate.
-
-### Reporting Security Issues
-
-Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
-
-
-### Upvoting Issues, Features or Connector Requests
-
-You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for connectors.
-
-❤️ means that this task is CRITICAL to you.
-👍 means it is important to you.
+- How to report a bug [guideline](issues-and-requests.md)

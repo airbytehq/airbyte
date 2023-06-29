@@ -218,9 +218,22 @@ const contributeToAirbyte = {
     id: 'contributing-to-airbyte/README',
   },
   items: [
-    'contributing-to-airbyte/code-of-conduct',
-    'contributing-to-airbyte/how-to-contribute-pr',
-    'contributing-to-airbyte/how-to-contribute-docs',
+    'contributing-to-airbyte/issues-and-requests',
+    'contributing-to-airbyte/change-cdk-connector',
+    'contributing-to-airbyte/submit-new-connector',
+    'contributing-to-airbyte/writing-docs',
+    {
+      type: 'category',
+      label: 'Resources',
+      items: [
+        'contributing-to-airbyte/resources/pull-requests-handbook',
+        'contributing-to-airbyte/resources/code-style',
+        'contributing-to-airbyte/resources/developing-locally',
+        'contributing-to-airbyte/resources/developing-on-docker',
+        'contributing-to-airbyte/resources/gradle',
+        'contributing-to-airbyte/resources/python-gradle-setup',        
+      ],
+    },
   ],
 };
 
@@ -443,6 +456,7 @@ module.exports = {
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
+        'project-overview/code-of-conduct',
         {
           type: 'link',
           label: 'Airbyte Repository',
