@@ -159,25 +159,6 @@ class Campaigns(FBMarketingIncrementalStream):
                 job.value.clear()
             logger.info(generate_facebook_stream_log({"stream": "campaign", "count": count}, previous_now))
 
-    @staticmethod
-    def generate_log(account_id, previous_unix_time=None):
-        log = {
-            "source": "facebook-marketing-custom",
-            "account_id": str(account_id)[0:5],
-            "stream": "campaigns",
-            "time": str(datetime.datetime.now()),
-            "unix_time": time.time(),
-            "previous_time_diff_seconds": time.time() - previous_unix_time if (previous_unix_time) else None
-        }
-        return json.dumps(log)
-
-    @staticmethod
-    def get_campaigns(account: AdAccount, params):
-        now = time.time()
-        logger.info(Campaigns.generate_log(account.get_id()))
-        campaigns = account.get_campaigns(params=params)
-        logger.info(Campaigns.generate_log(account.get_id(), now))
-        return campaigns
 
 class Activities(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-activity"""
