@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 1.5.0
+  dockerImageTag: 1.5.1
   dockerRepository: airbyte/source-gitlab
   githubIssueLabel: source-gitlab
   icon: gitlab.svg

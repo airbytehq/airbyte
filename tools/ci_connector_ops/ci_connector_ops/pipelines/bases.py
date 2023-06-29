@@ -7,10 +7,11 @@
 from __future__ import annotations
 
 import json
+import logging
 import webbrowser
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
@@ -18,8 +19,8 @@ import anyio
 import asyncer
 from anyio import Path
 from ci_connector_ops.pipelines.actions import remote_storage
-from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, format_duration, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -99,12 +100,43 @@ class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
     title: ClassVar[str]
-    started_at: ClassVar[datetime]
     max_retries: ClassVar[int] = 0
+    should_log: ClassVar[bool] = True
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0
+        self.started_at = None
+        self.stopped_at = None
+
+    @property
+    def run_duration(self) -> timedelta:
+        if self.started_at and self.stopped_at:
+            return self.stopped_at - self.started_at
+        else:
+            return timedelta(seconds=0)
+
+    @property
+    def logger(self) -> logging.Logger:
+        if self.should_log:
+            return self.context.logger
+        else:
+            disabled_logger = logging.getLogger()
+            disabled_logger.disabled = True
+            return disabled_logger
+
+    async def log_progress(self, completion_event) -> None:
+        while not completion_event.is_set():
+            duration = datetime.utcnow() - self.started_at
+            elapsed_seconds = duration.total_seconds()
+            if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
+                self.logger.info(f"⏳ Still running {self.title}... (duration: {format_duration(duration)})")
+            await anyio.sleep(1)
+
+    async def run_with_completion(self, completion_event, *args, **kwargs) -> StepResult:
+        result = await self._run(*args, **kwargs)
+        completion_event.set()
+        return result
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -114,19 +146,42 @@ class Step(ABC):
         Returns:
             StepResult: The step result following the step run.
         """
-        self.started_at = datetime.utcnow()
         try:
-            result = await self._run(*args, **kwargs)
+            self.started_at = datetime.utcnow()
+            self.logger.info(f"🚀 Start {self.title}")
+            completion_event = anyio.Event()
+            async with asyncer.create_task_group() as task_group:
+                soon_result = task_group.soonify(self.run_with_completion)(completion_event, *args, **kwargs)
+                task_group.soonify(self.log_progress)(completion_event)
+
+            result = soon_result.value
+
             if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
                 self.retry_count += 1
                 await anyio.sleep(10)
-                self.context.logger.warn(
-                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
-                )
+                self.logger.warn(f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}.")
                 return await self.run(*args, **kwargs)
+            self.stopped_at = datetime.utcnow()
+            self.log_step_result(result)
             return result
         except QueryError as e:
+            self.stopped_at = datetime.utcnow()
+            self.logger.error(f"QueryError on step {self.title}: {e}")
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+
+    def log_step_result(self, result: StepResult) -> None:
+        """Log the step result.
+
+        Args:
+            result (StepResult): The step result to log.
+        """
+        duration = format_duration(self.run_duration)
+        if result.status is StepStatus.FAILURE:
+            self.logger.error(f"{result.status.get_emoji()} {self.title} failed (duration: {duration})")
+        if result.status is StepStatus.SKIPPED:
+            self.logger.info(f"{result.status.get_emoji()} {self.title} was skipped (duration: {duration})")
+        if result.status is StepStatus.SUCCESS:
+            self.logger.info(f"{result.status.get_emoji()} {self.title} was successful (duration: {duration})")
 
     @abstractmethod
     async def _run(self, *args, **kwargs) -> StepResult:
@@ -179,8 +234,9 @@ class PytestStep(Step, ABC):
         """Return the path to the pytest log file."""
         log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
         await log_directory.mkdir(exist_ok=True)
-        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
-        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+        log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}.log").resolve()
+        await log_path.write_text(logs)
+        self.logger.info(f"Pytest logs written to {log_path}")
 
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
@@ -240,6 +296,7 @@ class NoOpStep(Step):
     """A step that does nothing."""
 
     title = "No Op"
+    should_log = False
 
     def __init__(self, context: PipelineContext, step_status: StepStatus) -> None:
         super().__init__(context)
@@ -317,12 +374,12 @@ class Report:
         return len(self.failed_steps) == 0
 
     @property
-    def run_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+    def run_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+    def lead_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
     def remote_storage_enabled(self) -> bool:  # noqa D102
@@ -346,17 +403,21 @@ class Report:
             gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
             flags=gcs_cp_flags,
         )
+        gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
+        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
         if report_upload_exit_code != 0:
-            self.pipeline_context.logger.error(f"Uploading {local_path} to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
+            self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
+        else:
+            self.pipeline_context.logger.info(f"Uploading {local_path} to {gcs_uri} succeeded. Public URL: {public_url}")
         return report_upload_exit_code
 
     async def save(self) -> None:
         """Save the report files."""
         local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
-        self.pipeline_context.logger.info(f"Report saved locally at {local_json_path}")
+        absolute_path = await local_json_path.absolute()
+        self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
         if self.remote_storage_enabled:
             await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
-            self.pipeline_context.logger.info(f"Report saved remotely at {self.json_report_remote_storage_key}")
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -368,7 +429,7 @@ class Report:
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -389,7 +450,7 @@ class Report:
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
@@ -404,8 +465,8 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time_seconds = round((step_result.created_at - step_result.step.started_at).total_seconds())
-                step_results_table.add_row(step, result, f"{run_time_seconds}s")
+                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]
         if self.failed_steps:
@@ -441,7 +502,7 @@ class ConnectorReport(Report):
 
     @property
     def html_report_url(self) -> str:  # noqa D102
-        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
@@ -463,7 +524,7 @@ class ConnectorReport(Report):
                 "connector_technical_name": self.pipeline_context.connector.technical_name,
                 "connector_version": self.pipeline_context.connector.version,
                 "run_timestamp": self.created_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -485,7 +546,7 @@ class ConnectorReport(Report):
         global_status_emoji = "✅" if self.success else "❌"
         commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
         markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
-        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} \n\n"
         report_data = [
             [step_result.step.title, step_result.status.get_emoji()]
             for step_result in self.steps_results
@@ -504,14 +565,16 @@ class ConnectorReport(Report):
         )
         template = env.get_template("test_report.html.j2")
         template.globals["StepStatus"] = StepStatus
+        template.globals["format_duration"] = format_duration
         local_icon_path = await Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
-            "run_duration": round(self.run_duration),
+            "run_duration": self.run_duration,
             "created_at": self.created_at.isoformat(),
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
+            "dagger_logs_url": None,
             "git_branch": self.pipeline_context.git_branch,
             "git_revision": self.pipeline_context.git_revision,
             "commit_url": None,
@@ -521,6 +584,7 @@ class ConnectorReport(Report):
         if self.pipeline_context.is_ci:
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
@@ -528,9 +592,10 @@ class ConnectorReport(Report):
 
     async def save(self) -> None:
         local_html_path = await self.save_local(self.html_report_file_name, await self.to_html())
+        absolute_path = await local_html_path.resolve()
         if self.pipeline_context.is_local:
-            absolute_path = await local_html_path.resolve()
-            self.pipeline_context.logger.info(f"Opening HTML report in browser: {absolute_path}")
+            self.pipeline_context.logger.info(f"HTML report saved locally: {absolute_path}")
+            self.pipeline_context.logger.info("Opening HTML report in browser.")
             webbrowser.open(absolute_path.as_uri())
         if self.remote_storage_enabled:
             await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
@@ -542,30 +607,21 @@ class ConnectorReport(Report):
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
-        step_results_table.add_column("Finished after")
+        step_results_table.add_column("Duration")
 
         for step_result in self.steps_results:
             step = Text(step_result.step.title)
             step.stylize(step_result.status.get_rich_style())
             result = Text(step_result.status.value)
             result.stylize(step_result.status.get_rich_style())
-            step_results_table.add_row(step, result, f"{round((self.created_at - step_result.created_at).total_seconds())}s")
+            step_results_table.add_row(step, result, format_duration(step_result.step.run_duration))
 
-        to_render = [step_results_table]
-        if self.failed_steps:
-            sub_panels = []
-            for failed_step in self.failed_steps:
-                errors = Text(failed_step.stderr)
-                panel_title = Text(f"{connector_name} {failed_step.step.title.lower()} failures")
-                panel_title.stylize(Style(color="red", bold=True))
-                sub_panel = Panel(errors, title=panel_title)
-                sub_panels.append(sub_panel)
-            failures_group = Group(*sub_panels)
-            to_render.append(failures_group)
+        details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
+        to_render = [step_results_table, details_instructions]
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
