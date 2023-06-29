@@ -309,14 +309,64 @@ class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
 
 
-class SearchAnalyticsKeywordPageReportByPage(SearchAnalytics):
+class SearchAppearance(SearchAnalytics):
+    """
+    Dimension searchAppearance can't be used with other dimension.
+    search appearance data (AMP, blue link, rich result, and so on) must be queried using a two-step process.
+    https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+    """
+
+    dimensions = ["searchAppearance"]
+
+
+class SearchByKeyword(SearchAnalytics):
+    """
+    Adds searchAppearance value to dimensionFilterGroups in json body
+    https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+    """
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
+        keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
+        keywords = {record["searchAppearance"] for record in keywords_records}
+
+        filters = []
+        for keyword in keywords:
+            filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
+
+        data["dimensionFilterGroups"] = [{"filters": filters}]
+
+        return data
+
+
+class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     dimensions = ["date", "country", "device", "query", "page"]
+
+
+class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
+    dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
 
 
-class SearchAnalyticsKeywordPageReportByProperty(SearchAnalytics):
-    dimensions = ["date", "country", "device", "query", "page"]
+class SearchAnalyticsSiteReportBySite(SearchAnalytics):
+    dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_property
+
+
+class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    dimensions = ["date", "country", "device"]
+    aggregation_type = QueryAggregationType.by_page
+
+
+class SearchAnalyticsPageReport(SearchAnalytics):
+    dimensions = ["date", "country", "device", "page"]
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):

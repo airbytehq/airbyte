@@ -13,7 +13,13 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "query": {
+    "country": {
+      "type": ["null", "string"]
+    },
+    "page": {
+      "type": ["null", "string"]
+    },
+    "device": {
       "type": ["null", "string"]
     },
     "clicks": {
