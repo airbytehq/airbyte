@@ -179,6 +179,7 @@ public class PostgresCtidHandler {
     // Because list consists of lazy iterators, the query is only executing when needed on after the other.
     final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
+/*
     int i = 0;
     for (var p : subQueriesPlan) {
       if (i > 1) {
@@ -198,16 +199,17 @@ public class PostgresCtidHandler {
       );
       i++;
     }
-//    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
-//      try {
-//        final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-//            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
-//
-//        return AutoCloseableIterators.fromStream(stream, airbyteStream);
-//      } catch (final SQLException e) {
-//        throw new RuntimeException(e);
-//      }
-//    }, airbyteStream)));
+*/
+    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<RowDataWithCtid> stream = database.unsafeQuery(
+            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
+
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }, airbyteStream)));
     LOGGER.info("number of iterators {}", subQueriesIterators.size());
     return AutoCloseableIterators.concatWithEagerClose(subQueriesIterators);
   }

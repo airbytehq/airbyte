@@ -176,11 +176,7 @@ public class DateTimeConverter {
   }
 
   public static boolean hasZeroSecondsAndNanos(LocalTime localTime) {
-    // if (localTime != null) {
-    // throw new RuntimeException();
-    // }
     return (localTime.getSecond() == 0 && localTime.getNano() == 0);
-    // return false; // TEMP
   }
 
   public static void putJavaSQLDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
