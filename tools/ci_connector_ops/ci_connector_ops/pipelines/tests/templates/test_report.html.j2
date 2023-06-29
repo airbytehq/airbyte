@@ -114,7 +114,7 @@
   <h1><img src="{{ icon_url }}" width="40" height="40"> {{ connector_name }} test report</h1>
   <ul>
     <li><b>Created at:</b> {{ created_at }}</li>
-    <li><b>Run duration:</b> {{ run_duration }} seconds</li>
+    <li><b>Run duration:</b> {{ format_duration(run_duration) }} seconds</li>
     {% if commit_url %}
     <li><b>Commit:</b> <a href="{{ commit_url }}">{{ git_revision[:10] }}</a></li>
     {% else %}
