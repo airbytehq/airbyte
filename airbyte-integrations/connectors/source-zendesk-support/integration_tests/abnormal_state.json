@@ -100,6 +100,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "updated_at": "2222-12-11T19:34:06Z" },
+      "stream_descriptor": { "name": "posts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "organization_memberships" }
     }

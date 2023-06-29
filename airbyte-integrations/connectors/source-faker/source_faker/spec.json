@@ -32,7 +32,7 @@
       },
       "always_updated": {
         "title": "Always Updated",
-        "description": "Should the updated_at values for every record be new each sync?",
+        "description": "Should the updated_at values for every record be new each sync?  Setting this to false will case the source to stop emitting records after COUNT records have been emitted.",
         "type": "boolean",
         "default": true
       },

@@ -240,14 +240,14 @@ def get_last_commit_message() -> str:
 
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
-    As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
+    As we call connector.get_local_dependency_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    The get_local_dependency_paths function currently computes dependencies for Java connectors only.
     It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
     modified_connectors = {}
-    all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
+    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
     for modified_file in modified_files:
         if str(modified_file).endswith(".md"):
             continue
@@ -346,8 +346,9 @@ class DaggerPipelineCommand(click.Command):
         main_logger.info(
             "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
         )
+        ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
+        dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
         try:
-            ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
             if not ctx.obj["show_dagger_logs"]:
                 dagger_log_dir = Path(f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}")
                 dagger_log_dir.mkdir(parents=True, exist_ok=True)
@@ -355,6 +356,10 @@ class DaggerPipelineCommand(click.Command):
                 dagger_log_path.touch()
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
+                if ctx.obj["is_ci"]:
+                    ctx.obj["dagger_logs_url"] = f"https://storage.googleapis.com/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                else:
+                    ctx.obj["dagger_logs_url"] = None
             else:
                 ctx.obj["dagger_logs_path"] = None
             pipeline_success = super().invoke(ctx)
@@ -368,7 +373,6 @@ class DaggerPipelineCommand(click.Command):
                 if ctx.obj["is_local"]:
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
-                    dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
                     gcs_uri, public_url = upload_to_gcs(
                         ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
                     )
