@@ -19,6 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.pipelines import consts, main_logger
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from google.cloud import storage
@@ -346,8 +347,9 @@ class DaggerPipelineCommand(click.Command):
         main_logger.info(
             "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
         )
+        ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
+        dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
         try:
-            ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
             if not ctx.obj["show_dagger_logs"]:
                 dagger_log_dir = Path(f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}")
                 dagger_log_dir.mkdir(parents=True, exist_ok=True)
@@ -355,6 +357,10 @@ class DaggerPipelineCommand(click.Command):
                 dagger_log_path.touch()
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
+                if ctx.obj["is_ci"]:
+                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                else:
+                    ctx.obj["dagger_logs_url"] = None
             else:
                 ctx.obj["dagger_logs_path"] = None
             pipeline_success = super().invoke(ctx)
@@ -368,7 +374,6 @@ class DaggerPipelineCommand(click.Command):
                 if ctx.obj["is_local"]:
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
-                    dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
                     gcs_uri, public_url = upload_to_gcs(
                         ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
                     )
@@ -489,5 +494,5 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     blob = bucket.blob(object_name)
     blob.upload_from_filename(str(file_path))
     gcs_uri = f"gs://{bucket_name}/{object_name}"
-    public_url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+    public_url = f"{GCS_PUBLIC_DOMAIN}/{bucket_name}/{object_name}"
     return gcs_uri, public_url

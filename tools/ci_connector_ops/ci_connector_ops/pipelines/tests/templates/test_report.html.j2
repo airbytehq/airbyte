@@ -113,8 +113,8 @@
 <body>
   <h1><img src="{{ icon_url }}" width="40" height="40"> {{ connector_name }} test report</h1>
   <ul>
-    <li><b>Created at:</b> {{ created_at }}</li>
-    <li><b>Run duration:</b> {{ run_duration }} seconds</li>
+    <li><b>Created at:</b> {{ created_at }} UTC</li>
+    <li><b>Run duration:</b> {{ format_duration(run_duration) }}</li>
     {% if commit_url %}
     <li><b>Commit:</b> <a href="{{ commit_url }}">{{ git_revision[:10] }}</a></li>
     {% else %}
@@ -122,7 +122,11 @@
     {% endif %}
     <li><b>Branch:</b> {{ git_branch }}</li>
     {% if gha_workflow_run_url %}
-    <li><b>Github Actions run:</b> <a href="{{ gha_workflow_run_url }}">{{ gha_workflow_run_url }}</a></li>
+    <br>
+    <li><b><a href="{{ gha_workflow_run_url }}">Github Actions logs</a></b></li>
+    {% endif %}
+    {% if dagger_logs_url %}
+    <li><b><a href="{{ dagger_logs_url }}">Dagger logs</a></b></li>
     {% endif %}
   </ul>
   <h2>Summary</h2>
