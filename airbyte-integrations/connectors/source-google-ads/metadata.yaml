@@ -15,6 +15,7 @@ data:
   registries:
     cloud:
       enabled: true
+      version: 0.3.0
     oss:
       enabled: true
   releaseStage: generally_available
