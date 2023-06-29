@@ -9,9 +9,13 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "langchain",
     "openai",
-    "weaviate-client",
     "requests",
-    "tiktoken"
+    "tiktoken",
+    "docarray[hnswlib]",
+    "pinecone-client",
+    "typing-inspect==0.8.0",
+    "typing_extensions==4.5.0",
+    "pydantic==1.10.8"
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]

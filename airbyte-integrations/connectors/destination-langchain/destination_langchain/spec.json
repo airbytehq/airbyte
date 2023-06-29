@@ -14,6 +14,28 @@
       "processing": {
         "type": "object",
         "title": "Processing",
+        "group": "processing",
+        "required": [
+          "chunk_size"
+        ],
+        "properties": {
+            "chunk_size": {
+              "type": "integer",
+              "title": "Chunk size",
+              "maximum": 8191,
+              "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)"
+            },
+            "text_fields": {
+              "type": "array",
+              "title": "Text fields to embed",
+              "description": "List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. If none are defined, all fields are considered text fields"
+            }
+        }
+      },
+      "embedding": {
+        "type": "object",
+        "group": "embedding",
+        "title": "Embedding",
         "description": "Configure how to pre-process the data (chunking and embedding)",
         "oneOf": [
           {
@@ -21,17 +43,11 @@
             "title": "OpenAI",
             "required": [
               "mode",
-              "chunk_size",
               "openai_key"
             ],
             "properties": {
               "mode": {
                 "const": "openai"
-              },
-              "chunk_size": {
-                "type": "integer",
-                "title": "Chunk size",
-                "description": "Size of chunks to store in vector store (make sure it is not too big for the context if your LLM)"
               },
               "openai_key": {
                 "type": "string",
@@ -39,144 +55,79 @@
                 "title": "OpenAI API key"
               }
             }
-          },
-          {
-            "type":"object",
-            "title": "HuggingFace",
-            "properties": {
-              "mode": {
-                "const": "HuggingFace"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Cohere",
-            "properties": {
-              "mode": {
-                "const": "Cohere"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Jina",
-            "properties": {
-              "mode": {
-                "const": "Jina"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Sagemaker",
-            "properties": {
-              "mode": {
-                "const": "Sagemaker"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Google PaLM",
-            "properties": {
-              "mode": {
-                "const": "palm"
-              }
-            }
           }
         ]
       },
       "storing": {
         "type": "object",
-        "title": "Storing",
+        "group": "storing",
+        "title": "Database provider",
         "description": "Configure how to store the embeddings",
         "oneOf": [
           {
-            "type": "object",
-            "title": "Weaviate",
-            "required": [
-              "mode",
-              "index_name",
-              "weaviate_key",
-              "weaviate_url"
-            ],
-            "properties": {
-              "mode": {
-                "const": "weaviate"
-              },
-              "index_name": {
-                "type": "string",
-                "title": "Weaviate Index name"
-              },
-              "weaviate_key": {
-                "type": "string",
-                "airbyte_secret": true,
-                "title": "Weaviate API key"
-              },
-              "weaviate_url": {
-                "type": "string",
-                "title": "Weaviate URL"
-              }
-            }
-          },
-
-          {
             "type":"object",
-            "title": "PineconeDB",
+            "title": "Pinecone",
             "properties": {
               "mode": {
                 "const": "pinecone"
+              },
+              "pinecone_key": {
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Pinecone API key"
+              },
+              "pinecone_environment": {
+                "type": "string",
+                "title": "Pinecone environment",
+                "description": "Pinecone environment to use"
+              },
+              "index": {
+                "type": "string",
+                "title": "Index",
+                "description": "Pinecone index to use"
+              },
+              "id_field": {
+                "type": "string",
+                "title": "ID field",
+                "description": "Field in the record to use as ID"
               }
             }
           },
           {
             "type":"object",
-            "title": "Deep Lake",
+            "title": "DocArrayHnswSearch",
+            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite.",
+            "required": [
+              "destination_path"
+            ],
             "properties": {
               "mode": {
-                "const": "deeplake"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Milvus",
-            "properties": {
-              "mode": {
-                "const": "milvus"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Qdrant",
-            "properties": {
-              "mode": {
-                "const": "qdrant"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Supabase VectorStore",
-            "properties": {
-              "mode": {
-                "const": "supabase"
-              }
-            }
-          },
-          {
-            "type":"object",
-            "title": "Tair",
-            "properties": {
-              "mode": {
-                "const": "tair"
+                "const": "DocArrayHnswSearch"
+              },
+              "destination_path": {
+                "description": "Path to the directory where hnswlib and meta data files will be written. The files will be placed inside that local mount.",
+                "title": "Destination Path",
+                "type": "string",
+                "examples": ["/json_data"]
               }
             }
           }
         ]
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "storing",
+        "title": "Storing"
+      }
+    ]
   }
 }
