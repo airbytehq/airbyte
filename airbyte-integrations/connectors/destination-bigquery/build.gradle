@@ -28,6 +28,7 @@ dependencies {
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')

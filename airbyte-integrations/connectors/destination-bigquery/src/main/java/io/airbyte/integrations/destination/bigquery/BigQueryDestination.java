@@ -168,7 +168,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  protected BigQuery getBigQuery(final JsonNode config) {
+  public static BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     try {

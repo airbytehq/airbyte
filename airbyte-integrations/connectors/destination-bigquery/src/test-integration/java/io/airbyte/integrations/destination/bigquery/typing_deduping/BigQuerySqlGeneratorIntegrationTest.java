@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.common.collect.ImmutableMap;
@@ -22,7 +21,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.St
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
@@ -119,14 +117,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
     JsonNode config = Jsons.deserialize(rawConfig);
 
-    final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-    final GoogleCredentials credentials = BigQueryDestination.getServiceAccountCredentials(config);
-    bq = bigQueryBuilder
-        .setProjectId(config.get("project_id").asText())
-        .setCredentials(credentials)
-        .setHeaderProvider(BigQueryUtils.getHeaderProvider())
-        .build()
-        .getService();
+    bq = BigQueryDestination.getBigQuery(config);
   }
 
   @BeforeEach
@@ -903,8 +894,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
   }
 
-  private Map<String, Object> toMap(Schema schema, FieldValueList row) {
-    final Map<String, Object> map = new HashMap<>();
+  /**
+   * FieldValueList stores everything internally as string (I think?) but provides conversions to more useful types.
+   * This method does that conversion, using the schema to determine which type is most appropriate.
+   */
+  private static LinkedHashMap<String, Object> toMap(Schema schema, FieldValueList row) {
+    final LinkedHashMap<String, Object> map = new LinkedHashMap<>();
     for (int i = 0; i < schema.getFields().size(); i++) {
       final Field field = schema.getFields().get(i);
       final FieldValue value = row.get(i);
@@ -939,13 +934,13 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * logs.
    */
   private void assertQueryResult(final List<Map<String, Optional<Object>>> expectedRows, final TableResult result) {
-    List<Map<String, Object>> actualRows = result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
+    List<LinkedHashMap<String, Object>> actualRows = toMaps(result);
     List<Map<String, Optional<Object>>> missingRows = new ArrayList<>();
     Set<Map<String, Object>> matchedRows = new HashSet<>();
     boolean foundMultiMatch = false;
     // For each expected row, iterate through all actual rows to find a match.
     for (Map<String, Optional<Object>> expectedRow : expectedRows) {
-      final List<Map<String, Object>> matchingRows = actualRows.stream().filter(actualRow -> {
+      final List<LinkedHashMap<String, Object>> matchingRows = actualRows.stream().filter(actualRow -> {
         // We only want to check the fields that are specified in the expected row.
         // E.g.we shouldn't assert against randomized UUIDs.
         for (Entry<String, Optional<Object>> expectedEntry : expectedRow.entrySet()) {
@@ -982,6 +977,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
       Set<Map<String, Object>> extraRows = actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet());
       fail(diff(missingRows, extraRows));
     }
+  }
+
+  /**
+   * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
+   * That's annoying for us since we're working with small test data, so pull everything into a list, and convert them
+   * into maps of column name -> value.
+   * <p>
+   * Note that the values have reasonable types; see {@link #toMap(Schema, FieldValueList)} for details.
+   */
+  public static List<LinkedHashMap<String, Object>> toMaps(TableResult result) {
+    return result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
   }
 
   private static String sortedToString(Map<String, Object> record) {
