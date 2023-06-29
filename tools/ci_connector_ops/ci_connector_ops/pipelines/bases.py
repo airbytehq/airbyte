@@ -524,7 +524,7 @@ class ConnectorReport(Report):
                 "connector_technical_name": self.pipeline_context.connector.technical_name,
                 "connector_version": self.pipeline_context.connector.version,
                 "run_timestamp": self.created_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
