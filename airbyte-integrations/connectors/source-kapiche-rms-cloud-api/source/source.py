@@ -28,7 +28,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo, timezone
 from itertools import islice
 from typing import (
     Dict,
@@ -42,6 +42,7 @@ from typing import (
     Tuple,
     Union,
 )
+from zoneinfo import ZoneInfo
 
 import requests
 from airbyte_cdk.models import (
@@ -75,13 +76,17 @@ class RmsCloudApiKapicheSource(Source):
         self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> AirbyteConnectionStatus:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+        if the input configuration can be used to successfully
+        connect to the integration e.g: if a provided Stripe API
+        token can be used to connect to the Stripe API.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
+        :param logger: Logging object to display debug/info/error to
+            the logs (logs will not be accessible via airbyte UI if they
+            are not passed to this logger)
+
+        :param config: Json object containing the configuration of
+            this source, content of this json is as specified in the
+            properties of the spec.yaml file
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
@@ -102,20 +107,26 @@ class RmsCloudApiKapicheSource(Source):
         self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> AirbyteCatalog:
         """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+        Returns an AirbyteCatalog representing the available streams
+        and fields in this integration. For example, given valid
+        credentials to a Postgres database, returns an Airbyte
+        catalog where each postgres table is a stream, and each table
+        column is a field.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
+        :param logger: Logging object to display debug/info/error to
+            the logs (logs will not be accessible via airbyte UI if they
+            are not passed to this logger)
+        :param config: Json object containing the configuration of this source,
+            content of this json is as specified in the properties of the
+            spec.yaml file
 
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
+        :return: AirbyteCatalog is an object describing a list of all
+        available streams in this source. A stream is an
+        AirbyteStream object that includes:
             - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
+            - json_schema providing the specifications of expected
+              schema for this stream (a list of columns described by
+              their names and types)
         """
         streams = []
 
@@ -128,8 +139,24 @@ class RmsCloudApiKapicheSource(Source):
                 "Park Name": {"type": "string"},
                 "Reservation ID": {"type": "integer"},
                 "Comments": {"type": "string"},
-                "Arrival Date": {"type": "string"},
-                "Departure Date": {"type": "string"},
+                "Reservation Created Date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "airbyte_type": "timestamp_with_timezone",
+                },
+                "Arrival Date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "airbyte_type": "timestamp_with_timezone",
+                },
+                "Departure Date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "airbyte_type": "timestamp_with_timezone",
+                },
+                # This field is calculated from the departure date
+                # and the arrival date.
+                "Nights": {"type": ["integer", "null"]},
                 "Category Class": {"type": "string"},
                 "Number of Areas": {"type": "integer"},
                 "Max Occupants Per Category": {"type": "integer"},
@@ -140,13 +167,15 @@ class RmsCloudApiKapicheSource(Source):
                 "Site Rating": {"type": "number"},
                 "Value Rating": {"type": "number"},
                 "Booking Source": {"type": ["string", "null"]},
-
+                # Found in the reservation=full dataset
                 "Adults": {"type": ["integer", "null"]},
                 "Children": {"type": ["integer", "null"]},
                 "Infants": {"type": ["integer", "null"]},
+                # Found in the guest=full dataset
                 "loyaltyNo": {"type": "boolean"},
                 "loyaltyMembershipType": {"type": ["string", "null"]},
                 "postcode": {"type": ["string", "null"]},
+                # Found in the reservation-account dataset
                 "totalRate": {"type": ["number", "null"]},
                 # Nights
                 # DateMade_medium
@@ -171,23 +200,34 @@ class RmsCloudApiKapicheSource(Source):
         state: Dict[str, Any],
     ) -> Generator[AirbyteMessage, None, None]:
         """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
+        Returns a generator of the AirbyteMessages generated by
+        reading the source with the given configuration, catalog, and
+        state.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.yaml file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
+        :param logger: Logging object to display debug/info/error to
+            the logs (logs will not be accessible via airbyte UI if they
+            are not passed to this logger)
 
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
+        :param config: Json object containing the configuration of
+            this source, content of this json is as specified in the
+            properties of the spec.yaml file
+
+        :param catalog: The input catalog is a
+            ConfiguredAirbyteCatalog which is almost the same as
+            AirbyteCatalog returned by discover(), but in addition, it's
+            been configured in the UI! For each particular stream and
+            field, there may have been provided with extra modifications
+            such as: filtering streams and/or columns out, renaming some
+            entities, etc
+
+        :param state: When a Airbyte reads data from a source, it
+            might need to keep a checkpoint cursor to resume replication
+            in the future from that saved checkpoint. This is the object
+            that is provided with state from previous runs and avoid
+            replicating the entire set of data everytime.
+
+        :return: A generator that produces a stream of
+            AirbyteRecordMessage contained in AirbyteMessage object.
         """
         stream_name = "RMSNPS"  # Example
         state_key = "start_date"
@@ -210,28 +250,44 @@ class RmsCloudApiKapicheSource(Source):
             if start_date_str := config.get(state_key):
                 logger.info(f"Fall back to get config start date: {start_date_str=}")
                 start_date = datetime.fromisoformat(start_date_str)
+                if not start_date.tzinfo:
+                    start_date = start_date.replace(tzinfo=timezone.utc)
             else:
                 logger.info("Fall way back to setting start date to a year ago.")
-                start_date = datetime.now() - timedelta(weeks=52)
+                start_date = datetime.now(timezone.utc) - timedelta(weeks=52)
 
-        properties = self._fetch_properties(logger)
-        categories = self._fetch_categories(logger, properties)
-
-        gen = self._fetch_nps(logger, properties, categories, start_date)
+        gen = self._fetch_nps(logger, start_date)
+        record = None
 
         for i, record in enumerate(gen):
+            # The `npsResults` endpoint in RMS doesn't let us specify
+            # a timezone for the start and end date range. So we'll
+            # have to filter here for any records that are older than
+            # our start filter.
+            dt = datetime.fromisoformat(record["Departure Date"])
+            if dt <= start_date:
+                logger.info(
+                    f"Rejecting older fetched result with reservation id "
+                    f"{record['Reservation ID']} and departure date "
+                    f"{record['Departure Date']}. The start date was "
+                    f"{start_date}"
+                )
+                continue
+
             yield AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=stream_name,
                     data=record,
-                    emitted_at=int(datetime.now().timestamp()) * 1000,
+                    emitted_at=int(datetime.utcnow().timestamp()) * 1000,
                 ),
             )
+
             state[state_key] = record["Departure Date"]
 
             if i % 10 == 0:
                 # Emit state record every 10th record.
+                # This is the v2 state message structure below
                 # yield AirbyteMessage(
                 #     type=Type.STATE,
                 #     state=AirbyteStateMessage(
@@ -249,6 +305,7 @@ class RmsCloudApiKapicheSource(Source):
                     ),
                 )
 
+        # This is the v2 state message structure below
         # yield AirbyteMessage(
         #     type=Type.STATE,
         #     state=AirbyteStateMessage(
@@ -265,6 +322,10 @@ class RmsCloudApiKapicheSource(Source):
                 data=state,
             ),
         )
+
+        if record:
+            logger.info(f"Final record: {record}")
+        logger.info(f"Final state: {state}")
 
     def _get(self, url: str) -> dict:
         with http_adapter(backoff_factor=2) as session:
@@ -312,8 +373,6 @@ class RmsCloudApiKapicheSource(Source):
     def _fetch_nps(
         self,
         logger: logging.Logger,
-        properties: dict[int, dict],
-        categories: dict[int, dict],
         start_date: datetime,
     ) -> Iterable[dict[str, Any]]:
         """
@@ -332,26 +391,41 @@ class RmsCloudApiKapicheSource(Source):
         https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.16.1#/reports/npsResultsReport
 
         """
+        properties = self._fetch_properties(logger)
+        # `categories` will be overwritten with real data as
+        # soon as we know there is work to do. This is an
+        # optimization to make a sync faster in the case there
+        # is no new data.
+        categories = None
+
         all_property_ids = list(properties)
-        logger.info(all_property_ids)
-        end_date = datetime(year=2022, month=8, day=31)
+        end_date = datetime.now(start_date.tzinfo)
 
         for date_from, date_to in date_ranges_generator(start_date, end=end_date):
             logger.info(
                 f"Fetching for week {date_from.isoformat()} to {date_to.isoformat()}"
             )
+            payload={
+                "propertyIds": all_property_ids,
+                "reportBy": "departDate",
+                "dateFrom": date_to_rms_string(date_from),
+                "dateTo": date_to_rms_string(date_to),
+                "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            }
+            logger.info(f"{payload=}")
             data = self._post(
                 "https://restapi8.rmscloud.com/reports/npsResults",
-                payload={
-                    "propertyIds": all_property_ids,
-                    "reportBy": "departDate",
-                    "dateFrom": date_to_rms_string(date_from),
-                    "dateTo": date_to_rms_string(date_to),
-                    "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                },
+                payload=payload,
             )
             results = data["npsResults"]
             logger.info(f"Got {len(results)} for date range")
+            if not results:
+                continue
+
+            if not categories:
+                # `categories` has not yet been loaded, fetch now and
+                # store for use during the rest of the sync.
+                categories = self._fetch_categories(logger, properties)
 
             # Collect all the reservation Ids upfront. We use this to fetch
             # all reservation upfront so that we can look up reservation
@@ -374,11 +448,10 @@ class RmsCloudApiKapicheSource(Source):
                 r["id"]: r for r in self._fetch_guests(logger, reservation_ids)
             }
 
-            for result in results[:20]:
-                # logger.info(result)
-                # do_once('r', lambda: print(json.dumps(r, indent=2)))
+            for result in results:
                 # Each "npsResult" will correspond to a single category
                 property_id = result["propertyId"]
+                property = properties[property_id]
                 surveys = result["surveyDetails"]
                 for s in surveys:
                     # Within that "npsResult" there are many survey
@@ -397,7 +470,11 @@ class RmsCloudApiKapicheSource(Source):
                         category_id,
                     )
 
-                    self.update_record_from_survey_detail(record, s)
+                    self.update_record_from_survey_detail(
+                        record,
+                        s,
+                        rms_timezone_name=property["timeZone"]
+                    )
 
                     reservation_id = s.get("reservationId")
                     if reservation_id:
@@ -410,6 +487,7 @@ class RmsCloudApiKapicheSource(Source):
                                 record,
                                 reservation,
                                 reservation_account,
+                                rms_timezone_name=property["timeZone"]
                             )
 
                             guest = guest_lookup.get(reservation["guestId"])
@@ -428,24 +506,6 @@ class RmsCloudApiKapicheSource(Source):
                                 f"Something might be wrong with how registrations are "
                                 f" being prefetched."
                             )
-
-                    # Fetch the specific reservation associated with the
-                    # survey response.
-                    # https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.16.1#/reservations/getReservationById
-                    # This takes forever obviously since we need to generate
-                    # a new request for every single survey response.
-                    """
-                    reservation_id = s['reservationId']
-                    response = requests.get(
-                        f"https://restapi8.rmscloud.com/reservations/{reservation_id}?modelType=basic",
-                        headers={'authtoken': auth_token}
-                    )
-                    res = response.json()
-                    r['Adults'] = res['adults']
-                    r['Children'] = res['children']
-                    r['Infants'] = res['infants']
-                    r['Booking Source'] = res['bookingSourceName']
-                    """
 
                     yield record
 
@@ -497,7 +557,12 @@ class RmsCloudApiKapicheSource(Source):
         record: dict[str, Any],
         reservation: dict[str, Any],
         reservation_account: dict[str, Any],
+        rms_timezone_name: str,
     ) -> None:
+        created = convert_rms_datetime_to_python_datetime(
+            rms_datetime=reservation["createdDate"],
+            rms_property_timezone_windows_id_name=rms_timezone_name,
+        )
         record.update(
             {
                 "Adults": reservation.get("adults"),
@@ -505,6 +570,7 @@ class RmsCloudApiKapicheSource(Source):
                 "Infants": reservation.get("infants"),
                 "Booking Source": reservation.get("bookingSourceName"),
                 "totalRate": reservation_account.get("totalRate"),
+                "Reservation Created Date": created.isoformat(),
             }
         )
 
@@ -525,14 +591,27 @@ class RmsCloudApiKapicheSource(Source):
         self,
         record: dict[str, Any],
         survey_details: dict[str, Any],
+        rms_timezone_name: str,
     ) -> None:
         s = survey_details
+        arrival_date = convert_rms_datetime_to_python_datetime(
+            rms_datetime=s["arrive"],
+            rms_property_timezone_windows_id_name=rms_timezone_name,
+        )
+        departure_date = convert_rms_datetime_to_python_datetime(
+            rms_datetime=s["depart"],
+            rms_property_timezone_windows_id_name=rms_timezone_name,
+        )
+        # Important to strip the time component below, otherwise
+        # you get incorrect deltas of days.
+        nights = (departure_date.date() - arrival_date.date()).days
         record.update(
             {
                 "Reservation ID": s["reservationId"],
                 "Comments": s["comments"],
-                "Arrival Date": s["arrive"],
-                "Departure Date": s["depart"],
+                "Arrival Date": arrival_date.isoformat(),
+                "Departure Date": departure_date.isoformat(),
+                "Nights": nights,
             }
         )
         # Score (NPS, Service, Facility, Site, Value)
@@ -554,11 +633,21 @@ class RmsCloudApiKapicheSource(Source):
         it = iter(reservation_ids)
         while chunk := list(islice(it, limit)):
             logger.debug(f"Fetching reservations chunk {len(chunk)=}")
+            # NOTE: `modelType=full` is required to get `createdDate`
             response = self._post(
-                f"https://restapi8.rmscloud.com/reservations/search?modelType=basic&limit={limit}",
+                f"https://restapi8.rmscloud.com/reservations/search?modelType=full&limit={limit}",
                 dict(reservationIds=chunk),
             )
             results.extend(response)
+
+        missing_reservations = set(reservation_ids) - set(r["id"] for r in results)
+        if missing_reservations:
+            logger.warning(
+                f"These reservation IDs were present in survey results but could "
+                f"not be found in the reservations table: {missing_reservations}. "
+                "The survey data will still be captured but expanded metadata will "
+                "be missing."
+            )
 
         logger.debug("All reservation chunks complete.")
         return results
@@ -608,7 +697,7 @@ class RmsCloudApiKapicheSource(Source):
         logger.debug("All reservation chunks complete.")
         return results
 
-    @cache("_fetch_properties")
+    # @cache("_fetch_properties")
     def _fetch_properties(self, logger: logging.Logger) -> dict[int, dict]:
         # Fetch a list of properties, which will be used to retrieve
         # NPS survey responses. A property represents a physical
@@ -624,7 +713,7 @@ class RmsCloudApiKapicheSource(Source):
         logger.info(f"{len(properties)} retrieved")
         return {p["id"]: p for p in properties}
 
-    @cache("_fetch_categories")
+    # @cache("_fetch_categories")
     def _fetch_categories(
         self, logger: logging.Logger, properties: dict[int, dict]
     ) -> dict[int, dict]:
@@ -659,25 +748,30 @@ class RmsCloudApiKapicheSource(Source):
             }
 
         """
+        logger.info("Fetching categories...")
         categories = {}
         for prop_id, prop in properties.items():
-            logger.info(f"Fetching categories for property {prop['name']} ({prop_id})")
+            logger.debug(f"Fetching categories for property {prop['name']} ({prop_id})")
             response = requests.get(
                 f"https://restapi8.rmscloud.com/categories?modelType=basic&propertyId={prop['id']}",
                 headers={"authtoken": self.auth_token},
             )
             property_categories = response.json()
-            logger.info(f"{len(property_categories)} retrieved")
+            logger.debug(f"{len(property_categories)} retrieved")
             for c in property_categories:
                 categories[c["id"]] = c
 
+        logger.info("Categories fetched.")
         return categories
 
 
-def date_to_rms_string(dt: datetime) -> str:
+def date_to_rms_string(dt: datetime, as_utc=False) -> str:
     """See "Guidelines and Formatting at:
     https://app.swaggerhub.com/apis/RMSHospitality/RMS_REST_API/1.4.18.1#/info
     """
+    if as_utc:
+        dt = dt.astimezone(timezone.utc)
+
     return datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
 
 
@@ -693,7 +787,12 @@ def date_ranges_generator(
     if end:
         endf = lambda: end
     else:
-        endf = lambda: datetime.now()
+        # Because we compare our rolling date to the
+        # end date, it's important that either they're both
+        # naive or both aware. The following will work
+        # for both cases, because `datetime.now(None)`
+        # is valid and returns a naive datetime.
+        endf = lambda: datetime.now(start_date.tzinfo)
 
     if any(v < 0 for v in span.values()):
         raise ValueError("Only positive span values are allowed")
@@ -709,3 +808,171 @@ def date_ranges_generator(
         yield date0, date1
         date0 = date1
         date1 = date1 + dt
+
+
+def convert_rms_datetime_to_python_datetime(
+    rms_datetime: str,
+    rms_property_timezone_windows_id_name: str,
+) -> datetime:
+    """ Here is an example of what this function achieves:
+
+    .. code-block:: python
+
+        >>> datetime.now().replace(
+        ...    tzinfo=zoneinfo.ZoneInfo("Australia/Sydney")
+        ... ).isoformat()
+        '2023-06-29T12:09:18.975003+10:00'
+
+    There is an extra step though: we first convert the
+    Windows ID name, e.g. "AUS Eastern Standard Time"
+    to the Python-compatible "Australa/Sydney" name.
+
+    :raises ValueError: if the given Windows timezone cannot
+        be found in the local lookup table.
+    """
+    # This does work, e.g.
+    # >>> d = datetime.fromisoformat("2023-06-21 23:52:00")
+    # >>> d.ctime()
+    # 'Wed Jun 21 23:52:00 2023'
+    # You don't need the "T"
+    dt = datetime.fromisoformat(rms_datetime)
+    # Attempt to convert the RMS timezone name into
+    # a Python-compatible datetime object.
+    if tzname := rms_timezone_to_python_timezone(rms_property_timezone_windows_id_name):
+        import zoneinfo
+        tzinfo = zoneinfo.ZoneInfo(tzname)
+        return dt.replace(tzinfo=tzinfo)
+    else:
+        raise ValueError(
+            f"Failed to recognize RMS timezone str "
+            f"{rms_property_timezone_windows_id_name} "
+            "as a known timezone value"
+        )
+
+def rms_timezone_to_python_timezone(s: str) -> str | None:
+    """ RMS Properties appear to use Windows timezone IDs to
+    specify timezones in properties. It's a bit of work to get these
+    into python-compatible structures. Here is a stackoverflow post
+    where someone generated the following lookup table that can be
+    used.
+    https://stackoverflow.com/a/16157049
+
+    Here is an example of a property object with the timezone
+    specified:
+
+    .. code-block:: json
+
+        {
+          "accountingDate": "2023-06-21 00:00:00",
+          "code": "xxx",
+          "clientId": xxx,
+          "timeZone": "AUS Eastern Standard Time",
+          "useSecondaryCurrency": "false",
+          "id": xxx,
+          "name": "xxx",
+          "inactive": false
+        },
+
+    """
+    lookup = {
+        "AUS Central Standard Time": "Australia/Darwin",
+        "AUS Eastern Standard Time": "Australia/Sydney",
+        "Afghanistan Standard Time": "Asia/Kabul",
+        "Alaskan Standard Time": "America/Anchorage",
+        "Arab Standard Time": "Asia/Riyadh",
+        "Arabian Standard Time": "Asia/Dubai",
+        "Arabic Standard Time": "Asia/Baghdad",
+        "Argentina Standard Time": "America/Buenos_Aires",
+        "Atlantic Standard Time": "America/Halifax",
+        "Azerbaijan Standard Time": "Asia/Baku",
+        "Azores Standard Time": "Atlantic/Azores",
+        "Bahia Standard Time": "America/Bahia",
+        "Bangladesh Standard Time": "Asia/Dhaka",
+        "Canada Central Standard Time": "America/Regina",
+        "Cape Verde Standard Time": "Atlantic/Cape_Verde",
+        "Caucasus Standard Time": "Asia/Yerevan",
+        "Cen. Australia Standard Time": "Australia/Adelaide",
+        "Central America Standard Time": "America/Guatemala",
+        "Central Asia Standard Time": "Asia/Almaty",
+        "Central Brazilian Standard Time": "America/Cuiaba",
+        "Central Europe Standard Time": "Europe/Budapest",
+        "Central European Standard Time": "Europe/Warsaw",
+        "Central Pacific Standard Time": "Pacific/Guadalcanal",
+        "Central Standard Time": "America/Chicago",
+        "Central Standard Time (Mexico)": "America/Mexico_City",
+        "China Standard Time": "Asia/Shanghai",
+        "Dateline Standard Time": "Etc/GMT+12",
+        "E. Africa Standard Time": "Africa/Nairobi",
+        "E. Australia Standard Time": "Australia/Brisbane",
+        "E. Europe Standard Time": "Asia/Nicosia",
+        "E. South America Standard Time": "America/Sao_Paulo",
+        "Eastern Standard Time": "America/New_York",
+        "Egypt Standard Time": "Africa/Cairo",
+        "Ekaterinburg Standard Time": "Asia/Yekaterinburg",
+        "FLE Standard Time": "Europe/Kiev",
+        "Fiji Standard Time": "Pacific/Fiji",
+        "GMT Standard Time": "Europe/London",
+        "GTB Standard Time": "Europe/Bucharest",
+        "Georgian Standard Time": "Asia/Tbilisi",
+        "Greenland Standard Time": "America/Godthab",
+        "Greenwich Standard Time": "Atlantic/Reykjavik",
+        "Hawaiian Standard Time": "Pacific/Honolulu",
+        "India Standard Time": "Asia/Calcutta",
+        "Iran Standard Time": "Asia/Tehran",
+        "Israel Standard Time": "Asia/Jerusalem",
+        "Jordan Standard Time": "Asia/Amman",
+        "Kaliningrad Standard Time": "Europe/Kaliningrad",
+        "Korea Standard Time": "Asia/Seoul",
+        "Magadan Standard Time": "Asia/Magadan",
+        "Mauritius Standard Time": "Indian/Mauritius",
+        "Middle East Standard Time": "Asia/Beirut",
+        "Montevideo Standard Time": "America/Montevideo",
+        "Morocco Standard Time": "Africa/Casablanca",
+        "Mountain Standard Time": "America/Denver",
+        "Mountain Standard Time (Mexico)": "America/Chihuahua",
+        "Myanmar Standard Time": "Asia/Rangoon",
+        "N. Central Asia Standard Time": "Asia/Novosibirsk",
+        "Namibia Standard Time": "Africa/Windhoek",
+        "Nepal Standard Time": "Asia/Katmandu",
+        "New Zealand Standard Time": "Pacific/Auckland",
+        "Newfoundland Standard Time": "America/St_Johns",
+        "North Asia East Standard Time": "Asia/Irkutsk",
+        "North Asia Standard Time": "Asia/Krasnoyarsk",
+        "Pacific SA Standard Time": "America/Santiago",
+        "Pacific Standard Time": "America/Los_Angeles",
+        "Pacific Standard Time (Mexico)": "America/Santa_Isabel",
+        "Pakistan Standard Time": "Asia/Karachi",
+        "Paraguay Standard Time": "America/Asuncion",
+        "Romance Standard Time": "Europe/Paris",
+        "Russian Standard Time": "Europe/Moscow",
+        "SA Eastern Standard Time": "America/Cayenne",
+        "SA Pacific Standard Time": "America/Bogota",
+        "SA Western Standard Time": "America/La_Paz",
+        "SE Asia Standard Time": "Asia/Bangkok",
+        "Samoa Standard Time": "Pacific/Apia",
+        "Singapore Standard Time": "Asia/Singapore",
+        "South Africa Standard Time": "Africa/Johannesburg",
+        "Sri Lanka Standard Time": "Asia/Colombo",
+        "Syria Standard Time": "Asia/Damascus",
+        "Taipei Standard Time": "Asia/Taipei",
+        "Tasmania Standard Time": "Australia/Hobart",
+        "Tokyo Standard Time": "Asia/Tokyo",
+        "Tonga Standard Time": "Pacific/Tongatapu",
+        "Turkey Standard Time": "Europe/Istanbul",
+        "US Eastern Standard Time": "America/Indianapolis",
+        "US Mountain Standard Time": "America/Phoenix",
+        "UTC": "Etc/GMT",
+        "UTC+12": "Etc/GMT-12",
+        "UTC-02": "Etc/GMT+2",
+        "UTC-11": "Etc/GMT+11",
+        "Ulaanbaatar Standard Time": "Asia/Ulaanbaatar",
+        "Venezuela Standard Time": "America/Caracas",
+        "Vladivostok Standard Time": "Asia/Vladivostok",
+        "W. Australia Standard Time": "Australia/Perth",
+        "W. Central Africa Standard Time": "Africa/Lagos",
+        "W. Europe Standard Time": "Europe/Berlin",
+        "West Asia Standard Time": "Asia/Tashkent",
+        "West Pacific Standard Time": "Pacific/Port_Moresby",
+        "Yakutsk Standard Time": "Asia/Yakutsk",
+    }
+    return lookup.get(s)
