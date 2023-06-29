@@ -107,8 +107,8 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
-        last_record_cursor_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        last_record_cursor_value = most_recent_record.get(self.cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         possible_cursor_values = list(
             map(
@@ -259,3 +259,14 @@ class DatetimeBasedCursor(Cursor):
                     log=AirbyteLogMessage(level=level, message=message),
                 )
             )
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        cursor_field = self.cursor_field.eval(self.config)
+        first_cursor_value = first.get(cursor_field)
+        second_cursor_value = second.get(cursor_field)
+        if first_cursor_value and second_cursor_value:
+            return self.parse_date(first_cursor_value) >= self.parse_date(second_cursor_value)
+        elif first_cursor_value:
+            return True
+        else:
+            return False
