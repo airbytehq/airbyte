@@ -147,7 +147,7 @@ class Campaigns(FBMarketingIncrementalStream):
     def generate_log(account_id, previous_unix_time=None):
         log = {
             "source": "facebook-marketing-custom",
-            "account_id": account_id,
+            "account_id": str(account_id)[0:5],
             "time": str(datetime.datetime.now()),
             "unix_time": time.time(),
             "previous_time_diff_seconds": time.time() - previous_unix_time if (previous_unix_time) else None
