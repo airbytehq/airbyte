@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
+from ci_connector_ops.pipelines import main_logger
 from ci_connector_ops.pipelines.bases import CIContext
 from ci_connector_ops.utils import console
 
@@ -28,7 +29,7 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
         log_method = getattr(logger, level.lower())
         log_method(message)
     else:
-        console.print(message)
+        main_logger.info(message)
 
 
 def update_commit_status_check(

@@ -194,8 +194,8 @@ def test_migration_documentation_url_default():
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    expected_top_migration_documentation_url = "test-doc-url/migration_guide"
-    expected_version_migration_documentation_url = "test-doc-url/migration_guide#1.0.0"
+    expected_top_migration_documentation_url = "test-doc-url-migrations"
+    expected_version_migration_documentation_url = "test-doc-url-migrations#1.0.0"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
     assert result["releases"]["migrationDocumentationUrl"] == expected_top_migration_documentation_url

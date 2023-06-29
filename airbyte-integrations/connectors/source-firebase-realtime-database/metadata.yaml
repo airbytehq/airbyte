@@ -16,7 +16,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+  documentationUrl: https://docs.airbyte.com/integrations/sources/firebase-realtime-database
   tags:
     - language:python
 metadataSpecVersion: "1.0"

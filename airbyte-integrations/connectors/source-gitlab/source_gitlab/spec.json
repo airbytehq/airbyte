@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Gitlab Spec",
     "type": "object",
-    "required": ["api_url", "start_date", "credentials"],
+    "required": ["start_date", "credentials"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -73,22 +73,22 @@
           }
         ]
       },
-      "api_url": {
-        "type": "string",
-        "examples": ["gitlab.com", "https://gitlab.com", "https://gitlab.company.org"],
-        "title": "API URL",
-        "default": "gitlab.com",
-        "description": "Please enter your basic URL from GitLab instance.",
-        "order": 1
-      },
       "start_date": {
         "type": "string",
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for GitLab API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "order": 2,
+        "order": 1,
         "format": "date-time"
+      },
+      "api_url": {
+        "type": "string",
+        "examples": ["gitlab.com", "https://gitlab.com", "https://gitlab.company.org"],
+        "title": "API URL",
+        "default": "gitlab.com",
+        "description": "Please enter your basic URL from GitLab instance.",
+        "order": 2
       },
       "groups": {
         "type": "string",

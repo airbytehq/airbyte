@@ -574,7 +574,6 @@ definitions:
         type: string
         interpolation_context:
           - config
-          - stream_state
         examples:
           - "created_at"
           - "{{ config['record_cursor'] }}"
@@ -598,7 +597,7 @@ definitions:
             * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`
             * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`
             * **%f**: Microsecond (zero-padded to 6 digits) - `000000`
-            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`
+            * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`
             * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`
             * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`
             * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`
@@ -614,6 +613,17 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+      start_datetime:
+        title: Start Datetime
+        description: The datetime that determines the earliest record that should be synced.
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
+        examples:
+          - "2020-01-1T00:00:00Z"
+          - "{{ config['start_time'] }}"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -628,34 +638,26 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
           - "{{ day_delta(-1) }}"
-      start_datetime:
-        title: Start Datetime
-        description: The datetime that determines the earliest record that should be synced.
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/MinMaxDatetime"
-        examples:
-          - "2020-01-1T00:00:00Z"
-          - "{{ config['start_time'] }}"
-      step:
-        title: Step
-        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
-        type: string
-        examples:
-          - "P1W"
-          - "{{ config['step_increment'] }}"
       end_time_option:
         title: Inject End Time Into Outgoing HTTP Request
         description: Optionally configures how the end datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      is_data_feed:
+        title: Whether the target API is formatted as a data feed
+        description: A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.
+        type: boolean
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
         type: string
+        interpolation_context:
+          - config
         examples:
           - "P1D"
           - "P{{ config['lookback_days'] }}D"
@@ -675,6 +677,13 @@ definitions:
         title: Inject Start Time Into Outgoing HTTP Request
         description: Optionally configures how the start datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      step:
+        title: Step
+        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
+        type: string
+        examples:
+          - "P1W"
+          - "{{ config['step_increment'] }}"
       $parameters:
         type: object
         additionalProperties: true
@@ -955,7 +964,7 @@ definitions:
         enum: [DpathExtractor]
       field_path:
         title: Field Path
-        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array.
+        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).
         type: array
         items:
           - type: string
@@ -1331,7 +1340,7 @@ definitions:
             * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`
             * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`
             * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`
-            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`, `+1030`, `+063415`, `-030712.345216`
+            * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`
             * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`
             * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`
             * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`
@@ -2034,33 +2043,34 @@ interpolation:
       arguments: {}
       return_type: Datetime
       examples:
-        - "{{ now_utc() }}"
-        - "{{ now_utc().strftime('%Y-%m-%d') }}"
+        - "'{{ now_utc() }}' -> '2021-09-01 00:00:00+00:00'"
+        - "'{{ now_utc().strftime('%Y-%m-%d') }}' -> '2021-09-01'"
     - title: Today (UTC)
       description: Returns the current date in UTC timezone. The output is a date object.
       arguments: {}
       return_type: Date
       examples:
-        - "{{ today_utc() }}"
+        - "'{{ today_utc() }}' -> '2021-09-01'"
+        - "'{{ today_utc().strftime('%Y/%m/%d')}}' -> '2021/09/01'"
     - title: Timestamp
       description: Converts a number or a string representing a datetime (formatted as ISO8601) to a timestamp. If the input is a number, it is converted to an int. If no timezone is specified, the string is interpreted as UTC.
       arguments:
         datetime: A string formatted as ISO8601 or an integer representing a unix timestamp
       return_type: int
       examples:
-        - "{{ timestamp(1646006400) }}"
-        - "{{ timestamp('2022-02-28') }}"
-        - "{{ timestamp('2022-02-28T00:00:00Z') }}"
-        - "{{ timestamp('2022-02-28 00:00:00Z') }}"
-        - "{{ timestamp('2022-02-28T00:00:00:-08:00') }}"
+        - "'{{ timestamp(1646006400) }}' -> 1646006400"
+        - "'{{ timestamp('2022-02-28') }}' -> 1646006400"
+        - "'{{ timestamp('2022-02-28T00:00:00Z') }}' -> 1646006400"
+        - "'{{ timestamp('2022-02-28 00:00:00Z') }}' -> 1646006400"
+        - "'{{ timestamp('2022-02-28T00:00:00-08:00') }}' -> 1646035200"
     - title: Max
       description: Returns the largest object of a iterable, or or two or more arguments.
       arguments:
         args: iterable or a sequence of two or more arguments
       return_type: Any
       examples:
-        - "{{ max(2, 3) }}"
-        - "{{ max([2, 3]) }}"
+        - "'{{ max(2, 3) }}' -> 3"
+        - "'{{ max([2, 3]) }}' -> 3"
     - title: Day Delta
       description: Returns the datetime of now() + num_days.
       arguments:
@@ -2068,17 +2078,18 @@ interpolation:
         format: How to format the output string
       return_type: str
       examples:
-        - "{{ day_delta(25) }}"
-        - "{{ day_delta(25, format='%Y-%m-%d') }}"
+        - "'{{ day_delta(1) }}' -> '2021-09-02T00:00:00.000000+0000'"
+        - "'{{ day_delta(-1) }}' -> '2021-08-31:00:00.000000+0000'"
+        - "'{{ day_delta(25, format='%Y-%m-%d') }}' -> '2021-09-02'"
     - title: Duration
       description: Converts an ISO8601 duratioin to datetime.timedelta.
       arguments:
         duration_string: "A string representing an ISO8601 duration. See https://www.digi.com/resources/documentation/digidocs//90001488-13/reference/r_iso_8601_duration_format.htm for more details."
       return_type: datetime.timedelta
       examples:
-        - "{{ duration('P1D') }}"
-        - "{{ duration('P6DT23H') }}"
-        - "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        - "'{{ duration('P1D') }}' -> '1 day, 0:00:00'"
+        - "'{{ duration('P6DT23H') }}' -> '6 days, 23:00:00'"
+        - "'{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}' -> '2021-08-31T00:00:00Z'"
     - title: Format Datetime
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
