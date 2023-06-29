@@ -357,7 +357,7 @@ class DaggerPipelineCommand(click.Command):
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
                 if ctx.obj["is_ci"]:
-                    ctx.obj["dagger_logs_url"] = f"https://storage.googleapis.com/{dagger_logs_gcs_key}"
+                    ctx.obj["dagger_logs_url"] = f"https://storage.googleapis.com/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
                 else:
                     ctx.obj["dagger_logs_url"] = None
             else:

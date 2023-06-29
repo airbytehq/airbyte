@@ -122,10 +122,10 @@
     {% endif %}
     <li><b>Branch:</b> {{ git_branch }}</li>
     {% if gha_workflow_run_url %}
-    <li><b>Github Actions run:</b> <a href="{{ gha_workflow_run_url }}">{{ gha_workflow_run_url }}</a></li>
+    <li><b><a href="{{ gha_workflow_run_url }}">Github Actions logs</a></b></li>
     {% endif %}
     {% if dagger_logs_url %}
-    <li><b>Github Actions run:</b> <a href="{{ dagger_logs_url }}">{{ dagger_logs_url }}</a></li>
+    <li><b><a href="{{ dagger_logs_url }}">Dagger logs</a></b></li>
     {% endif %}
   </ul>
   <h2>Summary</h2>
