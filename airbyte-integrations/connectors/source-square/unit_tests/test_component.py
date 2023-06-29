@@ -116,7 +116,7 @@ def test_substream_incremental_sync(state, last_record, expected, expected_strea
         assert actual_stream_slice["updated_at"] != state["updated_at"]
     else:
         assert actual_stream_slice == expected_stream_slice
-        slicer.update_state(stream_slice=actual_stream_slice, last_record=last_record)
+        slicer.close_slice(actual_stream_slice, last_record)
         assert slicer.get_stream_state() == expected
 
 
