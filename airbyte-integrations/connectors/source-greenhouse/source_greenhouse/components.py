@@ -41,11 +41,11 @@ class GreenHouseSlicer(Cursor):
         if cursor_value:
             self._state[self.cursor_field] = cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         stream_slice_value = stream_slice.get(self.cursor_field)
         current_state = self._state.get(self.cursor_field)
-        last_cursor = last_record and last_record[self.cursor_field]
-        max_dt = self._max_dt_str(stream_slice_value, current_state, last_cursor)
+        record_cursor_value = most_recent_record and most_recent_record[self.cursor_field]
+        max_dt = self._max_dt_str(stream_slice_value, current_state, record_cursor_value)
         if not max_dt:
             return
         self._state[self.cursor_field] = max_dt
@@ -56,6 +56,19 @@ class GreenHouseSlicer(Cursor):
         implementation is irrelevant for greenhouse
         """
         return True
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        """
+        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """
+        first_cursor_value = first.get(self.cursor_field)
+        second_cursor_value = second.get(self.cursor_field)
+        if first_cursor_value and second_cursor_value:
+            return first_cursor_value >= second_cursor_value
+        elif first_cursor_value:
+            return True
+        else:
+            return False
 
     def _parse_to_datetime(self, datetime_str: str) -> datetime.datetime:
         return datetime.datetime.strptime(datetime_str, self.DATETIME_FORMAT)
@@ -112,11 +125,11 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
                 )
             }
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
-        if last_record:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        if most_recent_record:
             substream_id = str(stream_slice[self.stream_slice_field])
             current_state = self._state.get(substream_id, {}).get(self.cursor_field)
-            last_state = last_record[self.cursor_field]
+            last_state = most_recent_record[self.cursor_field]
             max_dt = self._max_dt_str(last_state, current_state)
             self._state[substream_id] = {self.cursor_field: max_dt}
             return
