@@ -6,11 +6,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  dockerImageTag: 0.3.25
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-oracle
   githubIssueLabel: source-oracle
   icon: oracle.svg
-  license: MIT
+  license: ELv2
   name: Oracle DB
   registries:
     cloud:
