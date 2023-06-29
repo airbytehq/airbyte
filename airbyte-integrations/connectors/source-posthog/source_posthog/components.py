@@ -84,11 +84,11 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
     def set_initial_state(self, stream_state: StreamState) -> None:
         self._cursor = stream_state
 
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         project_id = str(stream_slice.get("project_id", ""))
-        if project_id and last_record:
+        if project_id and most_recent_record:
             current_cursor_value = self._cursor.get(project_id, {}).get("timestamp", "")
-            new_cursor_value = last_record.get("timestamp", "")
+            new_cursor_value = most_recent_record.get("timestamp", "")
 
             self._cursor[project_id] = {"timestamp": max(current_cursor_value, new_cursor_value)}
 
