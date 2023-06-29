@@ -5,7 +5,6 @@
 import json
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -72,7 +71,8 @@ class SimpleRetriever(Retriever, HttpStream):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
-        self._last_records = None
+        self._records_from_last_response = None
+        self._latest_record = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -166,6 +166,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -359,7 +360,9 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._records_from_last_response = records
+        if records:
+            self._latest_record = records[-1]
         return records
 
     @property
@@ -380,7 +383,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self.paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._records_from_last_response)
 
     def read_records(
         self,
@@ -409,23 +412,14 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        records_generator = self._read_pages(
+        yield from self._read_pages(
             self.parse_records,
             stream_slice,
             slice_state,
         )
-        cursor_updated = False
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=record)
-                cursor_updated = True
-            yield record
-        if self.cursor and not cursor_updated:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=last_record)
-            yield from []
+        if self.cursor:
+            self.cursor.close_slice(stream_slice, self._latest_record)
+        return
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -447,7 +441,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
+            self.cursor.set_initial_state(value)
 
     def parse_records(
         self,
@@ -496,22 +490,14 @@ def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> A
         "url": request.url,
         "http_method": request.method,
         "headers": dict(request.headers),
-        "body": _body_binary_string_to_dict(request.body),
+        "body": _normalize_body_string(request.body),
     }
     log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
 
-def _body_binary_string_to_dict(body_str: str) -> Optional[Mapping[str, str]]:
-    if body_str:
-        if isinstance(body_str, (bytes, bytearray)):
-            body_str = body_str.decode()
-        try:
-            return json.loads(body_str)
-        except JSONDecodeError:
-            return {k: v for k, v in [s.split("=") for s in body_str.split("&")]}
-    else:
-        return None
+def _normalize_body_string(body_str: Optional[Union[str, bytes]]) -> Optional[str]:
+    return body_str.decode() if isinstance(body_str, (bytes, bytearray)) else body_str
 
 
 def _response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:

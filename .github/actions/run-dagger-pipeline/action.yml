@@ -26,7 +26,7 @@ inputs:
   report_bucket_name:
     description: "Bucket name for CI reports"
     required: false
-    default: "airbyte-ci-reports"
+    default: "airbyte-ci-reports-multi"
   gcp_gsm_credentials:
     description: "GCP credentials for GCP Secret Manager"
     required: false
