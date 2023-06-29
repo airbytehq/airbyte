@@ -713,6 +713,5 @@ def test_given_no_cursor_value_for_first_than_second_then_return_false():
     assert not cursor.is_greater_than_or_equal(Record({}, {}), Record({"cursor_field": "2021-01-01"}, {}))
 
 
-
 if __name__ == "__main__":
     unittest.main()
