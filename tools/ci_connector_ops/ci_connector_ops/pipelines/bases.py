@@ -450,7 +450,7 @@ class Report:
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
@@ -465,8 +465,8 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time_seconds = round((step_result.created_at - step_result.step.started_at).total_seconds())
-                step_results_table.add_row(step, result, f"{run_time_seconds}s")
+                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]
         if self.failed_steps:
@@ -605,7 +605,7 @@ class ConnectorReport(Report):
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
