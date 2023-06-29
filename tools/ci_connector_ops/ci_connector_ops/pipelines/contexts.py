@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.actions import secrets
 from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
 from github import PullRequest
@@ -473,6 +473,7 @@ class PublishConnectorContext(ConnectorContext):
         git_branch: bool,
         git_revision: bool,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
@@ -499,6 +500,7 @@ class PublishConnectorContext(ConnectorContext):
             git_branch=git_branch,
             git_revision=git_revision,
             gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
@@ -551,7 +553,7 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
-            message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
+            message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message
