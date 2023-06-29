@@ -29,43 +29,21 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         ignored_fields:
-          daily_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
-          weekly_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
-          four_weekly_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
           devices:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamic field"
           locations:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamic field"
           pages:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: screenPageViews
               bypass_reason: "dynamically created field"
             - name: bounceRate
               bypass_reason: "dynamically created field"
           website_overview:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamically created field"
-          cohort_report:
-            - name: uuid
-              bypass_reason: "dynamically created field"
           pivot_report:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: sessions
               bypass_reason: "volatile data"
   full_refresh:
@@ -73,47 +51,22 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          daily_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
-          weekly_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
-          four_weekly_active_users:
-            - name: uuid
-              bypass_reason: "dynamically created field"
           devices:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamic field"
           locations:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamic field"
-          pages:
-            - name: uuid
-              bypass_reason: "dynamically created field"
           traffic_sources:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamically created field"
           website_overview:
-            - name: uuid
-              bypass_reason: "dynamically created field"
             - name: averageSessionDuration
-              bypass_reason: "dynamically created field"
-          cohort_report:
-            - name: uuid
-              bypass_reason: "dynamically created field"
-          pivot_report:
-            - name: uuid
               bypass_reason: "dynamically created field"
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        threshold_days: 2

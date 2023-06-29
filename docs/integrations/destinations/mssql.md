@@ -3,7 +3,7 @@
 ## Features
 
 | Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
-|:------------------------------|:---------------------|:---------------------------------------------------------------------------------------------|
+| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
 | Full Refresh Sync             | Yes                  |                                                                                              |
 | Incremental - Append Sync     | Yes                  |                                                                                              |
 | Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
@@ -13,21 +13,21 @@
 
 Each stream will be output into its own table in SQL Server. Each table will contain 3 columns:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in SQL Server is `DATETIMEOFFSET(7)`.
-* `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `NVARCHAR(MAX)`.
+- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in SQL Server is `DATETIMEOFFSET(7)`.
+- `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `NVARCHAR(MAX)`.
 
 #### Microsoft SQL Server specifics or why NVARCHAR type is used here:
 
-* NVARCHAR is Unicode - 2 bytes per character, therefore max. of 1 billion characters; will handle East Asian, Arabic, Hebrew, Cyrillic etc. characters just fine.
-* VARCHAR is non-Unicode - 1 byte per character, max. capacity is 2 billion characters, but limited to the character set you're SQL Server is using, basically - no support for those languages mentioned before
+- NVARCHAR is Unicode - 2 bytes per character, therefore max. of 1 billion characters; will handle East Asian, Arabic, Hebrew, Cyrillic etc. characters just fine.
+- VARCHAR is non-Unicode - 1 byte per character, max. capacity is 2 billion characters, but limited to the character set you're SQL Server is using, basically - no support for those languages mentioned before
 
 ## Getting Started \(Airbyte Cloud\)
 
 Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
 | Feature                       | Supported?\(Yes/No\) | Notes |
-|:------------------------------|:---------------------|:------|
+| :---------------------------- | :------------------- | :---- |
 | Full Refresh Sync             | Yes                  |       |
 | Incremental - Append Sync     | Yes                  |       |
 | Incremental - Deduped History | Yes                  |       |
@@ -47,7 +47,7 @@ To sync **with** normalization you'll need to use MS SQL Server of the following
 
 ### Setup guide
 
-* MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
+- MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
 
 #### Network Access
 
@@ -70,19 +70,19 @@ Airbyte supports a SSL-encrypted connection to the database. If you want to use 
 
 You should now have all the requirements needed to configure SQL Server as a destination in the UI. You'll need the following information to configure the MSSQL destination:
 
-* **Host**
-* **Port**
-* **Username**
-* **Password**
-* **Schema**
-* **Database**
-  * This database needs to exist within the schema provided.
-* **SSL Method**:
-  * The SSL configuration supports three modes: Unencrypted, Encrypted \(trust server certificate\), and Encrypted \(verify certificate\).
-    * **Unencrypted**: Do not use SSL encryption on the database connection
-    * **Encrypted \(trust server certificate\)**: Use SSL encryption without verifying the server's certificate.  This is useful for self-signed certificates in testing scenarios, but should not be used in production.
-    * **Encrypted \(verify certificate\)**: Use the server's SSL certificate, after standard certificate verification.
-  * **Host Name In Certificate** \(optional\): When using certificate verification, this property can be set to specify an expected name for added security.  If this value is present, and the server's certificate's host name does not match it, certificate verification will fail.
+- **Host**
+- **Port**
+- **Username**
+- **Password**
+- **Schema**
+- **Database**
+  - This database needs to exist within the schema provided.
+- **SSL Method**:
+  - The SSL configuration supports three modes: Unencrypted, Encrypted \(trust server certificate\), and Encrypted \(verify certificate\).
+    - **Unencrypted**: Do not use SSL encryption on the database connection
+    - **Encrypted \(trust server certificate\)**: Use SSL encryption without verifying the server's certificate. This is useful for self-signed certificates in testing scenarios, but should not be used in production.
+    - **Encrypted \(verify certificate\)**: Use the server's SSL certificate, after standard certificate verification.
+  - **Host Name In Certificate** \(optional\): When using certificate verification, this property can be set to specify an expected name for added security. If this value is present, and the server's certificate's host name does not match it, certificate verification will fail.
 
 ## Connection via SSH Tunnel
 
@@ -115,7 +115,8 @@ Using this feature requires additional configuration, when creating the source. 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 0.1.25  | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                   |
 | 0.1.24  | 2023-06-05 | [\#27034](https://github.com/airbytehq/airbyte/pull/27034) | Internal code change for future development (install normalization packages inside connector)       |
 | 0.1.23  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
 | 0.1.22  | 2022-10-21 | [\#18275](https://github.com/airbytehq/airbyte/pull/18275) | Upgrade commons-text for CVE 2022-42889                                                             |
@@ -142,7 +143,7 @@ Using this feature requires additional configuration, when creating the source. 
 ### Changelog (Strict Encrypt)
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 0.1.24  | 2023-06-05 | [\#27034](https://github.com/airbytehq/airbyte/pull/27034) | Internal code change for future development (install normalization packages inside connector)       |
 | 0.1.23  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
 | 0.1.22  | 2022-10-21 | [\#18275](https://github.com/airbytehq/airbyte/pull/18275) | Upgrade commons-text for CVE 2022-42889                                                             |

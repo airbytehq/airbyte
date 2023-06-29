@@ -1,9 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_customer": {
       "type": ["null", "string"]
@@ -18,28 +18,28 @@
       "type": ["null", "string"]
     },
     "id_country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_state": {
       "type": ["null", "string"]
     },
     "alias": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "company": {
       "type": ["null", "string"]
     },
     "lastname": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "firstname": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "vat_number": {
       "type": ["null", "string"]
     },
     "address1": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "address2": {
       "type": ["null", "string"]
@@ -48,7 +48,7 @@
       "type": ["null", "string"]
     },
     "city": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "other": {
       "type": ["null", "string"]
@@ -63,14 +63,14 @@
       "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

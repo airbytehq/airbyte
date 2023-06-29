@@ -1,0 +1,637 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "object": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "amount_shipping": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "created": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customer": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customer_balance_transaction": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "discount_amount": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "discount_amounts": {
+      "type": [
+        "null",
+        "array"
+      ]
+    },
+    "invoice": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lines": {
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "data": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "object": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "amount": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "amount_excluding_tax": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "description": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "discount_amount": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "discount_amounts": {
+                "type": [
+                  "null",
+                  "array"
+                ],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "amount": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "discount": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              },
+              "invoice_line_item": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "livemode": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "quantity": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "tax_amounts": {
+                "type": [
+                  "null",
+                  "array"
+                ],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "amount": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "inclusive": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "tax_rate": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "taxability_reason": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "taxable_amount": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    }
+                  }
+                }
+              },
+              "tax_rates": {
+                "type": [
+                  "null",
+                  "array"
+                ],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "object": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "active": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "country": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "created": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "description": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "display_name": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "effective_percentage": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "inclusive": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "jurisdiction": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "livemode": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "metadata": {
+                      "type": [
+                        "null",
+                        "object"
+                      ]
+                    },
+                    "percentage": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "state": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "tax_type": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "unit_amount": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "unit_amount_decimal": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "unit_amount_excluding_tax": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "has_more": {
+        "type": [
+          "null",
+          "boolean"
+        ]
+      },
+      "url": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "livemode": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "memo": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metadata": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "number": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "out_of_band_amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "pdf": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "reason": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "refund": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "shipping_cost": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_subtotal": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "amount_tax": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "amount_total": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "shipping_rate": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "taxes": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "rate": {
+                "type": [
+                  "null",
+                  "object"
+                ],
+                "properties": {
+                  "id": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "object": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "active": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "country": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "created": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "description": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "display_name": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "effective_percentage": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "inclusive": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "jurisdiction": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "livemode": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "metadata": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "percentage": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "state": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "tax_type": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              },
+              "taxability_reason": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "taxable_amount": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "subtotal": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "subtotal_excluding_tax": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "tax_amounts": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "inclusive": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "tax_rate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taxability_reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taxable_amount": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        }
+      }
+    },
+    "total": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "total_excluding_tax": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "voided_at": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  }
+}

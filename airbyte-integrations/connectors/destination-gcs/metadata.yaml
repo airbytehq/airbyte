@@ -2,11 +2,11 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/destination-gcs
   githubIssueLabel: destination-gcs
   icon: googlecloudstorage.svg
-  license: MIT
+  license: ELv2
   name: Google Cloud Storage (GCS)
   registries:
     cloud:

@@ -66,7 +66,7 @@ def config_gen(config):
 
 
 @pytest.mark.parametrize(
-    "config_values, status, message",
+    "config_values, is_successful, message",
     [
         ({}, Status.SUCCEEDED, None),
         ({"custom_reports": ...}, Status.SUCCEEDED, None),
@@ -95,7 +95,7 @@ def config_gen(config):
          Status.FAILED, '"The custom report pivot_report entered contains invalid pivots: {} is not of type \'null\', \'array\'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."'),
     ],
 )
-def test_check(requests_mock, config_gen, config_values, status, message):
+def test_check(requests_mock, config_gen, config_values, is_successful, message):
     requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token",
                                json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
 
@@ -114,11 +114,11 @@ def test_check(requests_mock, config_gen, config_values, status, message):
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
-    assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=status, message=message)
-
-    with pytest.raises(AirbyteTracedException) as e:
-        source.check(logger, config_gen(property_id="UA-11111111"))
-    assert e.value.failure_type == FailureType.config_error
+    assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
+    if not is_successful:
+        with pytest.raises(AirbyteTracedException) as e:
+            source.check(logger, config_gen(property_id="UA-11111111"))
+        assert e.value.failure_type == FailureType.config_error
 
 
 def test_streams(mocker, patch_base_class):
