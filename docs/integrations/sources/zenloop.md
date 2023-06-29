@@ -71,6 +71,7 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------|
+| 0.1.9   | 2023-06-28 | [27761](https://github.com/airbytehq/airbyte/pull/27761) | Update following state breaking changes                 |
 | 0.1.8   | 2023-06-22 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | Improving error message on state discrepancy            |
 | 0.1.7   | 2023-06-22 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | State per partition (breaking change - require reset)   |
 | 0.1.6   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                 |

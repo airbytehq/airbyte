@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
+## 0.44.0
+Support data feed like incremental syncs
+
 ## 0.43.3
 Fix return type of RecordFilter: changed from generator to list
 

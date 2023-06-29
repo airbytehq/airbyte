@@ -7,6 +7,8 @@ from typing import Iterable
 
 from airbyte_cdk.models import AirbyteMessage, Type
 
+_SUPPORTED_MESSAGE_TYPES = {Type.CONTROL, Type.LOG}
+
 
 class MessageRepository(ABC):
     @abstractmethod
@@ -27,8 +29,8 @@ class InMemoryMessageRepository(MessageRepository):
         :param message: As of today, only AirbyteControlMessages are supported given that supporting other types of message will need more
           work and therefore this work has been postponed
         """
-        if message.type != Type.CONTROL:
-            raise ValueError("As of today, only AirbyteControlMessages are supported as part of the InMemoryMessageRepository")
+        if message.type not in _SUPPORTED_MESSAGE_TYPES:
+            raise ValueError(f"As of today, only {_SUPPORTED_MESSAGE_TYPES} are supported as part of the InMemoryMessageRepository")
         self._message_queue.append(message)
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
