@@ -8,7 +8,7 @@ import json
 import logging
 import time
 import datetime
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from typing import Any, Iterable, List, Mapping, Optional, Set, Dict
 
 import gevent
 import pendulum
@@ -129,19 +129,35 @@ class AdSets(FBMarketingIncrementalStream):
                 job.value.clear()
 
 
+def generate_facebook_stream_log(log_dict: Dict, previous_unix_time = None):
+    log = {
+        "source": "facebook-marketing-custom",
+        "time": str(datetime.datetime.now()),
+        "unix_time": time.time(),
+        "previous_time_diff_seconds": time.time() - previous_unix_time if previous_unix_time else None
+    }
+    log.update(log_dict)
+    return json.dumps(log)
+
+
 class Campaigns(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group"""
 
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(Campaigns.get_campaigns, account=account, params=params) for account in self._api.accounts]
+        previous_now = time.time()
+        count = 0
+        jobs = [gevent.spawn(account.get_campaigns, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 if job.exception:
                     raise job.exception
-                yield from job.value
+                for value in job.value:
+                    count += 1
+                    yield value
                 job.value.clear()
+            logger.info(generate_facebook_stream_log({"stream": "campaign", "count": count}, previous_now))
 
     @staticmethod
     def generate_log(account_id, previous_unix_time=None):
