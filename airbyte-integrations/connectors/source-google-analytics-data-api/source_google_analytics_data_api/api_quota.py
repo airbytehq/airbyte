@@ -11,6 +11,7 @@ import requests
 
 from .utils import API_LIMIT_PER_HOUR
 
+
 class GoogleAnalyticsApiQuotaBase:
     # Airbyte Logger
     logger = logging.getLogger("airbyte")
@@ -41,7 +42,7 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
-            "error_message": API_LIMIT_PER_HOUR
+            "error_message": API_LIMIT_PER_HOUR,
         },
         "potentiallyThresholdedRequestsPerHour": {
             "error_pattern": "Exhausted potentially thresholded requests quota.",
@@ -49,7 +50,7 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
-            "error_message": API_LIMIT_PER_HOUR
+            "error_message": API_LIMIT_PER_HOUR,
         },
         # TODO: The next scenarios are commented out for now.
         # When we face with one of these at least 1 time,

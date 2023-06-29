@@ -19,7 +19,7 @@ class Bidding(CatalogModel):
 
 
 class ProductCampaign(CatalogModel):
-    portfolioId: Decimal
+    portfolioId: int
     campaignId: Decimal
     name: str
     tags: Dict[str, str]
