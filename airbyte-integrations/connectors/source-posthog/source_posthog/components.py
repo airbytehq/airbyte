@@ -86,7 +86,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
 
     def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
         project_id = str(stream_slice.get("project_id", ""))
-        if project_id:
+        if project_id and last_record:
             current_cursor_value = self._cursor.get(project_id, {}).get("timestamp", "")
             new_cursor_value = last_record.get("timestamp", "")
 
@@ -134,3 +134,16 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
         implementation is irrelevant for posthog
         """
         return True
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        """
+        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """
+        first_cursor_value = first.get("timestamp")
+        second_cursor_value = second.get("timestamp")
+        if first_cursor_value and second_cursor_value:
+            return first_cursor_value >= second_cursor_value
+        elif first_cursor_value:
+            return True
+        else:
+            return False
