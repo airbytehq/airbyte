@@ -1,0 +1,35 @@
+{
+    "properties": {
+        "UrlCustomParameters": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "Parameters": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "items": null,
+                    "properties": {
+                        "CustomParameter": {
+                            "type": ["array", "null"],
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "Key": {
+                                        "type": "string"
+                                    },
+                                    "Value": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

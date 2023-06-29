@@ -2,6 +2,18 @@
   "properties": {
     "Id": {
       "type": ["null", "integer"]
+    },
+    "BiddingScheme": {
+      "properties": {
+        "MaxCpc": {
+          "properties": {
+            "Amount": {
+              "type": ["null", "number", "string"],
+              "format": "number"
+            }
+          }
+        }
+      }
     }
   }
 }
