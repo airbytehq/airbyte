@@ -169,7 +169,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_ids: List[str], access_token: str, parallelism: int):
+    def __init__(self, account_ids: List[str], access_token: str, parallelism: int=1):
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         adapter = requests.adapters.HTTPAdapter(pool_maxsize=parallelism, pool_block=True)
