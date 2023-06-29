@@ -30,6 +30,7 @@ class GradleTask(Step, ABC):
     LINES_TO_REMOVE_FROM_GRADLE_FILE = [
         # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
         "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
+        "id 'airbyte-connector-acceptance-test'",
     ]
 
     @property
