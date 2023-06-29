@@ -2,14 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import argparse
 import importlib
+import ipaddress
 import logging
 import os.path
+import socket
 import sys
 import tempfile
+from functools import wraps
 from typing import Any, Iterable, List, Mapping
+from urllib.parse import urlparse
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -21,13 +24,24 @@ from airbyte_cdk.sources.source import TCatalog, TState
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from requests import Session
 
 logger = init_logger("airbyte")
+
+VALID_URL_SCHEMES = ["https"]
+CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
+
+        # DEPLOYMENT_MODE is read when instantiating the entrypoint because it is the common path shared by syncs and connector
+        # builder test requests
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE:
+            _init_internal_request_filter()
+
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
@@ -77,27 +91,32 @@ class AirbyteEntrypoint(object):
         else:
             self.logger.setLevel(logging.INFO)
 
-        # todo: add try catch for exceptions with different exit codes
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
-        with tempfile.TemporaryDirectory() as temp_dir:
-            if cmd == "spec":
-                message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
-                yield message.json(exclude_unset=True)
-            else:
-                raw_config = self.source.read_config(parsed_args.config)
-                config = self.source.configure(raw_config, temp_dir)
-
-                if cmd == "check":
-                    yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
-                elif cmd == "discover":
-                    yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.discover(source_spec, config))
-                elif cmd == "read":
-                    config_catalog = self.source.read_catalog(parsed_args.catalog)
-                    state = self.source.read_state(parsed_args.state)
-
-                    yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.read(source_spec, config, config_catalog, state))
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                if cmd == "spec":
+                    message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
+                    yield from [
+                        self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)
+                    ]
+                    yield self.airbyte_message_to_string(message)
                 else:
-                    raise Exception("Unexpected command " + cmd)
+                    raw_config = self.source.read_config(parsed_args.config)
+                    config = self.source.configure(raw_config, temp_dir)
+
+                    if cmd == "check":
+                        yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
+                    elif cmd == "discover":
+                        yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.discover(source_spec, config))
+                    elif cmd == "read":
+                        config_catalog = self.source.read_catalog(parsed_args.catalog)
+                        state = self.source.read_state(parsed_args.state)
+
+                        yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.read(source_spec, config, config_catalog, state))
+                    else:
+                        raise Exception("Unexpected command " + cmd)
+        finally:
+            yield from [self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)]
 
     def check(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
@@ -106,6 +125,7 @@ class AirbyteEntrypoint(object):
         except AirbyteTracedException as traced_exc:
             connection_status = traced_exc.as_connection_status_message()
             if connection_status:
+                yield from self._emit_queued_messages(self.source)
                 yield connection_status
                 return
 
@@ -115,6 +135,7 @@ class AirbyteEntrypoint(object):
         else:
             self.logger.error("Check failed")
 
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def discover(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
@@ -122,6 +143,8 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
         catalog = self.source.discover(self.logger, config)
+
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: TCatalog, state: TState) -> Iterable[AirbyteMessage]:
@@ -130,6 +153,7 @@ class AirbyteEntrypoint(object):
             self.validate_connection(source_spec, config)
 
         yield from self.source.read(self.logger, config, catalog, state)
+        yield from self._emit_queued_messages(self.source)
 
     @staticmethod
     def validate_connection(source_spec: ConnectorSpecification, config: Mapping[str, Any]) -> None:
@@ -149,12 +173,68 @@ class AirbyteEntrypoint(object):
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
         return airbyte_message.json(exclude_unset=True)
 
+    def _emit_queued_messages(self, source) -> Iterable[AirbyteMessage]:
+        if hasattr(source, "message_repository") and source.message_repository:
+            yield from source.message_repository.consume_queue()
+        return
+
 
 def launch(source: Source, args: List[str]):
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
         print(message)
+
+
+def _init_internal_request_filter():
+    """
+    Wraps the Python requests library to prevent sending requests to internal URL endpoints.
+    """
+    wrapped_fn = Session.send
+
+    @wraps(wrapped_fn)
+    def filtered_send(self, request, **kwargs):
+        parsed_url = urlparse(request.url)
+
+        if parsed_url.scheme not in VALID_URL_SCHEMES:
+            raise ValueError(
+                "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
+                + f"protocol {parsed_url.scheme}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
+            )
+
+        if not parsed_url.hostname:
+            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+
+        try:
+            is_private = _is_private_url(parsed_url.hostname, parsed_url.port)
+            if is_private:
+                raise ValueError(
+                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
+                    + "connectors only support requesting data from public API endpoints."
+                )
+        except socket.gaierror:
+            # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
+            # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
+            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname}' specified.")
+
+        return wrapped_fn(self, request, **kwargs)
+
+    Session.send = filtered_send
+
+
+def _is_private_url(hostname: str, port: int) -> bool:
+    """
+    Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
+    """
+    address_info_entries = socket.getaddrinfo(hostname, port)
+    for entry in address_info_entries:
+        # getaddrinfo() returns entries in the form of a 5-tuple where the IP is stored as the sockaddr. For IPv4 this
+        # is a 2-tuple and for IPv6 it is a 4-tuple, but the address is always the first value of the tuple at 0.
+        # See https://docs.python.org/3/library/socket.html#socket.getaddrinfo for more details.
+        ip_address = entry[4][0]
+        if ipaddress.ip_address(ip_address).is_private:
+            return True
+    return False
 
 
 def main():

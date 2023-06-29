@@ -20,6 +20,8 @@ from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
+    AccountAttributes,
+    AttributeDefinitions,
     AuditLogs,
     BaseSourceZendeskSupportStream,
     Brands,
@@ -27,7 +29,9 @@ from source_zendesk_support.streams import (
     GroupMemberships,
     Groups,
     Macros,
+    OrganizationMemberships,
     Organizations,
+    Posts,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -40,6 +44,7 @@ from source_zendesk_support.streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    TicketSkips,
     Users,
     UserSettingsStream,
 )
@@ -136,11 +141,11 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 19, []),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 24, []),
         (
             {"error": "Not sufficient permissions"},
             403,
-            18,
+            21,
             ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
         ),
     ],
@@ -268,6 +273,8 @@ class TestAllStreams:
             (Groups),
             (Macros),
             (Organizations),
+            (Posts),
+            (OrganizationMemberships),
             (SatisfactionRatings),
             (SlaPolicies),
             (Tags),
@@ -276,12 +283,15 @@ class TestAllStreams:
             (TicketFields),
             (TicketForms),
             (TicketMetrics),
+            (TicketSkips),
             (TicketMetricEvents),
             (Tickets),
             (Users),
             (Brands),
             (CustomRoles),
             (Schedules),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "AuditLogs",
@@ -289,6 +299,8 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
+            "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -297,12 +309,15 @@ class TestAllStreams:
             "TicketFields",
             "TicketForms",
             "TicketMetrics",
+            "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
             "Users",
             "Brands",
             "CustomRoles",
             "Schedules",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_streams(self, expected_stream_cls):
@@ -321,6 +336,8 @@ class TestAllStreams:
             (Groups, "groups"),
             (Macros, "macros"),
             (Organizations, "organizations"),
+            (Posts, "community/posts"),
+            (OrganizationMemberships, "organization_memberships"),
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
             (Tags, "tags"),
@@ -329,12 +346,15 @@ class TestAllStreams:
             (TicketFields, "ticket_fields"),
             (TicketForms, "ticket_forms"),
             (TicketMetrics, "ticket_metrics"),
+            (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets.json"),
             (Users, "incremental/users.json"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
             (Schedules, "business_hours/schedules.json"),
+            (AccountAttributes, "routing/attributes"),
+            (AttributeDefinitions, "routing/attributes/definitions"),
         ],
         ids=[
             "AuditLogs",
@@ -342,6 +362,8 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
+            "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -350,12 +372,15 @@ class TestAllStreams:
             "TicketFields",
             "TicketForms",
             "TicketMetrics",
+            "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
             "Users",
             "Brands",
             "CustomRoles",
             "Schedules",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_path(self, stream_cls, expected):
@@ -370,6 +395,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -378,6 +404,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -398,6 +425,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -406,6 +434,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -421,6 +450,7 @@ class TestSourceZendeskSupportStream:
         "stream_cls, current_state, last_record, expected",
         [
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
                 Organizations,
                 {"updated_at": "2022-03-17T16:03:07Z"},
@@ -434,6 +464,7 @@ class TestSourceZendeskSupportStream:
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "SatisfactionRatings",
@@ -450,12 +481,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
+            (Posts, None),
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -470,12 +503,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, {"start_time": 1622505600}),
+            (Posts, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -497,6 +532,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions)
         ],
         ids=[
             "Tags",
@@ -505,6 +542,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_url_base(self, stream_cls):
@@ -521,6 +560,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "Tags",
@@ -529,6 +570,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls):
@@ -548,6 +591,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "Tags",
@@ -556,6 +601,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_request_params(self, stream_cls):
@@ -573,12 +620,16 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms, {}, {"updated_at": "2023-03-17T16:03:07Z"}, {"updated_at": "2023-03-17T16:03:07Z"}),
             (TicketMetricEvents, {}, {"time": "2024-03-17T16:03:07Z"}, {"time": "2024-03-17T16:03:07Z"}),
             (TicketAudits, {}, {"created_at": "2025-03-17T16:03:07Z"}, {"created_at": "2025-03-17T16:03:07Z"}),
+            (OrganizationMemberships, {}, {"updated_at": "2025-03-17T16:03:07Z"}, {"updated_at": "2025-03-17T16:03:07Z"}),
+            (TicketSkips, {}, {"updated_at": "2025-03-17T16:03:07Z"}, {"updated_at": "2025-03-17T16:03:07Z"}),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
@@ -605,6 +656,29 @@ class TestSourceZendeskSupportCursorPaginationStream:
                 "<after_cursor>",
             ),
             (SatisfactionRatings, {}, None),
+            (
+                OrganizationMemberships,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                "<after_cursor>",
+            ),
+            (
+                    TicketSkips,
+                    {
+                        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                        "links": {
+                            "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                            "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                        },
+                    },
+                    "<after_cursor>",
+            ),
+
         ],
         ids=[
             "GroupMemberships",
@@ -613,6 +687,8 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "TicketAudits",
             "TicketMetrics",
             "SatisfactionRatings",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls, response, expected):
@@ -630,12 +706,16 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms, 1622505600),
             (TicketMetricEvents, 1622505600),
             (TicketAudits, 1622505600),
+            (OrganizationMemberships, 1622505600),
+            (TicketSkips, 1622505600),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "OrganizationMemberships",
+            "TicketSkips"
         ],
     )
     def test_check_stream_state(self, stream_cls, expected):
@@ -652,6 +732,8 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
             (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
             (TicketMetrics, {"page[size]": 100, "start_time": 1622505600}),
+            (OrganizationMemberships, {"page[size]": 100, "start_time": 1622505600}),
+            (TicketSkips, {"page[size]": 100, "start_time": 1622505600}),
         ],
         ids=[
             "GroupMemberships",
@@ -660,6 +742,8 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "TicketAudits",
             "SatisfactionRatings",
             "TicketMetrics",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
     def test_request_params(self, stream_cls, expected):

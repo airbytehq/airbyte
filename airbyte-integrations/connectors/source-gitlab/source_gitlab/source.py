@@ -3,8 +3,11 @@
 #
 
 
+import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import pendulum
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -40,12 +43,45 @@ from .streams import (
     Tags,
     Users,
 )
+from .utils import parse_url
+
+
+class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+    def __init__(self, *args, created_at_name: str = "created_at", **kwargs):
+        super().__init__(*args, **kwargs)
+        self._created_at_name = created_at_name
+
+    def get_created_at_name(self) -> str:
+        return self._created_at_name
+
+    def get_access_token(self) -> str:
+        if self.token_has_expired():
+            new_access_token, access_token_expires_in, access_token_created_at, new_refresh_token = self.refresh_access_token()
+            new_token_expiry_date = self.get_new_token_expiry_date(access_token_expires_in, access_token_created_at)
+            self.access_token = new_access_token
+            self.set_refresh_token(new_refresh_token)
+            self.set_token_expiry_date(new_token_expiry_date)
+            emit_configuration_as_airbyte_control_message(self._connector_config)
+        return self.access_token
+
+    @staticmethod
+    def get_new_token_expiry_date(access_token_expires_in: int, access_token_created_at: int) -> pendulum.DateTime:
+        return pendulum.from_timestamp(access_token_created_at + access_token_expires_in)
+
+    def refresh_access_token(self) -> Tuple[str, int, int, str]:
+        response_json = self._get_refresh_access_token_response()
+        return (
+            response_json[self.get_access_token_name()],
+            response_json[self.get_expires_in_name()],
+            response_json[self.get_created_at_name()],
+            response_json[self.get_refresh_token_name()],
+        )
 
 
 def get_authenticator(config: MutableMapping) -> AuthBase:
     if config["credentials"]["auth_type"] == "access_token":
         return TokenAuthenticator(token=config["credentials"]["access_token"])
-    return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+    return SingleUseRefreshTokenGitlabOAuth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
 
 
 class SourceGitlab(AbstractSource):
@@ -54,6 +90,11 @@ class SourceGitlab(AbstractSource):
         self.__auth_params: Mapping[str, Any] = {}
         self.__groups_stream: Optional[GitlabStream] = None
         self.__projects_stream: Optional[GitlabStream] = None
+
+    @staticmethod
+    def _ensure_default_values(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config["api_url"] = config.get("api_url") or "gitlab.com"
+        return config
 
     def _groups_stream(self, config: MutableMapping[str, Any]) -> Groups:
         if not self.__groups_stream:
@@ -95,16 +136,28 @@ class SourceGitlab(AbstractSource):
         for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
             yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
 
+    @staticmethod
+    def _is_http_allowed() -> bool:
+        return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        config = self._ensure_default_values(config)
+        is_valid, scheme, _ = parse_url(config["api_url"])
+        if not is_valid:
+            return False, "Invalid API resource locator."
+        if scheme == "http" and not self._is_http_allowed():
+            return False, "Http scheme is not allowed in this environment. Please use `https` instead."
         try:
             projects = self._projects_stream(config)
             for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):
                 next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
                 return True, None
+            return True, None  # in case there's no projects
         except Exception as error:
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
+        config = self._ensure_default_values(config)
         auth_params = self._auth_params(config)
 
         groups, projects = self._groups_stream(config), self._projects_stream(config)

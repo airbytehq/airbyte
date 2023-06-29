@@ -8,7 +8,7 @@ const destinationDocs = `${connectorsDocsRoot}/destinations`;
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
     .readdirSync(dir)
-    .filter((fileName) => !fileName.endsWith('.inapp.md'))
+    .filter((fileName) => !(fileName.endsWith('.inapp.md') || fileName.endsWith('-migrations.md')))
     .map((fileName) => fileName.replace('.md', ''))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
@@ -371,19 +371,10 @@ const operatorGuide = {
         'operator-guides/transformation-and-normalization/transformations-with-airbyte',
       ],
     },
-    {
-      type: 'category',
-      label: 'Configuring Airbyte',
-      link: {
-        type: 'doc',
-        id: 'operator-guides/configuring-airbyte',
-      },
-      items: ['operator-guides/sentry-integration'],
-    },
+    'operator-guides/configuring-airbyte',
     'operator-guides/using-custom-connectors',
     'operator-guides/scaling-airbyte',
     'operator-guides/configuring-sync-notifications',
-    'operator-guides/collecting-metrics',
   ],
 };
 
@@ -427,6 +418,11 @@ const security = {
   id: 'operator-guides/security',
 };
 
+const support = {
+  type: 'doc',
+  id: 'operator-guides/contact-support',
+};
+
 module.exports = {
   mySidebar: [
     {
@@ -459,6 +455,7 @@ module.exports = {
     understandingAirbyte,
     contributeToAirbyte,
     sectionHeader('Resources'),
+    support,
     security,
     {
       type: 'category',
@@ -467,7 +464,7 @@ module.exports = {
         {
           type: 'link',
           label: 'Roadmap',
-          href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
+          href: 'https://go.airbyte.com/roadmap',
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
@@ -499,6 +496,19 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        /*
+        {
+              type: 'category',
+              label: 'May 2023',
+              link: {
+                  type: 'doc',
+                  id: 'release_notes/may_2023',
+              },
+              items: [
+                'release_notes/upgrading_to_destinations_v2'
+              ],
+        },
+        */
         'release_notes/may_2023',
         'release_notes/april_2023',
         'release_notes/march_2023',

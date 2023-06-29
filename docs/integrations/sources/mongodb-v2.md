@@ -16,12 +16,12 @@ For each property found, connector determines its type, if all the selected valu
 
 ## Features
 
-| Feature | Supported |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | No |
-| Namespaces | No |
+| Feature                       | Supported |
+| :---------------------------- | :-------- |
+| Full Refresh Sync             | Yes       |
+| Incremental - Append Sync     | Yes       |
+| Replicate Incremental Deletes | No        |
+| Namespaces                    | No        |
 
 ### Full Refresh sync
 
@@ -35,8 +35,8 @@ Cursor should **never** be blank. In case cursor is blank - the incremental sync
 
 Only `datetime` and `number` cursor types are supported. Cursor type is determined based on the cursor field name:
 
-* `datetime` - if cursor field name contains a string from: `time`, `date`, `_at`, `timestamp`, `ts`
-* `number` - otherwise
+- `datetime` - if cursor field name contains a string from: `time`, `date`, `_at`, `timestamp`, `ts`
+- `number` - otherwise
 
 ## Getting started
 
@@ -82,42 +82,43 @@ It is recommended to use encrypted connection. Connection with TLS/SSL security 
 
 ### Сonfiguration Parameters
 
-* Database: database name
-* Authentication Source: specifies the database that the supplied credentials should be validated against. Defaults to `admin`.
-* User: username to use when connecting
-* Password: used to authenticate the user
-* **Standalone MongoDb instance**
-  * Host: URL of the database
-  * Port: Port to use for connecting to the database
-  * TLS: indicates whether to create encrypted connection
-* **Replica Set**
-  * Server addresses: the members of a replica set
-  * Replica Set: A replica set name
-* **MongoDb Atlas Cluster**
-  * Cluster URL: URL of a cluster to connect to
+- Database: database name
+- Authentication Source: specifies the database that the supplied credentials should be validated against. Defaults to `admin`.
+- User: username to use when connecting
+- Password: used to authenticate the user
+- **Standalone MongoDb instance**
+  - Host: URL of the database
+  - Port: Port to use for connecting to the database
+  - TLS: indicates whether to create encrypted connection
+- **Replica Set**
+  - Server addresses: the members of a replica set
+  - Replica Set: A replica set name
+- **MongoDb Atlas Cluster**
+  - Cluster URL: URL of a cluster to connect to
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                   |
-|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------------|
-| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614) | Increased discover performance                             |
-| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590) | Add ability to enforce SSL in MongoDB connector and check logic _                                         |
-| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401) | Fixed bug with empty strings in fields with __aibyte_transform_                                           |
+| Version | Date       | Pull Request                                             | Subject                                                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                      |
+| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614) | Increased discover performance                                                                            |
+| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590) | Add ability to enforce SSL in MongoDB connector and check logic                                           |
+| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401) | Fixed bug with empty strings in fields with _aibyte_transform_                                            |
 | 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.1.15  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                                    |
 | 0.1.14  | 2022-05-05 | [12428](https://github.com/airbytehq/airbyte/pull/12428) | JsonSchema: Add properties to fields with type 'object'                                                   |
 | 0.1.13  | 2022-02-21 | [10276](https://github.com/airbytehq/airbyte/pull/10276) | Create a custom codec registry to handle DBRef MongoDB objects                                            |
 | 0.1.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
-| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238) | Return only those collections for which the user has privileges                                           |
-| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202) | Update connector fields title/description                                                                 |
-| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491) | Configure 10000 limit doc reading during Discovery step                                                   |
-| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306) | Added milliseconds for date format for cursor                                                             |
-| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161) | Updated Performance and updated cursor for timestamp type                                                 |
-| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046) | Added milliseconds to convert timestamp to datetime format                                                |
-| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982) | Updated Performance                                                                                       |
-| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160) | Fixed nested document parsing                                                                             |
-| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860) | Added filter to avoid MongoDb system collections                                                          |
-| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364) | Source MongoDb: added support via TLS/SSL                                                                 |
-| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530) | New source: MongoDb ported to java                                                                        |
+| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238)   | Return only those collections for which the user has privileges                                           |
+| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202)   | Update connector fields title/description                                                                 |
+| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491)   | Configure 10000 limit doc reading during Discovery step                                                   |
+| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306)   | Added milliseconds for date format for cursor                                                             |
+| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161)   | Updated Performance and updated cursor for timestamp type                                                 |
+| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046)   | Added milliseconds to convert timestamp to datetime format                                                |
+| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982)   | Updated Performance                                                                                       |
+| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160)   | Fixed nested document parsing                                                                             |
+| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)   | Added filter to avoid MongoDb system collections                                                          |
+| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)   | Source MongoDb: added support via TLS/SSL                                                                 |
+| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)   | New source: MongoDb ported to java                                                                        |
