@@ -3,7 +3,7 @@
 ## Features
 
 | Feature                       | Supported | Notes              |
-|:------------------------------|:----------|:-------------------|
+| :---------------------------- | :-------- | :----------------- |
 | Full Refresh Sync             | Yes       |                    |
 | Incremental Sync - Append     | Yes       |                    |
 | Replicate Incremental Deletes | Yes       |                    |
@@ -20,7 +20,6 @@ You may run into an issue where the connector provides wrong values for some dat
 
 Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check
 [this ticket](https://github.com/airbytehq/airbyte/issues/14411)
-
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -50,40 +49,40 @@ _Coming soon: suggestions on how to create this user._
 
 We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017) to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on cdc-enabled tables.
 
-Some extra setup requiring at least _db\_owner_ permissions on the database\(s\) you intend to sync from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
+Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
 Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte approaches CDC.
 
 ### Should I use CDC for MSSQL?
 
-* If you need a record of deletions and can accept the limitations posted below, CDC is the way to go!
-* If your data set is small and/or you just want a snapshot of your table in the destination, consider using Full Refresh replication for your table instead of CDC.
-* If the limitations below prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
-* If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
+- If you need a record of deletions and can accept the limitations posted below, CDC is the way to go!
+- If your data set is small and/or you just want a snapshot of your table in the destination, consider using Full Refresh replication for your table instead of CDC.
+- If the limitations below prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
+- If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
 ### CDC Config
 
 | Parameter                |                     Type                     |      Default       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|:-------------------------|:--------------------------------------------:|:------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :----------------------- | :------------------------------------------: | :----------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Data to Sync             | Enum: `Existing and New`, `New Changes Only` | `Existing and New` | What data should be synced under the CDC. `Existing and New` will read existing data as a snapshot, and sync new changes through CDC. `New Changes Only` will skip the initial snapshot, and only sync new changes through CDC. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode) for details. Under the hood, this parameter sets the `snapshot.mode` in Debezium. |
 | Snapshot Isolation Level |      Enum: `Snapshot`, `Read Committed`      |     `Snapshot`     | Mode to control which transaction isolation level is used and how long the connector locks tables that are designated for capture. If you don't know which one to choose, just use the default one. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode) for details. Under the hood, this parameter sets the `snapshot.isolation.mode` in Debezium.         |
 
 #### CDC Limitations
 
-* Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
-* There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
-* CDC is only available for SQL Server 2016 Service Pack 1 \(SP1\) and later.
-* _db\_owner_ \(or higher\) permissions are required to perform the [neccessary setup](mssql.md#setting-up-cdc-for-mssql) for CDC.
-* If you set `Initial Snapshot Isolation Level` to `Snapshot`, you must enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database\(s\) you want to sync. This is used for retrieving an initial snapshot without locking tables.
-* For SQL Server Always On read-only replica, only `Snapshot` initial snapshot isolation level is supported.
-* On Linux, CDC is not supported on versions earlier than SQL Server 2017 CU18 \(SQL Server 2019 is supported\).
-* Change data capture cannot be enabled on tables with a clustered columnstore index. \(It can be enabled on tables with a _non-clustered_ columnstore index\).
-* The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot enable CDC on the SQL Server master database.
-* Using variables with partition switching on databases or tables with change data capture \(CDC\) is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement
-* Our implementation has not been tested with managed instances, such as Azure SQL Database \(we welcome any feedback from users who try this!\)
-  * If you do want to try this, CDC can only be enabled on Azure SQL databases tiers above Standard 3 \(S3+\). Basic, S0, S1 and S2 tiers are not supported for CDC.
-* Our CDC implementation uses at least once delivery for all change records.
-* Read more on CDC limitations in the [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
+- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
+- CDC is only available for SQL Server 2016 Service Pack 1 \(SP1\) and later.
+- _db_owner_ \(or higher\) permissions are required to perform the [neccessary setup](mssql.md#setting-up-cdc-for-mssql) for CDC.
+- If you set `Initial Snapshot Isolation Level` to `Snapshot`, you must enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database\(s\) you want to sync. This is used for retrieving an initial snapshot without locking tables.
+- For SQL Server Always On read-only replica, only `Snapshot` initial snapshot isolation level is supported.
+- On Linux, CDC is not supported on versions earlier than SQL Server 2017 CU18 \(SQL Server 2019 is supported\).
+- Change data capture cannot be enabled on tables with a clustered columnstore index. \(It can be enabled on tables with a _non-clustered_ columnstore index\).
+- The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot enable CDC on the SQL Server master database.
+- Using variables with partition switching on databases or tables with change data capture \(CDC\) is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement
+- Our implementation has not been tested with managed instances, such as Azure SQL Database \(we welcome any feedback from users who try this!\)
+  - If you do want to try this, CDC can only be enabled on Azure SQL databases tiers above Standard 3 \(S3+\). Basic, S0, S1 and S2 tiers are not supported for CDC.
+- Our CDC implementation uses at least once delivery for all change records.
+- Read more on CDC limitations in the [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
 ### Setting up CDC for MSSQL
 
@@ -91,7 +90,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 
 MS SQL Server provides some built-in stored procedures to enable CDC.
 
-* To enable CDC, a SQL Server administrator with the necessary privileges \(_db\_owner_ or _sysadmin_\) must first run a query to enable CDC at the database level.
+- To enable CDC, a SQL Server administrator with the necessary privileges \(_db_owner_ or _sysadmin_\) must first run a query to enable CDC at the database level.
 
   ```text
   USE {database name}
@@ -100,7 +99,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   GO
   ```
 
-* The administrator must then enable CDC for each table that you want to capture. Here's an example:
+- The administrator must then enable CDC for each table that you want to capture. Here's an example:
 
   ```text
   USE {database name}
@@ -115,18 +114,18 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   GO
   ```
 
-  * \[1\] Specifies a role which will gain `SELECT` permission on the captured columns of the source table. We suggest putting a value here so you can use this role in the next step but you can also set the value of @role\_name to `NULL` to allow only _sysadmin_ and _db\_owner_ to have access. Be sure that the credentials used to connect to the source in Airbyte align with this role so that Airbyte can access the cdc tables.
-  * \[2\] Specifies the filegroup where SQL Server places the change table. We recommend creating a separate filegroup for CDC but you can leave this parameter out to use the default filegroup.
-  * \[3\] If 0, only the support functions to query for all changes are generated. If 1, the functions that are needed to query for net changes are also generated. If supports\_net\_changes is set to 1, index\_name must be specified, or the source table must have a defined primary key.
+  - \[1\] Specifies a role which will gain `SELECT` permission on the captured columns of the source table. We suggest putting a value here so you can use this role in the next step but you can also set the value of @role*name to `NULL` to allow only \_sysadmin* and _db_owner_ to have access. Be sure that the credentials used to connect to the source in Airbyte align with this role so that Airbyte can access the cdc tables.
+  - \[2\] Specifies the filegroup where SQL Server places the change table. We recommend creating a separate filegroup for CDC but you can leave this parameter out to use the default filegroup.
+  - \[3\] If 0, only the support functions to query for all changes are generated. If 1, the functions that are needed to query for net changes are also generated. If supports_net_changes is set to 1, index_name must be specified, or the source table must have a defined primary key.
 
-* \(For more details on parameters, see the [Microsoft doc page](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-enable-table-transact-sql?view=sql-server-ver15) for this stored procedure\).
-* If you have many tables to enable CDC on and would like to avoid having to run this query one-by-one for every table, [this script](http://www.techbrothersit.com/2013/06/change-data-capture-cdc-sql-server_69.html) might help!
+- \(For more details on parameters, see the [Microsoft doc page](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-enable-table-transact-sql?view=sql-server-ver15) for this stored procedure\).
+- If you have many tables to enable CDC on and would like to avoid having to run this query one-by-one for every table, [this script](http://www.techbrothersit.com/2013/06/change-data-capture-cdc-sql-server_69.html) might help!
 
 For further detail, see the [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
 #### 2. Enable snapshot isolation
 
-* When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing simultaneous writes by other database clients. This must be enabled on the database like so:
+- When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing simultaneous writes by other database clients. This must be enabled on the database like so:
 
   ```text
   ALTER DATABASE {database name}
@@ -135,7 +134,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 
 #### 3. Create a user and grant appropriate permissions
 
-* Rather than use _sysadmin_ or _db\_owner_ credentials, we recommend creating a new user with the relevant CDC access for use with Airbyte. First let's create the login and user and add to the [db\_datareader](https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15) role:
+- Rather than use _sysadmin_ or _db_owner_ credentials, we recommend creating a new user with the relevant CDC access for use with Airbyte. First let's create the login and user and add to the [db_datareader](https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15) role:
 
   ```text
   USE {database name};
@@ -145,20 +144,20 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
   EXEC sp_addrolemember 'db_datareader', '{user name}';
   ```
 
-  * Add the user to the role specified earlier when enabling cdc on the table\(s\):
+  - Add the user to the role specified earlier when enabling cdc on the table\(s\):
 
     ```text
     EXEC sp_addrolemember '{role name}', '{user name}';
     ```
 
-  * This should be enough access, but if you run into problems, try also directly granting the user `SELECT` access on the cdc schema:
+  - This should be enough access, but if you run into problems, try also directly granting the user `SELECT` access on the cdc schema:
 
     ```text
     USE {database name};
     GRANT SELECT ON SCHEMA :: [cdc] TO {user name};
     ```
 
-  * If feasible, granting this user 'VIEW SERVER STATE' permissions will allow Airbyte to check whether or not the [SQL Server Agent](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#relationship-with-log-reader-agent) is running. This is preferred as it ensures syncs will fail if the CDC tables are not being updated by the Agent in the source database.
+  - If feasible, granting this user 'VIEW SERVER STATE' permissions will allow Airbyte to check whether or not the [SQL Server Agent](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#relationship-with-log-reader-agent) is running. This is preferred as it ensures syncs will fail if the CDC tables are not being updated by the Agent in the source database.
 
     ```text
     USE master;
@@ -167,15 +166,15 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 
 #### 4. Extend the retention period of CDC data
 
-* In SQL Server, by default, only three days of data are retained in the change tables. Unless you are running very frequent syncs, we suggest increasing this retention so that in case of a failure in sync or if the sync is paused, there is still some bandwidth to start from the last point in incremental sync.
-* These settings can be changed using the stored procedure [sys.sp\_cdc\_change\_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15) as below:
+- In SQL Server, by default, only three days of data are retained in the change tables. Unless you are running very frequent syncs, we suggest increasing this retention so that in case of a failure in sync or if the sync is paused, there is still some bandwidth to start from the last point in incremental sync.
+- These settings can be changed using the stored procedure [sys.sp_cdc_change_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15) as below:
 
   ```text
   -- we recommend 14400 minutes (10 days) as retention period
   EXEC sp_cdc_change_job @job_type='cleanup', @retention = {minutes}
   ```
 
-* After making this change, a restart of the cleanup job is required:
+- After making this change, a restart of the cleanup job is required:
 
 ```text
   EXEC sys.sp_cdc_stop_job @job_type = 'cleanup';
@@ -185,7 +184,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 
 #### 5. Ensure the SQL Server Agent is running
 
-* MSSQL uses the SQL Server Agent
+- MSSQL uses the SQL Server Agent
 
   to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs)
 
@@ -197,7 +196,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
   EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
 ```
 
-* If you see something other than 'Running.' please follow
+- If you see something other than 'Running.' please follow
 
   the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)
 
@@ -267,7 +266,7 @@ This produces the private key in pem format, and the public key remains in the s
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MSSQL Type                                              | Resulting Type | Notes |
-|:--------------------------------------------------------|:---------------|:------|
+| :------------------------------------------------------ | :------------- | :---- |
 | `bigint`                                                | number         |       |
 | `binary`                                                | string         |       |
 | `bit`                                                   | boolean        |       |
@@ -303,6 +302,7 @@ MSSQL data types are mapped to the following data types when synchronizing data.
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 ## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
+
 There is a backwards incompatible spec change between Microsoft SQL Source connector versions 0.4.17 and 0.4.18. As part of that spec change
 `replication_method` configuration parameter was changed to `object` from `string`.
 
@@ -313,6 +313,7 @@ In Microsoft SQL source connector versions 0.4.17 and older, `replication_method
 ```
 
 Starting with version 0.4.18, `replication_method` configuration parameter is saved as follows:
+
 ```
 "replication_method": {
     "method": "STANDARD"
@@ -330,7 +331,7 @@ update public.actor set configuration =jsonb_set(configuration, '{replication_me
 WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'STANDARD');
 ```
 
-If you have connections with Microsoft SQL Source using _Logicai Replication (CDC)_ method,  run this SQL:
+If you have connections with Microsoft SQL Source using _Logicai Replication (CDC)_ method, run this SQL:
 
 ```sql
 update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
@@ -340,8 +341,9 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.19  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)                                                          | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                   |
+| :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)                                                          | License Update: Elv2                                                                                                                            |
+| 1.0.19  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)                                                          | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                        |
 | 1.0.18  | 2023-06-14 | [27335](https://github.com/airbytehq/airbyte/pull/27335)                                                          | Remove noisy debug logs                                                                                                                         |
 | 1.0.17  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)                                                          | CDC : Limit queue size                                                                                                                          |
 | 1.0.16  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)                                                          | Disable index logging                                                                                                                           |
@@ -350,7 +352,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 1.0.13  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582)                                                          | CDC : refactor for performance improvement                                                                                                      |
 | 1.0.12  | 2023-04-17 | [25220](https://github.com/airbytehq/airbyte/pull/25220)                                                          | Logging changes : Log additional metadata & clean up noisy logs                                                                                 |
 | 1.0.11  | 2023-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656)                                                          | CDC minor refactor                                                                                                                              |
-| 1.0.10  | 2023-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820)                                                          | Fix data loss bug during an initial failed non-CDC incremental sync                                                                             | 
+| 1.0.10  | 2023-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820)                                                          | Fix data loss bug during an initial failed non-CDC incremental sync                                                                             |
 | 1.0.9   | 2023-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833)                                                          | Fix Debezium retry policy configuration                                                                                                         |
 | 1.0.8   | 2023-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)                                                          | Fix InterruptedException bug during Debezium shutdown                                                                                           |
 | 1.0.7   | 2023-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)                                                          | Preparing the connector for CDC checkpointing                                                                                                   |
@@ -407,7 +409,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 0.3.6   | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318)                                                            | Added option to connect to DB via SSH                                                                                                           |
 | 0.3.4   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)                                                            | Added json config validator                                                                                                                     |
 | 0.3.3   | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689)                                                            | Add CDC support                                                                                                                                 |
-| 0.3.2   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973)                                                            | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                                                                                                  |
+| 0.3.2   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973)                                                            | Add AIRBYTE_ENTRYPOINT for Kubernetes support                                                                                                   |
 | 0.3.1   | 2021-06-08 | [3893](https://github.com/airbytehq/airbyte/pull/3893)                                                            | Enable SSL connection                                                                                                                           |
 | 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990)                                                            | Support namespaces                                                                                                                              |
 | 0.2.3   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600)                                                            | Add NCHAR and NVCHAR support to DB and cursor type casting                                                                                      |
@@ -422,4 +424,3 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)                                                            | Support incremental sync                                                                                                                        |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)                                                            | Change JDBC sources to discover more than standard schemas                                                                                      |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)                                                            | Add connectors using an index YAML file                                                                                                         |
-
