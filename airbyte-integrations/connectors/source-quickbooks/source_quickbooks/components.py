@@ -84,3 +84,9 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
         implementation is irrelevant for quickbooks
         """
         return True
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        return super(CustomDatetimeBasedCursor, self).close_slice(
+            LastRecordDictProxy(first, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
+            LastRecordDictProxy(second, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
+        )
