@@ -72,7 +72,6 @@ class SimpleRetriever(Retriever, HttpStream):
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._records_from_last_response = None
-        self._latest_record = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
