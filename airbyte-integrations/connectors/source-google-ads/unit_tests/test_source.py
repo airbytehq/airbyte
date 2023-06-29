@@ -110,37 +110,35 @@ def mock_fields_meta_data():
 def test_chunk_date_range_without_end_date():
     start_date_str = "2022-01-24"
     conversion_window = 0
-    field = "date"
-    response = chunk_date_range(
-        start_date=start_date_str, conversion_window=conversion_window, field=field, end_date=None, days_of_data_storage=None, range_days=1
-    )
+    slices = list(chunk_date_range(
+        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1
+    ))
     expected_response = [
-        {"start_date": "2022-01-25", "end_date": "2022-01-26"},
-        {"start_date": "2022-01-26", "end_date": "2022-01-27"},
-        {"start_date": "2022-01-27", "end_date": "2022-01-28"},
-        {"start_date": "2022-01-28", "end_date": "2022-01-29"},
-        {"start_date": "2022-01-29", "end_date": "2022-01-30"},
-        {"start_date": "2022-01-30", "end_date": "2022-01-31"},
+        {"start_date": "2022-01-24", "end_date": "2022-01-24"},
+        {"start_date": "2022-01-25", "end_date": "2022-01-25"},
+        {"start_date": "2022-01-26", "end_date": "2022-01-26"},
+        {"start_date": "2022-01-27", "end_date": "2022-01-27"},
+        {"start_date": "2022-01-28", "end_date": "2022-01-28"},
+        {"start_date": "2022-01-29", "end_date": "2022-01-29"},
     ]
-    assert expected_response == response
+    assert expected_response == slices
 
 
 def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    field = "date"
-    response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
+    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10))
     assert [
-        {"start_date": "2021-02-19", "end_date": "2021-02-28"},
-        {"start_date": "2021-03-01", "end_date": "2021-03-10"},
-        {"start_date": "2021-03-11", "end_date": "2021-03-20"},
-        {"start_date": "2021-03-21", "end_date": "2021-03-30"},
-        {"start_date": "2021-03-31", "end_date": "2021-04-09"},
-        {"start_date": "2021-04-10", "end_date": "2021-04-19"},
-        {"start_date": "2021-04-20", "end_date": "2021-04-29"},
-        {"start_date": "2021-04-30", "end_date": "2021-05-04"},
-    ] == response
+        {"start_date": "2021-02-18", "end_date": "2021-02-27"},
+        {"start_date": "2021-02-28", "end_date": "2021-03-09"},
+        {"start_date": "2021-03-10", "end_date": "2021-03-19"},
+        {"start_date": "2021-03-20", "end_date": "2021-03-29"},
+        {"start_date": "2021-03-30", "end_date": "2021-04-08"},
+        {"start_date": "2021-04-09", "end_date": "2021-04-18"},
+        {"start_date": "2021-04-19", "end_date": "2021-04-28"},
+        {"start_date": "2021-04-29", "end_date": "2021-05-04"},
+    ] == slices
 
 
 def test_streams_count(config, mock_account_info):
@@ -528,8 +526,8 @@ def test_stream_slices(config, customers):
     )
     slices = list(stream.stream_slices())
     assert slices == [
-        {"start_date": "2020-12-19", "end_date": "2021-01-02", "customer_id": "123"},
-        {"start_date": "2021-01-03", "end_date": "2021-01-17", "customer_id": "123"},
-        {"start_date": "2021-01-18", "end_date": "2021-02-01", "customer_id": "123"},
-        {"start_date": "2021-02-02", "end_date": "2021-02-10", "customer_id": "123"},
+        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123"},
+        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123"},
+        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123"},
+        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123"},
     ]
