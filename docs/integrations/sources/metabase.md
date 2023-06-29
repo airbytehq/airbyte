@@ -40,7 +40,6 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 
 ## Supported Streams
-* [Activity](https://www.metabase.com/docs/latest/api/activity.html#get-apiactivity)
 * [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
 * [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
 * [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
@@ -71,6 +70,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream     |
 | 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0          |
 | 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.           |
 | 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
