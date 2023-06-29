@@ -6,11 +6,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 2.0.25
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-mysql
   githubIssueLabel: source-mysql
   icon: mysql.svg
-  license: MIT
+  license: ELv2
   name: MySQL
   registries:
     cloud:
