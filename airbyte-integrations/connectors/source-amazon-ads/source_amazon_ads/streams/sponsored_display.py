@@ -4,7 +4,15 @@
 
 from typing import Any, Mapping
 
-from source_amazon_ads.schemas import DisplayAdGroup, DisplayBudgetRules, DisplayCampaign, DisplayCreatives, DisplayProductAds, DisplayTargeting
+from source_amazon_ads.schemas import (
+    DisplayAdGroup,
+    DisplayBudgetRules,
+    DisplayCampaign,
+    DisplayCreatives,
+    DisplayProductAds,
+    DisplayTargeting,
+)
+from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredDisplayCampaigns(SubProfilesStream):
@@ -105,4 +113,3 @@ class SponsoredDisplayBudgetRules(SubProfilesStream):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["pageSize"] = params.pop("count")
         return params
-
