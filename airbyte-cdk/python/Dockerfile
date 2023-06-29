@@ -10,7 +10,7 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 # install airbyte-cdk
-RUN pip install --prefix=/install airbyte-cdk==0.44.0
+RUN pip install --prefix=/install airbyte-cdk==0.44.1
 
 # build a clean environment
 FROM base
@@ -32,5 +32,5 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 # needs to be the same as CDK
-LABEL io.airbyte.version=0.44.0
+LABEL io.airbyte.version=0.44.1
 LABEL io.airbyte.name=airbyte/source-declarative-manifest
