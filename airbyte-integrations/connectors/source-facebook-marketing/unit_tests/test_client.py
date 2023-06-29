@@ -183,9 +183,9 @@ class TestBackoff:
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
-            # we didn't get to the second account because the first one threw an error
-            assert [x.qs.get("limit")[0] for x in res_second_account.request_history] == []
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6", "3", "1", "1", '1', '1', '1', '1', '1', '1', '1']
+            # we did get the second account because both queries are executed in parallel
+            assert [x.qs.get("limit")[0] for x in res_second_account.request_history] == ['100', '50', '25', '12', '6', '3', '1', '1', '1', '1', '1', '1', '1', '1', '1']
 
     def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id, second_account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
@@ -210,6 +210,6 @@ class TestBackoff:
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6", "3", "1", "1", "1", "1", "1", "1", "1", "1", "1"]
             # we got the first page for both of them, but the second page triggered error in the first account so the second didn't get its chance
             assert [x.qs.get("limit")[0] for x in res_second_account.request_history] == ["100"]

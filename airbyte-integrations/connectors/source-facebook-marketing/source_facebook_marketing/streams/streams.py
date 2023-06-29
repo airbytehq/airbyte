@@ -3,7 +3,11 @@
 #
 
 import base64
+import itertools
+import json
 import logging
+import time
+import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import gevent
@@ -12,6 +16,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
@@ -72,6 +77,8 @@ class AdCreatives(FBMarketingStream):
         jobs = [gevent.spawn(account.get_ad_creatives, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -86,6 +93,8 @@ class CustomConversions(FBMarketingStream):
         jobs = [gevent.spawn(account.get_custom_conversions, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -99,6 +108,8 @@ class Ads(FBMarketingIncrementalStream):
         jobs = [gevent.spawn(account.get_ads, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -112,6 +123,8 @@ class AdSets(FBMarketingIncrementalStream):
         jobs = [gevent.spawn(account.get_ad_sets, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -122,12 +135,32 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_campaigns, params=params) for account in self._api.accounts]
+        jobs = [gevent.spawn(Campaigns.get_campaigns, account=account, params=params) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
+    @staticmethod
+    def generate_log(account_id, previous_unix_time=None):
+        log = {
+            "source": "facebook-marketing-custom",
+            "account_id": account_id,
+            "time": str(datetime.datetime.now()),
+            "unix_time": time.time(),
+            "previous_time_diff_seconds": time.time() - previous_unix_time if (previous_unix_time) else None
+        }
+        return json.dumps(log)
+
+    @staticmethod
+    def get_campaigns(account: AdAccount, params):
+        now = time.time()
+        logger.info(Campaigns.generate_log(account.get_id()))
+        campaigns = account.get_campaigns(params=params)
+        logger.info(Campaigns.generate_log(account.get_id(), now))
+        return campaigns
 
 class Activities(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-activity"""
@@ -140,6 +173,8 @@ class Activities(FBMarketingIncrementalStream):
         jobs = [gevent.spawn(account.get_activities, params=params, fields=fields) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -182,6 +217,8 @@ class Videos(FBMarketingReversedIncrementalStream):
         jobs = [gevent.spawn(account.get_ad_videos, params=params, fields=self.fields) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 
@@ -227,6 +264,8 @@ class Images(FBMarketingReversedIncrementalStream):
         jobs = [gevent.spawn(account.get_ad_images, params=params, fields=self.fields) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
                 yield from job.value
                 job.value.clear()
 

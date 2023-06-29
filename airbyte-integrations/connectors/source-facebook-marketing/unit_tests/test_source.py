@@ -58,7 +58,7 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
-        api.assert_called_once_with(account_ids=["123"], access_token="TOKEN")
+        api.assert_called_once_with(account_ids=["123"], access_token="TOKEN", parallelism=10)
         logger_mock.info.assert_called_once_with(f"Select accounts ['{api.return_value.account}']")
 
     def test_check_connection_future_date_range(self, api, config, logger_mock):
