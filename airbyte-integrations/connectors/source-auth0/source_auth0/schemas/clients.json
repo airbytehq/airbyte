@@ -79,7 +79,10 @@
       }
     },
     "allowed_logout_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["string", "null"]
+      }
     },
     "oidc_backchannel_logout": {
       "type": ["object", "null"],
@@ -94,7 +97,10 @@
       }
     },
     "grant_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["string", "null"]
+      }
     },
     "jwt_configuration": {
       "type": ["object", "null"],
@@ -116,7 +122,7 @@
     },
     "signing_keys": {
       "type": ["null", "array"],
-      "string": {
+      "items": {
         "type": ["object", "null"],
         "additionalProperties": true
       }

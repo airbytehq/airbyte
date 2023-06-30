@@ -56,7 +56,11 @@
       "type": ["string", "null"]
     },
     "multifactor": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "additionalProperties": true,
+      "items": {
+        "type": ["string", "null"]
+      }
     },
     "last_ip": {
       "type": ["string", "null"]
