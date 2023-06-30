@@ -92,6 +92,66 @@
     },
     {
       "stream": {
+        "name": "search_analytics_keyword_page_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_analytics_keyword_site_report_by_page",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_analytics_page_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_analytics_site_report_by_page",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_analytics_site_report_by_site.json",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "custom_dimensions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
