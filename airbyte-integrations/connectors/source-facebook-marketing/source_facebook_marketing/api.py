@@ -176,7 +176,6 @@ class API:
         MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
         self._account_ids = account_ids
-        self._token = access_token
         self.me = User(fbid='me')
 
     @cached_property
