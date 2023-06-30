@@ -36,6 +36,7 @@ from source_zendesk_support.streams import (
     Schedules,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
+    SourceZendeskSupportStream,
     Tags,
     TicketAudits,
     TicketComments,
@@ -262,6 +263,14 @@ def test_parse_response(requests_mock):
     # check, if we have all transformations correctly
     for entity in TicketComments.list_entities_from_event:
         assert True if entity in parsed_output else False
+
+
+def test_retry(mocker):
+    backoff_time_mock = mocker.Mock()
+    with mocker.patch.object(SourceZendeskSupportStream, "backoff_time", return_value=backoff_time_mock):
+        stream = SourceZendeskSupportStream(**STREAM_ARGS)
+        stream._retry(request=mocker.Mock(), retries=0)
+        assert not backoff_time_mock.called, "backoff_time should not have been called"
 
 
 class TestAllStreams:
@@ -494,9 +503,11 @@ class TestSourceZendeskSupportStream:
             "TicketFields",
         ],
     )
-    def test_next_page_token(self, stream_cls, expected):
+    def test_next_page_token(self, stream_cls, expected, mocker):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.next_page_token()
+        posts_response = mocker.Mock()
+        posts_response.json.return_value = {"next_page": None}
+        result = stream.next_page_token(response=posts_response)
         assert expected == result
 
     @pytest.mark.parametrize(
