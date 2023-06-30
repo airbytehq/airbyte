@@ -32,9 +32,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -71,6 +74,7 @@ public class IntegrationRunner {
   public static final int FORCED_EXIT_CODE = 2;
 
   private static final Runnable EXIT_HOOK = () -> System.exit(FORCED_EXIT_CODE);
+  private static final BlockingQueue<AirbyteMessage> queue = new LinkedBlockingQueue<>(1000);
 
   private final IntegrationCliParser cliParser;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -161,12 +165,12 @@ public class IntegrationRunner {
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
           try {
-            if (featureFlags.concurrentSourceStreamRead()) {
-              LOGGER.info("Concurrent source stream read enabled.");
-              readConcurrent(config, catalog, stateOptional);
-            } else {
+//            if (featureFlags.concurrentSourceStreamRead()) {
+//              LOGGER.info("Concurrent source stream read enabled.");
+//              readConcurrent(config, catalog, stateOptional);
+//            } else {
               readSerial(config, catalog, stateOptional);
-            }
+//            }
           } finally {
             if (source instanceof AutoCloseable) {
               ((AutoCloseable) source).close();
@@ -227,13 +231,36 @@ public class IntegrationRunner {
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
-    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
+//    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     messageIterator.forEachRemaining(recordCollector);
-    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
+//    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
   private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
+
+    final var streamsDone = new AtomicBoolean(false);
+
+    final var debugExec = Executors.newSingleThreadScheduledExecutor();
+    debugExec.scheduleAtFixedRate(() -> LOGGER.info("== Queue Info: size: {}, remainingCapacity: {}", queue.size(), queue.remainingCapacity()), 0, 1, TimeUnit.SECONDS);
+
+    // start reading from queue first
+    final var readerExec = Executors.newSingleThreadScheduledExecutor();
+    readerExec.submit(() -> {
+      while (!streamsDone.get()) {
+//        LOGGER.info("===== read from queue");
+        final AirbyteMessage msg;
+        try {
+          msg = queue.take();
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        outputRecordCollector.accept(msg);
+//        LOGGER.info("==== done reading from queue");
+      }
+      LOGGER.info("=== Finished reading from queue");
+    });
 
     try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
       /*
@@ -244,15 +271,19 @@ public class IntegrationRunner {
       final List<List<AutoCloseableIterator<AirbyteMessage>>> partitions = Lists.partition(streams.stream().toList(),
           partitionSize);
 
-      // Submit each stream partition for concurrent execution
-      partitions.forEach(partition -> {
-        streamConsumer.accept(partition);
-      });
+      // Submit each stream partition for concurrent execution. This blocks until each of these are complete.
+      // this accept needs to write to a queue.
+      partitions.forEach(streamConsumer::accept);
 
       // Check for any exceptions that were raised during the concurrent execution
       if (streamConsumer.getException().isPresent()) {
         throw streamConsumer.getException().get();
       }
+
+      streamsDone.set(true);
+      readerExec.shutdownNow();
+      debugExec.shutdownNow();
+      LOGGER.info("=== Concurrent function shutdown");
     } catch (final Exception e) {
       LOGGER.error("Unable to perform concurrent read.", e);
       throw e;
@@ -277,11 +308,27 @@ public class IntegrationRunner {
     }
   }
 
+  /**
+   * Actual block used by the ConcurrentStreamConsumer to consume from a stream.
+   *
+   * This should try to write to a queue as fast as possible.
+   * @param stream
+   */
   private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
     try {
-      final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
-          outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
-      produceMessages(stream, streamStatusTrackingRecordConsumer);
+//      final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer =
+//              StreamStatusUtils.statusTrackingRecordCollector(stream, outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
+
+      // turn this into a blocking queue
+      produceMessages(stream, msg -> {
+        try {
+//          System.out.println("==== writing to queue");
+          queue.put(msg);
+        } catch (InterruptedException e) {
+          LOGGER.info("Interrupted while writing to queue...", e);
+          throw new RuntimeException(e);
+        }
+      });
     } catch (final Exception e) {
       stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s, e));
       throw new RuntimeException(e);

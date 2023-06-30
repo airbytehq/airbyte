@@ -71,7 +71,7 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
    *        determine the appropriate number of threads to execute concurrently.
    */
   public ConcurrentStreamConsumer(final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer, final Integer requestedParallelism) {
-    this.parallelism = computeParallelism(requestedParallelism);
+    this.parallelism = computeParallelism(1);
     this.executorService = createExecutorService(parallelism);
     this.exceptions = new ArrayList<>();
     this.streamConsumer = streamConsumer;
@@ -176,14 +176,17 @@ public class ConcurrentStreamConsumer implements Consumer<Collection<AutoCloseab
    */
   private void executeStream(final AutoCloseableIterator<AirbyteMessage> stream) {
     try (stream) {
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consuming from stream {}...", s));
-      StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter);
+//      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consuming from stream {}...", s));
+//      StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter);
+
+      // shoves the message to standard out.
       streamConsumer.accept(stream);
-      StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
+
+//      StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
+//      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
     } catch (final Exception e) {
       stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s, e));
-      StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
+//      StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
       exceptions.add(e);
     }
   }
