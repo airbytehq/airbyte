@@ -10,7 +10,9 @@ This page contains the setup guide and reference information for the Google Ads 
 <!-- /env:oss -->
 
 ## Setup guide
+
 <!-- env:oss -->
+
 ### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 :::note
@@ -29,6 +31,7 @@ When you apply for a token, make sure to mention:
 - That you have full access to the server running the code (because you're self-hosting Airbyte)
 
 ### Step 2: Set up the Google Ads connector in Airbyte
+
 <!-- /env:oss -->
 <!-- env:cloud -->
 
@@ -51,6 +54,7 @@ To set up Google Ads as a source in Airbyte Cloud:
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 To set up Google Ads as a source in Airbyte Open Source:
@@ -116,21 +120,25 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+
 <!-- /env:oss -->
 
 ## Custom Query: Understanding Google Ads Query Language
-Additional streams for Google Ads can be dynamically created using custom queries. 
+
+Additional streams for Google Ads can be dynamically created using custom queries.
 
 The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v13/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
 
 Example GAQL Custom Query:
+
 ```
-SELECT 
-    campaign.name, 
-    metrics.conversions, 
-    metrics.conversions_by_conversion_date 
+SELECT
+    campaign.name,
+    metrics.conversions,
+    metrics.conversions_by_conversion_date
 FROM ad_group
 ```
+
 Note the segments.date is automatically added to the output, and does not need to be specified in the custom query. All custom reports will by synced by day.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
@@ -142,6 +150,7 @@ For an existing Google Ads source, when you are updating or removing Custom GAQL
 :::
 
 <!-- env:oss -->
+
 ## Performance considerations
 
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
@@ -151,7 +160,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `0.3.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                                                                 |
 | `0.2.24` | 2023-06-06 | [27608](https://github.com/airbytehq/airbyte/pull/27608) | Improve Google Ads exception handling                                                                                                |
 | `0.2.23` | 2023-06-06 | [26905](https://github.com/airbytehq/airbyte/pull/26905) | Replace deprecated `authSpecification` in the connector specification with `advancedAuth`                                            |
 | `0.2.22` | 2023-06-02 | [26948](https://github.com/airbytehq/airbyte/pull/26948) | Refactor error messages; add `pattern_descriptor` for fields in spec                                                                 |

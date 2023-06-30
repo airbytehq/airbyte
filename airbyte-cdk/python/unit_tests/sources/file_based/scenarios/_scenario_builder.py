@@ -2,8 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Mapping, Optional, Type
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Mapping, Optional, Type
 
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -11,6 +13,12 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, Defau
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from unit_tests.sources.file_based.helpers import DefaultTestAvailabilityStrategy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
+
+
+@dataclass
+class IncrementalScenarioConfig:
+    input_state: List[Mapping[str, Any]] = field(default_factory=list)
+    expected_output_state: Optional[Mapping[str, Any]] = None
 
 
 class TestScenario:
@@ -27,7 +35,8 @@ class TestScenario:
             parsers: Dict[str, FileTypeParser],
             stream_cls: Type[AbstractFileBasedStream],
             expected_discover_error: Optional[Type[Exception]],
-            expected_read_error: Optional[Type[Exception]]
+            expected_read_error: Optional[Type[Exception]],
+            incremental_scenario_config: Optional[IncrementalScenarioConfig]
     ):
         self.name = name
         self.config = config
@@ -41,8 +50,9 @@ class TestScenario:
             availability_strategy,
             discovery_policy,
             parsers,
-            stream_cls
+            stream_cls,
         )
+        self.incremental_scenario_config = incremental_scenario_config
         self.validate()
 
     def validate(self):
@@ -50,18 +60,24 @@ class TestScenario:
         expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
         assert expected_streams <= streams
 
-    def configured_catalog(self) -> Dict[str, Any]:
+    def configured_catalog(self, sync_mode: SyncMode) -> Dict[str, Any]:
         catalog = {"streams": []}
         for stream in self.expected_catalog["streams"]:
             catalog["streams"].append(
                 {
                     "stream": stream,
-                    "sync_mode": "incremental",
+                    "sync_mode": sync_mode.value,
                     "destination_sync_mode": "append",
                 }
             )
 
         return catalog
+
+    def input_state(self) -> List[Dict[str, Any]]:
+        if self.incremental_scenario_config:
+            return self.incremental_scenario_config.input_state
+        else:
+            return []
 
 
 class TestScenarioBuilder:
@@ -78,6 +94,7 @@ class TestScenarioBuilder:
         self._stream_cls = DefaultFileBasedStream
         self._expected_discover_error = None
         self._expected_read_error = None
+        self._incremental_scenario_config = None
 
     def set_name(self, name: str):
         self._name = name
@@ -123,6 +140,10 @@ class TestScenarioBuilder:
         self._expected_read_error = error
         return self
 
+    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig):
+        self._incremental_scenario_config = incremental_scenario_config
+        return self
+
     def build(self):
         return TestScenario(
             self._name,
@@ -137,4 +158,5 @@ class TestScenarioBuilder:
             self._stream_cls,
             self._expected_discover_error,
             self._expected_read_error,
+            self._incremental_scenario_config
         )

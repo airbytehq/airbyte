@@ -100,7 +100,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.11.0  | 2023-06-26 | [27734](https://github.com/airbytehq/airbyte/pull/27734) | License Update: Elv2 stream                                                                                                                          |
 | 3.10.0  | 2023-06-22 | [27132](https://github.com/airbytehq/airbyte/pull/27132) | Add `CreditNotes` stream                                                                                                                             |
 | 3.9.1   | 2023-06-20 | [27522](https://github.com/airbytehq/airbyte/pull/27522) | Fix formatting                                                                                                                                       |
 | 3.9.0   | 2023-06-19 | [27362](https://github.com/airbytehq/airbyte/pull/27362) | Add new Streams: Transfer Reversals, Setup Attempts, Usage Records, Transactions                                                                     |

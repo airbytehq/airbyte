@@ -70,6 +70,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.3.0  | 2023-06-23 | [27653](https://github.com/airbytehq/airbyte/pull/27653) | Add `form_id` to records of `responses` stream                                                   |
 | 0.2.0  | 2023-06-17 | [27455](https://github.com/airbytehq/airbyte/pull/27455) | Add missing schema fields in `forms`, `themes`, `images`, `workspaces`, and `responses` streams                                                   |
 | 0.1.12  | 2023-02-21 | [22824](https://github.com/airbytehq/airbyte/pull/22824) | Specified date formatting in specification                                                   |
 | 0.1.11  | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string                                          |

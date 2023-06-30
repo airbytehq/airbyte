@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Google Anal
 
 :::note
 
-[Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4), uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012. 
+[Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4), uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012.
 
 Google Analytics 4 (GA4) connector is the latest version of Google Analytics, which was introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This new model allows for more flexible and customizable reporting, as well as more accurate measurement of user behavior across devices and platforms.
 
@@ -12,9 +12,9 @@ Google Analytics 4 (GA4) connector is the latest version of Google Analytics, wh
 
 ## Prerequisites
 
-* JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702)
-* OAuth 2.0 credentials for the service account that has access to Google Analytics
-* Property ID
+- JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702)
+- OAuth 2.0 credentials for the service account that has access to Google Analytics
+- Property ID
 
 ## Step 1: Set up Source
 
@@ -61,7 +61,6 @@ Use the service account email address to [add a user](https://support.google.com
 7. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
 8. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
 
-
 ## Supported sync modes
 
 The Google Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -75,25 +74,25 @@ The Google Analytics source connector supports the following [sync modes](https:
 
 This connector outputs the following incremental streams:
 
-* Preconfigured streams:
-  * [daily_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [devices](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [four_weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [locations](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [pages](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [traffic_sources](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [website_overview](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  * [weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-* [Custom stream\(s\)](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+- Preconfigured streams:
+  - [daily_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [devices](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [four_weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [locations](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [pages](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [traffic_sources](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [website_overview](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - [weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+- [Custom stream\(s\)](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
 
 ## Connector-specific features
 
 :::note
 
-  * Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "cohortSpec": "<cohortSpec>", "pivots": "<pivots>"}]`
-  * Both `pivots` and `cohortSpec` are optional. Detailed description of the `cohortSpec` and the `pivots` objects you can find [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
-  * To enable Incremental sync for Custom reports, you need to include the `date` dimension (except for custom Cohort reports).
-:::
+- Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "cohortSpec": "<cohortSpec>", "pivots": "<pivots>"}]`
+- Both `pivots` and `cohortSpec` are optional. Detailed description of the `cohortSpec` and the `pivots` objects you can find [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
+- To enable Incremental sync for Custom reports, you need to include the `date` dimension (except for custom Cohort reports).
+  :::
 
 ## Performance Considerations
 
@@ -102,7 +101,7 @@ This connector outputs the following incremental streams:
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -111,7 +110,8 @@ This connector outputs the following incremental streams:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| 1.1.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                          |
 | 1.0.0   | 2023-06-22 | [26283](https://github.com/airbytehq/airbyte/pull/26283) | Added primary_key and lookback window                                         |
 | 0.2.7   | 2023-06-21 | [27531](https://github.com/airbytehq/airbyte/pull/27531) | Fix formatting                                                                |
 | 0.2.6   | 2023-06-09 | [27207](https://github.com/airbytehq/airbyte/pull/27207) | Improve api rate limit messages                                               |

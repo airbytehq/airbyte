@@ -5,7 +5,6 @@
 import json
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -496,22 +495,14 @@ def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> A
         "url": request.url,
         "http_method": request.method,
         "headers": dict(request.headers),
-        "body": _body_binary_string_to_dict(request.body),
+        "body": _normalize_body_string(request.body),
     }
     log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
 
-def _body_binary_string_to_dict(body_str: str) -> Optional[Mapping[str, str]]:
-    if body_str:
-        if isinstance(body_str, (bytes, bytearray)):
-            body_str = body_str.decode()
-        try:
-            return json.loads(body_str)
-        except JSONDecodeError:
-            return {k: v for k, v in [s.split("=") for s in body_str.split("&")]}
-    else:
-        return None
+def _normalize_body_string(body_str: Optional[Union[str, bytes]]) -> Optional[str]:
+    return body_str.decode() if isinstance(body_str, (bytes, bytearray)) else body_str
 
 
 def _response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:

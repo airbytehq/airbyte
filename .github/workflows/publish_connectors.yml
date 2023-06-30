@@ -17,7 +17,7 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: conn-prod-xlarge-runner
+    runs-on: large-runner
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

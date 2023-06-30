@@ -104,9 +104,9 @@ class Stream(ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
@@ -204,7 +204,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[MutableMapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

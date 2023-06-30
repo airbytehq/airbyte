@@ -192,6 +192,12 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 
         return params
 
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        responses = response.json()["items"]
+        for response in responses:
+            response["form_id"] = stream_slice["form_id"]
+        return responses
+
 
 class Webhooks(TrimFormsMixin, TypeformStream):
     """
