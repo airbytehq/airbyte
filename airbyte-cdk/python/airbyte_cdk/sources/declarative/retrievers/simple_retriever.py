@@ -72,7 +72,6 @@ class SimpleRetriever(Retriever, HttpStream):
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._records_from_last_response = None
-        self._latest_record = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -361,8 +360,6 @@ class SimpleRetriever(Retriever, HttpStream):
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
         self._records_from_last_response = records
-        if records:
-            self._latest_record = records[-1]
         return records
 
     @property
@@ -412,13 +409,21 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        yield from self._read_pages(
-            self.parse_records,
-            stream_slice,
-            slice_state,
-        )
+        most_recent_record_from_slice = None
+        for record in self._read_pages(self.parse_records, stream_slice, slice_state):
+            if self.cursor:
+                if not most_recent_record_from_slice:
+                    most_recent_record_from_slice = record
+                else:
+                    most_recent_record_from_slice = (
+                        most_recent_record_from_slice
+                        if self.cursor.is_greater_than_or_equal(most_recent_record_from_slice, record)
+                        else record
+                    )
+            yield record
+
         if self.cursor:
-            self.cursor.close_slice(stream_slice, self._latest_record)
+            self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
         return
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
