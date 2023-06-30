@@ -1,7 +1,5 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import static java.util.stream.Collectors.joining;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
@@ -11,21 +9,15 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +66,7 @@ public class BigQueryStandardInsertsTypingDedupingTest extends BaseTypingDedupin
     for (Map.Entry<String, Object> entry : map.entrySet()) {
       Object value = entry.getValue();
       if (value instanceof Instant i) {
-        // naively serializing an Instant returns a DecimalNode with the unix epoch, so manually dump the string here.
+        // naively converting an Instant returns a DecimalNode with the unix epoch, so instead we manually stringify it
         o.set(entry.getKey(), Jsons.jsonNode(i.toString()));
       } else {
         o.set(entry.getKey(), Jsons.jsonNode(value));

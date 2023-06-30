@@ -37,9 +37,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,9 @@ import org.slf4j.LoggerFactory;
  * For sync modes which use a primary key, the stream provides a composite key of (id1, id2). For sync modes which use a
  * cursor, the stream provides an updated_at field. The stream also has an _ab_cdc_deleted_at field.
  */
+// Remember to set `'junit.jupiter.execution.parallel.enabled': 'true'` in your connector's build.gradle.
+// See destination-bigquery for an example.
+@Execution(ExecutionMode.CONCURRENT)
 public abstract class BaseTypingDedupingTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTypingDedupingTest.class);
   private static final Comparator<JsonNode> RAW_RECORD_IDENTITY_COMPARATOR = Comparator
@@ -68,7 +72,6 @@ public abstract class BaseTypingDedupingTest {
       .thenComparing(record -> asTimestamp(record.get("_airbyte_extracted_at")));
   private static final Comparator<JsonNode> FINAL_RECORD_SORT_COMPARATOR = FINAL_RECORD_IDENTITY_COMPARATOR
       .thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-  private static ProcessFactory processFactory;
 
   /**
    * Subclasses MUST implement a static {@link org.junit.jupiter.api.BeforeAll} method that sets this field.
@@ -345,10 +348,12 @@ public abstract class BaseTypingDedupingTest {
    * !!!!!!!!!!!!!!!!!!!!!
    */
 
-  private static Path jobRoot;
+  private Path jobRoot;
+  // This contains some state, so it needs to be instanced per test (i.e. cannot be static)
+  private ProcessFactory processFactory;
 
-  @BeforeAll
-  public static void globalSetup() throws IOException {
+  @BeforeEach
+  public void setupProcessFactory() throws IOException {
     final Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
