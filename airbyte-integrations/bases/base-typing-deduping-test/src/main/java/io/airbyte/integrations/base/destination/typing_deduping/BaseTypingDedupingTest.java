@@ -95,21 +95,17 @@ public abstract class BaseTypingDedupingTest {
   protected abstract String getImageName();
 
   /**
-   * For a given stream, return the records that exist in the destination's raw table. This _should_
-   * include metadata columns (e.g. _airbyte_raw_id). The {@code _airbyte_data} column MUST be an
-   * {@link com.fasterxml.jackson.databind.node.ObjectNode} (i.e. it cannot be a string value).
+   * For a given stream, return the records that exist in the destination's raw table. Each record must be in the format
+   * {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_loaded_at": "...", "_airbyte_data": {fields...}}.
    * <p>
-   * Each record should be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...",
-   * "_airbyte_loaded_at": "..", "_airbyte_data": {fields...}}.
+   * The {@code _airbyte_data} column must be an {@link com.fasterxml.jackson.databind.node.ObjectNode}
+   * (i.e. it cannot be a string value).
    */
   protected abstract List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * For a given stream, return the records that exist in the destination's final table. This _should_
-   * include metadata columns (e.g. _airbyte_raw_id).
-   * <p>
-   * Each record should be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...",
-   * "_airbyte_meta": "..", "field1": ..., "field2": ..., ...}.
+   * For a given stream, return the records that exist in the destination's final table. Each record must be in the
+   * format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta": {...}, "field1": ..., "field2": ..., ...}.
    */
   protected abstract List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception;
 
@@ -119,7 +115,7 @@ public abstract class BaseTypingDedupingTest {
    * wholesale.
    * <p>
    * In general, this should resemble
-   * {@code DROP TABLE airbyte.namespace_name; DROP SCHEMA namespace}.
+   * {@code DROP TABLE IF EXISTS airbyte.namespace_name; DROP SCHEMA IF EXISTS namespace}.
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 

@@ -53,21 +53,21 @@ public class BigQueryStandardInsertsTypingDedupingTest extends BaseTypingDedupin
 
   @Override
   protected void teardownStreamAndNamespace(String streamNamespace, String streamName) {
+    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
     bq.delete(TableId.of("airbyte", streamNamespace + "_" + streamName));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 
   private static JsonNode toJson(LinkedHashMap<String, Object> map) {
     ObjectNode o = (ObjectNode) Jsons.emptyObject();
-    for (Map.Entry<String, Object> entry : map.entrySet()) {
-      Object value = entry.getValue();
+    map.forEach((key, value) -> {
       if (value instanceof Instant i) {
         // naively converting an Instant returns a DecimalNode with the unix epoch, so instead we manually stringify it
-        o.set(entry.getKey(), Jsons.jsonNode(i.toString()));
+        o.set(key, Jsons.jsonNode(i.toString()));
       } else {
-        o.set(entry.getKey(), Jsons.jsonNode(value));
+        o.set(key, Jsons.jsonNode(value));
       }
-    }
+    });
     return o;
   }
 }
