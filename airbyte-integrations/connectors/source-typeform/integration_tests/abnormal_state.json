@@ -1,16 +1,22 @@
-{
-  "responses": {
-    "SdMKQYkv": {
-      "submitted_at": 9999999999
-    },
-    "XtrcGoGJ": {
-      "submitted_at": 9999999999
-    },
-    "kRt99jlK": {
-      "submitted_at": 9999999999
-    },
-    "VWO7mLtl": {
-      "submitted_at": 9999999999
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "SdMKQYkv": {
+          "submitted_at": 9999999999
+        },
+        "XtrcGoGJ": {
+          "submitted_at": 9999999999
+        },
+        "kRt99jlK": {
+          "submitted_at": 9999999999
+        },
+        "VWO7mLtl": {
+          "submitted_at": 9999999999
+        }
+      },
+      "stream_descriptor": { "name": "responses" }
     }
   }
-}
+]

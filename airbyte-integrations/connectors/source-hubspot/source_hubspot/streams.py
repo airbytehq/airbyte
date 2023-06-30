@@ -7,6 +7,7 @@ import logging
 import sys
 import time
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
@@ -1392,24 +1393,12 @@ class EmailEvents(IncrementalStream):
     scopes = {"content"}
 
 
-class Engagements(IncrementalStream):
-    """Engagements, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
-          https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-    """
-
-    url = "/engagements/v1/engagements/paged"
+class EngagementsABC(Stream, ABC):
     more_key = "hasMore"
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
     scopes = {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"}
-
-    @property
-    def url(self):
-        if self.state:
-            return "/engagements/v1/engagements/recent/modified"
-        return "/engagements/v1/engagements/paged"
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
@@ -1423,15 +1412,108 @@ class Engagements(IncrementalStream):
         params = {"count": 250}
         if next_page_token:
             params["offset"] = next_page_token["offset"]
-        if self.state:
-            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
+
+
+class EngagementsAll(EngagementsABC):
+    """All Engagements API:
+    https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+
+    Note: Returns all engagements records ordered by 'createdAt' (not 'lastUpdated') field
+    """
+
+    @property
+    def url(self):
+        return "/engagements/v1/engagements/paged"
+
+
+class EngagementsRecentError(Exception):
+    pass
+
+
+class EngagementsRecent(EngagementsABC):
+    """Recent Engagements API:
+    https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+
+    Get the most recently created or updated engagements in a portal, sorted by when they were last updated,
+    with the most recently updated engagements first.
+
+    Important: This endpoint returns only last 10k most recently updated records in the last 30 days.
+    """
+
+    total_records_limit = 10000
+    last_days_limit = 29
+
+    @property
+    def url(self):
+        return "/engagements/v1/engagements/recent/modified"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self._start_date < pendulum.now() - timedelta(days=self.last_days_limit):
+            raise EngagementsRecentError(
+                '"Recent engagements" API returns records updated in the last 30 days only. '
+                f'Start date {self._start_date} is older so "All engagements" API should be used'
+            )
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update(
+            {
+                "since": int(self._start_date.timestamp() * 1000),
+                "count": 100,
+            }
+        )
+        return params
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        # Check if "Recent engagements" API is applicable for use
+        response_info = response.json()
+        if response_info:
+            total = response_info.get("total")
+            if total > self.total_records_limit:
+                yield from []
+                raise EngagementsRecentError(
+                    '"Recent engagements" API returns only 10k most recently updated records. '
+                    'API response indicates that there are more records so "All engagements" API should be used'
+                )
+        yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+
+class Engagements(EngagementsABC, IncrementalStream):
+    """Engagements stream does not send requests directly, instead it uses:
+    - EngagementsRecent if start_date/state is less than 30 days and API is able to return all records (<10k), or
+    - EngagementsAll which extracts all records, but supports filter on connector side
+    """
+
+    @property
+    def url(self):
+        return "/engagements/v1/engagements/paged"
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
         return [None]
+
+    def process_records(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """Process each record to find latest cursor value"""
+        for record in records:
+            cursor = self._field_to_datetime(record[self.updated_at_field])
+            self.latest_cursor = max(cursor, self.latest_cursor) if self.latest_cursor else cursor
+            yield record
 
     def read_records(
         self,
@@ -1440,40 +1522,40 @@ class Engagements(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        pagination_complete = False
 
-        next_page_token = None
-        latest_cursor = None
+        self.latest_cursor = None
 
-        while not pagination_complete:
-            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+        # The date we need records since
+        since_date = self._start_date
+        if stream_state:
+            since_date_timestamp = stream_state.get(self.updated_at_field)
+            if since_date_timestamp:
+                since_date = pendulum.from_timestamp(int(since_date_timestamp) / 1000)
 
-            if self.filter_old_records:
-                records = self._filter_old_records(records)
+        stream_params = {
+            "api": self._api,
+            "start_date": since_date,
+            "credentials": self._credentials,
+        }
 
-            for record in records:
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                yield record
+        try:
+            # Try 'Recent' API first, since it is more efficient
+            records = EngagementsRecent(**stream_params).read_records(sync_mode.full_refresh, cursor_field)
+            yield from self.process_records(records)
+        except EngagementsRecentError as e:
+            # if 'Recent' API in not applicable and raises the error
+            # then use 'All' API which returns all records, which are filtered on connector side
+            self.logger.info(e)
+            records = EngagementsAll(**stream_params).read_records(sync_mode.full_refresh, cursor_field)
+            yield from self.process_records(records)
 
-            next_page_token = self.next_page_token(response)
-            if self.state and next_page_token and next_page_token["offset"] >= 10000:
-                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
-                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
-                # descending order, we stop getting records if we have already reached 10,000. Attempting
-                # to get more than 10K will result in a HTTP 400 error.
-                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-                next_page_token = None
+        # State should be updated only once at the end of the sync
+        # because records are not ordered in ascending by 'lastUpdated' field
+        self._update_state(latest_cursor=self.latest_cursor, is_last_record=True)
 
-            if not next_page_token:
-                pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
-
-        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+    def _transform(self, records: Iterable) -> Iterable:
+        # transformation is not needed, because it was done in a substream
+        yield from records
 
 
 class Forms(ClientSideIncrementalStream):
