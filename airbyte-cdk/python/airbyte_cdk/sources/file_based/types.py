@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping
 
 StreamSlice = Mapping[str, Any]
-StreamState = MutableMapping[str, Any]
+StreamState = Mapping[str, Any]

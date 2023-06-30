@@ -204,7 +204,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[MutableMapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
