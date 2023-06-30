@@ -59,8 +59,9 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
-  private static final int QUERY_TARGET_SIZE_GB = 1; // TODO: find optimal size
+  private static final int QUERY_TARGET_SIZE_GB = 1;
   public static final double MEGABYTE = Math.pow(1024, 2);
+  public static final double GIGABYTE = MEGABYTE * 1024;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -124,7 +125,7 @@ public class PostgresCtidHandler {
   }
 
   /**
-   * Builds a plan for subqueries that will return an approximate size of data.
+   * Builds a plan for subqueries. Each query returning an approximate amount of data.
    * Using information about a table size and block (page) size.
    *
    * @param startCtid starting point
@@ -138,7 +139,7 @@ public class PostgresCtidHandler {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
-    final double oneGigaPages = MEGABYTE * 1000 / blockSize;
+    final double oneGigaPages = GIGABYTE / blockSize;
     final long eachStep = (long)oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
@@ -204,14 +205,14 @@ public class PostgresCtidHandler {
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       if (upperBound != null) {
-        final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         preparedStatement.setObject(2, upperBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
         return preparedStatement;
       } else {
-        final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
