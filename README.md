@@ -72,6 +72,54 @@ and copied in Dockerfile. The following files are supported:
 
 After updating patch files, make sure you build the connector again before running commands to test it, a re-build is necessary to include your patch changes.
 
+# Using `flowctl raw suggest-schema` on tasks with document schema violations
+
+We do not always have the correct schema for collections, and we end up with document schema violations when we get a new document that somehow does not fit our existing schema. Moreover, sometimes we do not have any information on some of the properties that are available in the collection (we are missing some properties).
+
+In both of these instances, it helps to use `flowctl raw suggest-schema` command to find a better-suited schema for our collection. This command works by reading all the documents of a collection, as well as documents that have violated the existing schema (those documents are read from the ops log) and running schema-inference on all of these documents, to come up with a new schema. The command then runs a diff between the two schemas and the original schema as well as the inferred schema are also available. By reading the diff you can find out which fields need updating, and the suggested approach is to take those fields from the `new.schema.json` file produced by the command.
+
+As an example, let's say a task called `acmeCo/data/source-x` has failed
+with some document schema violations in its collection `acmeCo/data/anvils`, in order to find a better-suited schema,
+you can run the command:
+
+```
+flowctl raw suggest-schema --collection acmeCo/data/anvils --task acmeCo/data/source-x
+```
+
+The command will run for a while, and will write two files
+`anvils.original.schema.json` and `anvils.new.schema.json`, which are the
+original schema of the collection and the new inferred schema, respectively. You
+will also see the diff run on these two files. If you want to run such a diff
+yourself, you can use (we use `git` because it has better output formatting, but
+this command does not need to be run in a git repository):
+
+```
+git diff --no-index anvils.original.schema.json anvils.new.schema.json
+```
+
+Using the information from this command, you can write a [patch file](#patching)
+to fix the document schema.
+
+Note that sometimes this command will extend the type of a value with the type
+of the newly-seen value from the document that violated the schema, and
+sometimes this extension of the type makes sense, whereas some other times it
+does not really make sense. Some common pitfalls:
+
+- If a field has wrongly been specified as `type: array` in the original schema,
+  but it is actually an object, the new inferred schema will have `type:
+  ["array", "object"]`, which is probably not the tightest schema we can have.
+  It is good to check whether other documents in the collection have the type
+  `array` at all, or if it is just a mistake in the schema. If it is a mistake,
+  then it is preferred to have `type: object`.
+- If a field is missing from the existing schema of a collection, but the value
+  does come through from the capture, sometimes the value will always have the
+  value `null`, and as such the suggested schema will be `type: null`. This is
+  not an intuitive schema specification, but it is okay to go ahead and apply
+  this patch: this will allow us to get a notification once we see a non-null
+  value for this property, and at that point we can fix it by running
+  schema-inference again and get the correct schema.
+
+
 # CI/CD
 
 To build images for this new connector, you need to add this connector name
