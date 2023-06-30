@@ -38,8 +38,7 @@ class PineconeIndexer(Indexer):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
         self.pinecone_index = pinecone.Index(config.index)
-        self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_query)
-        self.vectorstore = Pinecone(self.pinecone_index, self.embed_fn, "text")
+        self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
     
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
@@ -52,7 +51,14 @@ class PineconeIndexer(Indexer):
     def index(self, document_chunks, document_ids, delete_ids):
         for id in delete_ids:
             self.pinecone_index.delete(filter={METADATA_NATURAL_ID_FIELD: id})
-        self.vectorstore.add_documents(document_chunks, ids=document_ids)
+        embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
+        pinecone_docs = []
+        for i in range(len(document_chunks)):
+            chunk = document_chunks[i]
+            metadata = chunk.metadata
+            metadata["text"] = chunk.page_content
+            pinecone_docs.append((document_ids[i], embedding_vectors[i], metadata))
+        self.pinecone_index.upsert(vectors=pinecone_docs)
     
     def check(self) -> Optional[str]:
         try:

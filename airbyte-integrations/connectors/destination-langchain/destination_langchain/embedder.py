@@ -20,7 +20,7 @@ class Embedder(ABC):
 class OpenAIEmbedder(Embedder):
     def __init__(self, config: EmbeddingConfigModel):
         super().__init__()
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key)
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)
     
     def check(self) -> Optional[str]:
         try:
