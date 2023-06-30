@@ -182,7 +182,7 @@ class FBMarketingStream(Stream, ABC):
                 job.value.clear()
             logger.info(self.generate_facebook_stream_log({
                 "token": self._api._token[0:10],
-                "stream": "campaign",
+                "stream": self.entity_prefix,
                 "accounts_count": len(self._api.accounts),
                 "count": count
             }, previous_now))
