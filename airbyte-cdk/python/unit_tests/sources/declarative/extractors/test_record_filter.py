@@ -52,4 +52,4 @@ def test_record_filter(test_name, filter_template, records, expected_records):
     actual_records = record_filter.filter_records(
         records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
     )
-    assert list(actual_records) == expected_records
+    assert actual_records == expected_records

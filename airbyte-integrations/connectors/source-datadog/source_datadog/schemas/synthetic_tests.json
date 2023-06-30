@@ -7,6 +7,12 @@
       "description": "Configuration object for a Synthetic test.",
       "additionalProperties": true
     },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Creation date of the Synthetic test.",
+      "readOnly": true
+    },
     "creator": {
       "type": ["object", "null"],
       "description": "Object describing the creator of the shared element.",
@@ -37,6 +43,12 @@
     "message": {
       "type": ["string", "null"],
       "description": "Notification message associated with the test.",
+      "readOnly": true
+    },
+    "modified_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Creation date of the Synthetic test.",
       "readOnly": true
     },
     "monitor_id": {

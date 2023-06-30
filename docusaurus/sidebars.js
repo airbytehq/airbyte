@@ -362,6 +362,7 @@ const operatorGuide = {
     'operator-guides/using-prefect-task',
     'operator-guides/using-dagster-integration',
     'operator-guides/locating-files-local-destination',
+    'operator-guides/collecting-metrics',
     {
       type: 'category',
       label: 'Transformations and Normalization',
@@ -418,6 +419,11 @@ const security = {
   id: 'operator-guides/security',
 };
 
+const support = {
+  type: 'doc',
+  id: 'operator-guides/contact-support',
+};
+
 module.exports = {
   mySidebar: [
     {
@@ -450,6 +456,7 @@ module.exports = {
     understandingAirbyte,
     contributeToAirbyte,
     sectionHeader('Resources'),
+    support,
     security,
     {
       type: 'category',

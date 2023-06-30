@@ -11,7 +11,7 @@ on:
         default: "--modified"
       runner:
         description: "The runner to use for this job"
-        default: "dev-large-runner"
+        default: "conn-prod-xlarge-runner"
   pull_request:
     types:
       - opened
@@ -21,7 +21,7 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 1440 # 24 hours
-    runs-on: ${{ inputs.runner || 'dev-large-runner'}}
+    runs-on: ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
