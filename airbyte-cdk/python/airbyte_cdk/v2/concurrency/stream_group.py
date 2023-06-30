@@ -53,8 +53,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
             #print(f"stream.parse_response(response): {stream.parse_response(response)}")
             # FFIXME: should parsing be async?
             # I think it would be better, but it makes the integration more complicated
-            requests_response = await stream.parse_response_async(response)
-            for record_or_message in stream.parse_response(requests_response, stream_state={}):
+            for record_or_message in await stream.parse_response_async(response, stream_state={}):
                 if isinstance(record_or_message, dict):
                     message = stream_data_to_airbyte_message(stream.name, record_or_message)
                 yield message

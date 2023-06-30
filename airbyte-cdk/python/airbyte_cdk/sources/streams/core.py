@@ -213,6 +213,9 @@ class Stream(ABC):
         return [PartitionDescriptor(metadata=stream_slice)
                 for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
 
+    async def parse_response_async(self, aio_response, stream_state) -> Iterable[Mapping]:
+        return self.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:

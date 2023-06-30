@@ -32,6 +32,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_confi
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.v2.concurrency.async_requesters import DefaultAsyncRequester
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.http import AiohttpRequester
 from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
@@ -103,9 +104,9 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        concurrency_factor = 6
+        concurrency_factor = self.get_concurrency_factor()
         stream_group = ConcurrentStreamGroup(
-            AiohttpRequester(),
+            self.get_requester(),
             ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
             streams=stream_instances.values()
         )
@@ -118,6 +119,12 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
         print(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
         logger.info(f"Read {record_count} records from {self.name}")
+
+    def get_requester(self):
+        return DefaultAsyncRequester()
+
+    def get_concurrency_factor(self):
+        return 1
 
     @property
     def per_stream_state_enabled(self) -> bool:

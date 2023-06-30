@@ -15,3 +15,8 @@ class AsyncRequester(ABC, Generic[PartitionType]):
         The return value should be an async generator which contains one or more responses
         """
         # TODO this should be able to handle differing pagination/error handling/etc.. strategies between partitions
+
+
+class DefaultAsyncRequester(AsyncRequester):
+    async def request(self, partition_descriptor: PartitionType) -> AsyncIterable[ResponseType]:
+        yield None

@@ -7,7 +7,7 @@ import os
 import aiohttp
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, AsyncIterable
 from urllib.parse import urljoin
 
 import requests
@@ -207,12 +207,12 @@ class HttpStream(Stream, ABC):
         """
         return {}
 
-    async def parse_response_async(self, aio_response: aiohttp.ClientResponse):
+    async def parse_response_async(self, aio_response: aiohttp.ClientResponse, stream_state) -> Iterable[Mapping]:
         response = requests.Response()
         response.status_code = aio_response.status
         response.request = aio_response.request_info
         response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
-        return response
+        return self.parse_response(response, stream_state=stream_state)
 
     @abstractmethod
     def parse_response(

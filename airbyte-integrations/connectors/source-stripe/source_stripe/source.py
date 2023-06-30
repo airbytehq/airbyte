@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+from airbyte_cdk.v2.concurrency.http import AiohttpRequester
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -52,6 +53,10 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+
+    def get_requester(self):
+        return AiohttpRequester()
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stripe.api_key = config["client_secret"]
