@@ -28,6 +28,9 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    * probably fail the sync. (but see also {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
+    if (schema == null) {
+      return AirbyteProtocolType.UNKNOWN;
+    }
     final JsonNode topLevelType = schema.get("type");
     if (topLevelType != null) {
       if (topLevelType.isTextual()) {
