@@ -15,6 +15,7 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 0.3.0 # 0.3.1 has a sync bug related to RPC errors under investigation: https://github.com/airbytehq/oncall/issues/2393
     oss:
       enabled: true
   releaseStage: generally_available
