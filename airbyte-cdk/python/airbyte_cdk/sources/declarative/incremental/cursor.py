@@ -25,7 +25,7 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         """
         Update state based on the stream slice and the latest record. Note that `stream_slice.cursor_slice` and
         `last_record.associated_slice` are expected to be the same but we make it explicit here that `stream_slice` should be leveraged to
@@ -55,4 +55,10 @@ class Cursor(ABC, StreamSlicer):
     def should_be_synced(self, record: Record) -> bool:
         """
         Evaluating if a record should be synced allows for filtering and stop condition on pagination
+        """
+
+    @abstractmethod
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        """
+        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
         """
