@@ -87,6 +87,21 @@
     },
     "project_id": {
       "type": ["null", "integer"]
+    },
+    "erased_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "failure_reason": {
+      "type": ["null", "string"]
+    },
+    "project": {
+      "type": ["null", "object"],
+      "properties": {
+        "ci_job_token_scope_enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }

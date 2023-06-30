@@ -10,7 +10,7 @@ data:
   name: Cassandra
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
     oss:
       enabled: true
   releaseStage: alpha

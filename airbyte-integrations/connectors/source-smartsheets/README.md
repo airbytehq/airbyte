@@ -20,6 +20,28 @@ Airbyte will ask for this token when you configure the source connector. You wil
 - File
 - Properties
 
+Optionally you can include a list of metadata fields to be ingested by the connector, these fields are optional however the config file does require the metadata_fields be present, see sample_config.json under integrations tests for an example.
+
+| Supported Metadata Fields |
+|------|
+|sheetcreatedAt|
+|sheetid|
+|sheetmodifiedAt|
+|sheetname|
+|sheetpermalink|
+|sheetversion|
+|sheetaccess_level|
+|row_id|
+|row_access_level|
+|row_created_at|
+|row_created_by|
+|row_expanded|
+|row_modified_by|
+|row_parent_id|
+|row_permalink|
+|row_number|
+|row_version|
+
 ## Local development
 
 ### Prerequisites

@@ -48,7 +48,6 @@ public class PostgresUtils {
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;
 
-
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
@@ -169,4 +168,5 @@ public class PostgresUtils {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
+
 }

@@ -6,9 +6,6 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
-
 
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:
@@ -44,23 +41,17 @@ class GAQL:
     @classmethod
     def parse(cls, query):
         m = cls.REGEX.match(query)
-
-        internal_message = f"Incorrect GAQL query statement: {repr(query)}"
-        message = f"The GAQL query statement is incorrect: {repr(query)}"
-        query_error = AirbyteTracedException(message=message, internal_message=internal_message, failure_type=FailureType.config_error)
-
         if not m:
-            raise query_error
+            raise ValueError
 
         fields = [f.strip() for f in m.group("FieldNames").split(",")]
         for field in fields:
             if not cls.REGEX_FIELD_NAME.match(field):
-                raise query_error
+                raise ValueError
 
         resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
         if len(resource_names) > 1:
-            message = f"Incorrect GAQL query: multiple resources '{', '.join(resource_names)}' is not allowed"
-            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+            raise ValueError
         resource_name = resource_names[0]
 
         where = cls._normalize(m.group("WhereClause") or "")

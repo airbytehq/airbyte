@@ -10,7 +10,7 @@ data:
   name: Pulsar
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide Pulsar Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
     oss:
       enabled: true
   releaseStage: alpha

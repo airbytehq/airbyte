@@ -9,7 +9,6 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file
 

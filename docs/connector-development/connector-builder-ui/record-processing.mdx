@@ -302,7 +302,8 @@ This information is used by the Airbyte system for different purposes:
 * **Recreating the data structure with right columns** in destination - this allows a warehouse destination to create a SQL table which the columns matching the fields of records
 * **Detecting schema changes** - if the schema of a stream changes for an existing connection, this situation can be handled gracefully by Airbyte instead of causing errors in the destination
 
-When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. This schema can be copied over as the declared schema of the stream with a single click.
+When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. By default, new streams are configured to automatically import the detected schema into the declared schema on every test read.
+This behavior can be toggled off by disabling the `Automatically import declared schema` switch, in which case the declared schema can be manually edited in the UI and it will no longer be automatically updated when triggering test reads.
 
 For example the following test records:
 ```
@@ -351,7 +352,7 @@ result in the following schema:
 
 More strict is always better, but the detected schema is a good default to rely on. See the documentation about [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) for JSON schema structures that will be picked up by the Airbyte system.
 
-In case the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
+If `Automatically import detected schema` is disabled, and the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
 
 <img src={Diff} width="600" alt="Detected schema with highlighted differences" />
 

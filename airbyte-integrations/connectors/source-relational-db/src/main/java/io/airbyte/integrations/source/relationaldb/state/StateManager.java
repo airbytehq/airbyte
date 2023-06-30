@@ -36,8 +36,8 @@ public interface StateManager<T, S> {
   CdcStateManager getCdcStateManager();
 
   /**
-   * Retries the raw state messages associated with the state manager. This is required for database-specific sync modes (e.g. Xmin) that would want
-   * to handle and parse their own state
+   * Retries the raw state messages associated with the state manager. This is required for
+   * database-specific sync modes (e.g. Xmin) that would want to handle and parse their own state
    *
    * @return the list of airbyte state messages
    * @throws UnsupportedOperationException if the state manager does not support retrieving raw state.
