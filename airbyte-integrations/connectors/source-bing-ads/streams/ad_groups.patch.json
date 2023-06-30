@@ -1,0 +1,43 @@
+{
+  "properties": {
+    "Settings": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "items": null,
+      "properties": {
+        "Setting": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Details": {
+                "type": "object",
+                "properties": {
+                  "TargetSettingDetail": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "CriterionTypeGroup": {
+                          "type": "string"
+                        },
+                        "TargetAndBid": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "Type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
