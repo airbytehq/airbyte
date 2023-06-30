@@ -365,10 +365,11 @@ public abstract class BaseTypingDedupingTest {
    *        PK+cursor+extracted_at)
    * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
    *        breaks that tie using _airbyte_raw_id
+   * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
+   * @param extractRawData Whether to look inside the _airbyte_data column and diff its subfields
    * @return The diff, or empty string if there were no differences
    */
-  private static String diffRecords(
-                                    List<JsonNode> originalExpectedRecords,
+  private static String diffRecords(List<JsonNode> originalExpectedRecords,
                                     List<JsonNode> originalActualRecords,
                                     Comparator<JsonNode> identityComparator,
                                     Comparator<JsonNode> sortComparator,
@@ -379,7 +380,6 @@ public abstract class BaseTypingDedupingTest {
 
     // Iterate through both lists in parallel and compare each record.
     // Build up an error message listing any incorrect, missing, or unexpected records.
-    // Not a true diff, but close enough.
     String message = "";
     int expectedRecordIndex = 0;
     int actualRecordIndex = 0;
@@ -391,11 +391,13 @@ public abstract class BaseTypingDedupingTest {
         // These records should be the same. Find the specific fields that are different.
         boolean foundMismatch = false;
         String mismatchedRecordMessage = "Row had incorrect data:" + recordIdExtractor.apply(expectedRecord) + "\n";
-        // Iterate through each field in the expected record and compare it to the actual record's value.
+        // Iterate through each column in the expected record and compare it to the actual record's value.
         for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
           if (extractRawData && "_airbyte_data".equals(column)) {
+            // For the raw data in particular, we should also diff the fields inside _airbyte_data.
             JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
             JsonNode actualRawData = actualRecord.get("_airbyte_data");
+            // Iterate through all the subfields of the expected raw data and check that they match the actual record...
             for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
               JsonNode expectedValue = expectedRawData.get(field);
               JsonNode actualValue = actualRawData.get(field);
@@ -404,7 +406,8 @@ public abstract class BaseTypingDedupingTest {
                 foundMismatch = true;
               }
             }
-            LinkedHashMap<String, JsonNode> extraColumns = checkForExtraFields(expectedRawData, actualRawData);
+            // ... and then check the actual raw data for any subfields that we weren't expecting.
+            LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRawData, actualRawData);
             if (extraColumns.size() > 0) {
               for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
                 mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
@@ -412,6 +415,7 @@ public abstract class BaseTypingDedupingTest {
               }
             }
           } else {
+            // For all other columns, we can just compare their values directly.
             JsonNode expectedValue = expectedRecord.get(column);
             JsonNode actualValue = actualRecord.get(column);
             if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
@@ -420,7 +424,8 @@ public abstract class BaseTypingDedupingTest {
             }
           }
         }
-        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraFields(expectedRecord, actualRecord);
+        // Then check the entire actual record for any columns that we weren't expecting.
+        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord);
         if (extraColumns.size() > 0) {
           for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
             mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
@@ -467,7 +472,15 @@ public abstract class BaseTypingDedupingTest {
         && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
   }
 
-  private static LinkedHashMap<String, JsonNode> checkForExtraFields(JsonNode expectedRecord, JsonNode actualRecord) {
+  /**
+   * Verify that all fields in the actual record are present in the expected record. This is primarily relevant for
+   * detecting fields that we expected to be null, but actually were not. See {@link #dumpFinalTableRecords(String, String)}
+   * for an explanation of how SQL/JSON nulls are represented in the expected record.
+   * <p>
+   * This has the side benefit of detecting completely unexpected columns, which would be a very weird bug but is
+   * probably still useful to catch.
+   */
+  private static LinkedHashMap<String, JsonNode> checkForExtraOrNonNullFields(JsonNode expectedRecord, JsonNode actualRecord) {
     LinkedHashMap<String, JsonNode> extraFields = new LinkedHashMap<>();
     for (String column : Streams.stream(actualRecord.fieldNames()).sorted().toList()) {
       // loaded_at and raw_id are generated dynamically, so we just ignore them.
@@ -478,15 +491,19 @@ public abstract class BaseTypingDedupingTest {
     return extraFields;
   }
 
+  /**
+   * Produce a pretty-printed error message, e.g. "  For column foo, expected 1 but got 2". It's indented intentionally.
+   */
   private static String generateFieldError(String fieldname, JsonNode expectedValue, JsonNode actualValue) {
     String expectedString = expectedValue == null ? "SQL NULL (i.e. no value)" : expectedValue.toString();
     String actualString = actualValue == null ? "SQL NULL (i.e. no value)" : actualValue.toString();
     return "  For " + fieldname + ", expected " + expectedString + " but got " + actualString + "\n";
   }
 
+  // These asFoo methods are used for sorting records, so their defaults are intended to make broken records stand out.
   private static long asInt(JsonNode node) {
     if (node == null || !node.isIntegralNumber()) {
-      return Integer.MIN_VALUE;
+      return Long.MIN_VALUE;
     } else {
       return node.longValue();
     }
@@ -512,11 +529,11 @@ public abstract class BaseTypingDedupingTest {
 
   /*
    * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
-   * make edits here, you probably want to also edit there. !!!!!!!!!!!!!!!!!!!!!
+   * make edits here, you probably want to also edit there.
    */
 
+  // These contain some state, so they are instanced per test (i.e. cannot be static)
   private Path jobRoot;
-  // This contains some state, so it needs to be instanced per test (i.e. cannot be static)
   private ProcessFactory processFactory;
 
   @BeforeEach
