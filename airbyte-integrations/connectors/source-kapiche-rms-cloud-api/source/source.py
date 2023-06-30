@@ -172,11 +172,10 @@ class RmsCloudApiKapicheSource(Source):
                 "Children": {"type": ["integer", "null"]},
                 "Infants": {"type": ["integer", "null"]},
                 # Found in the guest=full dataset
-                "loyaltyNo": {"type": "boolean"},
-                "loyaltyMembershipType": {"type": ["string", "null"]},
-                "postcode": {"type": ["string", "null"]},
+                "Loyalty Member": {"type": "boolean"},
+                "Post Code": {"type": ["string", "null"]},
                 # Found in the reservation-account dataset
-                "totalRate": {"type": ["number", "null"]},
+                "Total Rate": {"type": ["number", "null"]},
                 # Nights
                 # DateMade_medium
             },
@@ -569,7 +568,7 @@ class RmsCloudApiKapicheSource(Source):
                 "Children": reservation.get("children"),
                 "Infants": reservation.get("infants"),
                 "Booking Source": reservation.get("bookingSourceName"),
-                "totalRate": reservation_account.get("totalRate"),
+                "Total Rate": reservation_account.get("totalRate"),
                 "Reservation Created Date": created.isoformat(),
             }
         )
@@ -581,9 +580,8 @@ class RmsCloudApiKapicheSource(Source):
     ) -> None:
         record.update(
             {
-                "postcode": guest.get("postcode"),
-                "loyaltyNo": bool(guest.get("loyaltyNo", "")),
-                "loyaltyMembershipType": guest.get("loyaltyMembershipType"),
+                "Post Code": guest.get("postCode"),
+                "Loyalty Member": bool(guest.get("loyaltyNumber", "")),
             }
         )
 
