@@ -19,9 +19,12 @@ A great place to start looking will be our GitHub projects for:
 
 Due to project priorities, we may not be able to accept all contributions at this time. 
 We are prioritizing the following contributions: 
-* Make changes to existing Source API connector
-* Submit a New Source Connector using the low-code CDK
-* Helm Charts features and bug fixes
+* Bug fixes, features, and enhancements to existing API source connectors
+* New connector sources and destinations built with the Python CDK, with a preference for low and no-code CDK, as these connectors are easier to maintain
+* Bug fixes, features, and enhancements to the following database sources: MongoDB, Postgres, MySQL, MSSQL
+* Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres
+* Helm Charts features, bug fixes, and other platform bug fixes
+
 
 :::warning
 Contributions outside of these will be evaluated on a case-by-case basis by our engineering team.
@@ -33,10 +36,11 @@ The usual workflow of code contribution is:
 3. Make changes and commit them
 4. Push your local branch to your fork
 5. Submit a Pull Request so that we can review your changes
-6. Write a commit message
-7. An Airbyte maintainer will trigger the CI tests for you and review the code
-8. Update the comments and review
-9. Merge the contribution
+6. [Link an existing Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) without `needs triage` label to your Pull Request (PR without this will be closed)
+7. Write a commit message
+8. An Airbyte maintainer will trigger the CI tests for you and review the code
+9. Update the comments and review
+10. Merge the contribution
 
 Pull Request reviews are done on a regular basis. 
 
