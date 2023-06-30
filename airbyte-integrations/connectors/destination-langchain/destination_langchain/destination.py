@@ -7,11 +7,19 @@ from typing import Any, Iterable, Mapping, List, Dict, Optional
 import random
 import json
 import os
+from destination_langchain.batcher import Batcher
+from destination_langchain.embedder import Embedder, OpenAIEmbedder
+from destination_langchain.indexer import DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
+from destination_langchain.processor import Processor
+from destination_langchain.config import ConfigModel
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 
 import dpath.util
 from dpath.exceptions import PathNotFound
 import pinecone
+import jsonref
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Type, Level, ConfiguredAirbyteCatalog, Status, AirbyteRecordMessage, AirbyteLogMessage
 from langchain.utils import stringify_dict
@@ -25,131 +33,67 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 
 BATCH_SIZE = 10
 
-
-def create_directory_recursively(path):
-    try:
-        os.makedirs(path, exist_ok=True)
-    except OSError as e:
-        return f"Creation of the directory {path} failed, with error: {str(e)}"
-    else:
-        return None
-
-# remove everything but numbers, strings, booleans and lists of strings from the top level
-def clean_obj(obj: dict):
-    for key in list(obj.keys()):
-        if not isinstance(obj[key], (str, int, float, bool)):
-            del obj[key]
-    return obj
+indexer_map = {
+    "pinecone": PineconeIndexer,
+    "DocArrayHnswSearch": DocArrayHnswSearchIndexer
+}
 
 class DestinationLangchain(Destination):
-    def flush_if_necessary(self):
-        if len(self.batch) >= BATCH_SIZE:
-            self.flush()
+    indexer: Indexer
+    processor: Processor
+    embedder: Embedder
 
-    def flush(self):
-        if len(self.batch) == 0:
-            return
+    def _init_indexer(self, config: ConfigModel):
+        self.embedder = OpenAIEmbedder(config.embedding)
+        self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
-        docs = []
-        for record in self.batch:
-            relevant_fields = {}
-            if self.text_fields:
-                for field in self.text_fields:
-                    relevant_fields[field] = dpath.util.values(record.data, field, separator=".")
-                    if len(relevant_fields[field]) == 1:
-                        relevant_fields[field] = relevant_fields[field][0]
-            else:
-                relevant_fields = record.data            
-
-            text = stringify_dict(relevant_fields)
-            metadata = record.data
-            for field in self.text_fields:
-                try:
-                    dpath.util.delete(metadata, field, separator=".")
-                except PathNotFound:
-                    # if the field doesn't exist, just
-                    pass
-            metadata = clean_obj(metadata)
-
-            current_stream = record.stream
-            metadata["_airbyte_stream"] = current_stream
-            for stream in self.catalog.streams:
-                if stream.stream.name == current_stream:
-                    if stream.primary_key:
-                        # todo support composite keys
-                        metadata["_natural_id"] = record.data[stream.primary_key[0][0]]
-                    break
-            docs.append(Document(page_content=text, metadata=metadata))
-        chunks = self.splitter.split_documents(docs)
-        print(len(chunks))
-        # todo: Test all of this stuff
-        # extract list of ids from chunks metadata _natural_id field
-        ids = [(chunk.metadata["_natural_id"] if "_natural_id" in chunk.metadata else str(uuid.uuid4())) for chunk in chunks]
-        # add a chunk number to all chunks with the same id
-        id_counts = {}
-        for i, id in enumerate(ids):
-            if id not in id_counts:
-                id_counts[id] = 0
-                if self.pinecone_index is not None:
-                    # delete all existing chunks with this id
-                    self.pinecone_index.delete(filter={"_natural_id": id})
-            else:
-                id_counts[id] += 1
-            ids[i] = str(id) + "_" + str(id_counts[id])
-        self.vectorstore.add_documents(chunks, ids=ids)
-        self.batch = []
+    def _process_batch(self, batch: List[AirbyteRecordMessage]):
+        documents = []
+        document_ids = []
+        ids_to_delete = []
+        for record in batch:
+            record_documents, record_document_ids, record_ids_to_delete = self.processor.process(record)
+            documents.extend(record_documents)
+            document_ids.extend(record_document_ids)
+            ids_to_delete.extend(record_ids_to_delete)
+        self.indexer.index(documents, document_ids, ids_to_delete)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-        self.catalog = configured_catalog
-        self.batch: List[AirbyteRecordMessage] = []
-        self.pinecone_index = None
-        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=config.get("processing").get("chunk_size", 1000), chunk_overlap=config.get("processing").get("chunk_overlap", 0))
-        self.text_fields = config.get("processing").get("text_fields")
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("embedding").get("openai_key"))
-        if not config.get("storing").get("mode") == "DocArrayHnswSearch":
-            pinecone.init(api_key=config.get("storing").get("pinecone_key"), environment=config.get("storing").get("pinecone_environment"))
-            index = pinecone.Index(config.get("storing").get("index"))
-            self.pinecone_index = index
-            # check whether the catalog is using full_refresh mode. If yes, clear the index
-            if self.catalog.streams[0].sync_mode == "full_refresh":
-                index.delete(delete_all=True)
-            self.vectorstore = Pinecone(index, self.embeddings.embed_query, "text")
-        else:
-            self.vectorstore = DocArrayHnswSearch.from_params(self.embeddings, config.get("storing").get("destination_path"), 1536)
+        config_model = ConfigModel.parse_obj(config)
+        self.processor = Processor(config_model.processing, configured_catalog)
+        self._init_indexer(config_model)
+        batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
+        self.indexer.pre_sync(configured_catalog)
         for message in input_messages:
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
                 # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
-                yield AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO,message="FLUSHING...."))
-                self.flush()
+                batcher.flush()
                 yield message
             if message.type == Type.RECORD:
-                yield AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO,message="Received record: " + json.dumps(message.record.data)))
-                self.batch.append(message.record)
-                self.flush_if_necessary()
+                batcher.add(message.record)
+                batcher.flush_if_necessary()
             else:
                 continue
-        yield AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO,message="FLUSHING.... " + str(len(self.batch))))
-        self.flush()
+        batcher.flush()
+        self.indexer.post_sync()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("embedding").get("openai_key"))
-        try:
-            self.embeddings.embed_query("test")
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
-        if not config.get("storing").get("mode") == "DocArrayHnswSearch":
-            try:
-                pinecone.init(api_key=config.get("storing").get("pinecone_key"), environment=config.get("storing").get("pinecone_environment"))
-                pinecone.describe_index(config.get("storing").get("index"))
-            except Exception as e:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        self._init_indexer(ConfigModel.parse_obj(config))
+        embedder_error = self.embedder.check()
+        indexer_error = self.indexer.check()
+        if embedder_error is not None or indexer_error is not None:
+            errors = [error for error in [embedder_error, indexer_error] if error is not None]
+            return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
         else:
-            folder_creation_error_message = create_directory_recursively(config.get("storing").get("destination_path"))
-            if folder_creation_error_message is not None:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=folder_creation_error_message)
-            else:
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/langchain",
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]
+        )

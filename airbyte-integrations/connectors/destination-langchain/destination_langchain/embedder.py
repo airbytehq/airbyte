@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from destination_langchain.config import EmbeddingConfigModel
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 class Embedder(ABC):
-    def __init__(self, config: dict):
+    def __init__(self):
         pass
 
     @abstractmethod
@@ -17,10 +18,9 @@ class Embedder(ABC):
         pass
 
 class OpenAIEmbedder(Embedder):
-    def __init__(self, config: dict):
+    def __init__(self, config: EmbeddingConfigModel):
         super().__init__()
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("openai_key"))
-        # Initialize Pinecone specific attributes
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key)
     
     def check(self) -> Optional[str]:
         try:

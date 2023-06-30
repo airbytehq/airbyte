@@ -1,20 +1,27 @@
 from abc import ABC, abstractmethod
+from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.embedder import Embedder
+from destination_langchain.measure_time import measure_time
+from destination_langchain.processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
 from langchain.document_loaders.base import Document
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Type, Level, ConfiguredAirbyteCatalog, Status, AirbyteRecordMessage, AirbyteLogMessage
 from langchain.vectorstores.docarray import DocArrayHnswSearch
 from langchain.vectorstores import Pinecone
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 import os
 import pinecone
 
 class Indexer(ABC):
-    def __init__(self, config: dict, embedder: Embedder):
+    def __init__(self, config: Any, embedder: Embedder):
         self.config = config
         self.embedder = embedder
         pass
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
+        pass
+
+    def post_sync(self):
         pass
     
     @abstractmethod
@@ -26,34 +33,40 @@ class Indexer(ABC):
         pass
 
 class PineconeIndexer(Indexer):
-    def __init__(self, config: dict, embedder: Embedder):
+    config: PineconeIndexingModel
+    def __init__(self, config: PineconeIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-        pinecone.init(api_key=config.get("pinecone_key"), environment=config.get("pinecone_environment"))
-        self.pinecone_index = pinecone.Index(config.get("index"))
-        self.vectorstore = Pinecone(self.index, self.embedder.langchain_embeddings.embed_query, "text")
+        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
+        self.pinecone_index = pinecone.Index(config.index)
+        self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_query)
+        self.vectorstore = Pinecone(self.pinecone_index, self.embed_fn, "text")
     
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
-            if stream.destination_sync_mode == "overwrite":
-                self.pinecone_index.delete(filter={"_airbyte_stream": stream.stream.name})
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                self.pinecone_index.delete(filter={METADATA_STREAM_FIELD: stream.stream.name})
     
+    def post_sync(self):
+        self.embed_fn._print_stats()
+
     def index(self, document_chunks, document_ids, delete_ids):
         for id in delete_ids:
-            self.pinecone_index.delete(filter={"_natural_id": id})
+            self.pinecone_index.delete(filter={METADATA_NATURAL_ID_FIELD: id})
         self.vectorstore.add_documents(document_chunks, ids=document_ids)
     
     def check(self) -> Optional[str]:
         try:
-            pinecone.describe_index(self.config.get("index"))
+            pinecone.describe_index(self.config.index)
         except Exception as e:
             return str(e)
         return None
 
 
 class DocArrayHnswSearchIndexer(Indexer):
-    def __init__(self, config: dict, embedder: Embedder):
+    config: DocArrayHnswSearchIndexingModel
+    def __init__(self, config: DocArrayHnswSearchIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-        self.vectorstore = DocArrayHnswSearch.from_params(self.embedder.langchain_embeddings, config.get("destination_path"), 1536)
+        self.vectorstore = DocArrayHnswSearch.from_params(self.embedder.langchain_embeddings, config.destination_path, 1536)
 
     def _create_directory_recursively(path):
         try:
@@ -67,11 +80,11 @@ class DocArrayHnswSearchIndexer(Indexer):
         for stream in catalog.streams:
             if stream.destination_sync_mode != "overwrite":
                 raise Exception("DocArrayHnswSearchIndexer only supports overwrite mode")
-        for file in os.listdir(self.config.get("destination_path")):
-            os.remove(os.path.join(self.config.get("destination_path"), file))
+        for file in os.listdir(self.config.destination_path):
+            os.remove(os.path.join(self.config.destination_path, file))
     
     def index(self, document_chunks):
         self.vectorstore.add_documents(document_chunks)
     
     def check(self) -> Optional[str]:
-        return self._create_directory_recursively(self.config.get("destination_path"))
+        return self._create_directory_recursively(self.config.destination_path)

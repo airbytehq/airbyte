@@ -1,0 +1,26 @@
+import time
+
+def measure_time(func):
+    def wrapper(*args, **kwargs):
+        wrapper.count += 1
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+        wrapper.total_time += execution_time
+        wrapper.average_time = wrapper.total_time / wrapper.count
+
+        return result
+
+    wrapper.count = 0
+    wrapper.total_time = 0
+    wrapper.average_time = 0
+    wrapper._print_stats = lambda: print_stats(wrapper)
+
+    def print_stats(wrapper):
+        print(f"Function '{func.__name__}' called {wrapper.count} time(s).")
+        print(f"Average execution time: {wrapper.average_time:.6f} seconds.")
+        print(f"Total execution time: {wrapper.total_time:.6f} seconds.")
+
+    return wrapper
