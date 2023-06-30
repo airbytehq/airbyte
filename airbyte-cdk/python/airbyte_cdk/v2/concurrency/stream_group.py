@@ -14,7 +14,6 @@ from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
-from airbyte_cdk.v2.concurrency.partitioned_stream import PartitionedStream
 from airbyte_cdk.v2.state_obj import State
 
 PartitionType = TypeVar('PartitionType', bound=PartitionDescriptor)
@@ -32,7 +31,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     concurrency_policy: ConcurrencyPolicy
     _streams: List[Stream]
 
-    def __init__(self, requester: AsyncRequester, concurrency_policy: ConcurrencyPolicy, streams: List[PartitionedStream]):
+    def __init__(self, requester: AsyncRequester, concurrency_policy: ConcurrencyPolicy, streams: List[Stream]):
         self.requester = requester
         self.concurrency_policy = concurrency_policy
         self._streams = streams  # TODO we probably don't need full streams, as long as we can get partitions and stream names
