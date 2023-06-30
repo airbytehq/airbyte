@@ -3,14 +3,9 @@
 #
 
 import base64
-import itertools
-import json
 import logging
-import time
-import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Set, Dict
 
-import gevent
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -74,13 +69,11 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_ad_creatives, params=params) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=AdCreatives.get_ad_creatives, params=params)
+
+    @staticmethod
+    def get_ad_creatives(account: AdAccount, **kwargs):
+        return account.get_ad_creatives(**kwargs)
 
 
 class CustomConversions(FBMarketingStream):
@@ -90,13 +83,11 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_custom_conversions, params=params) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=CustomConversions.get_custom_conversions, params=params)
+
+    @staticmethod
+    def get_custom_conversions(account: AdAccount, **kwargs):
+        return account.get_custom_conversions(**kwargs)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -105,13 +96,11 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_ads, params=params) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=Ads.get_ads, params=params)
+
+    @staticmethod
+    def get_ads(account: AdAccount, **kwargs):
+        return account.get_ads(**kwargs)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -120,24 +109,11 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_ad_sets, params=params) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=AdSets.get_ad_sets, params=params)
 
-
-def generate_facebook_stream_log(log_dict: Dict, previous_unix_time = None):
-    log = {
-        "source": "facebook-marketing-custom",
-        "time": str(datetime.datetime.now()),
-        "unix_time": time.time(),
-        "previous_time_diff_seconds": time.time() - previous_unix_time if previous_unix_time else None
-    }
-    log.update(log_dict)
-    return json.dumps(log)
+    @staticmethod
+    def get_ad_sets(account: AdAccount, **kwargs):
+        return account.get_ad_sets(**kwargs)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -146,18 +122,11 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        previous_now = time.time()
-        count = 0
-        jobs = [gevent.spawn(account.get_campaigns, params=params) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                for value in job.value:
-                    count += 1
-                    yield value
-                job.value.clear()
-            logger.info(generate_facebook_stream_log({"stream": "campaign", "count": count}, previous_now))
+        return self._list_objects(api_call_wrapper=Campaigns.get_campaigns, params=params)
+
+    @staticmethod
+    def get_campaigns(account: AdAccount, **kwargs):
+        return account.get_campaigns(**kwargs)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -168,13 +137,11 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_activities, params=params, fields=fields) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=Activities.get_activities, params=params, fields=fields)
+
+    @staticmethod
+    def get_activities(account: AdAccount, **kwargs):
+        return account.get_activities(**kwargs)
 
     def read_records(
         self,
@@ -211,14 +178,11 @@ class Videos(FBMarketingReversedIncrementalStream):
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        # Remove filtering as it is not working for this stream since 2023-01-13
-        jobs = [gevent.spawn(account.get_ad_videos, params=params, fields=self.fields) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=Videos.get_ad_videos, params=params, fields=self.fields)
+
+    @staticmethod
+    def get_ad_videos(account: AdAccount, **kwargs):
+        return account.get_ad_videos(**kwargs)
 
 
 class AdAccounts(FBMarketingStream):
@@ -257,15 +221,14 @@ class AdAccounts(FBMarketingStream):
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
+    entity_prefix = "image"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        jobs = [gevent.spawn(account.get_ad_images, params=params, fields=self.fields) for account in self._api.accounts]
-        with gevent.iwait(jobs) as completed_jobs:
-            for job in completed_jobs:
-                if job.exception:
-                    raise job.exception
-                yield from job.value
-                job.value.clear()
+        return self._list_objects(api_call_wrapper=Images.get_ad_images, params=params, fields=self.fields)
+
+    @staticmethod
+    def get_ad_images(account: AdAccount, **kwargs):
+        return account.get_ad_images(**kwargs)
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted

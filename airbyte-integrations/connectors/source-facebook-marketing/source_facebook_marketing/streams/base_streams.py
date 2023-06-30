@@ -2,16 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import itertools
+import json
 import logging
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import partial
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Dict
 
 import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -49,8 +52,9 @@ class FBMarketingStream(Stream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
+    def __init__(self, source: AbstractSource, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
         super().__init__(**kwargs)
+        self._source = source
         self._api = api
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
@@ -155,6 +159,35 @@ class FBMarketingStream(Stream, ABC):
         :param params: params to make request
         :return: list of FB objects to load
         """
+
+    def generate_facebook_stream_log(self, log_dict: Dict, previous_unix_time = None):
+        log = {
+            "source": "facebook-marketing-custom",
+            "time": str(datetime.now()),
+            "unix_time": time.time(),
+            "previous_time_diff_seconds": time.time() - previous_unix_time if previous_unix_time else None
+        }
+        log.update(log_dict)
+        return json.dumps(log)
+
+    def _list_objects(self, api_call_wrapper, **kwargs):
+        previous_now = time.time()
+        count = 0
+        jobs = [gevent.spawn(api_call_wrapper, account=account, **kwargs) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
+                for value in job.value:
+                    count += 1
+                    yield value
+                job.value.clear()
+            logger.info(self.generate_facebook_stream_log({
+                "source_name": self._source.name,
+                "stream": self.entity_prefix,
+                "accounts_count": len(self._api.accounts),
+                "count": count
+            }, previous_now))
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Parameters that should be passed to query_records method"""

@@ -33,7 +33,7 @@ class SomeTestStream(FBMarketingStream):
 
 
 class TestBaseStream:
-    def test_execute_in_batch_with_few_requests(self, api, batch, mock_batch_responses):
+    def test_execute_in_batch_with_few_requests(self, source, api, batch, mock_batch_responses):
         """Should execute single batch if number of requests less than MAX_BATCH_SIZE."""
         mock_batch_responses(
             [
@@ -43,7 +43,7 @@ class TestBaseStream:
             ]
         )
 
-        stream = SomeTestStream(api=api)
+        stream = SomeTestStream(source=source, api=api)
         requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(5)]
 
         result = list(stream.execute_in_batch(requests))
@@ -52,7 +52,7 @@ class TestBaseStream:
         batch.execute.assert_called_once()
         assert len(result) == 3
 
-    def test_execute_in_batch_with_many_requests(self, api, batch, mock_batch_responses):
+    def test_execute_in_batch_with_many_requests(self, source, api, batch, mock_batch_responses):
         """Should execute as many batches as needed if number of requests bigger than MAX_BATCH_SIZE."""
         mock_batch_responses(
             [
@@ -62,7 +62,7 @@ class TestBaseStream:
             ]
         )
 
-        stream = SomeTestStream(api=api)
+        stream = SomeTestStream(source=source, api=api)
         requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(50 + 1)]
 
         result = list(stream.execute_in_batch(requests))
@@ -71,7 +71,7 @@ class TestBaseStream:
         assert batch.execute.call_count == 2
         assert len(result) == 5 * 2
 
-    def test_execute_in_batch_with_retries(self, api, batch, mock_batch_responses):
+    def test_execute_in_batch_with_retries(self, source, api, batch, mock_batch_responses):
         """Should retry batch execution until succeed"""
         # batch.execute.side_effect = [batch, batch, None]
         mock_batch_responses(
@@ -97,7 +97,7 @@ class TestBaseStream:
             ]
         )
 
-        stream = SomeTestStream(api=api)
+        stream = SomeTestStream(source=source, api=api)
         requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(3)]
 
         result = list(stream.execute_in_batch(requests))
@@ -107,7 +107,7 @@ class TestBaseStream:
         assert len(result) == 3
 
     @pytest.mark.skip(reason="This function was completely re-done and needs a brand new test")
-    def test_execute_in_batch_with_fails(self, api, batch, mock_batch_responses):
+    def test_execute_in_batch_with_fails(self, source, api, batch, mock_batch_responses):
         """Should fail with exception when any request returns error"""
         mock_batch_responses(
             [
@@ -120,7 +120,7 @@ class TestBaseStream:
             ]
         )
 
-        stream = SomeTestStream(api=api)
+        stream = SomeTestStream(source=source, api=api)
         requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(5)]
 
         with pytest.raises(RuntimeError, match="Batch request failed with response:"):
@@ -129,7 +129,7 @@ class TestBaseStream:
         assert batch.add_request.call_count == len(requests)
         assert batch.execute.call_count == 1
 
-    def test_execute_in_batch_retry_batch_error(self, api, batch, mock_batch_responses):
+    def test_execute_in_batch_retry_batch_error(self, source, api, batch, mock_batch_responses):
         """Should retry without exception when any request returns 960 error code"""
         mock_batch_responses(
             [
@@ -161,7 +161,7 @@ class TestBaseStream:
             ]
         )
 
-        stream = SomeTestStream(api=api)
+        stream = SomeTestStream(source=source, api=api)
         requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(3)]
         result = list(stream.execute_in_batch(requests))
 
