@@ -106,13 +106,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             self.ab_last_mod_col: {"type": "string"},
             self.ab_file_name_col: {"type": "string"},
         }
-        schema = self._get_raw_json_schema()
+        schema = dict(self._get_raw_json_schema())
         schema["properties"] = {**extra_fields, **schema.get("properties", {})}
         return schema
 
-    def _get_raw_json_schema(self) -> Dict[str, Any]:
+    def _get_raw_json_schema(self) -> Mapping[str, Any]:
         if self.config.input_schema:
-            type_mapping = dict(self.config.input_schema)
+            type_mapping = self.config.input_schema
         else:
             files = self.list_files()
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
