@@ -6,28 +6,21 @@ import asyncio
 import itertools
 import logging
 from functools import cache
-from typing import Any, Iterable, List, Mapping, Optional, Set, Union, Dict, Type
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Type, Union
+
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import UndefinedParserError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
-from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
-
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, MissingSchemaError, RecordParseError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
 
@@ -41,15 +34,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self,
-                 cursor: FileBasedCursor,
-                 config: FileBasedStreamConfig,
-                 stream_reader: AbstractFileBasedStreamReader,
-                 availability_strategy: AvailabilityStrategy,
-                 discovery_policy: AbstractDiscoveryPolicy,
-                 parsers: Dict[str, FileTypeParser],
-                 validation_policies: Type[AbstractSchemaValidationPolicy],
-                 ):
+    def __init__(
+        self,
+        cursor: FileBasedCursor,
+        config: FileBasedStreamConfig,
+        stream_reader: AbstractFileBasedStreamReader,
+        availability_strategy: AvailabilityStrategy,
+        discovery_policy: AbstractDiscoveryPolicy,
+        parsers: Dict[str, FileTypeParser],
+        validation_policies: Type[AbstractSchemaValidationPolicy],
+    ):
         super().__init__(config, stream_reader, availability_strategy, discovery_policy, parsers, validation_policies)
         self._cursor = cursor
 
