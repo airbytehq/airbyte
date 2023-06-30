@@ -104,6 +104,11 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+
+        for s in stream_instances.values():
+            if s.stream_slices != Stream.stream_slices:
+                logger.warning(f"stream_slices is deprecated for {s.name}. Please use generate_partitions instead.")
+
         concurrency_factor = self.get_concurrency_factor()
         stream_group = ConcurrentStreamGroup(
             self.get_requester(stream_instances),
