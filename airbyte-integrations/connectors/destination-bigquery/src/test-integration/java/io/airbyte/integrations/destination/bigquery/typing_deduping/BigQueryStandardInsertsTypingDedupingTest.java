@@ -19,11 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryStandardInsertsTypingDedupingTest extends BaseTypingDedupingTest {
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStandardInsertsTypingDedupingTest.class);
 
   private static BigQuery bq;
 
@@ -31,7 +28,6 @@ public class BigQueryStandardInsertsTypingDedupingTest extends BaseTypingDedupin
   @BeforeAll
   public static void buildConfig() throws IOException {
     final String datasetId = Strings.addRandomSuffix("typing_deduping_default_dataset", "_", 5);
-    LOGGER.info("Setting default dataset to {}", datasetId);
     config = BigQueryDestinationTestUtils.createConfig(Path.of("secrets/credentials-1s1t-standard.json"), datasetId);
     bq = BigQueryDestination.getBigQuery(config);
   }

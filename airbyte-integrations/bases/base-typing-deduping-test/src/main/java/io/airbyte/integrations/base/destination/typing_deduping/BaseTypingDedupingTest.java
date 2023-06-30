@@ -125,8 +125,9 @@ public abstract class BaseTypingDedupingTest {
 
   @BeforeEach
   public void setup() {
-    streamNamespace = Strings.addRandomSuffix("typing_deduping_test_namespace", "_", 5);
-    streamName = Strings.addRandomSuffix("test_stream", "_", 5);
+    streamNamespace = Strings.addRandomSuffix("typing_deduping_test", "_", 5);
+    // we don't randomize this, because randomizing the namespace is sufficient.
+    streamName = "test_stream";
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 
