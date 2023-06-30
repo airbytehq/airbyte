@@ -69,7 +69,7 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=AdCreatives.get_ad_creatives, params=params)
+        return self._list_objects(api_call_wrapper=AdCreatives.get_ad_creatives, params=params)
 
     @staticmethod
     def get_ad_creatives(account: AdAccount, **kwargs):
@@ -83,7 +83,7 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=CustomConversions.get_custom_conversions, params=params)
+        return self._list_objects(api_call_wrapper=CustomConversions.get_custom_conversions, params=params)
 
     @staticmethod
     def get_custom_conversions(account: AdAccount, **kwargs):
@@ -96,7 +96,7 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=Ads.get_ads, params=params)
+        return self._list_objects(api_call_wrapper=Ads.get_ads, params=params)
 
     @staticmethod
     def get_ads(account: AdAccount, **kwargs):
@@ -109,7 +109,7 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=AdSets.get_ad_sets, params=params)
+        return self._list_objects(api_call_wrapper=AdSets.get_ad_sets, params=params)
 
     @staticmethod
     def get_ad_sets(account: AdAccount, **kwargs):
@@ -122,7 +122,7 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=Campaigns.get_campaigns, params=params)
+        return self._list_objects(api_call_wrapper=Campaigns.get_campaigns, params=params)
 
     @staticmethod
     def get_campaigns(account: AdAccount, **kwargs):
@@ -137,7 +137,7 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=Activities.get_activities, params=params, fields=fields)
+        return self._list_objects(api_call_wrapper=Activities.get_activities, params=params, fields=fields)
 
     @staticmethod
     def get_activities(account: AdAccount, **kwargs):
@@ -178,7 +178,7 @@ class Videos(FBMarketingReversedIncrementalStream):
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=Videos.get_ad_videos, params=params, fields=self.fields)
+        return self._list_objects(api_call_wrapper=Videos.get_ad_videos, params=params, fields=self.fields)
 
     @staticmethod
     def get_ad_videos(account: AdAccount, **kwargs):
@@ -224,7 +224,7 @@ class Images(FBMarketingReversedIncrementalStream):
     entity_prefix = "image"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._list_objects(api_wrapper=Images.get_ad_images, params=params, fields=self.fields)
+        return self._list_objects(api_call_wrapper=Images.get_ad_images, params=params, fields=self.fields)
 
     @staticmethod
     def get_ad_images(account: AdAccount, **kwargs):

@@ -168,10 +168,10 @@ class FBMarketingStream(Stream, ABC):
         log.update(log_dict)
         return json.dumps(log)
 
-    def _list_objects(self, api_wrapper, **kwargs):
+    def _list_objects(self, api_call_wrapper, **kwargs):
         previous_now = time.time()
         count = 0
-        jobs = [gevent.spawn(api_wrapper, account=account, **kwargs) for account in self._api.accounts]
+        jobs = [gevent.spawn(api_call_wrapper, account=account, **kwargs) for account in self._api.accounts]
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 if job.exception:
