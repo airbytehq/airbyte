@@ -895,6 +895,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   /**
+   * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
+   * That's annoying for us since we're working with small test data, so pull everything into a list, and convert them
+   * into maps of column name -> value.
+   * <p>
+   * Note that the values have reasonable types; see {@link #toMap(Schema, FieldValueList)} for details.
+   */
+  public static List<LinkedHashMap<String, Object>> toMaps(TableResult result) {
+    return result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
+  }
+
+  /**
    * FieldValueList stores everything internally as string (I think?) but provides conversions to more useful types.
    * This method does that conversion, using the schema to determine which type is most appropriate.
    * <p>
@@ -979,17 +990,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
       Set<Map<String, Object>> extraRows = actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet());
       fail(diff(missingRows, extraRows));
     }
-  }
-
-  /**
-   * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
-   * That's annoying for us since we're working with small test data, so pull everything into a list, and convert them
-   * into maps of column name -> value.
-   * <p>
-   * Note that the values have reasonable types; see {@link #toMap(Schema, FieldValueList)} for details.
-   */
-  public static List<LinkedHashMap<String, Object>> toMaps(TableResult result) {
-    return result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
   }
 
   private static String sortedToString(Map<String, Object> record) {
