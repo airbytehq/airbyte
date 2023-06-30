@@ -18,8 +18,9 @@ from airbyte_cdk.v2.state import DatetimePartitionDescriptor, DatetimePartitionG
 import json
 
 STRIPE_API_URL = "https://api.stripe.com/v1"
-STRIPE_SECRET_KEY = json.loads(open("/Users/alex/code/tools/airbyte-integrations/connectors/source-stripe/secrets/config.json", "r").read())["client_secret"]
-STRIPE_ACCOUNT_NUMBER = "acct_1G9HZLIEn5WyEQxn"
+CONFIG = json.loads(open("/Users/alex/code/tools/airbyte-integrations/connectors/source-stripe/secrets/config.json", "r").read())
+STRIPE_SECRET_KEY = CONFIG["client_secret"]
+STRIPE_ACCOUNT_NUMBER = CONFIG["account_id"]
 
 
 @dataclass
@@ -79,6 +80,7 @@ class StripeStream(PartitionedStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[StreamData]:
         response_json = response.json()
+        print(f"response_json: {response_json}")
         if isinstance(response_json, Mapping):
             for record in response_json.get('data', []):
                 yield record
