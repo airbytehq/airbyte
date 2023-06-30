@@ -6,8 +6,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: 0.3.6 # pattern for Account ID was added
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -86,3 +84,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 4800
+        ignored_fields:
+          activities:
+            - name: extra_data
+              bypass_reason: "image_url in extra_data is changing frequently"

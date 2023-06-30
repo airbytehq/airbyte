@@ -545,6 +545,26 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
+class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
+    """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
+        return params
+
+
 class AuditLogs(SourceZendeskSupportCursorPaginationStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
@@ -562,6 +582,13 @@ class Users(SourceZendeskIncrementalExportStream):
 
 class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
+
+
+class Posts(SourceZendeskSupportStream):
+    """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
+
+    def path(self, **kwargs):
+        return "community/posts"
 
 
 class Tickets(SourceZendeskIncrementalExportStream):
@@ -679,6 +706,31 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
         return params
 
 
+class TicketSkips(SourceZendeskSupportCursorPaginationStream):
+    """TicketSkips stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/"""
+
+    response_list_name = "skips"
+
+    def path(self, **kwargs):
+        return "skips.json"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
+        return params
+
+
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
@@ -748,6 +800,32 @@ class Schedules(SourceZendeskSupportFullRefreshStream):
 
     def path(self, *args, **kwargs) -> str:
         return "business_hours/schedules.json"
+
+
+class AccountAttributes(SourceZendeskSupportFullRefreshStream):
+    """Account attributes stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes"""
+
+    response_list_name = "attributes"
+
+    def path(self, *args, **kwargs) -> str:
+        return "routing/attributes"
+
+
+class AttributeDefinitions(SourceZendeskSupportFullRefreshStream):
+    """Attribute definitions stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions"""
+
+    primary_key = None
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        for definition in response.json()["definitions"]["conditions_all"]:
+            definition["condition"] = "all"
+            yield definition
+        for definition in response.json()["definitions"]["conditions_any"]:
+            definition["confition"] = "any"
+            yield definition
+
+    def path(self, *args, **kwargs) -> str:
+        return "routing/attributes/definitions"
 
 
 class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
