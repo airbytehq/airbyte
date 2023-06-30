@@ -34,7 +34,7 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
         if not _is_valid_type(t["type"]):
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=k, type=t)
 
-    merged_schema: Dict[str, Any] = dict(deepcopy(schema1))
+    merged_schema: Dict[str, Any] = deepcopy(schema1)
     for k2, t2 in schema2.items():
         t1 = merged_schema.get(k2)
         t1_type = t1["type"] if t1 else None
