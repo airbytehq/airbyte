@@ -313,12 +313,16 @@ class RmsCloudApiKapicheSource(Source):
                 ),
             )
 
-            if state[state_key]:
-                existing_marker = datetime.fromisoformat(state[state_key])
-                new_marker = datetime.fromisoformat(record["Departure Date"])
-                if new_marker > existing_marker:
+            # TODO: would be nicer to save the most recent departure date value,
+            #  but it gets complicated to implement with out state events are
+            #  emitted.
+            # if state[state_key]:
+            #     existing_marker = datetime.fromisoformat(state[state_key])
+            #     new_marker = datetime.fromisoformat(record["Departure Date"])
+            #     if new_marker > existing_marker:
                     # Only update the marker if the received data is later.
-                    state[state_key] = record["Departure Date"]
+
+            state[state_key] = record["Departure Date"]
 
             if i % 10 == 0:
                 # Emit state record every 10th record.
