@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
+import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -24,7 +25,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   protected abstract String getConfigPath();
 
   @Override
-  public JsonNode getConfig() throws IOException {
+  public JsonNode generateConfig() throws IOException {
     final String datasetId = "typing_deduping_default_dataset" + getUniqueSuffix();
     JsonNode config = BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId);
     bq = BigQueryDestination.getBigQuery(config);
@@ -38,6 +39,9 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
   @Override
   protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+    if (streamNamespace == null) {
+      streamNamespace = BigQueryUtils.getDatasetId(getConfig());
+    }
     TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + streamNamespace + "_" + streamName));
     List<LinkedHashMap<String, Object>> rowsAsMaps = BigQuerySqlGeneratorIntegrationTest.toMaps(result);
     return rowsAsMaps.stream().map(AbstractBigQueryTypingDedupingTest::toJson).toList();
@@ -45,6 +49,9 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws InterruptedException {
+    if (streamNamespace == null) {
+      streamNamespace = BigQueryUtils.getDatasetId(getConfig());
+    }
     TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
     List<LinkedHashMap<String, Object>> rowsAsMaps = BigQuerySqlGeneratorIntegrationTest.toMaps(result);
     return rowsAsMaps.stream().map(AbstractBigQueryTypingDedupingTest::toJson).toList();

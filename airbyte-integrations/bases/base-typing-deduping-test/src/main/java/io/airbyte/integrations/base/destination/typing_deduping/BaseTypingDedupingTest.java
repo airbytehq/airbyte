@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -40,6 +41,7 @@ import java.util.function.Function;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -99,7 +101,7 @@ public abstract class BaseTypingDedupingTest {
    * The tests in this class are intended to be run concurrently on a shared database and will not
    * interfere with each other.
    */
-  protected abstract JsonNode getConfig() throws Exception;
+  protected abstract JsonNode generateConfig() throws Exception;
 
   /**
    * For a given stream, return the records that exist in the destination's raw table. Each record
@@ -108,6 +110,8 @@ public abstract class BaseTypingDedupingTest {
    * <p>
    * The {@code _airbyte_data} column must be an
    * {@link com.fasterxml.jackson.databind.node.ObjectNode} (i.e. it cannot be a string value).
+   * <p>
+   * streamNamespace may be null, in which case you should query from the default namespace.
    */
   protected abstract List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception;
 
@@ -123,6 +127,8 @@ public abstract class BaseTypingDedupingTest {
    * <p>
    * The corresponding SQL looks like
    * {@code INSERT INTO ... (name, address) VALUES ('null' :: jsonb, NULL)}.
+   * <p>
+   * streamNamespace may be null, in which case you should query from the default namespace.
    */
   protected abstract List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception;
 
@@ -146,9 +152,13 @@ public abstract class BaseTypingDedupingTest {
     return randomSuffix;
   }
 
+  protected JsonNode getConfig() {
+    return config;
+  }
+
   @BeforeEach
   public void setup() throws Exception {
-    config = getConfig();
+    config = generateConfig();
     streamNamespace = "typing_deduping_test" + getUniqueSuffix();
     streamName = "test_stream" + getUniqueSuffix();
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
@@ -303,6 +313,98 @@ public abstract class BaseTypingDedupingTest {
     List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
     List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testLineBreakCharacters() throws Exception {
+    // TODO verify that we can handle strings with interesting characters
+    // build an airbyterecordmessage using something like this, and add it to the input messages:
+    Jsons.jsonNode(ImmutableMap.builder()
+        .put("id", 1)
+        .put("currency", "USD\u2028")
+        .put("date", "2020-03-\n31T00:00:00Z\r")
+        // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+        // fails destination tests
+        .put("HKD", 10.1)
+        .put("NZD", 700.1)
+        .build());
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testIncrementalSyncDropOneColumn() throws Exception {
+    // TODO in incremental dedup mode: run a sync, remove a column from the schema, run another sync
+    // verify that the column is dropped from the destination table
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using a stream with null namespace:
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(null)
+                .withName(streamName)
+                .withJsonSchema(getSchema()))));
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
+    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using two streams with the same name but different namespace:
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace + "_1")
+                .withName(streamName)
+                .withJsonSchema(getSchema())),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace + "_2")
+                .withName(streamName)
+                .withJsonSchema(getSchema()))));
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testSyncNotFailsWithNewFields() throws Exception {
+    // TODO duplicate this test for each sync mode. Run a sync, then add a new field to the schema, then run another sync
+    // We might want to write a test that verifies more general schema evolution (e.g. all valid evolutions)
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testSyncWithLargeRecordBatch() throws Exception {
+    // TODO duplicate this test for each sync mode. Run a single sync with many records
+    /*
+    copied from DATs:
+    This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
+    insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
+
+    this maybe needs configuration per destination to specify that limit?
+     */
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  public void testDataTypes() throws Exception {
+    // TODO duplicate this test for each sync mode. See DataTypeTestArgumentProvider for what this test does in DAT-land
+    // we probably don't want to do the exact same thing, but the general spirit of testing a wide range of values for every data type is approximately correct
+    // this test probably needs some configuration per destination to specify what values are supported?
   }
 
   private static JsonNode getSchema() throws IOException {
