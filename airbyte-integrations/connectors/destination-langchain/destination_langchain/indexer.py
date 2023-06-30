@@ -72,7 +72,7 @@ class DocArrayHnswSearchIndexer(Indexer):
     config: DocArrayHnswSearchIndexingModel
     def __init__(self, config: DocArrayHnswSearchIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-        self.vectorstore = DocArrayHnswSearch.from_params(self.embedder.langchain_embeddings, config.destination_path, 1536)
+        self.vectorstore = DocArrayHnswSearch.from_params(self.embedder.langchain_embeddings, config.destination_path, self.embedder.embedding_dimensions)
 
     def _create_directory_recursively(path):
         try:
@@ -89,6 +89,10 @@ class DocArrayHnswSearchIndexer(Indexer):
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
     
+    def post_sync(self):
+        self.index._print_stats()
+    
+    @measure_time
     def index(self, document_chunks):
         self.vectorstore.add_documents(document_chunks)
     

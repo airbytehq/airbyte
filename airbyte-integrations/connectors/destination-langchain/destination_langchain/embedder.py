@@ -17,6 +17,11 @@ class Embedder(ABC):
     def langchain_embeddings(self) -> Embeddings:
         pass
 
+    @property
+    @abstractmethod
+    def embedding_dimensions(self) -> int:
+        pass
+
 class OpenAIEmbedder(Embedder):
     def __init__(self, config: EmbeddingConfigModel):
         super().__init__()
@@ -32,3 +37,7 @@ class OpenAIEmbedder(Embedder):
     @property
     def langchain_embeddings(self) -> Embeddings:
         return self.embeddings
+
+    @property
+    def embedding_dimensions(self) -> int:
+        return 1536
