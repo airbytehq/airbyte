@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 079d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 1.4.1
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/destination-bigquery-denormalized
   githubIssueLabel: destination-bigquery-denormalized
   icon: bigquery.svg
-  license: MIT
+  license: ELv2
   name: BigQuery (denormalized typed struct)
   registries:
     cloud:
