@@ -106,7 +106,7 @@ class AbstractSource(Source, ABC):
         stream_instances = {s.name: s for s in self.streams(config)}
         concurrency_factor = self.get_concurrency_factor()
         stream_group = ConcurrentStreamGroup(
-            self.get_requester(),
+            self.get_requester(stream_instances),
             ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
             streams=stream_instances.values()
         )
@@ -120,8 +120,11 @@ class AbstractSource(Source, ABC):
         print(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
         logger.info(f"Read {record_count} records from {self.name}")
 
-    def get_requester(self):
-        return DefaultAsyncRequester()
+    def get_requester(self, streams):
+        if any(isinstance(stream, HttpStream) for stream in streams.values()):
+            return AiohttpRequester()
+        else:
+            return DefaultAsyncRequester()
 
     def get_concurrency_factor(self):
         return 1
