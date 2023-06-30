@@ -348,7 +348,7 @@ def expected_custom_object_json_schema():
 def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
 ):
-    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
+    stream = CustomObject(entity="animals",name="animals", schema=expected_custom_object_json_schema, **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()
@@ -360,7 +360,7 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 def test_custom_object_stream_calls_hubspot_to_get_json_schema(
     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
 ):
-    stream = CustomObject(entity="animals", schema=None, **common_params)
+    stream = CustomObject(entity="animals",name="animals", schema=None, **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()

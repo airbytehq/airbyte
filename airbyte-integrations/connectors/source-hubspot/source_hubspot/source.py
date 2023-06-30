@@ -21,6 +21,7 @@ from source_hubspot.streams import (
     ContactsListMemberships,
     ContactsWithHistory,
     CustomObject,
+    CustomObjectWithHistory,
     DealPipelines,
     Deals,
     DealsArchived,
@@ -152,8 +153,9 @@ class SourceHubspot(AbstractSource):
         return available_streams
 
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
-        schemas = api.get_custom_object_schemas()
+        schemas, entityName = api.get_custom_object_schemas()
         streams = []
-        for entity, schema in schemas.items():
-            streams.append(CustomObject(entity=entity, schema=schema, **common_params))
+        for name, schema in schemas.items():
+            streams.append(CustomObject(name=name, entity=entityName[name], schema=schema, **common_params))
+            streams.append(CustomObjectWithHistory(name=name, entity=entityName[name], schema=schema, **common_params))
         return streams

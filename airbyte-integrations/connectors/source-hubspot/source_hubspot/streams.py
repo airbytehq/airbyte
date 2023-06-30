@@ -206,17 +206,20 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
-    def get_custom_object_schemas(self) -> Mapping[str, Any]:
+    def get_custom_object_schemas(self) -> Tuple[Mapping[str, Any], Mapping[str, str]]:
         data, response = self.get("/crm/v3/schemas", {})
         schemas = {}
+        entityMap = {}
         if response.ok and "results" in data:
             for raw_schema in data["results"]:
                 schema = self.generate_schema(raw_schema=raw_schema)
                 schemas[raw_schema["name"]] = schema
+                qualifiedName = raw_schema["fullyQualifiedName"]
+                entityMap[raw_schema["name"]] = qualifiedName
         else:
             self.logger.warn(self._parse_and_handle_errors(response))
 
-        return schemas
+        return schemas, entityMap
 
     def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
         properties = {}
@@ -995,13 +998,8 @@ class CRMSearchStream(IncrementalStream, ABC):
     associations: List[str] = None
 
     @property
-    def custom_object_name(self) -> Optional[str]:
-        return None
-
-    @property
     def url(self):
-        objectType = self.custom_object_name if self.custom_object_name else self.entity
-        return f"/crm/v3/objects/{objectType}/search" if self.state else f"/crm/v3/objects/{objectType}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -1197,6 +1195,8 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
 
         latest_cursor = None
 
+        properties = set(self.properties.keys())
+
         while not pagination_complete:
             if self.state:
                 records, raw_response = self._process_search(
@@ -1213,7 +1213,6 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
             records = self._filter_old_records(records)
 
             input_for_batch_request = []
-            properties = set()
             for record in records:
                 if record.get("id") is None:
                     continue
@@ -1221,10 +1220,7 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                 # cursor will be set from records only
                 cursor = self._field_to_datetime(record[self.updated_at_field])
                 latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-
                 input_for_batch_request.append({"id": id})
-                for property in record["properties"].keys():
-                    properties.add(property)
 
             for batch in self.split_into_batches(input_for_batch_request, 50):
                 _, batch_raw_response = self.search(
@@ -1259,7 +1255,8 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                                     new_record["sourceId"] = entry["sourceId"]
 
                                 yield new_record
-
+                    else:
+                        logger.debug(f"propertiesWithHistory not found in record {record_with_history.get('id')}")
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
@@ -1904,47 +1901,19 @@ class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
     associations = []
     primary_key = "id"
+    _name = None
     custom_object_id = None
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
+    def __init__(self, name: str, entity: str, schema: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.entity = entity
         self.schema = schema
+        self._name = name
 
     @property
     def name(self) -> str:
-        return self.entity
-
-    @property
-    @lru_cache()
-    def custom_object_name(self) -> Optional[str]:
-        if self.custom_object_id:
-            return self.custom_object_id
-
-        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
-        props = {}
-        if not self.entity:
-            return props
-        if not self.properties_scope_is_granted():
-            logger.warning(
-                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
-                f"to be able to fetch all properties available."
-            )
-            return props
-        data, response = self._api.get("/crm/v3/schemas")
-        qualifiedName = None
-        if response.ok and "results" in data:
-            for raw_schema in data["results"]:
-                if raw_schema["name"] == self.entity:
-                    qualifiedName = raw_schema["fullyQualifiedName"]
-                    break
-        if qualifiedName is None:
-            raise Exception(f"failed to get properties for custom object {self.entity}")
-
-        # setup for use
-        self.custom_object_id = qualifiedName
-        return self.custom_object_id
+        return self._name
 
     @property
     @lru_cache()
@@ -1963,11 +1932,11 @@ class CustomObject(CRMSearchStream, ABC):
         propsdata = None
         if response.ok and "results" in data:
             for raw_schema in data["results"]:
-                if raw_schema["name"] == self.entity:
+                if raw_schema["name"] == self._name:
                     propsdata = raw_schema["properties"]
                     break
         if propsdata is None:
-            raise Exception(f"failed to get properties for custom object {self.entity}")
+            raise Exception(f"failed to get properties for custom object {self._name}")
 
         for row in propsdata:
             props[row["name"]] = self._get_field_props(row["type"])
@@ -1976,7 +1945,61 @@ class CustomObject(CRMSearchStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
-            self.schema = self._api.get_custom_object_schemas()[self.entity]
+            schemas, _ = self._api.get_custom_object_schemas()
+            self.schema = schemas[self.entity]
+        return self.schema
+
+
+class CustomObjectWithHistory(CRMSearchStreamWithHistory, ABC):
+    last_modified_field = "hs_lastmodifieddate"
+    associations = []
+    identity_key = "id"
+    _name = None
+    custom_object_id = None
+    scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
+
+    def __init__(self, name: str, entity: str, schema: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self.entity = entity
+        self.schema = schema
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return f"{self._name}_with_history"
+
+    @property
+    @lru_cache()
+    def properties(self) -> Mapping[str, Any]:
+        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
+        props = {}
+        if not self.entity:
+            return props
+        if not self.properties_scope_is_granted():
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
+            return props
+        data, response = self._api.get("/crm/v3/schemas")
+        propsdata = None
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                if raw_schema["name"] == self._name:
+                    propsdata = raw_schema["properties"]
+                    break
+        if propsdata is None:
+            raise Exception(f"failed to get properties for custom object {self._name}")
+
+        for row in propsdata:
+            props[row["name"]] = self._get_field_props(row["type"])
+
+        return props
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            schemas, _ = self._api.get_custom_object_schemas()
+            self.schema = schemas[self.entity]
         return self.schema
 
 
