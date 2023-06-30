@@ -13,7 +13,6 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 // Remember to set `'junit.jupiter.execution.parallel.enabled': 'true'` in your connector's
 // build.gradle.
 // See destination-bigquery for an example.
+// If you're running from inside intellij, you must run your specific subclass to get concurrent execution.
 @Execution(ExecutionMode.CONCURRENT)
 public abstract class BaseTypingDedupingTest {
 
@@ -79,15 +80,8 @@ public abstract class BaseTypingDedupingTest {
   private static final Comparator<JsonNode> FINAL_RECORD_SORT_COMPARATOR = FINAL_RECORD_IDENTITY_COMPARATOR
       .thenComparing(record -> asString(record.get("_airbyte_raw_id")));
 
-  /**
-   * Subclasses MUST implement a static {@link org.junit.jupiter.api.BeforeAll} method that sets this
-   * field.
-   * <p>
-   * That method should also start testcontainer(s), if you're using them. That test container will be
-   * used for all tests. This is safe because each test uses a randomized stream namespace+name.
-   */
-  protected static JsonNode config;
-
+  private String randomSuffix;
+  private JsonNode config;
   private String streamNamespace;
   private String streamName;
 
@@ -95,6 +89,15 @@ public abstract class BaseTypingDedupingTest {
    * @return the docker image to run, e.g. {@code "airbyte/destination-bigquery:dev"}.
    */
   protected abstract String getImageName();
+
+  /**
+   * Get the destination connector config. Subclasses may use this method for other setup work, e.g. opening a connection
+   * to the destination.
+   * <p>
+   * Subclasses should _not_ start testcontainers in this method; that belongs in a BeforeAll method. The tests in this
+   * class are intended to be run concurrently on a shared database and will not interfere with each other.
+   */
+  protected abstract JsonNode getConfig() throws Exception;
 
   /**
    * For a given stream, return the records that exist in the destination's raw table. Each record
@@ -131,10 +134,21 @@ public abstract class BaseTypingDedupingTest {
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
+  /**
+   * @return A suffix which is different for each concurrent test run.
+   */
+  protected synchronized String getUniqueSuffix() {
+    if (randomSuffix == null) {
+      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    }
+    return randomSuffix;
+  }
+
   @BeforeEach
-  public void setup() {
-    streamNamespace = Strings.addRandomSuffix("typing_deduping_test", "_", 5);
-    streamName = Strings.addRandomSuffix("test_stream", "_", 5);
+  public void setup() throws Exception {
+    config = getConfig();
+    streamNamespace = "typing_deduping_test" + getUniqueSuffix();
+    streamName = "test_stream" + getUniqueSuffix();
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 

@@ -8,7 +8,6 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
@@ -20,15 +19,16 @@ import java.util.List;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {
 
-  private static BigQuery bq;
+  private BigQuery bq;
 
-  /**
-   * Subclasses should call this in an @BeforeAll block rather than directly setting {@see BaseTypingDedupingTest#config}.
-   */
-  protected static void setConfig(String configPath) throws IOException {
-    final String datasetId = Strings.addRandomSuffix("typing_deduping_default_dataset", "_", 5);
-    config = BigQueryDestinationTestUtils.createConfig(Path.of(configPath), datasetId);
+  protected abstract String getConfigPath();
+
+  @Override
+  public JsonNode getConfig() throws IOException {
+    final String datasetId = "typing_deduping_default_dataset" + getUniqueSuffix();
+    JsonNode config = BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId);
     bq = BigQueryDestination.getBigQuery(config);
+    return config;
   }
 
   @Override
