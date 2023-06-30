@@ -26,7 +26,7 @@ Hope this helps. Let us know if you have further questions on this.
 
 from __future__ import annotations
 from collections.abc import Iterator
-
+from collections import deque
 import logging
 from datetime import datetime, timedelta, tzinfo, timezone
 from itertools import islice
@@ -230,6 +230,7 @@ class RmsCloudApiKapicheSource(Source):
         """
         stream_name = "RMSNPS"  # Example
         state_key = "start_date"
+        state_previous_reservations_key = "reservation_ids"
 
         if not self.auth_token:
             # This is to handle calling read from the CLI
@@ -238,7 +239,7 @@ class RmsCloudApiKapicheSource(Source):
             self.auth_token = self.get_auth_token(logger, config)
 
         logger.info(f"catalog: {catalog}")
-        logger.info(f"state: {state}")
+        logger.info(f"{list(state.keys())=}")
 
         # Obtain the start date from the state
         if start_date_str := state.get(state_key):
@@ -255,23 +256,53 @@ class RmsCloudApiKapicheSource(Source):
                 logger.info("Fall way back to setting start date to a year ago.")
                 start_date = datetime.now(timezone.utc) - timedelta(weeks=52)
 
-        gen = self._fetch_nps(logger, start_date)
+        # For safety, we're going to start search for a start date that
+        # is older that our actual "start date" marker. We aren't sure
+        # that the `departDate` field is going to be monotonically
+        # increasing with insertion in the RMS system. So we'll wind
+        # back the start date a little, hoping to catch any new
+        # records that might have older start dates than our current
+        # start date. To avoid emitting duplicates, we're tracking
+        # previously-emitted records with the `reservation-*` variables
+        # which are persisted through the `state` mechanism.
+        gen = self._fetch_nps(logger, start_date - timedelta(days=7))
         record = None
 
+        # A deque for recency truncation.
+        if state_previous_reservations_key not in state:
+            state[state_previous_reservations_key] = deque(maxlen=10000)
+        else:
+            # The `state` blob store doesn't retain the deque type
+            # so we have to reconstruct it from the list they
+            # give back to us.
+            state[state_previous_reservations_key] = deque(
+                state[state_previous_reservations_key],
+                maxlen=10000
+            )
+            logger.info(
+                f"Type of the previous reservations fetched: {type(state[state_previous_reservations_key])}"
+            )
+
+        reservation_ids_already_fetched_set = set(
+            state[state_previous_reservations_key]
+        )
+        at_least_one_new_record = False
+
         for i, record in enumerate(gen):
-            # The `npsResults` endpoint in RMS doesn't let us specify
-            # a timezone for the start and end date range. So we'll
-            # have to filter here for any records that are older than
-            # our start filter.
-            dt = datetime.fromisoformat(record["Departure Date"])
-            if dt <= start_date:
+            # Manage the cache of previously-fetched reservations.
+            reservation_id = record["Reservation ID"]
+
+            if reservation_id in reservation_ids_already_fetched_set:
                 logger.info(
-                    f"Rejecting older fetched result with reservation id "
-                    f"{record['Reservation ID']} and departure date "
-                    f"{record['Departure Date']}. The start date was "
-                    f"{start_date}"
+                    f"Received {reservation_id=} but this has already been found. "
+                    "Discarding."
                 )
                 continue
+
+            at_least_one_new_record = True
+
+            state[state_previous_reservations_key].append(reservation_id)
+            reservation_ids_already_fetched_set.add(reservation_id)
 
             yield AirbyteMessage(
                 type=Type.RECORD,
@@ -282,7 +313,12 @@ class RmsCloudApiKapicheSource(Source):
                 ),
             )
 
-            state[state_key] = record["Departure Date"]
+            if state[state_key]:
+                existing_marker = datetime.fromisoformat(state[state_key])
+                new_marker = datetime.fromisoformat(record["Departure Date"])
+                if new_marker > existing_marker:
+                    # Only update the marker if the received data is later.
+                    state[state_key] = record["Departure Date"]
 
             if i % 10 == 0:
                 # Emit state record every 10th record.
@@ -297,6 +333,7 @@ class RmsCloudApiKapicheSource(Source):
                 #         ),
                 #     ),
                 # )
+
                 yield AirbyteMessage(
                     type=Type.STATE,
                     state=AirbyteStateMessage(
@@ -315,16 +352,18 @@ class RmsCloudApiKapicheSource(Source):
         #         ),
         #     ),
         # )
-        yield AirbyteMessage(
-            type=Type.STATE,
-            state=AirbyteStateMessage(
-                data=state,
-            ),
-        )
 
-        if record:
-            logger.info(f"Final record: {record}")
-        logger.info(f"Final state: {state}")
+        if at_least_one_new_record:
+            yield AirbyteMessage(
+                type=Type.STATE,
+                state=AirbyteStateMessage(
+                    data=state,
+                ),
+            )
+
+            if record:
+                logger.info(f"Final record: {record}")
+            logger.info(f"Final state: {state}")
 
     def _get(self, url: str) -> dict:
         with http_adapter(backoff_factor=2) as session:
@@ -398,20 +437,27 @@ class RmsCloudApiKapicheSource(Source):
         categories = None
 
         all_property_ids = list(properties)
-        end_date = datetime.now(start_date.tzinfo)
+        # Add one to correct for the minus-one subtraction on `date_to`
+        # in the loop below. See the comment there for more details.
+        end_date = datetime.now(start_date.tzinfo) + timedelta(days=1)
 
         for date_from, date_to in date_ranges_generator(start_date, end=end_date):
+            # The `npsResults` endpoint, using `departDate` as the filter,
+            # matches only against WHOLE DAYS. To avoid getting duplicate
+            # records back from the end of one date range, and the start of
+            # the next, we have to decrement the end search date by one day.
+            date_to = date_to - timedelta(days=1)
             logger.info(
                 f"Fetching for week {date_from.isoformat()} to {date_to.isoformat()}"
             )
-            payload={
+            payload = {
                 "propertyIds": all_property_ids,
                 "reportBy": "departDate",
                 "dateFrom": date_to_rms_string(date_from),
                 "dateTo": date_to_rms_string(date_to),
                 "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             }
-            logger.info(f"{payload=}")
+            logger.debug(f"{payload=}")
             data = self._post(
                 "https://restapi8.rmscloud.com/reports/npsResults",
                 payload=payload,
@@ -470,9 +516,7 @@ class RmsCloudApiKapicheSource(Source):
                     )
 
                     self.update_record_from_survey_detail(
-                        record,
-                        s,
-                        rms_timezone_name=property["timeZone"]
+                        record, s, rms_timezone_name=property["timeZone"]
                     )
 
                     reservation_id = s.get("reservationId")
@@ -486,7 +530,7 @@ class RmsCloudApiKapicheSource(Source):
                                 record,
                                 reservation,
                                 reservation_account,
-                                rms_timezone_name=property["timeZone"]
+                                rms_timezone_name=property["timeZone"],
                             )
 
                             guest = guest_lookup.get(reservation["guestId"])
@@ -812,7 +856,7 @@ def convert_rms_datetime_to_python_datetime(
     rms_datetime: str,
     rms_property_timezone_windows_id_name: str,
 ) -> datetime:
-    """ Here is an example of what this function achieves:
+    """Here is an example of what this function achieves:
 
     .. code-block:: python
 
@@ -838,6 +882,7 @@ def convert_rms_datetime_to_python_datetime(
     # a Python-compatible datetime object.
     if tzname := rms_timezone_to_python_timezone(rms_property_timezone_windows_id_name):
         import zoneinfo
+
         tzinfo = zoneinfo.ZoneInfo(tzname)
         return dt.replace(tzinfo=tzinfo)
     else:
@@ -847,8 +892,9 @@ def convert_rms_datetime_to_python_datetime(
             "as a known timezone value"
         )
 
+
 def rms_timezone_to_python_timezone(s: str) -> str | None:
-    """ RMS Properties appear to use Windows timezone IDs to
+    """RMS Properties appear to use Windows timezone IDs to
     specify timezones in properties. It's a bit of work to get these
     into python-compatible structures. Here is a stackoverflow post
     where someone generated the following lookup table that can be
