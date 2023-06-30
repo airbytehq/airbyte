@@ -276,7 +276,7 @@ class TestInsightAsyncJob:
     def test_failed_yes(self, failed_job):
         assert failed_job.failed, "should return True if the job previously failed"
 
-    def test_str(self, api, account):
+    def test_str(self, source, api, account):
         interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2011, 1, 1))
         job = InsightAsyncJob(
             edge_object=account,

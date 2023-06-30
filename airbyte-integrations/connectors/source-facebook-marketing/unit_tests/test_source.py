@@ -53,7 +53,7 @@ def logger_mock_fixture(mocker):
 
 
 class TestSourceFacebookMarketing:
-    def test_check_connection_ok(self, api, config, logger_mock):
+    def test_check_connection_ok(self, source, api, config, logger_mock):
         ok, error_msg = SourceFacebookMarketing().check_connection(logger_mock, config=config)
 
         assert ok
@@ -107,26 +107,26 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
-    def test_get_custom_insights_streams(self, api, config):
+    def test_get_custom_insights_streams(self, source, api, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
         ]
         config = ConnectorConfig.parse_obj(config)
-        assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
+        assert SourceFacebookMarketing().get_custom_insights_streams(source, api, config)
 
-    def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config):
+    def test_get_custom_insights_action_breakdowns_allow_empty(self, source, api, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
         ]
 
         config["action_breakdowns_allow_empty"] = False
-        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        streams = SourceFacebookMarketing().get_custom_insights_streams(source, api, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
 
         config["action_breakdowns_allow_empty"] = True
-        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        streams = SourceFacebookMarketing().get_custom_insights_streams(source, api, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []

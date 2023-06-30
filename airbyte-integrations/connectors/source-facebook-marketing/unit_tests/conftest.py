@@ -10,11 +10,17 @@ from facebook_business.adobjects.adaccount import AdAccount
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
-
 @fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep")
     yield time_mock
+
+
+@fixture(name="source")
+def source_fixture(mocker):
+    source = mocker.Mock()
+    source.name = "source name"
+    return source
 
 
 @fixture(scope="session", name="account_id")

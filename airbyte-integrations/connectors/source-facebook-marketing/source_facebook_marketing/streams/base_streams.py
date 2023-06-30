@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, 
 import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -51,8 +52,9 @@ class FBMarketingStream(Stream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
+    def __init__(self, source: AbstractSource, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
         super().__init__(**kwargs)
+        self._source = source
         self._api = api
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
@@ -181,7 +183,7 @@ class FBMarketingStream(Stream, ABC):
                     yield value
                 job.value.clear()
             logger.info(self.generate_facebook_stream_log({
-                "token": self._api._token[0:10],
+                "source_name": self._source.name,
                 "stream": self.entity_prefix,
                 "accounts_count": len(self._api.accounts),
                 "count": count
