@@ -1,0 +1,33 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  type: object
+  title: RMS Spec
+  required:
+    - agent_id
+    - agent_password
+    - client_id
+    - client_password
+  properties:
+    agent_id:
+      description: Agent id for RMS
+      title: AGENT ID
+      type: number
+    agent_password:
+      airbyte_secret: true
+      description: Agent password for RMS
+      title: AGENT PASSWORD
+      type: string
+    client_id:
+      description: Client id for RMS
+      title: CLIENT ID
+      type: number
+    client_password:
+      airbyte_secret: true
+      description: Client password for RMS
+      title: CLIENT PASSWORD
+      type: string
+    start_date:
+      description: Start date for full-refresh. ISO format, e.g. 2011-11-04T00:05:23
+      title: START DATE
+      type: string

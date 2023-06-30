@@ -1,0 +1,16 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "RMSNPS",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["Departure Date"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
+
