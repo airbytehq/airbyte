@@ -111,11 +111,13 @@ public abstract class BaseTypingDedupingTest {
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
    * {...}, "field1": ..., "field2": ..., ...}.
    * <p>
-   * For JSON-valued columns, there is some nuance: a SQL null should be represented as a missing entry, whereas a JSON
-   * null should be represented as a {@link com.fasterxml.jackson.databind.node.NullNode}. For example, in the JSON blob
-   * {"name": null}, the `name` field is a JSON null, and the `address` field is a SQL null.
+   * For JSON-valued columns, there is some nuance: a SQL null should be represented as a missing
+   * entry, whereas a JSON null should be represented as a
+   * {@link com.fasterxml.jackson.databind.node.NullNode}. For example, in the JSON blob {"name":
+   * null}, the `name` field is a JSON null, and the `address` field is a SQL null.
    * <p>
-   * The corresponding SQL looks like {@code INSERT INTO ... (name, address) VALUES ('null' :: jsonb, NULL)}.
+   * The corresponding SQL looks like
+   * {@code INSERT INTO ... (name, address) VALUES ('null' :: jsonb, NULL)}.
    */
   protected abstract List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception;
 
@@ -177,9 +179,9 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Starting with an empty destination, execute a full refresh append sync. Verify that the
-   * records are written to the destination table. Then run a second sync, and verify that the old and new records
-   * are all present.
+   * Starting with an empty destination, execute a full refresh append sync. Verify that the records
+   * are written to the destination table. Then run a second sync, and verify that the old and new
+   * records are all present.
    */
   @Test
   public void fullRefreshAppend() throws Exception {
