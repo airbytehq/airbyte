@@ -35,6 +35,7 @@ AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
+IGNORED_FILE_EXTENSIONS = [".md"]
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -241,28 +242,29 @@ def get_last_commit_message() -> str:
 
 def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     """Check if the provided file has an ignored extension."""
-    ignored_file_extensions = [".md"]
-    return Path(file_path).suffix in ignored_file_extensions
+    return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
-def _file_path_starts_with(file_parts: tuple, connector_dependency_parts: tuple) -> bool:
+def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
     """Check if the file path starts with the connector dependency path."""
-    return file_parts[:len(connector_dependency_parts)] == connector_dependency_parts
+    given_file_path_parts = given_file_path.parts
+    starts_with_path_parts = starts_with_path.parts
+
+    return given_file_path_parts[:len(starts_with_path_parts)] == starts_with_path_parts
 
 def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
     """Find all connectors whose dependencies were modified."""
     modified_connectors = {}
     for connector, connector_dependencies in all_dependencies:
         for connector_dependency in connector_dependencies:
-            connector_dependency_parts = connector_dependency.parts
-            file_parts = Path(file).parts
+            file_path = Path(file)
 
-            if _file_path_starts_with(file_parts, connector_dependency_parts):
+            if _file_path_starts_with(file_path, connector_dependency):
                 # Add the connector to the modified connectors
                 modified_connectors.setdefault(connector, [])
-                connector_directory_parts = Path(connector.code_directory).parts
+                connector_directory_path = Path(connector.code_directory)
 
                 # If the file is in the connector directory, add it to the modified files
-                if _file_path_starts_with(file_parts, connector_directory_parts):
+                if _file_path_starts_with(file_path, connector_directory_path):
                     modified_connectors[connector].append(file)
                 else:
                     main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file}'.")
