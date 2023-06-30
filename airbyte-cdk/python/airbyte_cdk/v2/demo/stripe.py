@@ -11,9 +11,10 @@ from airbyte_cdk.v2.concurrency import HttpRequestDescriptor, HttpPartitionDescr
     ConcurrentStreamGroup, ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.http import GetRequest, AiohttpRequester, Paginator, ResponseType
 from airbyte_cdk.v2.state import DatetimePartitionDescriptor, DatetimePartitionGenerator, DatetimeState, StateManager, DatetimeStateManager
+import json
 
 STRIPE_API_URL = "https://api.stripe.com/v1"
-STRIPE_SECRET_KEY = open("/Users/sherif/stripe-key", "r").read()
+STRIPE_SECRET_KEY = json.loads(open("/Users/alex/code/tools/airbyte-integrations/connectors/source-stripe/secrets/config.json", "r").read())["client_secret"]
 STRIPE_ACCOUNT_NUMBER = "acct_1G9HZLIEn5WyEQxn"
 
 
