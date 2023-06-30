@@ -32,7 +32,9 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
@@ -108,6 +110,12 @@ public abstract class BaseTypingDedupingTest {
    * For a given stream, return the records that exist in the destination's final table. Each record
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
    * {...}, "field1": ..., "field2": ..., ...}.
+   * <p>
+   * For JSON-valued columns, there is some nuance: a SQL null should be represented as a missing entry, whereas a JSON
+   * null should be represented as a {@link com.fasterxml.jackson.databind.node.NullNode}. For example, in the JSON blob
+   * {"name": null}, the `name` field is a JSON null, and the `address` field is a SQL null.
+   * <p>
+   * The corresponding SQL looks like {@code INSERT INTO ... (name, address) VALUES ('null' :: jsonb, NULL)}.
    */
   protected abstract List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception;
 
@@ -124,8 +132,7 @@ public abstract class BaseTypingDedupingTest {
   @BeforeEach
   public void setup() {
     streamNamespace = Strings.addRandomSuffix("typing_deduping_test", "_", 5);
-    // we don't randomize this, because randomizing the namespace is sufficient.
-    streamName = "test_stream";
+    streamName = Strings.addRandomSuffix("test_stream", "_", 5);
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 
@@ -155,8 +162,8 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_fullrefresh_overwrite_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_fullrefresh_overwrite_final.jsonl");
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
@@ -166,6 +173,41 @@ public abstract class BaseTypingDedupingTest {
 
     List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
     List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+  }
+
+  /**
+   * Starting with an empty destination, execute a full refresh append sync. Verify that the
+   * records are written to the destination table. Then run a second sync, and verify that the old and new records
+   * are all present.
+   */
+  @Test
+  public void fullRefreshAppend() throws Exception {
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(getSchema()))));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
@@ -271,35 +313,40 @@ public abstract class BaseTypingDedupingTest {
         // These records should be the same. Find the specific fields that are different.
         boolean foundMismatch = false;
         String mismatchedRecordMessage = "Row had incorrect data:" + recordIdExtractor.apply(expectedRecord) + "\n";
-        for (String key : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
-          if (extractRawData && "_airbyte_data".equals(key)) {
+        // Iterate through each field in the expected record and compare it to the actual record's value.
+        for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
+          if (extractRawData && "_airbyte_data".equals(column)) {
             JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
             JsonNode actualRawData = actualRecord.get("_airbyte_data");
             for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
               JsonNode expectedValue = expectedRawData.get(field);
               JsonNode actualValue = actualRawData.get(field);
-              // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
-              if (!Objects.equals(expectedValue, actualValue)
-                  // Objects.equals expects the two values to be the same class.
-                  // We need to handle comparisons between e.g. LongNode and IntNode.
-                  && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-                  && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble())) {
-                mismatchedRecordMessage += "  For _airbyte_data." + field + ", expected " + expectedValue + " but got " + actualValue + "\n";
+              if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
+                mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
+                foundMismatch = true;
+              }
+            }
+            LinkedHashMap<String, JsonNode> extraColumns = checkForExtraFields(expectedRawData, actualRawData);
+            if (extraColumns.size() > 0) {
+              for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
+                mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
                 foundMismatch = true;
               }
             }
           } else {
-            JsonNode expectedValue = expectedRecord.get(key);
-            JsonNode actualValue = actualRecord.get(key);
-            // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
-            if (!Objects.equals(expectedValue, actualValue)
-                // Objects.equals expects the two values to be the same class.
-                // We need to handle comparisons between e.g. LongNode and IntNode.
-                && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-                && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble())) {
-              mismatchedRecordMessage += "  For key " + key + ", expected " + expectedValue + " but got " + actualValue + "\n";
+            JsonNode expectedValue = expectedRecord.get(column);
+            JsonNode actualValue = actualRecord.get(column);
+            if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
+              mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
               foundMismatch = true;
             }
+          }
+        }
+        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraFields(expectedRecord, actualRecord);
+        if (extraColumns.size() > 0) {
+          for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
+            mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
+            foundMismatch = true;
           }
         }
         if (foundMismatch) {
@@ -331,6 +378,32 @@ public abstract class BaseTypingDedupingTest {
     }
 
     return message;
+  }
+
+  private static boolean jsonNodesNotEquivalent(JsonNode expectedValue, JsonNode actualValue) {
+    // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
+    return !Objects.equals(expectedValue, actualValue)
+        // Objects.equals expects the two values to be the same class.
+        // We need to handle comparisons between e.g. LongNode and IntNode.
+        && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
+        && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
+  }
+
+  private static LinkedHashMap<String, JsonNode> checkForExtraFields(JsonNode expectedRecord, JsonNode actualRecord) {
+    LinkedHashMap<String, JsonNode> extraFields = new LinkedHashMap<>();
+    for (String column : Streams.stream(actualRecord.fieldNames()).sorted().toList()) {
+      // loaded_at and raw_id are generated dynamically, so we just ignore them.
+      if (!"_airbyte_loaded_at".equals(column) && !"_airbyte_raw_id".equals(column) && !expectedRecord.has(column)) {
+        extraFields.put(column, actualRecord.get(column));
+      }
+    }
+    return extraFields;
+  }
+
+  private static String generateFieldError(String fieldname, JsonNode expectedValue, JsonNode actualValue) {
+    String expectedString = expectedValue == null ? "SQL NULL (i.e. no value)" : expectedValue.toString();
+    String actualString = actualValue == null ? "SQL NULL (i.e. no value)" : actualValue.toString();
+    return "  For " + fieldname + ", expected " + expectedString + " but got " + actualString + "\n";
   }
 
   private static long asInt(JsonNode node) {

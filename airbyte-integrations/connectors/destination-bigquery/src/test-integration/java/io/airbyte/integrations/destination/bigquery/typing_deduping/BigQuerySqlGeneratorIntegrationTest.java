@@ -216,7 +216,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
+    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS, DestinationSyncMode.OVERWRITE);
     logAndExecute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
@@ -897,6 +897,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   /**
    * FieldValueList stores everything internally as string (I think?) but provides conversions to more useful types.
    * This method does that conversion, using the schema to determine which type is most appropriate.
+   * <p>
+   * SQL nulls are represented as explicit null values. JSON nulls are represented as {@link com.fasterxml.jackson.databind.node.NullNode}.
    */
   private static LinkedHashMap<String, Object> toMap(Schema schema, FieldValueList row) {
     final LinkedHashMap<String, Object> map = new LinkedHashMap<>();
@@ -904,7 +906,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
       final Field field = schema.getFields().get(i);
       final FieldValue value = row.get(i);
       Object typedValue;
-      if (value.getValue() == null) {
+      if (value.isNull()) {
         typedValue = null;
       } else {
         typedValue = switch (field.getType().getStandardType()) {

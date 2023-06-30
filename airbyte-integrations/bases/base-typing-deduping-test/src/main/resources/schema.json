@@ -18,6 +18,12 @@
         "city": { "type": "string" },
         "state": { "type": "string" }
       }
+    },
+    "age": { "type": "integer" },
+    "registration_date": {
+      "type": "string",
+      "format": "date",
+      "airbyte_type": "date"
     }
   }
 }

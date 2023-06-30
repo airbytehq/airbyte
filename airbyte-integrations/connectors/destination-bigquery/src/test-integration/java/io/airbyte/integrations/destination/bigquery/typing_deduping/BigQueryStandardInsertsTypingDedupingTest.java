@@ -61,7 +61,9 @@ public class BigQueryStandardInsertsTypingDedupingTest extends BaseTypingDedupin
   private static JsonNode toJson(LinkedHashMap<String, Object> map) {
     ObjectNode o = (ObjectNode) Jsons.emptyObject();
     map.forEach((key, value) -> {
-      if (value instanceof Instant i) {
+      if (value == null) {
+        // If the value is null, do nothing. We don't want to insert it into the json at all.
+      } else if (value instanceof Instant i) {
         // naively converting an Instant returns a DecimalNode with the unix epoch, so instead we manually stringify it
         o.set(key, Jsons.jsonNode(i.toString()));
       } else {

@@ -221,7 +221,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
+    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns(), stream.destinationSyncMode());
     String dedupFinalTable = "";
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
@@ -283,7 +283,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns, DestinationSyncMode destinationSyncMode) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -302,6 +302,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 END"""))
         .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String deletionClause;
+    if (destinationSyncMode == DestinationSyncMode.APPEND_DEDUP && streamColumns.keySet().stream().anyMatch(col -> "_ab_cdc_deleted_at".equals(col.originalName()))) {
+      deletionClause = """
+          AND (
+            JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+            OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+          )
+          """;
+    } else {
+      deletionClause = "";
+    }
 
     // Note that we intentionally excluded deleted records from this insert. See dedupRawRecords for an
     // explanation of how CDC deletes work.
@@ -310,7 +321,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
-        "column_list", columnList)).replace(
+        "column_list", columnList,
+        "deletion_clause", deletionClause)).replace(
             """
             INSERT INTO ${final_table_id}
             (
@@ -330,10 +342,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               FROM ${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
-                AND (
-                  JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-                  OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
-                )
+            ${deletion_clause}
             )
             SELECT
             ${column_list}
