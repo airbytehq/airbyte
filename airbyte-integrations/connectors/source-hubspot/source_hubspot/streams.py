@@ -123,7 +123,7 @@ class HubspotAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class API:
-    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic."""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
