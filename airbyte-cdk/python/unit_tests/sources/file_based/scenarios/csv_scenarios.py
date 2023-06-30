@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import RecordParseError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError, SchemaInferenceError
 from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
-from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 single_csv_scenario = (
     TestScenarioBuilder()
@@ -296,8 +296,8 @@ invalid_csv_scenario = (
             {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
         ]
     )
-    .set_expected_discover_error(SchemaInferenceError)
-    .set_expected_read_error(RecordParseError)
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_read_error(RecordParseError, FileBasedSourceError.ERROR_PARSING_FILE.value)
 ).build()
 
 csv_single_stream_scenario = (

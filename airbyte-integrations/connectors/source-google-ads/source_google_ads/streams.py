@@ -4,7 +4,7 @@
 
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -43,42 +43,22 @@ def parse_dates(stream_slice):
     return start_date, end_date
 
 
-def get_date_params(start_date: str, time_zone=None, range_days: int = None, end_date: pendulum.datetime = None) -> Tuple[str, str]:
-    """
-    Returns `start_date` and `end_date` for the given stream_slice.
-    If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
-    After 2 hours next page tokens will be expired, finally resulting in page token expired error
-    Currently this method returns `start_date` and `end_date` with 15 days difference.
-    """
-
-    end_date = end_date or pendulum.yesterday(tz=time_zone)
-    start_date = pendulum.parse(start_date)
-    if start_date > pendulum.now():
-        return start_date.to_date_string(), start_date.add(days=1).to_date_string()
-    end_date = min(end_date, start_date.add(days=range_days))
-
-    # Fix issue #4806, start date should always be lower than end date.
-    if start_date.add(days=1).date() >= end_date.date():
-        return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
-    return start_date.add(days=1).to_date_string(), end_date.to_date_string()
-
-
 def chunk_date_range(
     start_date: str,
     conversion_window: int,
-    field: str,
     end_date: str = None,
     days_of_data_storage: int = None,
     range_days: int = None,
     time_zone=None,
 ) -> Iterable[Optional[MutableMapping[str, any]]]:
     """
-    Passing optional parameter end_date for testing
-    Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
-    The return value is a list of dicts {'date': str} which can be used directly with the Slack API
+    Returns `start_date` and `end_date` for the given stream_slice.
+    If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
+    After 2 hours next page tokens will be expired, finally resulting in page token expired error
+    Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
-    intervals = []
-    end_date = pendulum.parse(end_date) if end_date else pendulum.now()
+    yesterday = pendulum.yesterday(tz=time_zone)
+    end_date = min(pendulum.parse(end_date), yesterday) if end_date else yesterday
     start_date = pendulum.parse(start_date)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
@@ -91,17 +71,15 @@ def chunk_date_range(
 
     # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
+    slice_start = start_date
 
-    while start_date < end_date:
-        start, end = get_date_params(start_date.to_date_string(), time_zone=time_zone, range_days=range_days, end_date=end_date)
-        intervals.append(
-            {
-                "start_date": start,
-                "end_date": end,
-            }
-        )
-        start_date = start_date.add(days=range_days)
-    return intervals
+    while slice_start.date() <= end_date.date():
+        slice_end = min(end_date, slice_start.add(days=range_days - 1))
+        yield {
+            "start_date": slice_start.to_date_string(),
+            "end_date": slice_end.to_date_string(),
+        }
+        slice_start = slice_end.add(days=1)
 
 
 class GoogleAdsStream(Stream, ABC):
@@ -195,7 +173,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 start_date=start_date,
                 end_date=end_date,
                 conversion_window=self.conversion_window_days,
-                field=self.cursor_field,
                 days_of_data_storage=self.days_of_data_storage,
                 range_days=self.range_days,
                 time_zone=customer.time_zone,
