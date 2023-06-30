@@ -458,7 +458,6 @@ class Campaigns(IncrementalTiktokStream):
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
 
-
 class AdGroups(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
@@ -510,6 +509,26 @@ class BasicReports(IncrementalTiktokStream, ABC):
         if report_granularity:
             self.report_granularity = report_granularity
 
+    @property
+    def filters(self) -> List[MutableMapping[str, Any]]:
+        return [
+            {
+                "filter_value": ["STATUS_ALL"],
+                "field_name": "ad_status",
+                "filter_type": "IN"
+            },
+            {
+                "filter_value": ["STATUS_ALL"],
+                "field_name": "campaign_status",
+                "filter_type": "IN"
+            },
+            {
+                "filter_value": ["STATUS_ALL"],
+                "field_name": "adgroup_status",
+                "filter_type": "IN"
+            },
+        ]
+    
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
@@ -696,6 +715,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
             params["start_date"] = stream_slice["start_date"]
             params["end_date"] = stream_slice["end_date"]
 
+        if self.filters:
+            params["filters"] = json.dumps(self.filters)
         return params
 
     def get_json_schema(self) -> Mapping[str, Any]:
