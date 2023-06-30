@@ -177,7 +177,7 @@ public class PostgresCtidHandler {
     // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
     // We are creating a list of lazy iterators each holding a subquery according to the plan.
     // All subqueries are then composed in a single composite iterator.
-    // Because list consists of lazy iterators, the query is only executing when needed on after the other.
+    // Because list consists of lazy iterators, the query is only executing when needed one after the other.
     final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
     subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
