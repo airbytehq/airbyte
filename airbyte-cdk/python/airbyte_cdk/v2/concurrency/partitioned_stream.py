@@ -3,15 +3,14 @@ from collections.abc import AsyncIterable
 from dataclasses import dataclass, field
 from typing import Mapping, Any, Iterable, TypeVar, Union, Generic
 
-from airbyte_cdk.v2.concurrency import PartitionDescriptor, PartitionGenerator
 
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 
-from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.core import StreamData, Stream
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.v2 import Stream, State
 from airbyte_cdk.v2.state import StateManager
+from airbyte_cdk.v2.state_obj import State
 
 # from airbyte_cdk.v2.state import StateManager
 
@@ -37,7 +36,7 @@ class PartitionedStream(Stream, ABC, Generic[PartitionType]):
         """ Return the partition descriptors """
 
     @abstractmethod
-    async def parse_response(self, response: Any) -> AsyncIterable[StreamData]:
+    async def parse_response_async(self, response: Any) -> AsyncIterable[StreamData]:
         """
         TODO this feels like a weird place to put this. A stream has no obligation to outside objects to provide
             a method for parsing output, it feels like an intrusion on this abstraction. Either this is not a stream

@@ -4,7 +4,7 @@ from typing import TypeVar, Mapping, Any, Generic, Iterable
 
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.v2 import StateType
+from airbyte_cdk.v2.state_obj import StateType
 
 PartitionType = TypeVar('PartitionType', bound='PartitionDescriptor')
 
@@ -19,7 +19,7 @@ class PartitionDescriptor:
             Should we try to solve this as part of partition descriptors?
             Alternatively we could just not bother with this.
     """
-    partition_id: str
+    #partition_id: str
     metadata: Mapping[str, Any]
 
 

@@ -7,7 +7,8 @@ from typing import Mapping, Any, Union, AsyncIterable, TypeVar, Generic, Optiona
 
 import aiohttp
 
-from airbyte_cdk.v2.concurrency import PartitionDescriptor, AsyncRequester
+from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 
 
 class ResponseParser:
@@ -104,9 +105,8 @@ class DefaultExponentialBackoffHandler(ErrorHandler[aiohttp.ClientResponse]):
 
 
 class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
-    def __init__(self, paginator: Paginator[aiohttp.ClientResponse], error_handler: ErrorHandler = None):
+    def __init__(self, error_handler: ErrorHandler = None):
         self._client = None
-        self.paginator = paginator
         # TODO this should be a list of error handlers
         self.error_handler = error_handler or DefaultExponentialBackoffHandler()
 
@@ -127,6 +127,11 @@ class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
                 raise Exception(f"We should be retrying here!! {e}. Response: {response} ")
             else:
                 yield response
+
+    async def __aexit__(self, *excinfo):
+        print(f"requester is deleted!")
+        if self._client:
+            await self._client.close()
 
     @staticmethod
     def _get_request_args(partition_descriptor: HttpPartitionDescriptor) -> Tuple[str, str, Mapping[str, Any]]:

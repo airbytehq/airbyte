@@ -1,15 +1,19 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Mapping, Any, Iterable, AsyncIterable
+from typing import Mapping, Any, Iterable, AsyncIterable, Optional, Union, List
 
 import aiohttp
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type
+import requests
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type, SyncMode
 
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.v2 import StateType
-from airbyte_cdk.v2.concurrency import HttpRequestDescriptor, HttpPartitionDescriptor, PartitionedStream, PartitionType, \
-    ConcurrentStreamGroup, ConcurrencyPolicy
-from airbyte_cdk.v2.concurrency.http import GetRequest, AiohttpRequester, Paginator, ResponseType
+from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
+from airbyte_cdk.v2.concurrency.partitioned_stream import PartitionedStream
+from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup, PartitionType
+from airbyte_cdk.v2.state_obj import StateType
+from airbyte_cdk.v2.concurrency.http import GetRequest, AiohttpRequester, Paginator, ResponseType, HttpPartitionDescriptor, \
+    HttpRequestDescriptor
 from airbyte_cdk.v2.state import DatetimePartitionDescriptor, DatetimePartitionGenerator, DatetimeState, StateManager, DatetimeStateManager
 import json
 
@@ -36,7 +40,6 @@ class StripePartitionGenerator(DatetimePartitionGenerator):
     ) -> Iterable[DatetimePartitionDescriptor]:
         for part in super().generate_partitions(**kwargs):
             yield StripePartitionDescriptor(
-                part.partition_id,
                 part.metadata,
                 self._generate_request_descriptor(part),
                 part.start_datetime,
@@ -56,8 +59,26 @@ class StripePartitionGenerator(DatetimePartitionGenerator):
 
 
 class StripeStream(PartitionedStream):
-    async def parse_response(self, response: aiohttp.ClientResponse) -> AsyncIterable[StreamData]:
-        response_json = await response.json()
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None,
+                     stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+        pass
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        pass
+
+    def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
+        return self.get_partition_descriptors(stream_state, catalog)
+
+    async def parse_response_async(self, aio_response: aiohttp.ClientResponse):
+        response = requests.Response()
+        response.status_code = aio_response.status
+        response.request = aio_response.request_info
+        response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
+        return response
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[StreamData]:
+        response_json = response.json()
         if isinstance(response_json, Mapping):
             for record in response_json.get('data', []):
                 yield record
@@ -82,6 +103,18 @@ class StripeStream(PartitionedStream):
         raise Exception("not implemented")
         pass
 
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+
 
 class StripePaginator(Paginator):
     def get_next_page_info(self, response: ResponseType) -> HttpRequestDescriptor:
@@ -91,7 +124,7 @@ class StripePaginator(Paginator):
 
 concurrency_factor = 6
 stream_group = ConcurrentStreamGroup(
-    AiohttpRequester(StripePaginator()),
+    AiohttpRequester(),
     ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
     [
         StripeStream("customers"),

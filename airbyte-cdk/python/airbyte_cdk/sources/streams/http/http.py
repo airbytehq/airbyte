@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import json
 import logging
 import os
+import aiohttp
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -19,6 +19,8 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
+from airbyte_cdk.v2.concurrency.http import HttpPartitionDescriptor, HttpRequestDescriptor, GetRequest
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
@@ -204,6 +206,13 @@ class HttpStream(Stream, ABC):
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
         return {}
+
+    async def parse_response_async(self, aio_response: aiohttp.ClientResponse):
+        response = requests.Response()
+        response.status_code = aio_response.status
+        response.request = aio_response.request_info
+        response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
+        return response
 
     @abstractmethod
     def parse_response(
@@ -461,6 +470,19 @@ class HttpStream(Stream, ABC):
 
         response = self._send_request(request, request_kwargs)
         return request, response
+
+    def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
+        # FIXME: pass parameters to stream_slices
+        return [HttpPartitionDescriptor(metadata=stream_slice,
+                                        request_descriptor=
+            GetRequest(
+                base_url=self.url_base,
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice),
+                headers={**self.request_headers(stream_state=stream_state, stream_slice=stream_slice), **self.authenticator.get_auth_header()},
+                request_parameters=self.request_params(stream_state=stream_state, stream_slice=stream_slice)
+            # FIXME etc..
+        ))
+                for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
 
 
 class HttpSubStream(HttpStream, ABC):

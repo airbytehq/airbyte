@@ -6,9 +6,9 @@ from typing import List, Tuple, Optional, Mapping, Any, Generic, TypeVar, Iterab
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from pydantic import BaseModel, Field
 
-from airbyte_cdk.v2 import State
 from .datetime_range_tracker import DatetimeRangeTracker
-from airbyte_cdk.v2.concurrency import PartitionDescriptor, PartitionGenerator
+from ..concurrency.partition_descriptors import PartitionDescriptor, PartitionGenerator
+from ..state_obj import State
 
 StateType = TypeVar('StateType', bound=State)
 PartitionType = TypeVar('PartitionType', bound=PartitionDescriptor)
@@ -32,6 +32,18 @@ class StateManager(ABC, Generic[StateType, PartitionType]):
     def from_state(state: StateType = None):
         """Return a new instance of the state manager initialized with the state object"""
 
+class LegacyStateManager(StateManager[StateType, PartitionType]):
+
+    def notify_partition_complete(self, partition_descriptor: PartitionType) -> StateType:
+        return EmptyState()
+
+    def get_state(self) -> StateType:
+        return EmptyState()
+
+    @staticmethod
+    def from_state(state: StateType = None):
+        pass
+
 
 class DatetimeState(State, BaseModel):
     copied_ranges: List[Tuple[datetime, datetime]] = Field(...)
@@ -42,6 +54,14 @@ class DatetimeState(State, BaseModel):
 
     def to_dict(self) -> Mapping[str, Any]:
         return self.dict(exclude_unset=True)
+
+class EmptyState(State):
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> StateType:
+        return EmptyState()
+
+    def to_dict(self) -> Mapping[str, Any]:
+        return {}
 
 
 @dataclass
@@ -67,7 +87,8 @@ class DatetimePartitionGenerator(PartitionGenerator[DatetimePartitionDescriptor,
         for uncopied_range in range_tracker.get_uncopied_ranges(self.start, self.end, self.preferred_partition_size):
             part_start = uncopied_range[0]
             part_end = uncopied_range[1]
-            yield DatetimePartitionDescriptor(f"{part_start} -- {part_end}", {}, part_start, part_end)
+            yield DatetimePartitionDescriptor({}, part_start, part_end)
+            #yield DatetimePartitionDescriptor(f"{part_start} -- {part_end}", {}, part_start, part_end)
 
 
 class DatetimeStateManager(StateManager[DatetimeState, DatetimePartitionDescriptor]):

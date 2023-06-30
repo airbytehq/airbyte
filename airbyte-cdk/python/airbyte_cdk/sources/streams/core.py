@@ -18,6 +18,10 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
+from airbyte_cdk.v2.state import PartitionType, StateManager, LegacyStateManager
+from airbyte_cdk.v2.state_obj import StateType
+
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
     from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -80,6 +84,7 @@ class Stream(ABC):
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
+    state_manager: StateManager = LegacyStateManager()
 
     @property
     def name(self) -> str:
@@ -202,6 +207,11 @@ class Stream(ABC):
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
           If the stream has no primary keys, return None.
         """
+
+    def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
+        # FIXME: pass parameters to stream_slices
+        return [PartitionDescriptor(metadata=stream_slice)
+                for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

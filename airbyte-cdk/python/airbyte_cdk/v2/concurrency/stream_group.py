@@ -9,9 +9,11 @@ from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, AirbyteMessage, Type as MessageType, AirbyteStateMessage, AirbyteStateType, \
     AirbyteStreamState, StreamDescriptor
 
-from airbyte_cdk.v2 import Stream
-from airbyte_cdk.v2.concurrency import PartitionedStream, PartitionDescriptor, ConcurrencyPolicy, AsyncRequester
+from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester
+from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
+from airbyte_cdk.v2.concurrency.partitioned_stream import PartitionedStream
 from airbyte_cdk.v2.state_obj import State
 
 PartitionType = TypeVar('PartitionType', bound=PartitionDescriptor)
@@ -44,8 +46,14 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         stream_state_manager = stream.state_manager
         # TODO parsing and error handling
         # TODO this likely needs to be an async for because request() should probably return an async iterable
+        print(f"partition_descriptor: {partition_descriptor}")
         async for response in self.requester.request(partition_descriptor):
-            async for record_or_message in stream.parse_response(response):
+            print(f"response: {response}")
+            #print(f"stream.parse_response(response): {stream.parse_response(response)}")
+            # FFIXME: should parsing be async?
+            # I think it would be better, but it makes the integration more complicated
+            requests_response = await stream.parse_response_async(response)
+            for record_or_message in stream.parse_response(requests_response, stream_state={}):
                 if isinstance(record_or_message, dict):
                     message = stream_data_to_airbyte_message(stream.name, record_or_message)
                 yield message
@@ -118,5 +126,5 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         # TODO allow round-robin getting one stream from each partition to enable "balanced" syncs
         for stream in self._streams:
             stream_state = None  # source_state.get(stream.get_stream_descriptor(), {})
-            for partition in stream.get_partition_descriptors(stream_state=stream_state, catalog=catalog):
+            for partition in stream.generate_partitions(stream_state=stream_state, catalog=catalog):
                 yield StreamAndPartition(stream=stream, partition_descriptor=partition)
