@@ -72,6 +72,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         """
+        # add a comment to try to rerun the build
         schema = self._catalog_schema
         if schema is None:
             # On read requests we should always have the catalog available
