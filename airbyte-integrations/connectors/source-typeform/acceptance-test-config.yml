@@ -1,4 +1,5 @@
-connector_image: airbyte/source-typeform:dev
+connector_image: airbyte/source-typeform:1.0.0
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
