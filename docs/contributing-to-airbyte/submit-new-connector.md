@@ -1,4 +1,9 @@
-# Changes to CDK or Low-Code Connector
+# Submit a New Connector
+
+:::info
+Due to project priorities, we may not be able to accept all contributions at this time. 
+
+:::
 
 #### Find a request or create it!
 Before jumping into the code please first:

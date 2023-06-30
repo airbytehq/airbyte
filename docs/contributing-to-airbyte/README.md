@@ -45,7 +45,8 @@ The usual workflow of code contribution is:
 Pull Request reviews are done on a regular basis. 
 
 :::info
-Please make sure you respond to our feedback/questions and sign our CLA. <br>
+Please make sure you respond to our feedback/questions and sign our CLA.
+
 Pull Requests without updates will be closed due inactivity.
 :::
 
