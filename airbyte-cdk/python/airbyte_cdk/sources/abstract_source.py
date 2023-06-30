@@ -6,7 +6,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-
+from datetime import datetime, timedelta
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -103,14 +103,21 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        concurrency_factor = 6
         stream_group = ConcurrentStreamGroup(
             AiohttpRequester(),
-            ConcurrencyPolicy(max_concurrent_requests=6),
+            ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
             streams=stream_instances.values()
         )
+        record_count = 0
+        t0 = datetime.now()
         for record in stream_group.read_all({}, None, None):
+            if isinstance(record, AirbyteMessage) and record.record:
+                record_count +=1
             yield record
         logger.info(f"Finished syncing {self.name}")
+        print(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
+        logger.info(f"Read {record_count} records from {self.name}")
 
     @property
     def per_stream_state_enabled(self) -> bool:

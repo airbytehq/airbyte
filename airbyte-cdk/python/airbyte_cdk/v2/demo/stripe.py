@@ -4,7 +4,7 @@ from typing import Mapping, Any, Iterable, AsyncIterable, Optional, Union, List
 
 import aiohttp
 import requests
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type, SyncMode
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type, SyncMode, AirbyteMessage
 
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
@@ -98,7 +98,7 @@ class StripeStream(PartitionedStream):
     def __init__(self, name: str):
         super().__init__(DatetimeStateManager())
         self.name = name
-        self.start_date = datetime(2022, 1, 1)
+        self.start_date = datetime.strptime(CONFIG["start_date"], "%Y-%m-%dT%H:%M:%SZ")
 
     async def read_partition(self, configured_catalog: ConfiguredAirbyteCatalog, partition: PartitionType):
         raise Exception("not implemented")
@@ -129,13 +129,18 @@ stream_group = ConcurrentStreamGroup(
     requester,
     ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
     [
-        StripeStream("customers"),
-        StripeStream("charges"),
+        #StripeStream("customers"),
+        #StripeStream("charges"),
         StripeStream("balance_transactions"),
-        StripeStream("products"),
+        #StripeStream("products"),
     ]
 )
 t0 = datetime.now()
+record_count = 0
 for record in stream_group.read_all({}, None, None):
+    if isinstance(record, AirbyteMessage) and record.record:
+        record_count += 1
     print(record)
+    print(f"type:{type(record)}")
 print(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
+print(f"Read {record_count} records")

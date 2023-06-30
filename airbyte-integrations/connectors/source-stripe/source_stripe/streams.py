@@ -124,19 +124,491 @@ class BasePaginationStripeStream(StripeStream, ABC):
         if stream_slice is None:
             return []
 
-        try:
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            parsed_error = e.response.json()
-            error_code = parsed_error.get("error", {}).get("code")
-            error_message = parsed_error.get("message")
-            # if the API Key doesn't have required permissions to particular stream, this stream will be skipped
-            if status_code == 403 and error_code in STRIPE_ERROR_CODES:
-                self.logger.warn(f"Stream {self.name} is skipped, due to {error_code}. Full message: {error_message}")
-                pass
-            else:
-                self.logger.error(f"Syncing stream {self.name} is failed, due to {error_code}. Full message: {error_message}")
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+
+class IncrementalStripeStream(BasePaginationStripeStream, ABC):
+    # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
+    state_checkpoint_interval = math.inf
+
+    def __init__(self, lookback_window_days: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self.lookback_window_days = lookback_window_days
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_ts = self.get_start_timestamp(stream_state)
+        if start_ts >= pendulum.now().int_timestamp:
+            # if the state is in the future - this will produce a state message but not make an API request
+            yield None
+        else:
+            for start, end in self.chunk_dates(start_ts):
+                yield {"created[gte]": start, "created[lte]": end}
+
+    def get_start_timestamp(self, stream_state) -> int:
+        start_point = self.start_date
+        if stream_state and self.cursor_field in stream_state:
+            start_point = max(start_point, stream_state[self.cursor_field])
+
+        if start_point and self.lookback_window_days:
+            self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
+            start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).timestamp())
+
+        return start_point
+
+
+class Authorizations(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/authorizations/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/authorizations"
+
+
+class Customers(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/customers/list
+    """
+
+    cursor_field = "created"
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "customers"
+
+
+class BalanceTransactions(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/balance_transactions/list
+    """
+
+    cursor_field = "created"
+    name = "balance_transactions"
+
+    def path(self, **kwargs) -> str:
+        return "balance_transactions"
+
+
+class Cardholders(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/cardholders/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/cardholders"
+
+
+class Charges(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/charges/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "charges"
+
+
+class CustomerBalanceTransactions(BasePaginationStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
+    """
+
+    name = "customer_balance_transactions"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"customers/{stream_slice['id']}/balance_transactions"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for _slice in slices:
+            for customer in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+                # we use `get` here because some attributes may not be returned by some API versions
+                if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
+                    # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
+                    # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
+                    continue
+                yield customer
+
+
+class Coupons(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/coupons/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "coupons"
+
+
+class Disputes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/disputes/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "disputes"
+
+
+class EarlyFraudWarnings(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
+    """
+
+    def path(self, **kwargs):
+        return "radar/early_fraud_warnings"
+
+
+class Events(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/events/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "events"
+
+
+
+class ApplicationFees(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/application_fees
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "application_fees"
+
+
+class Invoices(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/invoices/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "invoices"
+
+
+
+class InvoiceItems(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/invoiceitems/list
+    """
+
+    cursor_field = "date"
+    name = "invoice_items"
+
+    def path(self, **kwargs):
+        return "invoiceitems"
+
+
+class Payouts(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/payouts/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "payouts"
+
+
+class Plans(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/plans/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "plans"
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["expand[]"] = ["data.tiers"]
+        return params
+
+
+class Products(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/products/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "products"
+
+
+class Reviews(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/reviews/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "reviews"
+
+
+class Subscriptions(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/subscriptions/list
+    """
+
+    use_cache = True
+    cursor_field = "created"
+    status = "all"
+
+    def path(self, **kwargs):
+        return "subscriptions"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["status"] = self.status
+        return params
+
+
+class SubscriptionSchedule(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/subscription_schedules
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "subscription_schedules"
+
+
+class Transfers(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/transfers/list
+    """
+
+    use_cache = True
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "transfers"
+
+
+class Refunds(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/refunds/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "refunds"
+
+
+class PaymentIntents(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/payment_intents/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "payment_intents"
+
+
+class PaymentMethods(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/payment_methods/list
+    """
+
+    def path(self, **kwargs):
+        return "payment_methods"
+
+
+
+class CheckoutSessions(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/list
+    """
+
+    name = "checkout_sessions"
+
+    cursor_field = "expires_at"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # https://stripe.com/docs/api/checkout/sessions/create#create_checkout_session-expires_at
+        # 'expires_at' - can be anywhere from 1 to 24 hours after Checkout Session creation.
+        # thus we should always add 1 day to lookback window to avoid possible checkout_sessions losses
+        self.lookback_window_days = self.lookback_window_days + 1
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+    def path(self, **kwargs):
+        return "checkout/sessions"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        since_date = self.get_start_timestamp(stream_state)
+        for item in super().parse_response(response, **kwargs):
+            # Filter out too old items
+            expires_at = item.get(self.cursor_field)
+            if expires_at and expires_at > since_date:
+                yield item
+
+
+class CheckoutSessionsLineItems(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/line_items
+    """
+
+    name = "checkout_sessions_line_items"
+
+    cursor_field = "checkout_session_expires_at"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # https://stripe.com/docs/api/checkout/sessions/create#create_checkout_session-expires_at
+        # 'expires_at' - can be anywhere from 1 to 24 hours after Checkout Session creation.
+        # thus we should always add 1 day to lookback window to avoid possible checkout_sessions losses
+        self.lookback_window_days = self.lookback_window_days + 1
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"checkout/sessions/{stream_slice['checkout_session_id']}/line_items"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        checkout_session_state = None
+        if stream_state:
+            checkout_session_state = {"expires_at": stream_state["checkout_session_expires_at"]}
+        checkout_session_stream = CheckoutSessions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        for checkout_session in checkout_session_stream.read_records(
+            sync_mode=SyncMode.full_refresh, stream_state=checkout_session_state, stream_slice={}
+        ):
+            yield {
+                "checkout_session_id": checkout_session["id"],
+                "expires_at": checkout_session["expires_at"],
+            }
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["expand[]"] = ["data.discounts", "data.taxes"]
+        return params
+
+    @property
+    def raise_on_http_errors(self):
+        return False
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 404:
+            self.logger.warning(response.json())
+            return
+        response.raise_for_status()
+
+        response_json = response.json()
+        data = response_json.get("data", [])
+        if data and stream_slice:
+            self.logger.info(f"stream_slice: {stream_slice}")
+            cs_id = stream_slice.get("checkout_session_id", None)
+            cs_expires_at = stream_slice.get("expires_at", None)
+            for e in data:
+                e["checkout_session_id"] = cs_id
+                e["checkout_session_expires_at"] = cs_expires_at
+        yield from data
+
+
+class PromotionCodes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/promotion_codes/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "promotion_codes"
+
+
+class ExternalAccount(BasePaginationStripeStream, ABC):
+    """
+    Bank Accounts and Cards are separate streams because they have different schemas
+    """
+
+    object = ""
+
+    def path(self, **kwargs):
+        return f"accounts/{self.account_id}/external_accounts"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+    def request_params(self, **kwargs):
+        params = super().request_params(**kwargs)
+        return {**params, **{"object": self.object}}
+
+
+class ExternalAccountBankAccounts(ExternalAccount):
+    """
+    https://stripe.com/docs/api/external_account_bank_accounts/list
+    """
+
+    object = "bank_account"
+
+
+class ExternalAccountCards(ExternalAccount):
+    """
+    https://stripe.com/docs/api/external_account_cards/list
+    """
+
+    object = "card"
+
+
+class SetupIntents(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/setup_intents/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "setup_intents"
 
 
 class Accounts(BasePaginationStripeStream):
@@ -147,3 +619,84 @@ class Accounts(BasePaginationStripeStream):
 
     def path(self, **kwargs):
         return "accounts"
+
+
+class CreditNotes(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/credit_notes/list
+    """
+
+    name = "credit_notes"
+
+    def path(self, **kwargs) -> str:
+        return "credit_notes"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return next_page_token or {}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+
+class Cards(IncrementalStripeStream):
+    """
+    Docs: https://stripe.com/docs/api/issuing/cards/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "issuing/cards"
+
+
+class TopUps(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/topups/list
+    """
+
+    name = "top_ups"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "topups"
+
+
+class Files(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/files/list
+    """
+
+    name = "files"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "files"
+
+
+class FileLinks(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/file_links/list
+    """
+
+    name = "file_links"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "file_links"
+
+
+
+
+class Transactions(IncrementalStripeStream):
+    """
+    Docs: https://stripe.com/docs/api/issuing/transactions/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/transactions"
