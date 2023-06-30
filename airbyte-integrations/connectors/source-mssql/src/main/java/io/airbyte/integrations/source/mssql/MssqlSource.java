@@ -450,7 +450,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       final AirbyteDebeziumHandler<Lsn> handler =
           new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime, OptionalInt.empty());
+              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime,
+              OptionalInt.empty());
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),

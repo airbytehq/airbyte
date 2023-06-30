@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class XminStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
+  public static final long XMIN_STATE_VERSION = 2L;
 
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
 
@@ -42,7 +42,8 @@ public class XminStateManager {
     final Map<AirbyteStreamNameNamespacePair, XminStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
-        // A reset causes the default state to be an empty legacy state, so we have to ignore those messages.
+        // A reset causes the default state to be an empty legacy state, so we have to ignore those
+        // messages.
         if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
@@ -51,8 +52,9 @@ public class XminStateManager {
           try {
             xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
           } catch (final IllegalArgumentException e) {
-            throw new ConfigErrorException("Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental mode, "
-                + "please reset your connection and re-sync.");
+            throw new ConfigErrorException(
+                "Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental mode, "
+                    + "please reset your connection and re-sync.");
           }
           localMap.put(pair, xminStatus);
         }
@@ -71,22 +73,28 @@ public class XminStateManager {
    * @return AirbyteMessage which includes information on state of records read so far
    */
   public static AirbyteMessage createStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
+    final AirbyteStateMessage stateMessage = getAirbyteStateMessage(pair, xminStatus);
+
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(stateMessage);
+  }
+
+  public static AirbyteStateMessage getAirbyteStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
             .withStreamDescriptor(
                 new StreamDescriptor()
                     .withName(pair.getName())
                     .withNamespace(pair.getNamespace()))
-            .withStreamState(new ObjectMapper().valueToTree(xminStatus));
+            .withStreamState(Jsons.jsonNode(xminStatus));
 
     // Set state
     final AirbyteStateMessage stateMessage =
         new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             .withStream(airbyteStreamState);
-
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(stateMessage);
+    return stateMessage;
   }
+
 }

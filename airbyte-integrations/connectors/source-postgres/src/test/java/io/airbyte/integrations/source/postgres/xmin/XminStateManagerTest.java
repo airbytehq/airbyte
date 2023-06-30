@@ -1,11 +1,15 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.xmin;
 
-import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_1;
-import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_2;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.NAMESPACE;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.PAIR1;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.PAIR2;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.STREAM_NAME1;
+import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_1;
+import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_2;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATUS1;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATUS2;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -49,4 +53,5 @@ public class XminStateManagerTest {
     assertThat(XminStateManager.createStateMessage(PAIR1, XMIN_STATUS1)).isEqualTo(XMIN_STATE_MESSAGE_1);
     assertThat(XminStateManager.createStateMessage(PAIR2, XMIN_STATUS2)).isEqualTo(XMIN_STATE_MESSAGE_2);
   }
+
 }

@@ -13,7 +13,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the project details.",
-      "format": "uri",
       "readOnly": true
     },
     "id": {
@@ -126,7 +125,6 @@
     "uuid": {
       "type": "string",
       "description": "Unique ID for next-gen projects.",
-      "format": "uuid",
       "readOnly": true
     },
     "insight": {

@@ -18,16 +18,36 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['credentials']['api_token'] if config['credentials']['auth_type'] == 'api_token' else config['credentials']['access_token'] if config['credentials']['auth_type'] == 'oauth2.0' else config.get('api_token', '') }}"
+      api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
     limit: "{{ parameters['items_per_page'] }}"
     error_handler:
-      type: "DefaultErrorHandler"
-      response_filters:
-        - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
-          action: RETRY
-      backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 60
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: "DefaultErrorHandler"
+          response_filters:
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+              action: RETRY
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
+        - type: "DefaultErrorHandler"
+          description: "
+            Ignore the slice when there is no access to the requested entity - 'code: 403, message: None'.
+            https://github.com/airbytehq/alpha-beta-issues/issues/846
+            "
+          response_filters:
+            - http_codes: [ 403 ]
+              action: IGNORE
+        - type: "DefaultErrorHandler"
+          description: "
+            Retry when `Internal Server Error occures - `code: 500, message: Internal server error`.
+            https://github.com/airbytehq/alpha-beta-issues/issues/245
+            "
+          response_filters:
+            - http_codes: [ 500 ]
+              action: RETRY
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
   default_paginator:
     type: "DefaultPaginator"
     pagination_strategy:

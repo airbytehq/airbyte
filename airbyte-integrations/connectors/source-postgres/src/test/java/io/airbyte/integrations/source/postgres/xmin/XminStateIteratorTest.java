@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.xmin;
 
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.PAIR1;
@@ -71,8 +75,11 @@ public class XminStateIteratorTest {
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_3, iterator.next());
     // No state message is emitted at this point.
-    // Since there is no intermediate stateEmission, this will catch the error but not emit a state message
-    // but will prevent an exception from causing the iterator to fail by marking iterator as endOfData()
+    // Since there is no intermediate stateEmission, this will catch the error but not emit a state
+    // message
+    // but will prevent an exception from causing the iterator to fail by marking iterator as
+    // endOfData()
     assertFalse(iterator.hasNext());
   }
+
 }
