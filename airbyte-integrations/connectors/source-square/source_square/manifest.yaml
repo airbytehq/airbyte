@@ -84,7 +84,7 @@ definitions:
       paginator:
         type: DefaultPaginator
         pagination_strategy:
-          page_size: 100
+          page_size: 50
           type: "CursorPagination"
           cursor_value: "{{ response.cursor }}"
           stop_condition: "{{ 'cursor' not in response }}"

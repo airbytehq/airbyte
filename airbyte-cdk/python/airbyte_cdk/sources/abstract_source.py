@@ -103,7 +103,8 @@ class AbstractSource(Source, ABC):
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
+        streams_to_sync = set([stream.stream.name for stream in catalog.streams])
+        stream_instances = {s.name: s for s in self.streams(config) if s.name in streams_to_sync}
 
         for s in stream_instances.values():
             if s.stream_slices != Stream.stream_slices:

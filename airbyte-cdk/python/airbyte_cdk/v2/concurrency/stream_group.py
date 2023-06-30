@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Mapping, Any, Generic, TypeVar, Iterable, AsyncIterable
 
+from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
@@ -55,6 +56,10 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
             for record_or_message in await stream.parse_response_async(response, stream_state={}):
                 if isinstance(record_or_message, dict):
                     message = stream_data_to_airbyte_message(stream.name, record_or_message)
+                elif isinstance(record_or_message, Record):
+                    message = stream_data_to_airbyte_message(stream.name, record_or_message.data)
+                else:
+                    raise ValueError(f"Unexpected type: {type(record_or_message)}")
                 yield message
 
                 if message.type == MessageType.RECORD:
