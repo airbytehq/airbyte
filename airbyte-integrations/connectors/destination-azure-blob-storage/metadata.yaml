@@ -20,7 +20,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/azureblobstorage
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
   tags:
     - language:java
 metadataSpecVersion: "1.0"

@@ -29,6 +29,11 @@ acceptance_tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
+      empty_streams:
+        - name: export
+          bypass_reason: "Data expired too often"
+        - name: annotations
+          bypass_reason: "Data expired too often"
   full_refresh:
     tests:
     - config_path: "secrets/config_old.json"

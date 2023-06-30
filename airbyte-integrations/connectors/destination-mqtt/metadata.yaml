@@ -10,7 +10,7 @@ data:
   name: MQTT
   registries:
     cloud:
-      enabled: false
+      enabled: false # hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
     oss:
       enabled: true
   releaseStage: alpha

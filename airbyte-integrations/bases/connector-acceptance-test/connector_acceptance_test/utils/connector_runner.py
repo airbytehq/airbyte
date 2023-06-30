@@ -24,7 +24,7 @@ class ConnectorRunner:
         connector_configuration_path: Optional[Path] = None,
         custom_environment_variables: Optional[Mapping] = {},
     ):
-        self._client = docker.from_env()
+        self._client = docker.from_env(timeout=120)
         try:
             self._image = self._client.images.get(image_name)
         except docker.errors.ImageNotFound:

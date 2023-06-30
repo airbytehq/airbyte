@@ -10,7 +10,7 @@ data:
   name: MeiliSearch
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
     oss:
       enabled: true
   releaseStage: alpha

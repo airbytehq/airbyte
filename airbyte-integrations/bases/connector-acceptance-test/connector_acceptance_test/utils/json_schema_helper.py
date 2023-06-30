@@ -43,7 +43,7 @@ class CatalogField:
             return pendulum.parse(value)
         return value
 
-    def parse(self, record: Mapping[str, Any], path: Optional[List[str]] = None) -> Any:
+    def parse(self, record: Mapping[str, Any], path: Optional[List[Union[int, str]]] = None) -> Any:
         """Extract field value from the record and cast it to native type"""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)

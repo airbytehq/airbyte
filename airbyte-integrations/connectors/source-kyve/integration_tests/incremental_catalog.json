@@ -1,0 +1,20 @@
+{
+  "streams" : [
+    {
+      "stream" : {
+        "name" : "pool_0",
+        "json_schema" : {},
+        "source_defined_cursor" : true,
+        "supported_sync_modes" : [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode" : "incremental",
+      "default_cursor_field" : [
+        "offset"
+      ],
+      "destination_sync_mode" : "append"
+    }
+  ]
+}
