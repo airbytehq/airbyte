@@ -24,7 +24,6 @@ from source_zendesk_support.streams import (
     AttributeDefinitions,
     AuditLogs,
     BaseSourceZendeskSupportStream,
-    SourceZendeskSupportStream,
     Brands,
     CustomRoles,
     GroupMemberships,
@@ -37,6 +36,7 @@ from source_zendesk_support.streams import (
     Schedules,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
+    SourceZendeskSupportStream,
     Tags,
     TicketAudits,
     TicketComments,
@@ -503,9 +503,11 @@ class TestSourceZendeskSupportStream:
             "TicketFields",
         ],
     )
-    def test_next_page_token(self, stream_cls, expected):
+    def test_next_page_token(self, stream_cls, expected, mocker):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.next_page_token()
+        posts_response = mocker.Mock()
+        posts_response.json.return_value = {"next_page": None}
+        result = stream.next_page_token(response=posts_response)
         assert expected == result
 
     @pytest.mark.parametrize(

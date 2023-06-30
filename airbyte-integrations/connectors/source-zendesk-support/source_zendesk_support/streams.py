@@ -585,8 +585,10 @@ class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
 
-class Posts(SourceZendeskSupportStream):
+class Posts(SourceZendeskSupportCursorPaginationStream):
     """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
+
+    cursor_field = "updated_at"
 
     def path(self, **kwargs):
         return "community/posts"
