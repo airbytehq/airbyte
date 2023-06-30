@@ -1,0 +1,11 @@
+[workspace]
+members = ["protocol", "connector"]
+
+[workspace.dependencies]
+clap = { version = "4.3.3", features = ["derive"] }
+schemars = "0.8.12"
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = "1.0.96"
+url = { version = "2.4.0", features = ["serde"] }
+async-trait = "0.1.68"
+tokio = { version = "1.28.2" }

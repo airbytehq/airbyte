@@ -1,0 +1,20 @@
+[package]
+name = "airbyte-protocol"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.71"
+async-trait = "0.1.68"
+clap = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+url = { workspace = true }
+tokio = { workspace = true, features = ["fs", "io-std"] }
+tokio-util = { version = "0.7.8", features = ["codec"] }
+tokio-serde = { version = "0.8.0", features = ["json"] }
+tokio-serde-json = "0.3.0"
+futures = "0.3.28"
+bytes = "1.4.0"
+thiserror = "1.0.40"

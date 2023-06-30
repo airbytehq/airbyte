@@ -1,0 +1,19 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: acaa81ea-62f2-47ed-a3db-40daa63084f2
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-field33
+  githubIssueLabel: destination-field33
+  icon: field33.svg
+  license: MIT
+  name: "Field 33"
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  tags:
+    - language:rust
+metadataSpecVersion: "1.0"

@@ -1,0 +1,16 @@
+[package]
+name = "field33-airbyte-connector"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.71"
+clap = { workspace = true }
+schemars = { workspace = true, features = ["preserve_order", "url"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+url = { version = "2.4.0", features = ["serde"] }
+airbyte-protocol = { path = "../protocol" }
+reqwest = { version = "0.11.18", default-features = false, features = ["rustls-tls", "json"] }
+jsonl = "4.0.1"
