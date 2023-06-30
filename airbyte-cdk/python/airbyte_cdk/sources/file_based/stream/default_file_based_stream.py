@@ -132,11 +132,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         return list(self._stream_reader.get_matching_files(self.config.globs))
 
-    def infer_schema(self, files: List[RemoteFile]) -> Dict[str, Any]:
+    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self._infer_schema(files))
 
-    async def _infer_schema(self, files: List[RemoteFile]) -> Dict[str, Any]:
+    async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         """
         Infer the schema for a stream.
 
