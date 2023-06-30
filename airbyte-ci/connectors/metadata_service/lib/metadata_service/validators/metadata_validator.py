@@ -15,10 +15,12 @@ Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
     ("airbyte/source-prestashop", "1.0.0"),
     ("airbyte/source-onesignal", "1.0.0"),
-    ("airbyte/source-faker", "3.0.0"),
     ("airbyte/source-yandex-metrica", "1.0.0"),
     ("airbyte/destination-meilisearch", "1.0.0"),
-    ("airbyte/destination-csv", "1.0.0")
+    ("airbyte/destination-csv", "1.0.0"),
+    ("airbyte/source-metabase", "1.0.0"),
+    ("airbyte/source-hubspot", "1.0.0"),
+    ("airbyte/source-typeform", "1.0.0"),
 ]
 
 
