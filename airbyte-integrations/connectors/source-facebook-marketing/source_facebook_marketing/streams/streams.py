@@ -221,6 +221,7 @@ class AdAccounts(FBMarketingStream):
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
+    entity_prefix = "image"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._list_objects(api_wrapper=Images.get_ad_images, params=params, fields=self.fields)
