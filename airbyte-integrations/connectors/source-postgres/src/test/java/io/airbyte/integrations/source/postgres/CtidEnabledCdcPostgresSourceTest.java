@@ -7,10 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,6 +22,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
   @Override
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(28, stateMessages.size());
+    assertStateTypes(stateMessages, 25);
   }
 
   @Override
@@ -36,6 +40,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
+    assertStateTypes(stateMessages, 4);
   }
 
   @Override
@@ -46,11 +51,35 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
   @Override
   protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
+    assertStateTypes(stateAfterFirstBatch, 24);
   }
 
   @Override
   protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
+  }
+
+  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+    JsonNode sharedState = null;
+    for (int i = 0; i < stateMessages.size(); i++) {
+      final AirbyteStateMessage stateMessage = stateMessages.get(i);
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
+      final AirbyteGlobalState global = stateMessage.getGlobal();
+      assertNotNull(global.getSharedState());
+      if (Objects.isNull(sharedState)) {
+        sharedState = global.getSharedState();
+      } else {
+        assertEquals(sharedState, global.getSharedState());
+      }
+      assertEquals(1, global.getStreamStates().size());
+      final AirbyteStreamState streamState = global.getStreamStates().get(0);
+      if (i <= indexTillWhichExpectCtidState) {
+        assertTrue(streamState.getStreamState().has("state_type"));
+        assertEquals("ctid", streamState.getStreamState().get("state_type").asText());
+      } else {
+        assertFalse(streamState.getStreamState().has("state_type"));
+      }
+    }
   }
 
   @Override

@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams, final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
-      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream)) {
+      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
         return;
       }
       streamsThatHaveCompletedSnapshot.add(
