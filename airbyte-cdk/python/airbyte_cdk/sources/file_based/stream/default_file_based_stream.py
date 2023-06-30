@@ -47,9 +47,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         super().__init__(config, stream_reader, availability_strategy, discovery_policy, parsers, validation_policies)
         self._cursor = cursor
 
-    @property  # noqa
+    @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._cursor.get_state()  # type: ignore
+        return self._cursor.get_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
