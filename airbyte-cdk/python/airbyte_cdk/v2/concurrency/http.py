@@ -98,11 +98,7 @@ class DefaultExponentialBackoffHandler(ErrorHandler[aiohttp.ClientResponse]):
 
     # TODO pass attempt number
     def observe_response(self, response: aiohttp.ClientResponse) -> Optional[RequestException]:
-        if response.status == 429 or response.status >= 500:
-            wait_time = self.request_to_attempt_number[response.request_info] ** self.factor
-            self.request_to_attempt_number[response.request_info] = self.request_to_attempt_number[response.request_info] + 1
-            raise Retry(f"retrying due to response status code: {response.status}", wait_time)
-
+        return None
 
 class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
     def __init__(self, error_handler: ErrorHandler = None):
@@ -114,6 +110,7 @@ class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
         if not self._client:
             self._client = aiohttp.ClientSession()
             await self._client.__aenter__()
+
         return self._client
 
     async def request(self, partition_descriptor: HttpPartitionDescriptor) -> AsyncIterable[aiohttp.ClientResponse]:
@@ -127,11 +124,6 @@ class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
                 raise Exception(f"We should be retrying here!! {e}. Response: {response} ")
             else:
                 yield response
-
-    async def __aexit__(self, *excinfo):
-        print(f"requester is deleted!")
-        if self._client:
-            await self._client.close()
 
     @staticmethod
     def _get_request_args(partition_descriptor: HttpPartitionDescriptor) -> Tuple[str, str, Mapping[str, Any]]:

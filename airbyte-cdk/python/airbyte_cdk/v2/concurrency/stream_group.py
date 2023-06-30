@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Mapping, Any, Generic, TypeVar, Iterable, AsyncIterable
 
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
@@ -22,21 +23,21 @@ StateType = TypeVar('StateType', bound=State)
 
 @dataclass
 class StreamAndPartition(Generic[PartitionType]):
-    stream: PartitionedStream
+    stream: Stream
     partition_descriptor: PartitionType
 
 
 class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     requester: AsyncRequester
     concurrency_policy: ConcurrencyPolicy
-    _streams: List[PartitionedStream]
+    _streams: List[Stream]
 
     def __init__(self, requester: AsyncRequester, concurrency_policy: ConcurrencyPolicy, streams: List[PartitionedStream]):
         self.requester = requester
         self.concurrency_policy = concurrency_policy
         self._streams = streams  # TODO we probably don't need full streams, as long as we can get partitions and stream names
 
-    def streams(self, configured_catalog: ConfiguredAirbyteCatalog) -> List[PartitionedStream]:
+    def streams(self, configured_catalog: ConfiguredAirbyteCatalog) -> List[Stream]:
         # TODO
         return self._streams
 
@@ -46,9 +47,9 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         stream_state_manager = stream.state_manager
         # TODO parsing and error handling
         # TODO this likely needs to be an async for because request() should probably return an async iterable
-        print(f"partition_descriptor: {partition_descriptor}")
+        #print(f"partition_descriptor: {partition_descriptor}")
         async for response in self.requester.request(partition_descriptor):
-            print(f"response: {response}")
+            #print(f"response: {response}")
             #print(f"stream.parse_response(response): {stream.parse_response(response)}")
             # FFIXME: should parsing be async?
             # I think it would be better, but it makes the integration more complicated

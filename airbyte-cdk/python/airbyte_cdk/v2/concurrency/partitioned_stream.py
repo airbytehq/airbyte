@@ -32,10 +32,6 @@ class PartitionedStream(Stream, ABC, Generic[PartitionType]):
         self.state_manager = state_manager
 
     @abstractmethod
-    def get_partition_descriptors(self, stream_state: StateType, catalog: ConfiguredAirbyteCatalog) -> Iterable[PartitionType]:
-        """ Return the partition descriptors """
-
-    @abstractmethod
     async def parse_response_async(self, response: Any) -> AsyncIterable[StreamData]:
         """
         TODO this feels like a weird place to put this. A stream has no obligation to outside objects to provide

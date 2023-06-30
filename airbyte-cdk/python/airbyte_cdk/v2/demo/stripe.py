@@ -62,6 +62,8 @@ class StripePartitionGenerator(DatetimePartitionGenerator):
 class StripeStream(PartitionedStream):
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None,
                      stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+        print("stripe.read_records")
+        exit()
         pass
 
     @property
@@ -69,7 +71,12 @@ class StripeStream(PartitionedStream):
         pass
 
     def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
-        return self.get_partition_descriptors(stream_state, catalog)
+        yield from StripePartitionGenerator(
+            f"/{self.name}",
+            STRIPE_ACCOUNT_NUMBER,
+            self.start_date,
+            STRIPE_SECRET_KEY
+        ).generate_partitions()
 
     async def parse_response_async(self, aio_response: aiohttp.ClientResponse):
         response = requests.Response()
@@ -92,14 +99,6 @@ class StripeStream(PartitionedStream):
         super().__init__(DatetimeStateManager())
         self.name = name
         self.start_date = datetime(2022, 1, 1)
-
-    def get_partition_descriptors(self, stream_state: StateType, catalog: ConfiguredAirbyteCatalog) -> Iterable[PartitionType]:
-        yield from StripePartitionGenerator(
-            f"/{self.name}",
-            STRIPE_ACCOUNT_NUMBER,
-            self.start_date,
-            STRIPE_SECRET_KEY
-        ).generate_partitions()
 
     async def read_partition(self, configured_catalog: ConfiguredAirbyteCatalog, partition: PartitionType):
         raise Exception("not implemented")
@@ -124,9 +123,10 @@ class StripePaginator(Paginator):
         return HttpRequestDescriptor(None, None, None)
 
 
-concurrency_factor = 6
+concurrency_factor = 2
+requester = AiohttpRequester()
 stream_group = ConcurrentStreamGroup(
-    AiohttpRequester(),
+    requester,
     ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
     [
         StripeStream("customers"),
