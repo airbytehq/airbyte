@@ -23,12 +23,14 @@ class AdaptiveExportData(Adaptive):
         """
 
         # first three columns are static and they are always retrieved
-        mapping_order = {"account_name": 0, "account_code": 1, "level_name": 2}
+        mapping_order = {"account_name": 0, "account_code": 1, "level_code": 2, "level_name": 3}
 
         # now create a column for each dimensions that is requested with the order respected
         n_elems = len(mapping_order)
         dimensions = self.config["method_obj"]["dimensions"]
-        mapping_order.update({d.replace(" ", "_").lower(): n + n_elems for n, d in enumerate(dimensions)})
+        # generate one additional column that will hold the code value of each dimension
+        new_dimensions = [s for item in dimensions for s in [f"{item}_code", item]]
+        mapping_order.update({d.replace(" ", "_").lower(): n + n_elems for n, d in enumerate(new_dimensions)})
 
         # the final column in row is attributed to the amount
         n_elems = len(mapping_order)
@@ -69,7 +71,7 @@ class AdaptiveExportData(Adaptive):
                 <call method="{{method_obj["method"]}}" callerName="Airbyte - auto">
                     <credentials login="{{username}}" password="{{password}}"/>
                     <version name="{{method_obj["version"]}}" isDefault="false"/>
-                    <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
+                    <format useInternalCodes="true" includeCodes="true" includeNames="true" displayNameEnabled="true"/>
                     <filters>
                         <accounts>
                             <account code="{{account_selected}}" isAssumption="false" includeDescendants="true"/>
@@ -103,7 +105,7 @@ class AdaptiveExportData(Adaptive):
         <call method="{{method_obj["method"]}}" callerName="Airbyte - auto">
             <credentials login="{{username}}" password="{{password}}"/>
             <version name="{{method_obj["version"]}}" isDefault="false"/>
-            <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
+            <format useInternalCodes="true" includeCodes="true" includeNames="true" displayNameEnabled="true"/>
             <filters>
                 <accounts>
                     <account code="{{method_obj["accounts"][0]}}" isAssumption="false" includeDescendants="true"/>
@@ -134,12 +136,15 @@ class AdaptiveExportData(Adaptive):
             "properties": {
                 "account_name": {"type": "string"},
                 "account_code": {"type": "string"},
+                "level_code": {"type": "string"},
                 "level_name": {"type": "string"},
             },
         }
         # add dimensions as string types
         dimensions = self.config["method_obj"]["dimensions"]
-        json_schema["properties"].update({d.replace(" ", "_").lower(): {"type": "string"} for d in dimensions})
+        # generate one additional column that will hold the code value of each dimension
+        new_dimensions = [s for item in dimensions for s in [f"{item}_code", item]]
+        json_schema["properties"].update({d.replace(" ", "_").lower(): {"type": "string"} for d in new_dimensions})
 
         # add an additional columns to keep the date, and the amount
         json_schema["properties"].update({"date": {"type": "string"}})
