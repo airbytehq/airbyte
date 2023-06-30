@@ -8,8 +8,8 @@ Thank you for your interest in contributing! We love community contributions.
 Read on to learn how to contribute to Airbyte.
 We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
+Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../project-overview/code-of-conduct.md).
 
-Before getting started, please make sure you review our [Code of Conduct](../project-overview/code-of-conduct.md). 
 ## Code Contributions
 
 Most of the issues that are open for contributions are tagged with `good first issue` or `help-welcome`. 
@@ -23,20 +23,27 @@ We are prioritizing the following contributions:
 * Submit a New Source Connector using the low-code CDK
 * Helm Charts features and bug fixes
 
+:::warning
 Contributions outside of these will be evaluated on a case-by-case basis by our engineering team.
+:::
 
-Here is the workflow of code contributions:
+The usual workflow of code contribution is:
 1. Fork the Airbyte repository
 2. Clone the repository locally
 3. Make changes and commit them
 4. Push your local branch to your fork
 5. Submit a Pull Request so that we can review your changes
 6. Write a commit message
-7. An Airbyte maintainer will trigger the CI tests for you
+7. An Airbyte maintainer will trigger the CI tests for you and review the code
+8. Update the comments and review
+9. Merge the contribution
 
 Pull Request reviews are done on a regular basis. 
 
-Please make sure you respond to our feedback/questions and sign our CLA.
+:::info
+Please make sure you respond to our feedback/questions and sign our CLA. <br>
+Pull Requests without updates will be closed due inactivity.
+:::
 
 Guidelines to common code contributions:
 - [Submit code change to existing Source Connector](change-cdk-connector.md)
