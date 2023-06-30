@@ -13,7 +13,7 @@ from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, Miss
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
@@ -112,7 +112,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> Mapping[str, Any]:
         if self.config.input_schema:
-            type_mapping = type_mapping_to_jsonschema(self.config.input_schema)
+            type_mapping = self.config.input_schema
         else:
             files = self.list_files()
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
