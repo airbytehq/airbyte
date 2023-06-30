@@ -63,6 +63,7 @@ public class CtidUtils {
           final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
                                                                                          streamDescriptor.getNamespace());
           if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
+            System.out.println("IN CTID ");
             statesFromCtidSync.add(stateMessage);
             stillInCtidStreamPairs.add(pair);
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {
@@ -74,9 +75,10 @@ public class CtidUtils {
               statesFromXminSync.add(stateMessage);
             }
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("standard")) {
-            if (streamState.get("cursor").isNull()) {
-              throw new RuntimeException("Null cursor value for the provided cursor column");
-            }
+//            System.out.println("IN STANDARD ");
+//            if (streamState.get("cursor").isNull()) {
+//              throw new RuntimeException("Null cursor value for the provided cursor column");
+//            }
             standardSyncStreamPairs.add(pair);
             statesFromStandardSync.add(stateMessage);
           } else {
@@ -88,6 +90,7 @@ public class CtidUtils {
         alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
+
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);

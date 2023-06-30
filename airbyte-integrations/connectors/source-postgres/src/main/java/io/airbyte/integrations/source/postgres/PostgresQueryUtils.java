@@ -18,6 +18,8 @@ import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,7 +71,7 @@ public class PostgresQueryUtils {
       """;
 public static final String MAX_CURSOR_VALUE_QUERY =
     """
-      SELECT MAX(%s) FROM %s;
+      SELECT %s from %s WHERE %s = (SELECT MAX(%s) from %s);
     """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
@@ -126,7 +128,7 @@ public static final String MAX_CURSOR_VALUE_QUERY =
 
   public static Map<AirbyteStreamNameNamespacePair, StandardStatus> getStandardSyncStatusForStreams(final JdbcDatabase database,
                                                                                                     final List<ConfiguredAirbyteStream> streams,
-                                                                                                    final StateManager stateManager) {
+                                                                                                    final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
 
     final Map<AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap = new HashMap<>();
     streams.forEach(stream -> {
@@ -135,27 +137,33 @@ public static final String MAX_CURSOR_VALUE_QUERY =
         final String namespace = stream.getStream().getNamespace();
         final Optional<CursorInfo> cursorInfoOptional =
             stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
-        if (cursorInfoOptional.isEmpty()) {
-          standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), new StandardStatus());
+        final StandardStatus emptyStandardStatus = new StandardStatus();
+        emptyStandardStatus.setStateType(StateType.STANDARD);
+        emptyStandardStatus.setStreamName(name);
+        emptyStandardStatus.setStreamNamespace(namespace);
+        emptyStandardStatus.setCursorRecordCount(0L);
+        if (cursorInfoOptional.isEmpty()) {;
+          standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), emptyStandardStatus);
         }
 
         final CursorInfo cursorInfo = cursorInfoOptional.get();
         final String cursorField = cursorInfo.getCursorField();
-        final long cursorRecordCount = cursorInfo.getCursorRecordCount();
         final String standardSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
+                                                             cursorInfo.getCursorField(),
+                                                             name,
+                                                             cursorInfo.getCursorField(),
                                                              cursorInfo.getCursorField(),
                                                              name);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(standardSyncStatusQuery).executeQuery(),
                                                                          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        Preconditions.checkState(jsonNodes.size() == 1);
         final JsonNode result = jsonNodes.get(0);
 
         final StandardStatus standardStatus = new StandardStatus();
 
         standardStatus.setStateType(StateType.STANDARD);
         standardStatus.setCursorField(ImmutableList.of(cursorField));
-        standardStatus.setCursor(result.get("max").asText());
-        standardStatus.setCursorRecordCount(cursorRecordCount == 0L ? 1 : cursorRecordCount);
+        standardStatus.setCursor(result.get(cursorField).asText());
+        standardStatus.setCursorRecordCount((long) jsonNodes.size());
         standardStatus.setStreamName(name);
         standardStatus.setStreamNamespace(namespace);
 

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
@@ -32,6 +33,8 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.relationaldb.models.InternalModels.StateType;
+import io.airbyte.integrations.source.relationaldb.models.StandardStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -130,6 +133,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public JdbcSourceOperations sourceOperations = getSourceOperations();
   public Source source;
   public static String streamName;
+
+  public ObjectMapper mapper = new ObjectMapper();
 
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
@@ -669,7 +674,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
+        .toList(source.read(config, configuredCatalog, null));
 
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
         .filter(r -> r.getType() == Type.STATE).findFirst();
@@ -679,7 +684,6 @@ public abstract class JdbcSourceAcceptanceTest {
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
         .toList(source.read(config, configuredCatalog, extractState(stateAfterFirstSyncOptional.get())));
-
     assertEquals(2,
         (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
@@ -759,7 +763,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
+        .toList(source.read(config, configuredCatalog, null));
 
     // get last state message.
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
@@ -773,26 +777,26 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // Represents the state after the first stream has been updated
     final List<DbStreamState> expectedStateStreams1 = List.of(
-        new DbStreamState()
+        new StandardStatus().withStateType(StateType.STANDARD)
             .withStreamName(streamName)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
             .withCursor("3")
             .withCursorRecordCount(1L),
-        new DbStreamState()
+        new StandardStatus().withStateType(StateType.STANDARD)
             .withStreamName(streamName2)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID)));
 
     // Represents the state after both streams have been updated
     final List<DbStreamState> expectedStateStreams2 = List.of(
-        new DbStreamState()
+        new StandardStatus().withStateType(StateType.STANDARD)
             .withStreamName(streamName)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
             .withCursor("3")
             .withCursorRecordCount(1L),
-        new DbStreamState()
+        new StandardStatus().withStateType(StateType.STANDARD)
             .withStreamName(streamName2)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
@@ -800,11 +804,14 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursorRecordCount(1L));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
-    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0)));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
-    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1), expectedStateStreams2));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1)));
 
     setEmittedAtToNull(actualMessagesFirstSync);
+
+    System.out.println("ACTUAL MESSAGES first ++++" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualMessagesFirstSync));
+    System.out.println("EXPECTED MESSAGES first ++++" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedMessagesFirstSync));
 
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
@@ -863,17 +870,20 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
+
     final List<AirbyteMessage> firstSyncActualMessages = MoreIterators.toList(
-        source.read(config, configuredCatalog, createEmptyState(TABLE_NAME_AND_TIMESTAMP, namespace)));
+        source.read(config, configuredCatalog, null));
 
     // cursor after 1st sync: 2021-01-01 00:00:00, count 2
     final Optional<AirbyteMessage> firstSyncStateOptional = firstSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(firstSyncStateOptional.isPresent());
     final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
+    System.out.println("first sync state" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(firstSyncActualMessages));
     assertEquals(firstSyncState.get("cursor_field").elements().next().asText(), COL_TIMESTAMP);
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
+    ((ObjectNode) firstSyncState).put("state_type", "standard");
 
     final List<String> firstSyncNames = firstSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
@@ -902,12 +912,14 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
+    ((ObjectNode) secondSyncState).put("state_type", "standard");
 
+    System.out.println("second sync state" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(secondSyncState));
     final List<String> secondSyncNames = secondSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("c"), secondSyncNames);
+    assertEquals(List.of( "c"), secondSyncNames);
 
     // 3rd sync has records with duplicated cursors
     database.execute(ctx -> {
@@ -945,11 +957,11 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
-    for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
-      if (stream.get("stream_name").asText().equals(streamName)) {
-        return stream;
-      }
+    final JsonNode streamState = airbyteMessage.getState().getStream().getStreamState();
+    if (streamState.get("stream_name").asText().equals(streamName)) {
+      return streamState;
     }
+
     throw new IllegalArgumentException("Stream not found in state message: " + streamName);
   }
 
@@ -980,15 +992,18 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(airbyteStream));
 
-    final DbStreamState dbStreamState = new DbStreamState()
+    final DbStreamState dbStreamState = new StandardStatus()
+        .withStateType(StateType.STANDARD)
         .withStreamName(airbyteStream.getStream().getName())
         .withStreamNamespace(airbyteStream.getStream().getNamespace())
         .withCursorField(List.of(initialCursorField))
         .withCursor(initialCursorValue)
         .withCursorRecordCount(1L);
 
+    final JsonNode streamStates = Jsons.jsonNode(createState(List.of(dbStreamState)));
+
     final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
+        .toList(source.read(config, configuredCatalog, streamStates));
 
     setEmittedAtToNull(actualMessages);
 
@@ -999,8 +1014,12 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursorField(List.of(cursorField))
             .withCursor(endCursorValue)
             .withCursorRecordCount(1L));
+
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
+
+    System.out.println("actual" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualMessages));
+    System.out.println("expected" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedMessages));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
@@ -1207,18 +1226,38 @@ public abstract class JdbcSourceAcceptanceTest {
    * @param streamNamespace The stream namespace.
    * @return {@link JsonNode} representation of the generated empty state.
    */
-  protected JsonNode createEmptyState(final String streamName, final String streamNamespace) {
+  protected JsonNode createEmptyState(final String streamName,
+                                      final String streamNamespace,
+                                      final List<String> cursorFields,
+                                      final String cursorValue) {
     if (supportsPerStream()) {
+      final DbStreamState dbStreamState = new StandardStatus()
+          .withStateType(StateType.STANDARD)
+          .withStreamName(streamName)
+          .withStreamNamespace(streamNamespace)
+          .withCursorField(cursorFields)
+          .withCursor(cursorValue);
+
       final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
+          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace))
+                          .withStreamState(Jsons.jsonNode(dbStreamState)));
       return Jsons.jsonNode(List.of(airbyteStateMessage));
     } else {
+      final DbStreamState dbStreamState =
+          new StandardStatus()
+              .withStateType(StateType.STANDARD)
+              .withStreamName(streamName)
+              .withStreamNamespace(streamNamespace)
+              .withCursor(cursorValue);
+
       final DbState dbState = new DbState()
-          .withStreams(List.of(new DbStreamState().withStreamName(streamName).withStreamNamespace(streamNamespace)));
+          .withStreams(List.of(dbStreamState));
       return Jsons.jsonNode(dbState);
     }
   }
+
+
 
   protected JsonNode createState(final String streamName, final String streamNamespace, final JsonNode stateData) {
     if (supportsPerStream()) {
@@ -1241,6 +1280,8 @@ public abstract class JdbcSourceAcceptanceTest {
       return Jsons.jsonNode(dbState);
     }
   }
+
+
 
   /**
    * Extracts the state component from the provided {@link AirbyteMessage} based on the value returned
@@ -1268,9 +1309,22 @@ public abstract class JdbcSourceAcceptanceTest {
                       .withStreamState(Jsons.jsonNode(dbStreamState)))
                   .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     } else {
-      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
-          .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
+
     }
   }
+  protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState) {
+    if (supportsPerStream()) {
+      return new AirbyteMessage().withType(Type.STATE)
+          .withState(
+              new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState()
+                                  .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
+                                                            .withName(dbStreamState.getStreamName()))
+                                  .withStreamState(Jsons.jsonNode(dbStreamState))));
+    } else {
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
 
+    }
+  }
 }
