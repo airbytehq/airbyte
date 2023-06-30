@@ -298,6 +298,55 @@ class Events(IncrementalStripeStream):
         return "events"
 
 
+class StripeSubStream(BasePaginationStripeStream, ABC):
+    filter: Optional[Mapping[str, Any]] = None
+    add_parent_id: bool = False
+
+    @property
+    @abstractmethod
+    def parent(self) -> Type[StripeStream]:
+        """
+        :return: parent stream which contains needed records in <sub_items_attr>
+        """
+
+    @property
+    @abstractmethod
+    def parent_id(self) -> str:
+        """
+        :return: string with attribute name
+        """
+
+    @property
+    @abstractmethod
+    def sub_items_attr(self) -> str:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        """
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return StripeSubStreamAvailabilityStrategy()
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+
+        # add 'starting_after' param
+        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
+            params["starting_after"] = stream_slice["starting_after"]
+
+        return params
+
+    def get_parent_stream_instance(self):
+        return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream = self.get_parent_stream_instance()
+        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for _slice in slices:
+            yield from parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
 
 class ApplicationFees(IncrementalStripeStream):
     """
@@ -701,93 +750,6 @@ class Transactions(IncrementalStripeStream):
     def path(self, **kwargs) -> str:
         return "issuing/transactions"
 
-class StripeSubStream(BasePaginationStripeStream, ABC):
-    """
-    Research shows that records related to SubStream can be extracted from Parent streams which already
-    contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
-    all item in parent stream, since parent stream returns 100 items per request.
-    Note, in major cases, pagination requests are not performed because sub items are fully reported in parent streams
-    For example:
-    Line items are part of each 'invoice' record, so use Invoices stream because
-    it allows bulk extraction:
-        0.1.28 and below - 1 request extracts line items for 1 invoice (+ pagination reqs)
-        0.1.29 and above - 1 request extracts line items for 100 invoices (+ pagination reqs)
-    if line items object has indication for next pages ('has_more' attr)
-    then use current stream to extract next pages. In major cases pagination requests
-    are not performed because line items are fully reported in 'invoice' record
-    Example for InvoiceLineItems and parent Invoice streams, record from Invoice stream:
-        {
-          "created": 1641038947,    <--- 'Invoice' record
-          "customer": "cus_HezytZRkaQJC8W",
-          "id": "in_1KD6OVIEn5WyEQxn9xuASHsD",    <---- value for 'parent_id' attribute
-          "object": "invoice",
-          "total": 0,
-          ...
-          "lines": {    <---- sub_items_attr
-            "data": [
-              {
-                "id": "il_1KD6OVIEn5WyEQxnm5bzJzuA",    <---- 'Invoice' line item record
-                "object": "line_item",
-                ...
-              },
-              {...}
-            ],
-            "has_more": false,    <---- next pages from 'InvoiceLineItemsPaginated' stream
-            "object": "list",
-            "total_count": 2,
-            "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines"
-          }
-        }
-    """
-
-    filter: Optional[Mapping[str, Any]] = None
-    add_parent_id: bool = False
-
-    @property
-    @abstractmethod
-    def parent(self) -> Type[StripeStream]:
-        """
-        :return: parent stream which contains needed records in <sub_items_attr>
-        """
-
-    @property
-    @abstractmethod
-    def parent_id(self) -> str:
-        """
-        :return: string with attribute name
-        """
-
-    @property
-    @abstractmethod
-    def sub_items_attr(self) -> str:
-        """
-        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-          If the stream has no primary keys, return None.
-        """
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
-
-        # add 'starting_after' param
-        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
-            params["starting_after"] = stream_slice["starting_after"]
-
-        return params
-
-    def get_parent_stream_instance(self):
-        return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-
-    def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream = self.get_parent_stream_instance()
-        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-        for _slice in slices:
-            yield from parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
 
 class InvoiceLineItems(StripeSubStream):
     """
