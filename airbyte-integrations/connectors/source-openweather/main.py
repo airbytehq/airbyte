@@ -5,6 +5,7 @@
 
 import sys
 
+# TO REVERT
 from airbyte_cdk.entrypoint import launch
 from source_openweather import SourceOpenWeather
 
