@@ -33,8 +33,8 @@ class FileBasedSource(AbstractSource, ABC):
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Dict[str, FileTypeParser] = None,
-        validation_policies: Type[AbstractSchemaValidationPolicy] = Type[DefaultSchemaValidationPolicy],
+        parsers: Optional[Dict[str, FileTypeParser]] = None,
+        validation_policies: Type[AbstractSchemaValidationPolicy] = DefaultSchemaValidationPolicy,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)

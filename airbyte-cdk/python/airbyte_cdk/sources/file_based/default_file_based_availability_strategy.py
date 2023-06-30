@@ -12,15 +12,14 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import Stream
 
 
 class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
-    def check_availability(
-        self, stream: AbstractFileBasedStream, logger: logging.Logger, _: Optional[Source]
-    ) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
         Perform a connection check for the stream.
 
@@ -37,6 +36,8 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         - If the user provided a schema in the config, check that a subset of records in
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
+        if not isinstance(stream, AbstractFileBasedStream):
+            raise ValueError(f"Stream {stream.name} is not a file-based stream.")
         try:
             files = self._check_list_files(stream)
             self._check_parse_record(stream, files[0])
@@ -60,7 +61,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
         return files
 
-    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile):
+    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile) -> None:
         parser = stream.get_parser(stream.config.file_type)
 
         try:
