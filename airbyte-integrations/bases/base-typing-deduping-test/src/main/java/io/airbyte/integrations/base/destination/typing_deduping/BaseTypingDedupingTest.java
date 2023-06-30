@@ -216,9 +216,9 @@ public abstract class BaseTypingDedupingTest {
   /**
    * Starting with an empty destination, execute an incremental append sync.
    * <p>
-   * This is (not so secretly) identical to {@link #fullRefreshAppend()}, and uses the same set of expected records.
-   * Incremental as a concept only exists in the source. From the destination's perspective, we only care about the
-   * destination sync mode.
+   * This is (not so secretly) identical to {@link #fullRefreshAppend()}, and uses the same set of
+   * expected records. Incremental as a concept only exists in the source. From the destination's
+   * perspective, we only care about the destination sync mode.
    */
   @Test
   public void incrementalAppend() throws Exception {
@@ -253,8 +253,9 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Starting with an empty destination, execute an incremental dedup sync. Verify that the records are written to the
-   * destination table. Then run a second sync, and verify that the raw/final tables contain the correct records.
+   * Starting with an empty destination, execute an incremental dedup sync. Verify that the records
+   * are written to the destination table. Then run a second sync, and verify that the raw/final
+   * tables contain the correct records.
    */
   @Test
   public void incrementalDedup() throws Exception {
