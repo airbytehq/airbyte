@@ -397,7 +397,8 @@ public abstract class BaseTypingDedupingTest {
             // For the raw data in particular, we should also diff the fields inside _airbyte_data.
             JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
             JsonNode actualRawData = actualRecord.get("_airbyte_data");
-            // Iterate through all the subfields of the expected raw data and check that they match the actual record...
+            // Iterate through all the subfields of the expected raw data and check that they match the actual
+            // record...
             for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
               JsonNode expectedValue = expectedRawData.get(field);
               JsonNode actualValue = actualRawData.get(field);
@@ -473,12 +474,13 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Verify that all fields in the actual record are present in the expected record. This is primarily relevant for
-   * detecting fields that we expected to be null, but actually were not. See {@link #dumpFinalTableRecords(String, String)}
-   * for an explanation of how SQL/JSON nulls are represented in the expected record.
+   * Verify that all fields in the actual record are present in the expected record. This is primarily
+   * relevant for detecting fields that we expected to be null, but actually were not. See
+   * {@link #dumpFinalTableRecords(String, String)} for an explanation of how SQL/JSON nulls are
+   * represented in the expected record.
    * <p>
-   * This has the side benefit of detecting completely unexpected columns, which would be a very weird bug but is
-   * probably still useful to catch.
+   * This has the side benefit of detecting completely unexpected columns, which would be a very weird
+   * bug but is probably still useful to catch.
    */
   private static LinkedHashMap<String, JsonNode> checkForExtraOrNonNullFields(JsonNode expectedRecord, JsonNode actualRecord) {
     LinkedHashMap<String, JsonNode> extraFields = new LinkedHashMap<>();
@@ -492,7 +494,8 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Produce a pretty-printed error message, e.g. "  For column foo, expected 1 but got 2". It's indented intentionally.
+   * Produce a pretty-printed error message, e.g. " For column foo, expected 1 but got 2". It's
+   * indented intentionally.
    */
   private static String generateFieldError(String fieldname, JsonNode expectedValue, JsonNode actualValue) {
     String expectedString = expectedValue == null ? "SQL NULL (i.e. no value)" : expectedValue.toString();
@@ -500,7 +503,8 @@ public abstract class BaseTypingDedupingTest {
     return "  For " + fieldname + ", expected " + expectedString + " but got " + actualString + "\n";
   }
 
-  // These asFoo methods are used for sorting records, so their defaults are intended to make broken records stand out.
+  // These asFoo methods are used for sorting records, so their defaults are intended to make broken
+  // records stand out.
   private static long asInt(JsonNode node) {
     if (node == null || !node.isIntegralNumber()) {
       return Long.MIN_VALUE;
