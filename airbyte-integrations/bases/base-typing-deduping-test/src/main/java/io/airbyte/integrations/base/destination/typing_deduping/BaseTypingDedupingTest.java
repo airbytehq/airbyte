@@ -60,7 +60,8 @@ import org.slf4j.LoggerFactory;
 // Remember to set `'junit.jupiter.execution.parallel.enabled': 'true'` in your connector's
 // build.gradle.
 // See destination-bigquery for an example.
-// If you're running from inside intellij, you must run your specific subclass to get concurrent execution.
+// If you're running from inside intellij, you must run your specific subclass to get concurrent
+// execution.
 @Execution(ExecutionMode.CONCURRENT)
 public abstract class BaseTypingDedupingTest {
 
@@ -91,11 +92,12 @@ public abstract class BaseTypingDedupingTest {
   protected abstract String getImageName();
 
   /**
-   * Get the destination connector config. Subclasses may use this method for other setup work, e.g. opening a connection
-   * to the destination.
+   * Get the destination connector config. Subclasses may use this method for other setup work, e.g.
+   * opening a connection to the destination.
    * <p>
-   * Subclasses should _not_ start testcontainers in this method; that belongs in a BeforeAll method. The tests in this
-   * class are intended to be run concurrently on a shared database and will not interfere with each other.
+   * Subclasses should _not_ start testcontainers in this method; that belongs in a BeforeAll method.
+   * The tests in this class are intended to be run concurrently on a shared database and will not
+   * interfere with each other.
    */
   protected abstract JsonNode getConfig() throws Exception;
 
