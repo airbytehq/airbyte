@@ -61,6 +61,7 @@ public class PostgresCtidHandler {
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
   private static final int QUERY_TARGET_SIZE_GB = 10; // TODO: find optimal size
   public static final double MEGABYTE = Math.pow(1024, 2);
+  public static final double GIGABYTE = MEGABYTE * 1024;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -138,7 +139,7 @@ public class PostgresCtidHandler {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
-    final double oneGigaPages = MEGABYTE * 1024 / blockSize;
+    final double oneGigaPages = GIGABYTE / blockSize;
     final long eachStep = (long)oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
@@ -176,30 +177,9 @@ public class PostgresCtidHandler {
     // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
     // We are creating a list of lazy iterators each holding a subquery according to the plan.
     // All subqueries are then composed in a single composite iterator.
-    // Because list consists of lazy iterators, the query is only executing when needed on after the other.
+    // Because list consists of lazy iterators, the query is only executing when needed one after the other.
     final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
-/*
-    int i = 0;
-    for (var p : subQueriesPlan) {
-      if (i > 1) {
-        break;
-      }
-      subQueriesIterators.add(
-          AutoCloseableIterators.lazyIterator(() -> {
-            try {
-              final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-                  connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
-
-              return AutoCloseableIterators.fromStream(stream, airbyteStream);
-            } catch (final SQLException e) {
-              throw new RuntimeException(e);
-            }
-          }, airbyteStream)
-      );
-      i++;
-    }
-*/
     subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<RowDataWithCtid> stream = database.unsafeQuery(
