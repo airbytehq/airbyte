@@ -34,5 +34,5 @@ RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=2.1.0
+LABEL io.airbyte.version=2.1.1
 LABEL io.airbyte.name=airbyte/source-salesforce
