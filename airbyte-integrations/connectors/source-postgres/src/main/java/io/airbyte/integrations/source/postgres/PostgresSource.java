@@ -23,6 +23,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_B
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getStandardSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
+import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
@@ -61,7 +62,7 @@ import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
-import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -475,7 +476,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     if (isIncrementalSyncMode(catalog)) {
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
-      final CtidUtils.StreamsCategorised streamsCategorised = CtidUtils.categoriseStreams(stateManager, catalog, xminStatus);
+      final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());

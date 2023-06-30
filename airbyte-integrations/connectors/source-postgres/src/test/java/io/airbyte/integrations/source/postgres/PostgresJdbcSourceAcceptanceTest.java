@@ -24,9 +24,9 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
+import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.integrations.source.relationaldb.models.InternalModels.StateType;
-import io.airbyte.integrations.source.relationaldb.models.StandardStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -535,12 +535,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   protected void incrementalCursorCheck(
-      final String initialCursorField,
-      final String cursorField,
-      final String initialCursorValue,
-      final String endCursorValue,
-      final List<AirbyteMessage> expectedRecordMessages,
-      final ConfiguredAirbyteStream airbyteStream)
+                                        final String initialCursorField,
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages,
+                                        final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(List.of(cursorField));
@@ -592,15 +592,17 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   /**
    * {@inheritDoc}
+   *
    * @param syncState
    */
   @Override
   protected void addStandardStateTypeToSyncState(final JsonNode syncState) {
-      ((ObjectNode) syncState).put("state_type", "standard");
+    ((ObjectNode) syncState).put("state_type", "standard");
   }
 
   /**
    * {ine}
+   *
    * @param configuredCatalog catalog of DB source
    * @return
    * @throws Exception
@@ -612,8 +614,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   /*
-   * Similar to parent's method but does not include the Data key
-   * as CTID, Xmin, and Standard sync no longer emits this information
+   * Similar to parent's method but does not include the Data key as CTID, Xmin, and Standard sync no
+   * longer emits this information
    */
   @Override
   protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState, final List<DbStreamState> legacyStates) {
@@ -622,18 +624,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           .withState(
               new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                   .withStream(new AirbyteStreamState()
-                                  .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
-                                                            .withName(dbStreamState.getStreamName()))
-                                  .withStreamState(Jsons.jsonNode(dbStreamState))));
+                      .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
+                          .withName(dbStreamState.getStreamName()))
+                      .withStreamState(Jsons.jsonNode(dbStreamState))));
     } else {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
     }
   }
 
   /*
-  * Identical to parent method but have a state_type attach to the DBStreamState making it effectively
-  * StandardStatus
-  * */
+   * Identical to parent method but have a state_type attach to the DBStreamState making it
+   * effectively StandardStatus
+   */
   @Override
   protected DbStreamState buildExpectedStreamState(final String streamName,
                                                    final String nameSpace,
@@ -654,4 +656,5 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     return streamState;
   }
+
 }
