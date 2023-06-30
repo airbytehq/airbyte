@@ -31,10 +31,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
     },
     {
       "stream": {
@@ -48,10 +50,31 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "subject_encounters",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "api_token": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
     }
   ]
 }

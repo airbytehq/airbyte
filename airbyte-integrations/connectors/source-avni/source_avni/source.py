@@ -16,6 +16,7 @@ from datetime import datetime
 
 
 class TokenHeadAuthenticator(AbstractHeaderAuthenticator):
+    
 
     """
     This is custom class for authentication
@@ -36,6 +37,7 @@ class TokenHeadAuthenticator(AbstractHeaderAuthenticator):
 
 class AvniStream(HttpStream, ABC):
     
+    
     url_base = "https://app.avniproject.org/api/"
     primary_key = "ID"
     
@@ -43,16 +45,49 @@ class AvniStream(HttpStream, ABC):
             self.logger.info("Into avni stream")
             super().__init__(**kwargs)
             self.cursor_value = None
+            self.current_page=1
+    
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+            
+        params = {"lastModifiedDateTime": self.state[self.cursor_field]}
+        return params   
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json()["content"]
+        yield from data
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        
+        total_elements = int(response.json()["totalElements"])
+        total_pages = int(response.json()["totalPages"])
+        page_size = int(response.json()["pageSize"])
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        if(total_elements==page_size ):
+            self.current_page = self.current_page + 1
+            return {"page": self.current_page}
+        
+        self.current_page=1
+        
+        return None
+        
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            audit=record["audit"]
+            current_value = audit["Last modified at"]
+            cursor_value = self.state[self.cursor_field]
+            if current_value:
+                print(current_value)
+                print(cursor_value)
+                format_string = "%Y-%m-%dT%H:%M:%S.%fZ"
+                current_datetime = datetime.strptime(current_value, format_string)
+                state_datetime = datetime.strptime(cursor_value, format_string)
+                if state_datetime < current_datetime:    
+                    self.state = {"Last modified at": current_value}
+                    print("State has been changed  New value:", self.state[self.cursor_field]) 
+            yield record
 
 
 class IncrementalAvniStream(AvniStream,IncrementalMixin,ABC):
-
 
     state_checkpoint_interval = None
 
@@ -71,67 +106,35 @@ class IncrementalAvniStream(AvniStream,IncrementalMixin,ABC):
     def state(self, value: Mapping[str, Any]):
         self.cursor_value = value[self.cursor_field]
         self._state = value
-        
+
+
+
 class Subjects(IncrementalAvniStream):
         
     def path(self,**kwargs) -> str:
-        return "subjects"
+        return "subjects"            
     
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        
-        params = {"lastModifiedDateTime": self.state[self.cursor_field]}
-        return params   
-    
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["content"]
-        yield from data
-        
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
-            audit=record["audit"]
-            current_value = audit["Last modified at"]
-            cursor_value = self.state[self.cursor_field]
-            if current_value:
-                print(current_value)
-                print(cursor_value)
-                format_string = "%Y-%m-%dT%H:%M:%S.%fZ"
-                current_datetime = datetime.strptime(current_value, format_string)
-                state_datetime = datetime.strptime(cursor_value, format_string)
-                if state_datetime < current_datetime:    
-                    self.state = {"Last modified at": current_value}
-                    print("State has been changed  New value:", self.state[self.cursor_field]) 
-            yield record
 
-        
-
-class Programs(AvniStream):
+class Programs(IncrementalAvniStream):
 
     def path(self,**kwargs) -> str:
         return "programEnrolments"
     
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["content"]
-        yield from data
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        params = {"lastModifiedDateTime": "2020-10-31T01:30:00.000Z"}
-        return params   
-        
-        
-class ProgramEncounters(AvniStream):
+class ProgramEncounters(IncrementalAvniStream):
     
     def path(self,**kwargs) -> str:
         return "programEncounters"
     
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["content"]
-        yield from data
-        
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        params = {"lastModifiedDateTime": "2020-10-31T01:30:00.000Z"}
-        return params  
+class SubjectEncounters(IncrementalAvniStream):
     
+    def path(self,**kwargs) -> str:
+        return "encounters"
+    
+        
 class SourceAvni(AbstractSource):
+    
+    
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         print("check connection")
         auth_token=config['AUTH_TOKEN']
@@ -154,5 +157,5 @@ class SourceAvni(AbstractSource):
         stream_kwargs = {
             "authenticator": authenticator,
         }
-        return [Subjects(**stream_kwargs),Programs(**stream_kwargs),ProgramEncounters(**stream_kwargs)]
+        return [Subjects(**stream_kwargs),Programs(**stream_kwargs),ProgramEncounters(**stream_kwargs),SubjectEncounters(**stream_kwargs)]
     
