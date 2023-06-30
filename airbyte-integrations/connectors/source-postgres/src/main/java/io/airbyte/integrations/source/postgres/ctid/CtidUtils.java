@@ -75,10 +75,6 @@ public class CtidUtils {
               statesFromXminSync.add(stateMessage);
             }
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("standard")) {
-//            System.out.println("IN STANDARD ");
-//            if (streamState.get("cursor").isNull()) {
-//              throw new RuntimeException("Null cursor value for the provided cursor column");
-//            }
             standardSyncStreamPairs.add(pair);
             statesFromStandardSync.add(stateMessage);
           } else {
@@ -90,7 +86,6 @@ public class CtidUtils {
         alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
-
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);
@@ -140,6 +135,7 @@ public class CtidUtils {
                             List<AirbyteStateMessage> statesFromXminSync) {
 
   }
+
   public record StandardStreams(List<ConfiguredAirbyteStream> streamsForStandardSync,
                                 List<AirbyteStateMessage> statesFromCtidSync) {
 
