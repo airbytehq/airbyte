@@ -12,7 +12,8 @@ There are three parts to this:
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. The meta fields are stored as-is.
+Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. The meta fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored).
+
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
 The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. Otherwise, a uuid is generated.

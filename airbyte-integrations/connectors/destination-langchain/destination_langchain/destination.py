@@ -8,6 +8,8 @@ import random
 import json
 import os
 
+import dpath.util
+from dpath.exceptions import PathNotFound
 import pinecone
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -32,6 +34,12 @@ def create_directory_recursively(path):
     else:
         return None
 
+# remove everything but numbers, strings, booleans and lists of strings from the top level
+def clean_obj(obj: dict):
+    for key in list(obj.keys()):
+        if not isinstance(obj[key], (str, int, float, bool)):
+            del obj[key]
+    return obj
 
 class DestinationLangchain(Destination):
     def flush_if_necessary(self):
@@ -44,11 +52,27 @@ class DestinationLangchain(Destination):
 
         docs = []
         for record in self.batch:
-            relevant_fields = {k: v for k, v in record.data.items() if k in self.text_fields} if self.text_fields else record.data
+            relevant_fields = {}
+            if self.text_fields:
+                for field in self.text_fields:
+                    relevant_fields[field] = dpath.util.values(record.data, field, separator=".")
+                    if len(relevant_fields[field]) == 1:
+                        relevant_fields[field] = relevant_fields[field][0]
+            else:
+                relevant_fields = record.data            
+
             text = stringify_dict(relevant_fields)
-            metadata = {k: v for k, v in record.data.items() if k not in self.text_fields} if self.text_fields else {}
+            metadata = record.data
+            for field in self.text_fields:
+                try:
+                    dpath.util.delete(metadata, field, separator=".")
+                except PathNotFound:
+                    # if the field doesn't exist, just
+                    pass
+            metadata = clean_obj(metadata)
+
             current_stream = record.stream
-            # find stream from self.catalog
+            metadata["_airbyte_stream"] = current_stream
             for stream in self.catalog.streams:
                 if stream.stream.name == current_stream:
                     if stream.primary_key:
@@ -66,13 +90,13 @@ class DestinationLangchain(Destination):
         for i, id in enumerate(ids):
             if id not in id_counts:
                 id_counts[id] = 0
-                if self.pinecone_index:
+                if self.pinecone_index is not None:
                     # delete all existing chunks with this id
                     self.pinecone_index.delete(filter={"_natural_id": id})
             else:
                 id_counts[id] += 1
-            ids[i] = id + "_" + str(id_counts[id])
-        self.vectorstore.add_documents(chunks, ids)
+            ids[i] = str(id) + "_" + str(id_counts[id])
+        self.vectorstore.add_documents(chunks, ids=ids)
         self.batch = []
 
     def write(
@@ -80,7 +104,8 @@ class DestinationLangchain(Destination):
     ) -> Iterable[AirbyteMessage]:
         self.catalog = configured_catalog
         self.batch: List[AirbyteRecordMessage] = []
-        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=config.get("processing").get("chunk_size", 1000), chunk_overlap=config.get("processing").get("chunk_overlap", None))
+        self.pinecone_index = None
+        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=config.get("processing").get("chunk_size", 1000), chunk_overlap=config.get("processing").get("chunk_overlap", 0))
         self.text_fields = config.get("processing").get("text_fields")
         self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("embedding").get("openai_key"))
         if not config.get("storing").get("mode") == "DocArrayHnswSearch":
