@@ -391,6 +391,22 @@ def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_dat
     assert expected_state == updated_state
 
 
+def test_given_datetime_format_differs_from_cursor_value_when_close_slice_then_use_cursor_value_and_not_formatted_value():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=cursor_field,
+        datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
+        config=config,
+        parameters={},
+    )
+
+    _slice = {}
+    record_cursor_value = "2023-01-04T17:30:19.000Z"
+    cursor.close_slice(_slice, Record({cursor_field: record_cursor_value}, _slice))
+
+    assert cursor.get_stream_state()[cursor_field] == record_cursor_value
+
+
 def test_given_partition_end_is_specified_and_greater_than_record_when_close_slice_then_use_partition_end():
     partition_field_end = "partition_field_end"
     cursor = DatetimeBasedCursor(
@@ -651,6 +667,50 @@ def test_given_record_without_cursor_value_when_should_be_synced_then_return_tru
         parameters={},
     )
     assert cursor.should_be_synced(Record({"record without cursor value": "any"}, ANY_SLICE))
+
+
+def test_given_first_greater_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2023-01-01"}, {}), Record({"cursor_field": "2021-01-01"}, {}))
+
+
+def test_given_first_lesser_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({"cursor_field": "2023-01-01"}, {}))
+
+
+def test_given_no_cursor_value_for_second_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({}, {}))
+
+
+def test_given_no_cursor_value_for_first_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({}, {}), Record({"cursor_field": "2021-01-01"}, {}))
 
 
 if __name__ == "__main__":

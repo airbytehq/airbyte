@@ -19,6 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.pipelines import consts, main_logger
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from google.cloud import storage
@@ -357,7 +358,7 @@ class DaggerPipelineCommand(click.Command):
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
                 if ctx.obj["is_ci"]:
-                    ctx.obj["dagger_logs_url"] = f"https://storage.googleapis.com/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
                 else:
                     ctx.obj["dagger_logs_url"] = None
             else:
@@ -493,5 +494,5 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     blob = bucket.blob(object_name)
     blob.upload_from_filename(str(file_path))
     gcs_uri = f"gs://{bucket_name}/{object_name}"
-    public_url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+    public_url = f"{GCS_PUBLIC_DOMAIN}/{bucket_name}/{object_name}"
     return gcs_uri, public_url
