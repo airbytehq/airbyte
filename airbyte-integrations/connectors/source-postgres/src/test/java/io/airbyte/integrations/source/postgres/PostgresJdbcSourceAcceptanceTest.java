@@ -17,6 +17,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
@@ -24,15 +25,24 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.relationaldb.models.InternalModels.StateType;
+import io.airbyte.integrations.source.relationaldb.models.StandardStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
@@ -388,7 +398,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   protected void incrementalDateCheck() throws Exception {
-    super.incrementalCursorCheck(COL_UPDATED_AT,
+    incrementalCursorCheck(COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
         Lists.newArrayList(getTestMessages().get(1),
@@ -397,7 +407,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void incrementalTimeTzCheck() throws Exception {
-    super.incrementalCursorCheck(COL_WAKEUP_AT,
+    incrementalCursorCheck(COL_WAKEUP_AT,
         "11:09:11.123456-05:00",
         "12:12:12.123456-05:00",
         Lists.newArrayList(getTestMessages().get(1),
@@ -406,7 +416,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void incrementalTimestampTzCheck() throws Exception {
-    super.incrementalCursorCheck(COL_LAST_VISITED_AT,
+    incrementalCursorCheck(COL_LAST_VISITED_AT,
         "2005-10-18T17:23:54.123456Z",
         "2006-10-19T17:23:54.123456Z",
         Lists.newArrayList(getTestMessages().get(1),
@@ -415,7 +425,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void incrementalTimestampCheck() throws Exception {
-    super.incrementalCursorCheck(COL_LAST_COMMENT_AT,
+    incrementalCursorCheck(COL_LAST_COMMENT_AT,
         "2004-12-12T17:23:54.123456",
         "2006-01-01T17:23:54.123456",
         Lists.newArrayList(getTestMessages().get(1),
@@ -523,4 +533,125 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 42501;"));
   }
 
+  @Override
+  protected void incrementalCursorCheck(
+      final String initialCursorField,
+      final String cursorField,
+      final String initialCursorValue,
+      final String endCursorValue,
+      final List<AirbyteMessage> expectedRecordMessages,
+      final ConfiguredAirbyteStream airbyteStream)
+      throws Exception {
+    airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+    airbyteStream.setCursorField(List.of(cursorField));
+    airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
+
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(airbyteStream));
+
+    final DbStreamState dbStreamState = new StandardStatus()
+        .withStateType(StateType.STANDARD)
+        .withStreamName(airbyteStream.getStream().getName())
+        .withStreamNamespace(airbyteStream.getStream().getNamespace())
+        .withCursorField(List.of(initialCursorField))
+        .withCursor(initialCursorValue)
+        .withCursorRecordCount(1L);
+
+    final JsonNode streamStates = Jsons.jsonNode(createState(List.of(dbStreamState)));
+
+    final List<AirbyteMessage> actualMessages = MoreIterators
+        .toList(source.read(config, configuredCatalog, streamStates));
+
+    setEmittedAtToNull(actualMessages);
+
+    final List<DbStreamState> expectedStreams = List.of(
+        new DbStreamState()
+            .withStreamName(airbyteStream.getStream().getName())
+            .withStreamNamespace(airbyteStream.getStream().getNamespace())
+            .withCursorField(List.of(cursorField))
+            .withCursor(endCursorValue)
+            .withCursorRecordCount(1L));
+
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
+    expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
+
+    assertEquals(expectedMessages.size(), actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
+  }
+
+  @Override
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+    final JsonNode streamState = airbyteMessage.getState().getStream().getStreamState();
+    if (streamState.get("stream_name").asText().equals(streamName)) {
+      return streamState;
+    }
+
+    throw new IllegalArgumentException("Stream not found in state message: " + streamName);
+  }
+
+  /**
+   * {@inheritDoc}
+   * @param syncState
+   */
+  @Override
+  protected void addStandardStateTypeToSyncState(final JsonNode syncState) {
+      ((ObjectNode) syncState).put("state_type", "standard");
+  }
+
+  /**
+   * {ine}
+   * @param configuredCatalog catalog of DB source
+   * @return
+   * @throws Exception
+   */
+  @Override
+  protected List<AirbyteMessage> readCatalogForInitialSync(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    return MoreIterators
+        .toList(source.read(config, configuredCatalog, null));
+  }
+
+  /*
+   * Similar to parent's method but does not include the Data key
+   * as CTID, Xmin, and Standard sync no longer emits this information
+   */
+  @Override
+  protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState, final List<DbStreamState> legacyStates) {
+    if (supportsPerStream()) {
+      return new AirbyteMessage().withType(Type.STATE)
+          .withState(
+              new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState()
+                                  .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
+                                                            .withName(dbStreamState.getStreamName()))
+                                  .withStreamState(Jsons.jsonNode(dbStreamState))));
+    } else {
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
+    }
+  }
+
+  /*
+  * Identical to parent method but have a state_type attach to the DBStreamState making it effectively
+  * StandardStatus
+  * */
+  @Override
+  protected DbStreamState buildExpectedStreamState(final String streamName,
+                                                   final String nameSpace,
+                                                   final List<String> cursorFields,
+                                                   final String cursorValue,
+                                                   final Long cursorRecordCount) {
+    final DbStreamState streamState = new StandardStatus().withStateType(StateType.STANDARD);
+    streamState.setStreamName(streamName);
+    streamState.setStreamNamespace(nameSpace);
+    streamState.setCursorField(cursorFields);
+    if (cursorValue != null) {
+      streamState.setCursor(cursorValue);
+    }
+
+    if (cursorRecordCount != null) {
+      streamState.setCursorRecordCount(cursorRecordCount);
+    }
+
+    return streamState;
+  }
 }

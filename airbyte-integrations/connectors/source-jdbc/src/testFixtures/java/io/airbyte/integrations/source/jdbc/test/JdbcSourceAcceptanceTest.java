@@ -15,7 +15,6 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
@@ -33,8 +32,6 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.integrations.source.relationaldb.models.InternalModels.StateType;
-import io.airbyte.integrations.source.relationaldb.models.StandardStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -81,8 +78,8 @@ import org.junit.jupiter.api.Test;
 // between each test.
 // 4. Then implement the abstract methods documented below.
 @SuppressFBWarnings(
-                    value = {"MS_SHOULD_BE_FINAL"},
-                    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
+    value = {"MS_SHOULD_BE_FINAL"},
+    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
 public abstract class JdbcSourceAcceptanceTest {
 
   // schema name must be randomized for each test run,
@@ -133,8 +130,6 @@ public abstract class JdbcSourceAcceptanceTest {
   public JdbcSourceOperations sourceOperations = getSourceOperations();
   public Source source;
   public static String streamName;
-
-  public ObjectMapper mapper = new ObjectMapper();
 
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
@@ -196,7 +191,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
     return String.format("CREATE TABLE %s(%s %s %s)",
-        tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
+                         tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
   }
 
   protected String primaryKeyClause(final List<String> columns) {
@@ -230,8 +225,8 @@ public abstract class JdbcSourceAcceptanceTest {
     dataSource = getDataSource(jdbcConfig);
 
     database = new StreamingJdbcDatabase(dataSource,
-        getDefaultSourceOperations(),
-        AdaptiveStreamingQueryConfig::new);
+                                         getDefaultSourceOperations(),
+                                         AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
       createSchemas();
@@ -246,34 +241,34 @@ public abstract class JdbcSourceAcceptanceTest {
 
       connection.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(TABLE_NAME), COLUMN_CLAUSE_WITH_PK,
-              primaryKeyClause(Collections.singletonList("id"))));
+                           primaryKeyClause(Collections.singletonList("id"))));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+                        getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+                        getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+                        getFullyQualifiedTableName(TABLE_NAME)));
 
       connection.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
-              COLUMN_CLAUSE_WITHOUT_PK, ""));
+                           COLUMN_CLAUSE_WITHOUT_PK, ""));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
+                        getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
+                        getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
+                        getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
 
       connection.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
-              COLUMN_CLAUSE_WITH_COMPOSITE_PK,
-              primaryKeyClause(List.of("first_name", "last_name"))));
+                           COLUMN_CLAUSE_WITH_COMPOSITE_PK,
+                           primaryKeyClause(List.of("first_name", "last_name"))));
       connection.createStatement().execute(
           String.format(
               "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('first' ,'picard', '2004-10-19')",
@@ -347,7 +342,7 @@ public abstract class JdbcSourceAcceptanceTest {
       connection.createStatement()
           .execute(String.format(CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format(INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
+                                                         getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     final AirbyteStream stream =
@@ -363,9 +358,9 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement()
           .execute(String.format(CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE),
-              COL_CURSOR));
+                                 COL_CURSOR));
       connection.createStatement().execute(String.format(INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
-          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
+                                                         getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
     });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     final AirbyteStream stream =
@@ -381,9 +376,9 @@ public abstract class JdbcSourceAcceptanceTest {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
-          .stream()
-          .filter(stream -> TEST_SCHEMAS.stream().anyMatch(schemaName -> stream.getNamespace().startsWith(schemaName)))
-          .collect(Collectors.toList()));
+                                     .stream()
+                                     .filter(stream -> TEST_SCHEMAS.stream().anyMatch(schemaName -> stream.getNamespace().startsWith(schemaName)))
+                                     .collect(Collectors.toList()));
       return filteredCatalog;
     } else {
       return catalog;
@@ -403,16 +398,16 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+                        RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+                                 RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+                                 RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+                                 RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -421,11 +416,11 @@ public abstract class JdbcSourceAcceptanceTest {
     final List<AirbyteStream> catalogStreams = new ArrayList<>();
     catalogStreams.addAll(expected.getStreams());
     catalogStreams.add(CatalogHelpers
-        .createAirbyteStream(TABLE_NAME,
-            SCHEMA_NAME2,
-            Field.of(COL_ID, JsonSchemaType.STRING),
-            Field.of(COL_NAME, JsonSchemaType.STRING))
-        .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
+                           .createAirbyteStream(TABLE_NAME,
+                                                SCHEMA_NAME2,
+                                                Field.of(COL_ID, JsonSchemaType.STRING),
+                                                Field.of(COL_NAME, JsonSchemaType.STRING))
+                           .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
     expected.setStreams(catalogStreams);
     // sort streams by name so that we are comparing lists with the same order.
     final Comparator<AirbyteStream> schemaTableCompare = Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
@@ -468,7 +463,7 @@ public abstract class JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).remove(COL_NAME);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
+                                                         convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
         })
         .collect(Collectors.toList());
     return expectedMessages;
@@ -487,16 +482,16 @@ public abstract class JdbcSourceAcceptanceTest {
         connection.createStatement()
             .execute(
                 createTableQuery(getFullyQualifiedTableName(TABLE_NAME + iFinal),
-                    "id INTEGER, name VARCHAR(200)", ""));
+                                 "id INTEGER, name VARCHAR(200)", ""));
         connection.createStatement()
             .execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
-                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+                                   getFullyQualifiedTableName(TABLE_NAME + iFinal)));
         connection.createStatement()
             .execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
-                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+                                   getFullyQualifiedTableName(TABLE_NAME + iFinal)));
         connection.createStatement()
             .execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
-                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+                                   getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
@@ -526,7 +521,7 @@ public abstract class JdbcSourceAcceptanceTest {
           m.getRecord().setNamespace(getDefaultNamespace());
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
+                                                         convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
         })
         .collect(Collectors.toList());
 
@@ -560,10 +555,10 @@ public abstract class JdbcSourceAcceptanceTest {
         .peek(m -> {
           m.getRecord().setStream(streamForTableWithSpaces.getStream().getName());
           ((ObjectNode) m.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
-              ((ObjectNode) m.getRecord().getData()).remove(COL_NAME));
+                                                     ((ObjectNode) m.getRecord().getData()).remove(COL_NAME));
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
+                                                         convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
         })
         .collect(Collectors.toList());
   }
@@ -626,13 +621,13 @@ public abstract class JdbcSourceAcceptanceTest {
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) firstMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
-        ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_NAME));
+                                                          ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_NAME));
 
     final AirbyteMessage secondMessage = getTestMessages().get(2);
     secondMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) secondMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
-        ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_NAME));
+                                                           ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_NAME));
 
     return List.of(firstMessage, secondMessage);
   }
@@ -674,7 +669,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, null));
+        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
 
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
         .filter(r -> r.getType() == Type.STATE).findFirst();
@@ -684,8 +679,9 @@ public abstract class JdbcSourceAcceptanceTest {
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
         .toList(source.read(config, configuredCatalog, extractState(stateAfterFirstSyncOptional.get())));
+
     assertEquals(2,
-        (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
+                 (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
 
     setEmittedAtToNull(actualMessagesSecondSync);
@@ -699,27 +695,27 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+                        getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+                        getFullyQualifiedTableName(TABLE_NAME)));
     });
   }
 
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
+                             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+                                             .withData(Jsons.jsonNode(Map
+                                                                          .of(COL_ID, ID_VALUE_4,
+                                                                              COL_NAME, "riker",
+                                                                              COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
+                             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+                                             .withData(Jsons.jsonNode(Map
+                                                                          .of(COL_ID, ID_VALUE_5,
+                                                                              COL_NAME, "data",
+                                                                              COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -739,13 +735,13 @@ public abstract class JdbcSourceAcceptanceTest {
           createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)", ""));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
-              getFullyQualifiedTableName(tableName2)));
+                        getFullyQualifiedTableName(tableName2)));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
-              getFullyQualifiedTableName(tableName2)));
+                        getFullyQualifiedTableName(tableName2)));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
-              getFullyQualifiedTableName(tableName2)));
+                        getFullyQualifiedTableName(tableName2)));
     });
 
     final String namespace = getDefaultNamespace();
@@ -761,9 +757,7 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setCursorField(List.of(COL_ID));
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
-
-    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, null));
+    final List<AirbyteMessage> actualMessagesFirstSync = readCatalogForInitialSync(configuredCatalog);
 
     // get last state message.
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
@@ -777,41 +771,20 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // Represents the state after the first stream has been updated
     final List<DbStreamState> expectedStateStreams1 = List.of(
-        new StandardStatus().withStateType(StateType.STANDARD)
-            .withStreamName(streamName)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L),
-        new StandardStatus().withStateType(StateType.STANDARD)
-            .withStreamName(streamName2)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID)));
+        buildExpectedStreamState(streamName, namespace, List.of(COL_ID), "3", 1L),
+        buildExpectedStreamState(streamName2, namespace, List.of(COL_ID), null, null));
 
     // Represents the state after both streams have been updated
     final List<DbStreamState> expectedStateStreams2 = List.of(
-        new StandardStatus().withStateType(StateType.STANDARD)
-            .withStreamName(streamName)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L),
-        new StandardStatus().withStateType(StateType.STANDARD)
-            .withStreamName(streamName2)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L));
+        buildExpectedStreamState(streamName, namespace, List.of(COL_ID), "3", 1L),
+        buildExpectedStreamState(streamName2, namespace, List.of(COL_ID), "3", 1L));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
-    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0)));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
-    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1)));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1), expectedStateStreams2));
 
     setEmittedAtToNull(actualMessagesFirstSync);
-
-    System.out.println("ACTUAL MESSAGES first ++++" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualMessagesFirstSync));
-    System.out.println("EXPECTED MESSAGES first ++++" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedMessagesFirstSync));
 
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
@@ -826,20 +799,20 @@ public abstract class JdbcSourceAcceptanceTest {
           m.getRecord().setStream(streamName2);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
+                                                         convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
         })
         .collect(Collectors.toList());
   }
 
   // when initial and final cursor fields are the same.
   protected void incrementalCursorCheck(
-                                        final String cursorField,
-                                        final String initialCursorValue,
-                                        final String endCursorValue,
-                                        final List<AirbyteMessage> expectedRecordMessages)
+      final String cursorField,
+      final String initialCursorValue,
+      final String endCursorValue,
+      final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(cursorField, cursorField, initialCursorValue, endCursorValue,
-        expectedRecordMessages);
+                           expectedRecordMessages);
   }
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
@@ -870,20 +843,18 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
-
     final List<AirbyteMessage> firstSyncActualMessages = MoreIterators.toList(
-        source.read(config, configuredCatalog, null));
+        source.read(config, configuredCatalog, createEmptyState(TABLE_NAME_AND_TIMESTAMP, namespace)));
 
     // cursor after 1st sync: 2021-01-01 00:00:00, count 2
     final Optional<AirbyteMessage> firstSyncStateOptional = firstSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(firstSyncStateOptional.isPresent());
     final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
-    System.out.println("first sync state" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(firstSyncActualMessages));
     assertEquals(firstSyncState.get("cursor_field").elements().next().asText(), COL_TIMESTAMP);
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
-    ((ObjectNode) firstSyncState).put("state_type", "standard");
+    addStandardStateTypeToSyncState(firstSyncState);
 
     final List<String> firstSyncNames = firstSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
@@ -912,14 +883,14 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
-    ((ObjectNode) secondSyncState).put("state_type", "standard");
+    addStandardStateTypeToSyncState(secondSyncState);
 
-    System.out.println("second sync state" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(secondSyncState));
+
     final List<String> secondSyncNames = secondSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of( "c"), secondSyncNames);
+    assertEquals(List.of("c"), secondSyncNames);
 
     // 3rd sync has records with duplicated cursors
     database.execute(ctx -> {
@@ -956,34 +927,34 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-  private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
-    final JsonNode streamState = airbyteMessage.getState().getStream().getStreamState();
-    if (streamState.get("stream_name").asText().equals(streamName)) {
-      return streamState;
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+    for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
+      if (stream.get("stream_name").asText().equals(streamName)) {
+        return stream;
+      }
     }
-
     throw new IllegalArgumentException("Stream not found in state message: " + streamName);
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages)
+  protected void incrementalCursorCheck(
+      final String initialCursorField,
+      final String cursorField,
+      final String initialCursorValue,
+      final String endCursorValue,
+      final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(initialCursorField, cursorField, initialCursorValue, endCursorValue,
-        expectedRecordMessages,
-        getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
+                           expectedRecordMessages,
+                           getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages,
-                                      final ConfiguredAirbyteStream airbyteStream)
+  protected void incrementalCursorCheck(
+      final String initialCursorField,
+      final String cursorField,
+      final String initialCursorValue,
+      final String endCursorValue,
+      final List<AirbyteMessage> expectedRecordMessages,
+      final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(List.of(cursorField));
@@ -992,18 +963,15 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(airbyteStream));
 
-    final DbStreamState dbStreamState = new StandardStatus()
-        .withStateType(StateType.STANDARD)
+    final DbStreamState dbStreamState = new DbStreamState()
         .withStreamName(airbyteStream.getStream().getName())
         .withStreamNamespace(airbyteStream.getStream().getNamespace())
         .withCursorField(List.of(initialCursorField))
         .withCursor(initialCursorValue)
         .withCursorRecordCount(1L);
 
-    final JsonNode streamStates = Jsons.jsonNode(createState(List.of(dbStreamState)));
-
     final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, configuredCatalog, streamStates));
+        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
 
     setEmittedAtToNull(actualMessages);
 
@@ -1014,12 +982,8 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursorField(List.of(cursorField))
             .withCursor(endCursorValue)
             .withCursorRecordCount(1L));
-
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
-
-    System.out.println("actual" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualMessages));
-    System.out.println("expected" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedMessages));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
@@ -1039,27 +1003,27 @@ public abstract class JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+                TABLE_NAME,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+                TABLE_NAME_WITHOUT_PK,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_COMPOSITE_PK,
-            defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+                TABLE_NAME_COMPOSITE_PK,
+                defaultNamespace,
+                Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -1069,51 +1033,51 @@ public abstract class JdbcSourceAcceptanceTest {
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
+                            .withData(Jsons.jsonNode(Map
+                                                         .of(COL_ID, ID_VALUE_1,
+                                                             COL_NAME, "picard",
+                                                             COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
+                            .withData(Jsons.jsonNode(Map
+                                                         .of(COL_ID, ID_VALUE_2,
+                                                             COL_NAME, "crusher",
+                                                             COL_UPDATED_AT,
+                                                             "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
+                            .withData(Jsons.jsonNode(Map
+                                                         .of(COL_ID, ID_VALUE_3,
+                                                             COL_NAME, "vash",
+                                                             COL_UPDATED_AT, "2006-10-19")))));
   }
 
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
     return supportsPerStream()
-        ? states.stream()
-            .map(s -> new AirbyteMessage().withType(Type.STATE)
-                .withState(
-                    new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                        .withStream(new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                            .withStreamState(Jsons.jsonNode(s)))
-                        .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
-            .collect(
-                Collectors.toList())
-        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
-            .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))));
+           ? states.stream()
+               .map(s -> new AirbyteMessage().withType(Type.STATE)
+                   .withState(
+                       new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                           .withStream(new AirbyteStreamState()
+                                           .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                                           .withStreamState(Jsons.jsonNode(s)))
+                           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
+               .collect(
+                   Collectors.toList())
+           : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+                                                                             .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))));
   }
 
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
     return supportsPerStream()
-        ? states.stream()
-            .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                    .withStreamState(Jsons.jsonNode(s))))
-            .collect(
-                Collectors.toList())
-        : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
+           ? states.stream()
+               .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                   .withStream(new AirbyteStreamState()
+                                   .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                                   .withStreamState(Jsons.jsonNode(s))))
+               .collect(
+                   Collectors.toList())
+           : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
   }
 
   protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -1125,25 +1089,25 @@ public abstract class JdbcSourceAcceptanceTest {
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-                  "id INTEGER, " + enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
-                      + " VARCHAR(200)",
-                  ""));
+                                   enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                               "id INTEGER, " + enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
+                                   + " VARCHAR(200)",
+                               ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
-              getFullyQualifiedTableName(
-                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                                 getFullyQualifiedTableName(
+                                     enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                                 enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
-              getFullyQualifiedTableName(
-                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                                 getFullyQualifiedTableName(
+                                     enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                                 enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
-              getFullyQualifiedTableName(
-                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                                 getFullyQualifiedTableName(
+                                     enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                                 enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
@@ -1226,38 +1190,18 @@ public abstract class JdbcSourceAcceptanceTest {
    * @param streamNamespace The stream namespace.
    * @return {@link JsonNode} representation of the generated empty state.
    */
-  protected JsonNode createEmptyState(final String streamName,
-                                      final String streamNamespace,
-                                      final List<String> cursorFields,
-                                      final String cursorValue) {
+  protected JsonNode createEmptyState(final String streamName, final String streamNamespace) {
     if (supportsPerStream()) {
-      final DbStreamState dbStreamState = new StandardStatus()
-          .withStateType(StateType.STANDARD)
-          .withStreamName(streamName)
-          .withStreamNamespace(streamNamespace)
-          .withCursorField(cursorFields)
-          .withCursor(cursorValue);
-
       final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace))
-                          .withStreamState(Jsons.jsonNode(dbStreamState)));
+          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
       return Jsons.jsonNode(List.of(airbyteStateMessage));
     } else {
-      final DbStreamState dbStreamState =
-          new StandardStatus()
-              .withStateType(StateType.STANDARD)
-              .withStreamName(streamName)
-              .withStreamNamespace(streamNamespace)
-              .withCursor(cursorValue);
-
       final DbState dbState = new DbState()
-          .withStreams(List.of(dbStreamState));
+          .withStreams(List.of(new DbStreamState().withStreamName(streamName).withStreamNamespace(streamNamespace)));
       return Jsons.jsonNode(dbState);
     }
   }
-
-
 
   protected JsonNode createState(final String streamName, final String streamNamespace, final JsonNode stateData) {
     if (supportsPerStream()) {
@@ -1281,8 +1225,6 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-
-
   /**
    * Extracts the state component from the provided {@link AirbyteMessage} based on the value returned
    * by {@link #supportsPerStream()}.
@@ -1304,27 +1246,54 @@ public abstract class JdbcSourceAcceptanceTest {
           .withState(
               new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                   .withStream(new AirbyteStreamState()
-                      .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
-                          .withName(dbStreamState.getStreamName()))
-                      .withStreamState(Jsons.jsonNode(dbStreamState)))
-                  .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
-    } else {
-      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
-
-    }
-  }
-  protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState) {
-    if (supportsPerStream()) {
-      return new AirbyteMessage().withType(Type.STATE)
-          .withState(
-              new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                  .withStream(new AirbyteStreamState()
                                   .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
                                                             .withName(dbStreamState.getStreamName()))
-                                  .withStreamState(Jsons.jsonNode(dbStreamState))));
+                                  .withStreamState(Jsons.jsonNode(dbStreamState)))
+                  .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     } else {
-      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
-
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+                                                                     .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
+  }
+
+  /**
+   * Method to add state_type: "standard" to state message for CTID based syncs
+   * @param syncState
+   */
+  protected void addStandardStateTypeToSyncState(final JsonNode syncState) {
+    //no op
+  }
+
+  /**
+   * Read catalog to build iterators for the first sync
+   * @param configuredCatalog catalog of DB source
+   * @return A list of Airbyte messages generated during sync
+   * @throws Exception
+   */
+  protected List<AirbyteMessage> readCatalogForInitialSync(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    return MoreIterators
+        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, getDefaultNamespace())));
+  }
+
+  /**
+   * Build the expectged DBStreamState object
+   */
+  protected DbStreamState buildExpectedStreamState(final String streamName,
+                                                   final String nameSpace,
+                                                   final List<String> cursorFields,
+                                                   final String cursorValue,
+                                                   final Long cursorRecordCount) {
+    final DbStreamState streamState = new DbStreamState();
+    streamState.setStreamName(streamName);
+    streamState.setStreamNamespace(nameSpace);
+    streamState.setCursorField(cursorFields);
+    if (cursorValue != null) {
+      streamState.setCursor(cursorValue);
+    }
+
+    if (cursorRecordCount != null) {
+      streamState.setCursorRecordCount(cursorRecordCount);
+    }
+    return streamState;
   }
 }
