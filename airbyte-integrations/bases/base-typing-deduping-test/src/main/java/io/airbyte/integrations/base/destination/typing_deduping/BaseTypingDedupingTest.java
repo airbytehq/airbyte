@@ -173,21 +173,22 @@ public abstract class BaseTypingDedupingTest {
     return Jsons.deserialize(MoreResources.readResource("schema.json"));
   }
 
-  private List<AirbyteMessage> readMessages(String filename) throws IOException {
+  private List<JsonNode> readRecords(String filename) throws IOException {
     return MoreResources.readResource(filename).lines()
+        .map(String::trim)
+        .filter(line -> !line.isEmpty())
         .filter(line -> !line.startsWith("//"))
-        .map(jsonString -> Jsons.deserialize(jsonString, AirbyteMessage.class))
+        .map(Jsons::deserialize)
+        .toList();
+  }
+
+  private List<AirbyteMessage> readMessages(String filename) throws IOException {
+    return readRecords(filename).stream()
+        .map(record -> Jsons.convertValue(record, AirbyteMessage.class))
         .peek(message -> {
           message.getRecord().setNamespace(streamNamespace);
           message.getRecord().setStream(streamName);
         }).toList();
-  }
-
-  private List<JsonNode> readRecords(String filename) throws IOException {
-    return MoreResources.readResource(filename).lines()
-        .filter(line -> !line.startsWith("//"))
-        .map(Jsons::deserialize)
-        .toList();
   }
 
   private void verifySyncResult(List<JsonNode> expectedRawRecords, List<JsonNode> expectedFinalRecords) throws Exception {
