@@ -362,6 +362,7 @@ const operatorGuide = {
     'operator-guides/using-prefect-task',
     'operator-guides/using-dagster-integration',
     'operator-guides/locating-files-local-destination',
+    'operator-guides/collecting-metrics',
     {
       type: 'category',
       label: 'Transformations and Normalization',
