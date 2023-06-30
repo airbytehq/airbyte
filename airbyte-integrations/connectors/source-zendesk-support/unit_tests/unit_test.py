@@ -24,6 +24,7 @@ from source_zendesk_support.streams import (
     AttributeDefinitions,
     AuditLogs,
     BaseSourceZendeskSupportStream,
+    SourceZendeskSupportStream,
     Brands,
     CustomRoles,
     GroupMemberships,
@@ -262,6 +263,14 @@ def test_parse_response(requests_mock):
     # check, if we have all transformations correctly
     for entity in TicketComments.list_entities_from_event:
         assert True if entity in parsed_output else False
+
+
+def test_retry(mocker):
+    backoff_time_mock = mocker.Mock()
+    with mocker.patch.object(SourceZendeskSupportStream, "backoff_time", return_value=backoff_time_mock):
+        stream = SourceZendeskSupportStream(**STREAM_ARGS)
+        stream._retry(request=mocker.Mock(), retries=0)
+        assert not backoff_time_mock.called, "backoff_time should not have been called"
 
 
 class TestAllStreams:
