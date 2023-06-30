@@ -47,7 +47,7 @@ public class DestinationConfig {
   public JsonNode getNodeValue(final String key) {
     final JsonNode node = config.root.get(key);
     if (node == null) {
-      LOGGER.warn("Cannot find node with key {} ", key);
+      LOGGER.debug("Cannot find node with key {} ", key);
     }
     return node;
   }
@@ -56,7 +56,7 @@ public class DestinationConfig {
   public String getTextValue(final String key) {
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isTextual()) {
-      LOGGER.warn("Cannot retrieve text value for node with key {}", key);
+      LOGGER.debug("Cannot retrieve text value for node with key {}", key);
       return "";
     }
     return node.asText();
@@ -66,7 +66,7 @@ public class DestinationConfig {
   public Boolean getBooleanValue(final String key) {
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isBoolean()) {
-      LOGGER.warn("Cannot retrieve boolean value for node with key {}", key);
+      LOGGER.debug("Cannot retrieve boolean value for node with key {}", key);
       return false;
     }
     return node.asBoolean();

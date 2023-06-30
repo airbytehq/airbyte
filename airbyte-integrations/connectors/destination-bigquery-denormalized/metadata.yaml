@@ -10,8 +10,10 @@ data:
   name: BigQuery (denormalized typed struct)
   registries:
     cloud:
+      dockerImageTag: 1.4.1
       enabled: true
     oss:
+      dockerImageTag: 1.4.1
       enabled: true
   releaseStage: beta
   resourceRequirements:
