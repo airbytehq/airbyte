@@ -7,15 +7,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
 public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
 
@@ -143,6 +161,103 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
     assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
+  }
+
+  @Test
+  public void testTwoStreamSync() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
+
+    final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_MAKE_ID, 1, COL_MODEL, "Fiesta-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_MAKE_ID, 1, COL_MODEL, "Focus-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 130, COL_MAKE_ID, 1, COL_MODEL, "Ranger-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 140, COL_MAKE_ID, 2, COL_MODEL, "GLA-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
+
+    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
+
+    for (final JsonNode recordJson : MODEL_RECORDS_2) {
+      writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
+          COL_MAKE_ID, COL_MODEL);
+    }
+
+    final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(
+                MODELS_STREAM_NAME + "_2",
+                MODELS_SCHEMA,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_MODEL, JsonSchemaType.STRING))
+            .withSupportedSyncModes(
+                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
+    airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+
+    final List<ConfiguredAirbyteStream> streams = configuredCatalog.getStreams();
+    streams.add(airbyteStream);
+    configuredCatalog.withStreams(streams);
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
+        .read(getConfig(), configuredCatalog, null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+
+    final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
+    final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
+    assertEquals(13, stateMessages1.size());
+    JsonNode sharedState = null;
+    StreamDescriptor firstStreamInState = null;
+    for (int i = 0; i < stateMessages1.size(); i++) {
+      final AirbyteStateMessage stateMessage = stateMessages1.get(i);
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
+      final AirbyteGlobalState global = stateMessage.getGlobal();
+      assertNotNull(global.getSharedState());
+      if (Objects.isNull(sharedState)) {
+        sharedState = global.getSharedState();
+      } else {
+        assertEquals(sharedState, global.getSharedState());
+      }
+
+      if (Objects.isNull(firstStreamInState)) {
+        assertEquals(1, global.getStreamStates().size());
+        firstStreamInState = global.getStreamStates().get(0).getStreamDescriptor();
+      }
+
+      if (i <= 4) {
+        assertEquals(1, global.getStreamStates().size());
+        final AirbyteStreamState streamState = global.getStreamStates().get(0);
+        assertTrue(streamState.getStreamState().has("state_type"));
+        assertEquals("ctid", streamState.getStreamState().get("state_type").asText());
+      } else if (i == 5) {
+        assertEquals(1, global.getStreamStates().size());
+        final AirbyteStreamState streamState = global.getStreamStates().get(0);
+        assertFalse(streamState.getStreamState().has("state_type"));
+      } else if (i <= 10) {
+        assertEquals(2, global.getStreamStates().size());
+        final StreamDescriptor finalFirstStreamInState = firstStreamInState;
+        global.getStreamStates().forEach(c -> {
+          if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
+            assertFalse(c.getStreamState().has("state_type"));
+          } else {
+            assertTrue(c.getStreamState().has("state_type"));
+            assertEquals("ctid", c.getStreamState().get("state_type").asText());
+          }
+        });
+      } else {
+        assertEquals(2, global.getStreamStates().size());
+        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has("state_type")));
+      }
+    }
+
+    final Set<String> names = new HashSet<>(STREAM_NAMES);
+    names.add(MODELS_STREAM_NAME + "_2");
+    assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
+            .collect(Collectors.toSet()),
+        recordMessages1,
+        names,
+        names,
+        MODELS_SCHEMA);
   }
 
 }

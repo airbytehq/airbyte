@@ -59,7 +59,7 @@ public abstract class CdcSourceTest {
 
   protected static final String MODELS_SCHEMA = "models_schema";
   protected static final String MODELS_STREAM_NAME = "models";
-  private static final Set<String> STREAM_NAMES = Sets
+  protected static final Set<String> STREAM_NAMES = Sets
       .newHashSet(MODELS_STREAM_NAME);
   protected static final String COL_ID = "id";
   protected static final String COL_MAKE_ID = "make_id";
