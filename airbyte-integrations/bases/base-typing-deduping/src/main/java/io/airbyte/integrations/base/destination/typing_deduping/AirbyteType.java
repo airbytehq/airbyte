@@ -80,11 +80,13 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
   private static Struct getStruct(final JsonNode schema) {
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
     final JsonNode properties = schema.get("properties");
-    properties.fields().forEachRemaining(property -> {
-      final String key = property.getKey();
-      final JsonNode value = property.getValue();
-      propertiesMap.put(key, fromJsonSchema(value));
-    });
+    if (properties != null) {
+      properties.fields().forEachRemaining(property -> {
+        final String key = property.getKey();
+        final JsonNode value = property.getValue();
+        propertiesMap.put(key, fromJsonSchema(value));
+      });
+    }
     return new Struct(propertiesMap);
   }
 
