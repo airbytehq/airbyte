@@ -1,5 +1,6 @@
-// emitted_at:1000 is equal to 1970-01-01 00:00:01Z. This obviously makes no sense in relation to updated_at being in the year 2000
-// but that's OK because (from destinations POV) updated_at has no relation to emitted_at.
+// emitted_at:1000 is equal to 1970-01-01 00:00:01Z, which is what you'll see in the expected records.
+// This obviously makes no sense in relation to updated_at being in the year 2000, but that's OK
+// because (from destinations POV) updated_at has no relation to emitted_at.
 {"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1":  1, "id2":  200, "updated_at":  "2000-01-01T00:00:00Z", "_ab_cdc_deleted_at":  null, "name":  "Alice", "address":  {"city":  "San Francisco", "state": "CA"}}}}
 // Emit a second record for id=(1,200). This generally doesn't happen in full refresh syncs - but if T+D is implemented correctly, it shouldn't matter (i.e. both records should be written to the final table).
 {"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1":  1, "id2":  200, "updated_at":  "2000-01-01T00:01:00Z", "_ab_cdc_deleted_at":  null, "name":  "Alice", "address":  {"city":  "Los Angeles", "state": "CA"}}}}

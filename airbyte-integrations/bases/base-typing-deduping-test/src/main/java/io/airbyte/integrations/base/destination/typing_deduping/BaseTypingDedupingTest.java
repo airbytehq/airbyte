@@ -35,6 +35,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,18 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is loosely based on standard-destination-tests's DestinationAcceptanceTest class. The
- * sync-running code is copy-pasted from there.
+ * This is loosely based on standard-destination-tests's DestinationAcceptanceTest class. The sync-running code is copy-pasted from there.
  * <p>
- * All tests use a single stream, whose schema is defined in {@code resources/schema.json}. Each
- * test case constructs a ConfiguredAirbyteCatalog dynamically.
+ * All tests use a single stream, whose schema is defined in {@code resources/schema.json}. Each test case constructs a
+ * ConfiguredAirbyteCatalog dynamically.
  * <p>
- * For sync modes which use a primary key, the stream provides a composite key of (id1, id2). For
- * sync modes which use a cursor, the stream provides an updated_at field. The stream also has an
- * _ab_cdc_deleted_at field.
+ * For sync modes which use a primary key, the stream provides a composite key of (id1, id2). For sync modes which use a
+ * cursor, the stream provides an updated_at field. The stream also has an _ab_cdc_deleted_at field.
  */
 public abstract class BaseTypingDedupingTest {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTypingDedupingTest.class);
   private static final Comparator<JsonNode> RAW_RECORD_IDENTITY_COMPARATOR = Comparator
       .comparingLong((JsonNode record) -> asInt(record.get("_airbyte_data").get("id1")))
@@ -73,11 +71,10 @@ public abstract class BaseTypingDedupingTest {
   private static ProcessFactory processFactory;
 
   /**
-   * Subclasses MUST implement a static {@link org.junit.jupiter.api.BeforeAll} method that sets this
-   * field.
+   * Subclasses MUST implement a static {@link org.junit.jupiter.api.BeforeAll} method that sets this field.
    * <p>
-   * That method should also start testcontainer(s), if you're using them. That test container will be
-   * used for all tests. This is safe because each test uses a randomized stream namespace+name.
+   * That method should also start testcontainer(s), if you're using them. That test container will be used for all
+   * tests. This is safe because each test uses a randomized stream namespace+name.
    */
   protected static JsonNode config;
 
@@ -90,32 +87,25 @@ public abstract class BaseTypingDedupingTest {
   protected abstract String getImageName();
 
   /**
-   * For a given stream, return the records that exist in the destination's raw table. This _should_
-   * include metadata columns (e.g. _airbyte_raw_id). The {@code _airbyte_data} column MUST be an
-   * {@link com.fasterxml.jackson.databind.node.ObjectNode} (i.e. it cannot be a string value).
+   * For a given stream, return the records that exist in the destination's raw table. This _should_ include metadata columns (e.g. _airbyte_raw_id).
+   * The {@code _airbyte_data} column MUST be an {@link com.fasterxml.jackson.databind.node.ObjectNode} (i.e. it cannot be a string value).
+   * <p>
+   * Each record should be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_loaded_at": "..", "_airbyte_data": {fields...}}.
    */
   protected abstract List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * For a given stream, return the records that exist in the destination's final table. This _should_
-   * include metadata columns (e.g. _airbyte_raw_id).
+   * For a given stream, return the records that exist in the destination's final table. This _should_ include metadata columns (e.g. _airbyte_raw_id).
+   * <p>
+   * Each record should be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta": "..", "field1": ..., "field2": ..., ...}.
    */
   protected abstract List<JsonNode> dumpFinalTableRecords(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * Create raw+final tables in the destinations as though a previous sync had loaded
-   * {@code initialRecords}. This method exists so that we don't need to run a sync just to load
-   * initial state, because that's both slow and error-prone.
-   */
-  protected abstract void loadInitialRecords(String streamNamespace, String streamName, List<JsonNode> initialRecords) throws Exception;
-
-  /**
-   * Delete any resources in the destination associated with this stream AND its namespace. We need
-   * this because we write raw tables to a shared {@code airbyte} namespace, which we can't drop
-   * wholesale.
+   * Delete any resources in the destination associated with this stream AND its namespace. We need this because we write
+   * raw tables to a shared {@code airbyte} namespace, which we can't drop wholesale.
    * <p>
-   * In general, this should resemble
-   * {@code DROP TABLE airbyte.namespace_name; DROP SCHEMA namespace}.
+   * In general, this should resemble {@code DROP TABLE airbyte.namespace_name; DROP SCHEMA namespace}.
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
@@ -132,11 +122,11 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Starting with an empty destination, execute a full refresh overwrite sync. Verify that the
-   * records are written to the destination table.
+   * Starting with an empty destination, execute a full refresh overwrite sync. Verify that the records are written to
+   * the destination table. Then run a second sync, and verify that the records are overwritten.
    */
   @Test
-  public void initialFullRefreshOverwrite() throws Exception {
+  public void fullRefreshOverwrite() throws Exception {
     ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -145,13 +135,24 @@ public abstract class BaseTypingDedupingTest {
                 .withNamespace(streamNamespace)
                 .withName(streamName)
                 .withJsonSchema(getSchema()))));
-    List<AirbyteMessage> messages = readMessages("sync1_messages.jsonl");
 
-    runSync(catalog, messages);
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
 
-    List<JsonNode> expectedRawRecords = readRecords("sync1_expectedrecords_fullrefresh_overwrite_raw.jsonl");
-    List<JsonNode> expectedFinalRecords = readRecords("sync1_expectedrecords_fullrefresh_overwrite_final.jsonl");
-    verifySyncResult(expectedRawRecords, expectedFinalRecords);
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_fullrefresh_overwrite_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_fullrefresh_overwrite_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   private static JsonNode getSchema() throws IOException {
@@ -183,32 +184,59 @@ public abstract class BaseTypingDedupingTest {
 
     assertAll(
         () -> assertTrue(rawDiff.isEmpty(), "Raw table was incorrect.\n" + rawDiff),
-        () -> assertTrue(finalDiff.isEmpty(), "Final table was incorrect.\n" + finalDiff));
+        () -> assertTrue(finalDiff.isEmpty(), "Final table was incorrect.\n" + finalDiff)
+    );
   }
 
   private static String diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
-    return diffRecords(expectedRecords, actualRecords, RAW_RECORD_IDENTITY_COMPARATOR, RAW_RECORD_SORT_COMPARATOR);
+    return diffRecords(
+        expectedRecords,
+        actualRecords,
+        RAW_RECORD_IDENTITY_COMPARATOR,
+        RAW_RECORD_SORT_COMPARATOR,
+        record -> getFieldIfPresent(record.get("_airbyte_data"), "id1")
+            + getFieldIfPresent(record.get("_airbyte_data"), "id2")
+            + getFieldIfPresent(record.get("_airbyte_data"), "updated_at")
+            + getFieldIfPresent(record, "_airbyte_extracted_at"),
+        true);
   }
 
   private static String diffFinalTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
-    return diffRecords(expectedRecords, actualRecords, FINAL_RECORD_IDENTITY_COMPARATOR, FINAL_RECORD_SORT_COMPARATOR);
+    return diffRecords(
+        expectedRecords,
+        actualRecords,
+        FINAL_RECORD_IDENTITY_COMPARATOR,
+        FINAL_RECORD_SORT_COMPARATOR,
+        record -> getFieldIfPresent(record, "id1")
+            + getFieldIfPresent(record, "id2")
+            + getFieldIfPresent(record, "updated_at")
+            + getFieldIfPresent(record, "_airbyte_extracted_at"),
+        false);
+  }
+
+  private static String getFieldIfPresent(JsonNode record, String field) {
+    if (record.has(field)) {
+      return field + "=" + record.get(field) + "; ";
+    } else {
+      return "";
+    }
   }
 
   /**
-   * Generate a human-readable diff between the two lists. Only checks the keys specified in
-   * expectedRecords.
+   * Generate a human-readable diff between the two lists. Only checks the keys specified in expectedRecords.
+   * Assumes (in general) that two records with the same PK, cursor, and extracted_at are the same record.
    *
-   * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
-   *        PK+cursor+extracted_at)
-   * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
-   *        breaks that tie using _airbyte_raw_id
+   * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same PK+cursor+extracted_at)
+   * @param sortComparator Behaves identically to identityComparator, but if two records are the same, breaks that tie using _airbyte_raw_id
    * @return The diff, or empty string if there were no differences
    */
   private static String diffRecords(
-                                    List<JsonNode> originalExpectedRecords,
-                                    List<JsonNode> originalActualRecords,
-                                    Comparator<JsonNode> identityComparator,
-                                    Comparator<JsonNode> sortComparator) {
+      List<JsonNode> originalExpectedRecords,
+      List<JsonNode> originalActualRecords,
+      Comparator<JsonNode> identityComparator,
+      Comparator<JsonNode> sortComparator,
+      Function<JsonNode, String> recordIdExtractor,
+      boolean extractRawData) {
     List<JsonNode> expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList();
     List<JsonNode> actualRecords = originalActualRecords.stream().sorted(sortComparator).toList();
 
@@ -225,18 +253,36 @@ public abstract class BaseTypingDedupingTest {
       if (compare == 0) {
         // These records should be the same. Find the specific fields that are different.
         boolean foundMismatch = false;
-        String mismatchedRecordMessage = "Row had incorrect data:\n";
+        String mismatchedRecordMessage = "Row had incorrect data:" + recordIdExtractor.apply(expectedRecord) + "\n";
         for (String key : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
-          JsonNode expectedValue = expectedRecord.get(key);
-          JsonNode actualValue = actualRecord.get(key);
-          // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
-          if (!Objects.equals(expectedValue, actualValue)
-              // Objects.equals expects the two values to be the same class.
-              // We need to handle comparisons between e.g. LongNode and IntNode.
-              && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-              && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble())) {
-            mismatchedRecordMessage += "  For key " + key + ", expected " + expectedValue + " but got " + actualValue + "\n";
-            foundMismatch = true;
+          if (extractRawData && "_airbyte_data".equals(key)) {
+            JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
+            JsonNode actualRawData = actualRecord.get("_airbyte_data");
+            for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
+              JsonNode expectedValue = expectedRawData.get(field);
+              JsonNode actualValue = actualRawData.get(field);
+              // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
+              if (!Objects.equals(expectedValue, actualValue)
+                  // Objects.equals expects the two values to be the same class.
+                  // We need to handle comparisons between e.g. LongNode and IntNode.
+                  && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
+                  && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble())) {
+                mismatchedRecordMessage += "  For _airbyte_data." + field + ", expected " + expectedValue + " but got " + actualValue + "\n";
+                foundMismatch = true;
+              }
+            }
+          } else {
+            JsonNode expectedValue = expectedRecord.get(key);
+            JsonNode actualValue = actualRecord.get(key);
+            // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
+            if (!Objects.equals(expectedValue, actualValue)
+                // Objects.equals expects the two values to be the same class.
+                // We need to handle comparisons between e.g. LongNode and IntNode.
+                && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
+                && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble())) {
+              mismatchedRecordMessage += "  For key " + key + ", expected " + expectedValue + " but got " + actualValue + "\n";
+              foundMismatch = true;
+            }
           }
         }
         if (foundMismatch) {
@@ -246,13 +292,11 @@ public abstract class BaseTypingDedupingTest {
         expectedRecordIndex++;
         actualRecordIndex++;
       } else if (compare < 0) {
-        // The expected record is missing from the actual records. Print it and move on to the next expected
-        // record.
+        // The expected record is missing from the actual records. Print it and move on to the next expected record.
         message += "Row was expected but missing: " + expectedRecord + "\n";
         expectedRecordIndex++;
       } else {
-        // There's an actual record which isn't present in the expected records. Print it and move on to the
-        // next actual record.
+        // There's an actual record which isn't present in the expected records. Print it and move on to the next actual record.
         message += "Row was not expected but present: " + actualRecord + "\n";
         actualRecordIndex++;
       }
@@ -296,9 +340,9 @@ public abstract class BaseTypingDedupingTest {
     }
   }
 
-  /*
-   * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
-   * make edits here, you probably want to also edit there. !!!!!!!!!!!!!!!!!!!!!
+  /* !!!!!! WARNING !!!!!!
+   * The code below was mostly copypasted from DestinationAcceptanceTest. If you make edits here, you probably want to also edit there.
+   * !!!!!!!!!!!!!!!!!!!!!
    */
 
   private static Path jobRoot;
@@ -335,8 +379,8 @@ public abstract class BaseTypingDedupingTest {
         new EnvVariableFeatureFlags()));
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
-    messages.forEach(
-        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
+    messages.forEach(message -> Exceptions.toRuntime(() ->
+        destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
 
     while (!destination.isFinished()) {

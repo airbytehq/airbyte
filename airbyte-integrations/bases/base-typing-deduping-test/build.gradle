@@ -5,6 +5,7 @@ plugins {
 dependencies {
   implementation project(':airbyte-config-oss:config-models-oss')
   implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+  implementation project(':airbyte-integrations:bases:base-typing-deduping')
   implementation libs.airbyte.protocol
 
   implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))

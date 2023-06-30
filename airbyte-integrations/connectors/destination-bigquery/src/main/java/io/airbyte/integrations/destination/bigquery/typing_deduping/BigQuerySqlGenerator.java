@@ -69,7 +69,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new ColumnId(nameTransformer.getIdentifier(quotedName), name, canonicalized);
   }
 
-  public StandardSQLTypeName toDialectType(final AirbyteType type) {
+  public static StandardSQLTypeName toDialectType(final AirbyteType type) {
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof final AirbyteProtocolType p) {
       return toDialectType(p);
@@ -137,7 +137,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
   }
 
-  public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
+  public static StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       // TODO doublecheck these
       case STRING -> StandardSQLTypeName.STRING;
