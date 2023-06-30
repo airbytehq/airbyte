@@ -386,7 +386,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 WHERE row_number != 1
               )
               OR (
-                ${pk_list} IN (
+                (${pk_list}) IN (
                   SELECT (
             ${pk_cast_list}
                   )

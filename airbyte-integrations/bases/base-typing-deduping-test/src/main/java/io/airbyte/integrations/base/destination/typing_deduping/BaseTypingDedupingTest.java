@@ -213,6 +213,81 @@ public abstract class BaseTypingDedupingTest {
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
+  /**
+   * Starting with an empty destination, execute an incremental append sync.
+   * <p>
+   * This is (not so secretly) identical to {@link #fullRefreshAppend()}, and uses the same set of expected records.
+   * Incremental as a concept only exists in the source. From the destination's perspective, we only care about the
+   * destination sync mode.
+   */
+  @Test
+  public void incrementalAppend() throws Exception {
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            // These two lines are literally the only difference between this test and fullRefreshAppend
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(getSchema()))));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+  }
+
+  /**
+   * Starting with an empty destination, execute an incremental dedup sync. Verify that the records are written to the
+   * destination table. Then run a second sync, and verify that the raw/final tables contain the correct records.
+   */
+  @Test
+  public void incrementalDedup() throws Exception {
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(getSchema()))));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_dedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+  }
+
   private static JsonNode getSchema() throws IOException {
     return Jsons.deserialize(MoreResources.readResource("schema.json"));
   }
