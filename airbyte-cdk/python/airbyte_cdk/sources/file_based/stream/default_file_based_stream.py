@@ -132,19 +132,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         return list(self._stream_reader.get_matching_files(self.config.globs))
 
-    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+    def infer_schema(self, files: List[RemoteFile]) -> Dict[str, Any]:
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self._infer_schema(files))
 
-    async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+    async def _infer_schema(self, files: List[RemoteFile]) -> Dict[str, Any]:
         """
         Infer the schema for a stream.
 
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
-        base_schema: Mapping[str, Any] = {}
-        pending_tasks: Set[asyncio.tasks.Task[Mapping[str, Any]]] = set()
+        base_schema: Dict[str, Any] = {}
+        pending_tasks: Set[asyncio.tasks.Task[Dict[str, Any]]] = set()
 
         n_started, n_files = 0, len(files)
         files_iterator = iter(files)
@@ -160,7 +160,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return {"type": "object", "properties": base_schema}
 
-    async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
+    async def _infer_file_schema(self, file: RemoteFile) -> Dict[str, Any]:
         try:
             return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
         except Exception as exc:
