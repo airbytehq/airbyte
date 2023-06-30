@@ -141,7 +141,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   /**
-   * Aggregate list of @param entries of StreamName and PrimaryKey and
+   * Aggregate list of @param entries of StreamName and PrimaryKey
    *
    * @return a map by StreamName to associated list of primary keys
    */
