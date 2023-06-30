@@ -341,7 +341,8 @@ public abstract class BaseTypingDedupingTest {
   @Test
   @Disabled("Not yet implemented")
   public void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
-    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using a stream with null namespace:
+    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using a stream with null
+    // namespace:
     ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -357,7 +358,8 @@ public abstract class BaseTypingDedupingTest {
   @Test
   @Disabled("Not yet implemented")
   public void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
-    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using two streams with the same name but different namespace:
+    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using two streams with the same
+    // name but different namespace:
     ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -382,8 +384,10 @@ public abstract class BaseTypingDedupingTest {
   @Test
   @Disabled("Not yet implemented")
   public void testSyncNotFailsWithNewFields() throws Exception {
-    // TODO duplicate this test for each sync mode. Run a sync, then add a new field to the schema, then run another sync
-    // We might want to write a test that verifies more general schema evolution (e.g. all valid evolutions)
+    // TODO duplicate this test for each sync mode. Run a sync, then add a new field to the schema, then
+    // run another sync
+    // We might want to write a test that verifies more general schema evolution (e.g. all valid
+    // evolutions)
   }
 
   @Test
@@ -391,19 +395,21 @@ public abstract class BaseTypingDedupingTest {
   public void testSyncWithLargeRecordBatch() throws Exception {
     // TODO duplicate this test for each sync mode. Run a single sync with many records
     /*
-    copied from DATs:
-    This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
-    insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
-
-    this maybe needs configuration per destination to specify that limit?
+     * copied from DATs: This serves to test MSSQL 2100 limit parameters in a single query. this means
+     * that for Airbyte insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100
+     * params
+     *
+     * this maybe needs configuration per destination to specify that limit?
      */
   }
 
   @Test
   @Disabled("Not yet implemented")
   public void testDataTypes() throws Exception {
-    // TODO duplicate this test for each sync mode. See DataTypeTestArgumentProvider for what this test does in DAT-land
-    // we probably don't want to do the exact same thing, but the general spirit of testing a wide range of values for every data type is approximately correct
+    // TODO duplicate this test for each sync mode. See DataTypeTestArgumentProvider for what this test
+    // does in DAT-land
+    // we probably don't want to do the exact same thing, but the general spirit of testing a wide range
+    // of values for every data type is approximately correct
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
