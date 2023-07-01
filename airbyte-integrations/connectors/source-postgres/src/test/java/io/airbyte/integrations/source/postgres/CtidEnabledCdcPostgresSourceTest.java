@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -225,15 +226,18 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       }
 
       if (i <= 4) {
+        // First 4 state messages are ctid state
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertTrue(streamState.getStreamState().has("state_type"));
         assertEquals("ctid", streamState.getStreamState().get("state_type").asText());
       } else if (i == 5) {
+        // 5th state message is the final state message emitted for the stream
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertFalse(streamState.getStreamState().has("state_type"));
       } else if (i <= 10) {
+        // 6th to 10th is the ctid state message for the 2nd stream but final state message for 1st stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
@@ -245,6 +249,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
           }
         });
       } else {
+        // last 2 state messages don't contain ctid info cause ctid sync should be complete
         assertEquals(2, global.getStreamStates().size());
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has("state_type")));
       }
@@ -255,6 +260,48 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
             .collect(Collectors.toSet()),
         recordMessages1,
+        names,
+        names,
+        MODELS_SCHEMA);
+
+    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA), firstStreamInState);
+
+    // Triggering a sync with a ctid state for 1 stream and complete state for other stream
+    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
+        .read(getConfig(), configuredCatalog, Jsons.jsonNode(Collections.singletonList(stateMessages1.get(6))));
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+
+    final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
+
+    assertEquals(6, stateMessages2.size());
+    for (int i = 0; i < stateMessages2.size(); i++) {
+      final AirbyteStateMessage stateMessage = stateMessages2.get(i);
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
+      final AirbyteGlobalState global = stateMessage.getGlobal();
+      assertNotNull(global.getSharedState());
+      assertEquals(2, global.getStreamStates().size());
+
+      if (i <= 3) {
+        final StreamDescriptor finalFirstStreamInState = firstStreamInState;
+        global.getStreamStates().forEach(c -> {
+          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
+          if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
+            assertFalse(c.getStreamState().has("state_type"));
+          } else {
+            assertTrue(c.getStreamState().has("state_type"));
+            assertEquals("ctid", c.getStreamState().get("state_type").asText());
+          }
+        });
+      } else {
+        // last 2 state messages don't contain ctid info cause ctid sync should be complete
+        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has("state_type")));
+      }
+    }
+
+    final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
+    assertEquals(5, recordMessages2.size());
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS_2.subList(1, MODEL_RECORDS_2.size())),
+        recordMessages2,
         names,
         names,
         MODELS_SCHEMA);
