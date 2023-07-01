@@ -124,7 +124,7 @@ class AbstractSource(Source, ABC):
                 record_count +=1
             yield record
         logger.info(f"Finished syncing {self.name}")
-        print(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
+        logger.info(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
         logger.info(f"Read {record_count} records from {self.name}")
 
     def get_requester(self, streams):
@@ -304,7 +304,6 @@ class AbstractSource(Source, ABC):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.generate_partitions()
-        print(slices)
         logger.debug(
             f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
         )

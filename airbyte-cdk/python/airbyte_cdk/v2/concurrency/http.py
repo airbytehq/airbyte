@@ -119,7 +119,7 @@ class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
         pagination_complete = False
         request = partition_descriptor.request_descriptor
         while not pagination_complete:
-            print(f"Requesting first page: {request}")
+            #print(f"Requesting first page: {request}")
             method, url, request_description = self._get_request_args(request)
             async with (await self.get_client()).request(method, url, **request_description) as response:
                 try:

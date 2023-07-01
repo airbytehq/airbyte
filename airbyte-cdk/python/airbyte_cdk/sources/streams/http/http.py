@@ -193,7 +193,6 @@ class HttpStream(Stream, ABC):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-        print("request_body_json from httpstream")
         return None
 
     def request_kwargs(
