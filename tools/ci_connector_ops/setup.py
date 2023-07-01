@@ -15,6 +15,7 @@ MAIN_REQUIREMENTS = [
     "PyGithub~=1.58.0",
     "rich",
     "pydash~=7.0.4",
+    "google-cloud-storage~=2.8.0",
 ]
 
 

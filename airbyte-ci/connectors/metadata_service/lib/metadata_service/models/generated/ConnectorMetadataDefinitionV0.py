@@ -187,7 +187,7 @@ class Data(BaseModel):
     ]
     releaseStage: Literal["alpha", "beta", "generally_available", "source"]
     tags: Optional[List[str]] = Field(
-        None,
+        [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     registries: Optional[Registry] = None

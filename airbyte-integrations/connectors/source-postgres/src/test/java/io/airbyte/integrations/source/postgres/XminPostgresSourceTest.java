@@ -72,7 +72,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
@@ -81,7 +81,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true),
       CatalogHelpers.createAirbyteStream(
           "names",
@@ -89,7 +89,7 @@ class XminPostgresSourceTest {
           Field.of("first_name", JsonSchemaType.STRING),
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
 
