@@ -19,7 +19,8 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
-from airbyte_cdk.v2.concurrency.http import HttpPartitionDescriptor, HttpRequestDescriptor, GetRequest
+from airbyte_cdk.v2.concurrency.http import HttpPartitionDescriptor, HttpRequestDescriptor, GetRequest, PostRequest
+from airbyte_cdk.v2.concurrency.http_pagination import HttpStreamPaginator
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -192,6 +193,7 @@ class HttpStream(Stream, ABC):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        print("request_body_json from httpstream")
         return None
 
     def request_kwargs(
@@ -213,6 +215,13 @@ class HttpStream(Stream, ABC):
         response.request = aio_response.request_info
         response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
         return self.parse_response(response, stream_state=stream_state)
+
+    async def async_response_to_response(self, aio_response: aiohttp.ClientResponse) -> requests.Response:
+        response = requests.Response()
+        response.status_code = aio_response.status
+        response.request = aio_response.request_info
+        response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
+        return response
 
     @abstractmethod
     def parse_response(
@@ -444,16 +453,8 @@ class HttpStream(Stream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
-        while not pagination_complete:
-            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
-            yield from records_generator_fn(request, response, stream_state, stream_slice)
-
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+        request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+        yield from records_generator_fn(request, response, stream_state, stream_slice)
 
     def _fetch_next_page(
         self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -473,16 +474,29 @@ class HttpStream(Stream, ABC):
 
     def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
         # FIXME: pass parameters to stream_slices
-        return [HttpPartitionDescriptor(metadata=stream_slice,
-                                        request_descriptor=
-            GetRequest(
-                base_url=self.url_base,
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice),
-                headers={**self.request_headers(stream_state=stream_state, stream_slice=stream_slice), **self.authenticator.get_auth_header()},
-                request_parameters=self.request_params(stream_state=stream_state, stream_slice=stream_slice)
-            # FIXME etc..
-        ))
-                for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
+        partitions = []
+        paginator = HttpStreamPaginator(self)
+        for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+            if self.http_method == "GET":
+                request = GetRequest(
+                    base_url=self.url_base,
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice),
+                    headers={**self.request_headers(stream_state=stream_state, stream_slice=stream_slice), **self.authenticator.get_auth_header()},
+                    request_parameters=self.request_params(stream_state=stream_state, stream_slice=stream_slice),
+                    body_json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
+                    paginator=paginator
+                )
+            elif self.http_method == "POST":
+                request = PostRequest(
+                    base_url=self.url_base,
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice),
+                    headers={**self.request_headers(stream_state=stream_state, stream_slice=stream_slice), **self.authenticator.get_auth_header()},
+                    body_json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
+                    paginator=paginator
+
+                )
+            partitions.append(HttpPartitionDescriptor(metadata=stream_slice, request_descriptor=request))
+        return partitions
 
 
 class HttpSubStream(HttpStream, ABC):

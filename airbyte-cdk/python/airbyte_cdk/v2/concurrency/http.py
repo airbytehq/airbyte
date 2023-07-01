@@ -23,6 +23,8 @@ class HttpRequestDescriptor:
     headers: Mapping[str, Any] = field(default_factory=dict)
     cookies: Mapping[str, Any] = field(default_factory=dict)
     follow_redirects: bool = True
+    body_json: Mapping[str, Any] = None
+    paginator: Optional["Paginator"] = None #FIXME: I liked that this was a dataclass. adding the paginator here isn't great + it creates a circular dependency
 
 
 @dataclass
@@ -53,11 +55,10 @@ ResponseType = TypeVar('ResponseType')
 
 class Paginator(ABC, Generic[ResponseType]):
     @abstractmethod
-    def get_next_page_info(self, response: ResponseType) -> HttpRequestDescriptor:
+    def get_next_page_info(self, response: ResponseType, partition: PartitionDescriptor) -> Optional[HttpRequestDescriptor]:
         """
         Given the response representing the previous page of data return an HttpRequestDescriptor containing any info for the next page
         """
-
 
 class RequestException(Exception):
     pass
@@ -114,20 +115,29 @@ class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
         return self._client
 
     async def request(self, partition_descriptor: HttpPartitionDescriptor) -> AsyncIterable[aiohttp.ClientResponse]:
-        method, url, request_description = self._get_request_args(partition_descriptor)
         # async with self.client() as client:
-        async with (await self.get_client()).request(method, url, **request_description) as response:
-            try:
-                self.error_handler.observe_response(response)
-            except Retry as e:
-                # TODO implement retry logic
-                raise Exception(f"We should be retrying here!! {e}. Response: {response} ")
-            else:
-                yield response
+        pagination_complete = False
+        request = partition_descriptor.request_descriptor
+        while not pagination_complete:
+            print(f"Requesting first page: {request}")
+            method, url, request_description = self._get_request_args(request)
+            async with (await self.get_client()).request(method, url, **request_description) as response:
+                try:
+                    self.error_handler.observe_response(response)
+                except Retry as e:
+                    # TODO implement retry logic
+                    raise Exception(f"We should be retrying here!! {e}. Response: {response} ")
+                else:
+                    yield response
+                    if request.paginator:
+                        request = partition_descriptor.request_descriptor.paginator.get_next_page_info(await partition_descriptor.request_descriptor.paginator._stream.async_response_to_response(response), partition_descriptor)
+                        if not request:
+                            pagination_complete = True
+                    else:
+                        pagination_complete = True
 
     @staticmethod
-    def _get_request_args(partition_descriptor: HttpPartitionDescriptor) -> Tuple[str, str, Mapping[str, Any]]:
-        request_descriptor = partition_descriptor.request_descriptor
+    def _get_request_args(request_descriptor: HttpRequestDescriptor) -> Tuple[str, str, Mapping[str, Any]]:
         args = {
             'headers': request_descriptor.headers,
             'allow_redirects': request_descriptor.follow_redirects,

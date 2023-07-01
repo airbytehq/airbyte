@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
@@ -128,6 +129,8 @@ class AbstractSource(Source, ABC):
 
     def get_requester(self, streams):
         if any(isinstance(stream, HttpStream) for stream in streams.values()):
+            return AiohttpRequester()
+        if any(isinstance(stream, DeclarativeStream) for stream in streams.values()):
             return AiohttpRequester()
         else:
             return DefaultAsyncRequester()
