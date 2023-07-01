@@ -471,7 +471,7 @@ class HttpStream(Stream, ABC):
         response = self._send_request(request, request_kwargs)
         return request, response
 
-    def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
+    def generate_partitions(self, stream_state) -> Iterable[PartitionDescriptor]:
         # FIXME: pass parameters to stream_slices
         partitions = []
         paginator = HttpStreamPaginator(self)

@@ -37,6 +37,7 @@ from airbyte_cdk.v2.concurrency.async_requesters import DefaultAsyncRequester
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.http import AiohttpRequester
 from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
+from airbyte_cdk.v2.state import LegacyStateManager
 
 
 class AbstractSource(Source, ABC):
@@ -106,6 +107,11 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         streams_to_sync = set([stream.stream.name for stream in catalog.streams])
         stream_instances = {s.name: s for s in self.streams(config) if s.name in streams_to_sync}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        for stream in stream_instances.values():
+            # FIXME: Need to make this configurable...
+            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+            stream.state_manager = LegacyStateManager(stream, stream_state)
 
         for s in stream_instances.values():
             if s.stream_slices != Stream.stream_slices:

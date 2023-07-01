@@ -15,9 +15,9 @@ PartitionType = TypeVar('PartitionType', bound=PartitionDescriptor)
 
 
 class StateManager(ABC, Generic[StateType, PartitionType]):
+    @abstractmethod
     def observe(self, record: Mapping[str, Any]) -> Optional[StateType]:
         """ If the state was updated as a result of observing this record, returns a state object"""
-        pass
 
     @abstractmethod
     def notify_partition_complete(self, partition_descriptor: PartitionType) -> StateType:
@@ -32,17 +32,42 @@ class StateManager(ABC, Generic[StateType, PartitionType]):
     def from_state(state: StateType = None):
         """Return a new instance of the state manager initialized with the state object"""
 
+class DictState(State):
+
+    def __init__(self, d):
+        self._d = d
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> StateType:
+        return DictState(d)
+
+    def to_dict(self) -> Mapping[str, Any]:
+        return self._d
+
 class LegacyStateManager(StateManager[StateType, PartitionType]):
 
+    def __init__(self, stream, stream_state):
+        self._stream = stream
+        self._partitions = self._stream.generate_partitions(stream_state)
+        self._previous_state = stream_state
+        self._latest_record = None
+
+    def observe(self, record: Mapping[str, Any]) -> Optional[StateType]:
+        print(f"observe: {record}")
+        self._latest_record = record
+
     def notify_partition_complete(self, partition_descriptor: PartitionType) -> StateType:
-        return EmptyState()
+        return self.get_state()
 
     def get_state(self) -> StateType:
-        return EmptyState()
+        if self._latest_record:
+            updated_state = self._stream.get_updated_state(current_stream_state=self._previous_state, latest_record=self._latest_record)
+            self._previous_state = updated_state
+        return DictState(self._previous_state)
+
 
     @staticmethod
     def from_state(state: StateType = None):
-        pass
+        raise ValueError(f"LegacyStateManager does not support state: {state}")
 
 
 class DatetimeState(State, BaseModel):
@@ -84,6 +109,10 @@ class DatetimePartitionGenerator(PartitionGenerator[DatetimePartitionDescriptor,
             # config: Mapping[str, Any]
     ) -> Iterable[DatetimePartitionDescriptor]:
         range_tracker = DatetimeRangeTracker([])
+        # FIXME: this interface is a little problematic. I would prefer if the parition generator generated the partions instead of the range tracker
+        # why?
+        # because that's more in line with how the partitions are generated in legacy streams (stream_slices())
+        # Maybe it would make sense if the DatetimeStateManager accepted the state as input?
         for uncopied_range in range_tracker.get_uncopied_ranges(self.start, self.end, self.preferred_partition_size):
             part_start = uncopied_range[0]
             part_end = uncopied_range[1]

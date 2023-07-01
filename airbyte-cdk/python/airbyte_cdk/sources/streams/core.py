@@ -84,7 +84,10 @@ class Stream(ABC):
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
-    state_manager: StateManager = LegacyStateManager()
+
+    @property
+    def state_manager_class(self):
+        return LegacyStateManager
 
     @property
     def name(self) -> str:
@@ -208,7 +211,7 @@ class Stream(ABC):
           If the stream has no primary keys, return None.
         """
 
-    def generate_partitions(self, stream_state, catalog) -> Iterable[PartitionDescriptor]:
+    def generate_partitions(self, stream_state) -> Iterable[PartitionDescriptor]:
         # FIXME: pass parameters to stream_slices
         return [PartitionDescriptor(metadata=stream_slice)
                 for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
@@ -280,3 +283,4 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
+

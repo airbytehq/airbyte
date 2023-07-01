@@ -64,7 +64,10 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
 
                 if message.type == MessageType.RECORD:
                     if state_message := stream_state_manager.observe(message.record.data):
-                        yield self._to_state_message(state_message, stream)
+                        pass
+                        # In what scenario do we need up update the state mid-partition?
+                        # imo this adds complexity
+                        #yield self._to_state_message(state_message, stream)
 
         yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
 
@@ -130,5 +133,5 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         # TODO allow round-robin getting one stream from each partition to enable "balanced" syncs
         for stream in self._streams:
             stream_state = None  # source_state.get(stream.get_stream_descriptor(), {})
-            for partition in stream.generate_partitions(stream_state=stream_state, catalog=catalog):
+            for partition in stream.generate_partitions(stream_state=stream_state):
                 yield StreamAndPartition(stream=stream, partition_descriptor=partition)

@@ -149,6 +149,12 @@ class IncrementalStripeStream(BasePaginationStripeStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+        print(f"self.name: {self.name}")
+        print(f"self.cursor_field: {self.cursor_field}")
+        print(f"latest_record: {latest_record}")
+        if latest_record.get(self.cursor_field) is None:
+            raise ValueError(f"Record missing cursor field {self.cursor_field}: {latest_record}")
+        print(f"current_stream_state: {current_stream_state}")
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
 
     def stream_slices(
@@ -536,6 +542,8 @@ class CheckoutSessions(IncrementalStripeStream):
         for item in super().parse_response(response, **kwargs):
             # Filter out too old items
             expires_at = item.get(self.cursor_field)
+            if expires_at is None:
+                raise ValueError(f"Checkout session {item['id']} has no {self.cursor_field} field")
             if expires_at and expires_at > since_date:
                 yield item
 
@@ -570,6 +578,8 @@ class CheckoutSessionsLineItems(IncrementalStripeStream):
         for checkout_session in checkout_session_stream.read_records(
             sync_mode=SyncMode.full_refresh, stream_state=checkout_session_state, stream_slice={}
         ):
+            # I don't know about this pattern...
+            # Basically the cursor field comes from the stream slice
             yield {
                 "checkout_session_id": checkout_session["id"],
                 "expires_at": checkout_session["expires_at"],
