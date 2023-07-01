@@ -403,7 +403,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      if (true) {
+      if (sourceConfig.has("cdc_via_ctid") && sourceConfig.get("cdc_via_ctid").asBoolean()) {
+        LOGGER.info("Using ctid + CDC");
         return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
             getReplicationSlot(database, sourceConfig).get(0));
       } else {

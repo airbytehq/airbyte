@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -60,6 +61,13 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
+  }
+
+  @Override
+  protected JsonNode getConfig() {
+    JsonNode config = super.getConfig();
+    ((ObjectNode) config).put("cdc_via_ctid", true);
+    return config;
   }
 
   @Override
