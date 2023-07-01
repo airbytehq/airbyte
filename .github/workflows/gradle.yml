@@ -192,7 +192,7 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
-      - run: pip install mypy  # you can pin your preferred version
+      - run: pip install mypy==1.4.1
       - name: Get Python changed files
         id: changed-py-files
         uses: tj-actions/changed-files@v23
