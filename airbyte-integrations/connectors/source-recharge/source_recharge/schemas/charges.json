@@ -137,8 +137,7 @@
       "format": "date-time"
     },
     "scheduled_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "shipments_count": {
       "type": ["null", "integer"]

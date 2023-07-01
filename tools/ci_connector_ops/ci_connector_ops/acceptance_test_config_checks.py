@@ -28,7 +28,7 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
         List[utils.Connector]: List of changed connector that are not matching test strictness level expectations.
     """
     connectors_with_bad_strictness_level = []
-    changed_connector = utils.get_changed_connectors()
+    changed_connector = utils.get_changed_connectors(destination=False, third_party=False)
     for connector in changed_connector:
         expected_test_strictness_level = RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING.get(connector.release_stage)
         can_check_strictness_level = all(
@@ -48,7 +48,7 @@ def find_changed_ga_connectors() -> Set[utils.Connector]:
     Returns:
         Set[utils.Connector]: The set of GA connectors that were modified on the current branch.
     """
-    changed_connectors = utils.get_changed_connectors()
+    changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
     return {connector for connector in changed_connectors if connector.release_stage == "generally_available"}
 
 

@@ -4,6 +4,7 @@
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
+from source_google_ads import SourceGoogleAds
 from source_google_ads.utils import GAQL
 
 
@@ -70,21 +71,44 @@ def test_parse_GAQL_ok():
     assert str(sql) == "SELECT field1, field2 FROM x_Table WHERE date = '2020-01-01' ORDER BY field2 ASC, field1 DESC LIMIT 10 PARAMETERS include_drafts=true"
 
 
-def test_parse_GAQL_fail():
+@pytest.mark.parametrize(
+    "config",
+    [
+        {
+            "custom_queries": [
+                {
+                    "query": "SELECT field1, field2 FROM x_Table2",
+                    "table_name": "test_table"
+                }]
+        },
+        {
+            "custom_queries": [
+                {
+                    "query": "SELECT field1, field2 FROM x_Table WHERE ",
+                    "table_name": "test_table"
+                }]
+        },
+        {
+            "custom_queries": [
+                {
+                    "query": "SELECT field1, , field2 FROM table",
+                    "table_name": "test_table"
+                }]
+        },
+        {
+            "custom_queries": [
+                {
+                    "query": "SELECT fie ld1, field2 FROM table",
+                    "table_name": "test_table"
+                }]
+        },
+    ]
+)
+def test_parse_GAQL_fail(config):
     with pytest.raises(AirbyteTracedException) as e:
-        GAQL.parse("SELECT field1, field2 FROM x_Table2")
-    assert str(e.value) == "Incorrect GAQL query statement: 'SELECT field1, field2 FROM x_Table2'"
-
-    with pytest.raises(AirbyteTracedException) as e:
-        GAQL.parse("SELECT field1, field2 FROM x_Table WHERE ")
-    with pytest.raises(AirbyteTracedException) as e:
-        GAQL.parse("SELECT field1, , field2 FROM table")
-    with pytest.raises(AirbyteTracedException) as e:
-        GAQL.parse("SELECT fie ld1, field2 FROM table")
-
-    with pytest.raises(AirbyteTracedException) as e:
-        GAQL.parse("SELECT field1, field2 FROM customer, campaign_labels")
-    assert str(e.value) == "Incorrect GAQL query: multiple resources 'customer, campaign_labels' is not allowed"
+        SourceGoogleAds._validate_and_transform(config)
+    expected_message = "The custom GAQL query test_table failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+    assert e.value.message == expected_message
 
 
 @pytest.mark.parametrize(

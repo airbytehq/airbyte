@@ -6,7 +6,6 @@
     "id": {
       "type": "integer",
       "description": "The ID of the screen tab.",
-      "format": "int64",
       "readOnly": true
     },
     "name": {

@@ -13,7 +13,7 @@ RELEASE_STAGES_TO_CHECK = ["generally_available", "beta"]
 
 def get_connectors_missing_allowed_hosts() -> List[utils.Connector]:
     connectors_missing_allowed_hosts: List[utils.Connector] = []
-    changed_connectors = utils.get_changed_connectors()
+    changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
 
     for connector in changed_connectors:
         if connector.release_stage in RELEASE_STAGES_TO_CHECK:

@@ -165,7 +165,7 @@
       }
     },
     "image": { "$ref": "file.json" },
-    "vidoe": { "$ref": "file.json" },
+    "video": { "$ref": "file.json" },
     "file": { "$ref": "file.json" },
     "pdf": { "$ref": "file.json" },
     "bookmark": {

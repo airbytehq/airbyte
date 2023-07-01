@@ -73,6 +73,6 @@ if __name__ == "__main__":
     try:
         print(handle_request(sys.argv[1:]))
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message="Error handling request.")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
         m = error.as_airbyte_message()
         print(error.as_airbyte_message().json(exclude_unset=True))

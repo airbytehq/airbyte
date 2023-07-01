@@ -7,11 +7,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeV
 
 import pydantic
 import requests
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import transform_properties
 
@@ -37,7 +36,8 @@ class NotionStream(HttpStream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def check_invalid_start_cursor(self, response: requests.Response):
+    @staticmethod
+    def check_invalid_start_cursor(response: requests.Response):
         if response.status_code == 400:
             message = response.json().get("message", "")
             if message.startswith("The start_cursor provided is invalid: "):
@@ -77,7 +77,8 @@ class NotionStream(HttpStream, ABC):
             return {"next_cursor": next_cursor}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json().get("results")
+        # sometimes notion api returns response without results object
+        data = response.json().get("results", [])
         yield from data
 
 
@@ -146,7 +147,8 @@ class IncrementalNotionStream(NotionStream, ABC):
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
-                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+                self.logger.error(f"Skipping stream {self.name}, error message: {message}")
+                return
             raise e
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -260,7 +262,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
                 yield record
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        # if reached recursive limit, don't read any more
+        # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
             return
 
@@ -275,6 +277,15 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         self.block_id_stack.pop()
 
     def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.error(
+                f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
+                " exist, or if the integration doesn't have access to the block."
+                "See more in docs: https://developers.notion.com/reference/get-block-children"
+            )
+            return False
+
         if response.status_code == 400:
             error_code = response.json().get("code")
             error_msg = response.json().get("message")

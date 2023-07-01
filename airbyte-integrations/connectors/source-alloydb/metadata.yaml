@@ -19,5 +19,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

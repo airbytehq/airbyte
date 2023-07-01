@@ -10,9 +10,11 @@ data:
   name: Amazon SQS
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/amazon-sqs
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/amazon-sqs
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

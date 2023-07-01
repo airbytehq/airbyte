@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/fauna
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

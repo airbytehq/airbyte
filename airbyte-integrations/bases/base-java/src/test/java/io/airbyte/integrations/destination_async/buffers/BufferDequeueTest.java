@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,14 +19,14 @@ import org.junit.jupiter.api.Test;
 
 public class BufferDequeueTest {
 
+  private static final int RECORD_SIZE_20_BYTES = 20;
   public static final String RECORD_20_BYTES = "abc";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
-  private static final AirbyteMessage RECORD_MSG_20_BYTES = new AirbyteMessage()
+  private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
       .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage()
-          .withStream(STREAM_NAME)
-          .withData(Jsons.jsonNode(RECORD_20_BYTES)));
+      .withRecord(new PartialAirbyteRecordMessage()
+          .withStream(STREAM_NAME));
 
   @Nested
   class Take {
@@ -37,15 +37,17 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
       // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
       // than over-pull).
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 50)) {
-        assertEquals(2, take.getData().toList().size());
+        assertEquals(2, take.getData().size());
+        // verify it only took the records from the queue that it actually returned.
+        assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC).orElseThrow());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -57,12 +59,12 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 60)) {
-        assertEquals(3, take.getData().toList().size());
+        assertEquals(3, take.getData().size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -74,11 +76,11 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
-        assertEquals(2, take.getData().toList().size());
+        assertEquals(2, take.getData().size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -92,11 +94,13 @@ public class BufferDequeueTest {
     final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
     final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
     final var secondStream = new StreamDescriptor().withName("stream_2");
-    enqueue.addRecord(secondStream, RECORD_MSG_20_BYTES);
+    final PartialAirbyteMessage recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES);
+    recordFromSecondStream.getRecord().withStream(secondStream.getName());
+    enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES);
 
     assertEquals(60, dequeue.getTotalGlobalQueueSizeBytes());
 

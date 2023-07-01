@@ -14,5 +14,7 @@ data:
   license: MIT
   name: Customer.io
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/customer-io
+  documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"

@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

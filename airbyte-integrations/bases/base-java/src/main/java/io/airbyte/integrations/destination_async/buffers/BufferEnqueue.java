@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
+import static java.lang.Thread.sleep;
+
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentMap;
 
@@ -17,54 +19,65 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class BufferEnqueue {
 
-  private final long initialQueueSizeBytes;
-  private final RecordSizeEstimator recordSizeEstimator;
-
   private final GlobalMemoryManager memoryManager;
-  private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+  private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
+  private final GlobalAsyncStateManager stateManager;
 
   public BufferEnqueue(final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
-    this(GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager, buffers);
-  }
-
-  @VisibleForTesting
-  public BufferEnqueue(final long initialQueueSizeBytes,
-                       final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
-    this.initialQueueSizeBytes = initialQueueSizeBytes;
+                       final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
+                       final GlobalAsyncStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
-    this.recordSizeEstimator = new RecordSizeEstimator();
+    this.stateManager = stateManager;
   }
 
   /**
    * Buffer a record. Contains memory management logic to dynamically adjust queue size based via
    * {@link GlobalMemoryManager} accounting for incoming records.
    *
-   * @param streamDescriptor stream to buffer record to
    * @param message to buffer
+   * @param sizeInBytes
    */
-  public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
-    if (!buffers.containsKey(streamDescriptor)) {
-      buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(memoryManager.requestMemory()));
+  public void addRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
+    if (message.getType() == Type.RECORD) {
+      handleRecord(message, sizeInBytes);
+    } else if (message.getType() == Type.STATE) {
+      stateManager.trackState(message, sizeInBytes);
     }
+  }
 
-    // todo (cgardens) - handle estimating state message size.
-    final long messageSize = message.getType() == AirbyteMessage.Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
+  private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
+    final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
+    if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
+      buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
+    }
+    final long stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor);
 
     final var queue = buffers.get(streamDescriptor);
-    var addedToQueue = queue.offer(message, messageSize);
+    var addedToQueue = queue.offer(message, sizeInBytes, stateId);
 
-    // todo (cgardens) - what if the record being added is bigger than the block size?
-    // if failed, try to increase memory and add to queue.
+    int i = 0;
     while (!addedToQueue) {
       final var newlyAllocatedMemory = memoryManager.requestMemory();
       if (newlyAllocatedMemory > 0) {
         queue.addMaxMemory(newlyAllocatedMemory);
       }
-      addedToQueue = queue.offer(message, messageSize);
+      addedToQueue = queue.offer(message, sizeInBytes, stateId);
+      i++;
+      if (i > 5) {
+        try {
+          sleep(500);
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
+  }
+
+  private static StreamDescriptor extractStateFromRecord(final PartialAirbyteMessage message) {
+    return new StreamDescriptor()
+        .withNamespace(message.getRecord().getNamespace())
+        .withName(message.getRecord().getStream());
   }
 
 }

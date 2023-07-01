@@ -3,22 +3,7 @@ version: "0.29.0"
 definitions:
   selector:
     extractor:
-      field_path: []
-  selector_features:
-    extractor:
-      field_path: ["features"]
-  selector_products:
-    extractor:
-      field_path: ["products"]
-  selector_ideas:
-    extractor:
-      field_path: ["ideas"]
-  selector_users:
-    extractor:
-      field_path: ["users"]
-  selector_goals:
-    extractor:
-      field_path: ["goals"]
+      field_path: ["{{ parameters['name'] }}"]
   requester:
     url_base: "{{ config['url'] }}/api/v1"
     http_method: "GET"
@@ -49,46 +34,71 @@ definitions:
       $ref: "#/definitions/retriever"
   features_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_features"
     $parameters:
       name: "features"
       path: "/features"
   products_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_products"
     $parameters:
       name: "products"
       path: "/products"
-  ideas_stream:
+  idea_categories_stream:
     $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "idea_categories"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_ideas"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/products/{{ stream_slice.id }}/idea_categories"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: "#/definitions/products_stream"
+            parent_key: "id"
+            partition_field: "id"
+  ideas_stream:
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "ideas"
       path: "/ideas"
-  users_stream:
+  idea_endorsements_stream:
     $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "idea_endorsements"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_users"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/ideas/{{ stream_slice.id }}/endorsements"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: "#/definitions/ideas_stream"
+            parent_key: "id"
+            partition_field: "id"
+  idea_comments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "idea_comments"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/ideas/{{ stream_slice.id }}/idea_comments"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: "#/definitions/ideas_stream"
+            parent_key: "id"
+            partition_field: "id"
+  users_stream:
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: "/users"
   goals_stream:
     $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector_goals"
     $parameters:
       name: "goals"
       path: "/goals"
@@ -99,11 +109,10 @@ streams:
   - "#/definitions/ideas_stream"
   - "#/definitions/users_stream"
   - "#/definitions/goals_stream"
+  - "#/definitions/idea_categories_stream"
+  - "#/definitions/idea_endorsements_stream"
+  - "#/definitions/idea_comments_stream"
 
 check:
   stream_names:
-    - "features"
     - "products"
-    - "ideas"
-    - "users"
-    - "goals"
