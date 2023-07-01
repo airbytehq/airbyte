@@ -358,8 +358,7 @@ public class BufferedStreamConsumerTest {
         onClose,
         CATALOG,
         isValidRecord,
-        Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY),
-        null);
+        Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY));
     return flushFrequencyConsumer;
   }
 
