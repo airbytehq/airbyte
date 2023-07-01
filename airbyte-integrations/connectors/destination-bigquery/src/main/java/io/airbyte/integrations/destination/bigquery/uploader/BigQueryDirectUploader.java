@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.*;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
@@ -20,9 +18,8 @@ public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTab
                                 final BigQueryTableWriter writer,
                                 final JobInfo.WriteDisposition syncMode,
                                 final BigQuery bigQuery,
-                                final BigQueryRecordFormatter recordFormatter,
-                                final boolean use1s1t) {
-    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter, use1s1t);
+                                final BigQueryRecordFormatter recordFormatter) {
+    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
   }
 
   @Override
