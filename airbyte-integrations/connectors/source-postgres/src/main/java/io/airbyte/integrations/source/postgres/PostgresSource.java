@@ -500,8 +500,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                 finalListOfStreamsToBeSyncedViaCtid,
                 getQuoteString());
 
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
-            fileNodes,tableBlockSizes, ctidStateManager,
+        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()),
+            getQuoteString(),
+            fileNodes, tableBlockSizes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
