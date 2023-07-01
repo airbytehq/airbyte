@@ -104,7 +104,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:base-java'
     include ':airbyte-integrations:bases:base-java-s3'
     include ':airbyte-integrations:bases:base-normalization'
-    include ':airbyte-integrations:bases:base-typing-deduping'
     include ':airbyte-integrations:bases:bases-destination-jdbc' // needs to be lexicographically after base-java and base-normalization to avoid race condition
     include ':airbyte-integrations:bases:base-standard-source-test-file'
     include ':airbyte-integrations:bases:connector-acceptance-test'
