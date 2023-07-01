@@ -7,10 +7,12 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
@@ -40,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,14 +56,19 @@ public class PostgresCtidHandler {
   private final String quoteString;
   private final CtidStateManager ctidStateManager;
   private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
+  final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
+  private static final int QUERY_TARGET_SIZE_GB = 1;
+  public static final double MEGABYTE = Math.pow(1024, 2);
+  public static final double GIGABYTE = MEGABYTE * 1024;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
                              final CtidPostgresSourceOperations sourceOperations,
                              final String quoteString,
                              final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+                             final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes,
                              final CtidStateManager ctidStateManager,
                              final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
                              final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
@@ -69,6 +77,7 @@ public class PostgresCtidHandler {
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.fileNodes = fileNodes;
+    this.tableBlockSizes = tableBlockSizes;
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.finalStateMessageSupplier = finalStateMessageSupplier;
@@ -98,7 +107,12 @@ public class PostgresCtidHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .toList();
-        final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(selectedDatabaseFields, table.getNameSpace(), table.getName());
+        final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(
+            selectedDatabaseFields,
+            table.getNameSpace(),
+            table.getName(),
+            tableBlockSizes.get(pair).tableSize(),
+            tableBlockSizes.get(pair).blockSize());
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -110,23 +124,73 @@ public class PostgresCtidHandler {
     return iteratorList;
   }
 
+  /**
+   * Builds a plan for subqueries. Each query returning an approximate amount of data.
+   * Using information about a table size and block (page) size.
+   *
+   * @param startCtid starting point
+   * @param relationSize table size
+   * @param blockSize page size
+   * @param chunkSizeGB required amount of data in each partition
+   * @return a list of ctid that can be used to generate queries.
+   */
+  @VisibleForTesting
+  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
+    final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
+    long lowerBound = startCtid.page;
+    long upperBound;
+    final double oneGigaPages = GIGABYTE / blockSize;
+    final long eachStep = (long)oneGigaPages * chunkSizeGB;
+    LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
+    final long theoreticalLastPage = relationSize / blockSize;
+    LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
+    upperBound = lowerBound + eachStep;
+
+    if (upperBound > theoreticalLastPage) {
+      chunks.add(Pair.of(startCtid, null));
+    } else {
+      chunks.add(Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0)));
+      while (upperBound < theoreticalLastPage) {
+        lowerBound = upperBound;
+        upperBound += eachStep;
+        chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
+      }
+    }
+    // The last pair is (x,y) -> null to indicate an unbounded "WHERE ctid > (x,y)" query.
+    // The actual last page is approximated. The last subquery will go until the end of table.
+    return chunks;
+  }
+
   private AutoCloseableIterator<RowDataWithCtid> queryTableCtid(
                                                                 final List<String> columnNames,
                                                                 final String schemaName,
-                                                                final String tableName) {
+                                                                final String tableName,
+                                                                final long tableSize,
+                                                                final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     final AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
-    return AutoCloseableIterators.lazyIterator(() -> {
+
+    final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
+
+    // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
+    // We are creating a list of lazy iterators each holding a subquery according to the plan.
+    // All subqueries are then composed in a single composite iterator.
+    // Because list consists of lazy iterators, the query is only executing when needed one after the other.
+    final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
+    final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
+    subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream), sourceOperations::recordWithCtid);
+            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
+
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
-    }, airbyteStream);
+    }, airbyteStream)));
+    return AutoCloseableIterators.concatWithEagerClose(subQueriesIterators);
   }
 
   private PreparedStatement createCtidQueryStatement(
@@ -134,23 +198,26 @@ public class PostgresCtidHandler {
                                                      final List<String> columnNames,
                                                      final String schemaName,
                                                      final String tableName,
-                                                     final AirbyteStreamNameNamespacePair airbyteStream) {
+                                                     final Ctid lowerBound, final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
-
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
-      final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-      final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
-      if (currentCtidStatus != null) {
-        preparedStatement.setObject(1, currentCtidStatus.getCtid());
+      if (upperBound != null) {
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid AND ctid <= ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setObject(1, lowerBound.toString());
+        preparedStatement.setObject(2, upperBound.toString());
+        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        return preparedStatement;
       } else {
-        preparedStatement.setObject(1, "(0,0)");
+        final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
+        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setObject(1, lowerBound.toString());
+        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        return preparedStatement;
       }
-      LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-      return preparedStatement;
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
