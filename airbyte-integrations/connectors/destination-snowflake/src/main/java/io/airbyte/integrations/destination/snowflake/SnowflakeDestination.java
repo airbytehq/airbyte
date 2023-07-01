@@ -9,6 +9,11 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -38,15 +43,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     log.info("destination class: {}", getClass());
-    // this is how we toggle async snowflake on.
-    final boolean useAsyncSnowflake = false;
-    // final boolean useAsyncSnowflake = config.has("loading_method")
-    // && config.get("loading_method").has("method")
-    // && config.get("loading_method").get("method").asText().equals("Internal Staging")
-    // // Standard is when someone doesn't specify a loading method but still
-    // // DestinationType.INTERNAL_STAGING
-    // || config.get("loading_method").get("method").asText().equals("Standard");
-
+    final var useAsyncSnowflake = useAsyncSnowflake(config);
     log.info("using async snowflake: {}", useAsyncSnowflake);
     if (useAsyncSnowflake) {
       return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
@@ -54,6 +51,20 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
       return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
     }
 
+  }
+
+  private static boolean useAsyncSnowflake(final JsonNode config) {
+    // this is how we toggle async snowflake on.
+    final Set<String> stagingLoadingMethods = Collections.emptySet();
+//    final Set<String> stagingLoadingMethods = Set.of("standard", "internal staging", "internal-staging", "internal_staging");
+
+    return Optional.of(config)
+            .map(node -> node.get("loading_method"))
+            .map(node -> node.get("method"))
+            .map(JsonNode::asText)
+            .map(String::toLowerCase)
+            .map(loadingMethod -> stagingLoadingMethods.contains(loadingMethod))
+            .orElse(false);
   }
 
 }
