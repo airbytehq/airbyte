@@ -38,8 +38,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -203,14 +203,12 @@ public class BigQueryUtils {
    */
   static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
-      final var chunkingColumn =
-          TypingAndDedupingFlag.isDestinationV2() ? JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-          .setField(chunkingColumn)
+          .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
           .build();
 
       final Clustering clustering = Clustering.newBuilder()
-          .setFields(ImmutableList.of(chunkingColumn))
+          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
           .build();
 
       final StandardTableDefinition tableDefinition =
@@ -223,7 +221,6 @@ public class BigQueryUtils {
 
       final Table table = bigquery.getTable(tableInfo.getTableId());
       if (table != null && table.exists()) {
-        // TODO: Handle migration from v1 -> v2
         LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
       } else {
         bigquery.create(tableInfo);
@@ -354,6 +351,15 @@ public class BigQueryUtils {
     return (dateTimeValue != null ? QueryParameterValue
         .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
         : null);
+  }
+
+  /**
+   * @return BigQuery dataset ID
+   */
+  public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
+    final String srcNamespace = stream.getStream().getNamespace();
+    final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
+    return sanitizeDatasetId(schemaName);
   }
 
   public static String sanitizeDatasetId(final String datasetId) {
