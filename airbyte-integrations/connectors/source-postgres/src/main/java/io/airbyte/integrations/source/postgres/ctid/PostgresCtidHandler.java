@@ -59,7 +59,7 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
-  private static final int QUERY_TARGET_SIZE_GB = 10; // TODO: find optimal size
+  private static final int QUERY_TARGET_SIZE_GB = 2; // TODO: find optimal size
   public static final double MEGABYTE = Math.pow(1024, 2);
   public static final double GIGABYTE = MEGABYTE * 1024;
 
