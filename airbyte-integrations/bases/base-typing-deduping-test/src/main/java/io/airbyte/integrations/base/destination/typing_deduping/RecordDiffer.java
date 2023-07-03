@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,7 +27,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * Utility class to generate human-readable diffs between expected and actual records. Assumes 1s1t output format.
+ * Utility class to generate human-readable diffs between expected and actual records. Assumes 1s1t
+ * output format.
  */
 public class RecordDiffer {
 
@@ -36,11 +41,12 @@ public class RecordDiffer {
 
   /**
    * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
-   *                           include extracted_at; it is handled automatically.
+   *        include extracted_at; it is handled automatically.
    */
   public RecordDiffer(Pair<String, AirbyteType>... identifyingColumns) {
     // Start with a noop comparator for convenience
-    // The raw and final stuff are almost identical, except the raw version has to extract _airbyte_data first.
+    // The raw and final stuff are almost identical, except the raw version has to extract _airbyte_data
+    // first.
     Comparator<JsonNode> rawIdComp = Comparator.comparing(record -> 0);
     Comparator<JsonNode> finalIdComp = Comparator.comparing(record -> 0);
     for (Pair<String, AirbyteType> column : identifyingColumns) {
@@ -63,9 +69,9 @@ public class RecordDiffer {
   }
 
   /**
-   * In the expected records, a SQL null is represented as a JsonNode without that field at all, and a JSON null is
-   * represented as a NullNode. For example, in the JSON blob {"name":  null}, the `name` field is a JSON null, and the
-   * `address` field is a SQL null.
+   * In the expected records, a SQL null is represented as a JsonNode without that field at all, and a
+   * JSON null is represented as a NullNode. For example, in the JSON blob {"name": null}, the `name`
+   * field is a JSON null, and the `address` field is a SQL null.
    */
   public void verifySyncResult(List<JsonNode> expectedRawRecords,
                                List<JsonNode> actualRawRecords,
@@ -73,8 +79,7 @@ public class RecordDiffer {
                                List<JsonNode> actualFinalRecords) {
     assertAll(
         () -> diffRawTableRecords(expectedRawRecords, actualRawRecords),
-        () -> diffFinalTableRecords(expectedFinalRecords, actualFinalRecords)
-    );
+        () -> diffFinalTableRecords(expectedFinalRecords, actualFinalRecords));
   }
 
   public void diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
@@ -118,9 +123,10 @@ public class RecordDiffer {
    * the same PK, cursor, and extracted_at are the same record.
    * <p>
    * Verifies that all values specified in the expected records are correct (_including_ raw_id), and
-   * that no other fields are present (except for loaded_at and raw_id). We assume that it's impossible
-   * to verify loaded_at, since it's generated dynamically; however, we do provide the ability to assert
-   * on the exact raw_id if desired; we simply assume that raw_id is always expected to be present.
+   * that no other fields are present (except for loaded_at and raw_id). We assume that it's
+   * impossible to verify loaded_at, since it's generated dynamically; however, we do provide the
+   * ability to assert on the exact raw_id if desired; we simply assume that raw_id is always expected
+   * to be present.
    *
    * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
    *        PK+cursor+extracted_at)
@@ -237,8 +243,8 @@ public class RecordDiffer {
   /**
    * Verify that all fields in the actual record are present in the expected record. This is primarily
    * relevant for detecting fields that we expected to be null, but actually were not. See
-   * {@link BaseTypingDedupingTest#dumpFinalTableRecords(String, String)} for an explanation of how SQL/JSON nulls are
-   * represented in the expected record.
+   * {@link BaseTypingDedupingTest#dumpFinalTableRecords(String, String)} for an explanation of how
+   * SQL/JSON nulls are represented in the expected record.
    * <p>
    * This has the side benefit of detecting completely unexpected columns, which would be a very weird
    * bug but is probably still useful to catch.
@@ -255,8 +261,9 @@ public class RecordDiffer {
   }
 
   /**
-   * Produce a pretty-printed error message, e.g. " For column foo, expected 1 but got 2". The leading spaces are
-   * intentional, to make the message easier to read when it's embedded in a larger stacktrace.
+   * Produce a pretty-printed error message, e.g. " For column foo, expected 1 but got 2". The leading
+   * spaces are intentional, to make the message easier to read when it's embedded in a larger
+   * stacktrace.
    */
   private static String generateFieldError(String fieldname, JsonNode expectedValue, JsonNode actualValue) {
     String expectedString = expectedValue == null ? "SQL NULL (i.e. no value)" : expectedValue.toString();
@@ -375,4 +382,5 @@ public class RecordDiffer {
       return node.toString();
     }
   }
+
 }
