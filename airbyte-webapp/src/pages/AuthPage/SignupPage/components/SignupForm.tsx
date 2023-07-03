@@ -1,6 +1,7 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { theme } from "theme";
 import * as yup from "yup";
@@ -10,11 +11,12 @@ import Alert from "components/Alert";
 import { Separator } from "components/Separator";
 
 import { useConfig } from "config";
-import { useUser } from "core/AuthContext";
-import { IAuthUser } from "core/AuthContext/authenticatedUser";
+import { setRegisterUserDetails, useUser } from "core/AuthContext";
 import { LOCALES } from "locales";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
+import { RegisterUserDetails } from "../../../../services/auth/AuthService";
+import { RoutePaths } from "../../../routePaths";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
 import { GoogleAuthBtn } from "../../GoogleAuthBtn";
 import styles from "./SignupForm.module.scss";
@@ -203,7 +205,8 @@ const SeperatorText = styled.div`
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
-  const { setUser, user } = useUser();
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -243,8 +246,9 @@ export const SignupForm: React.FC = () => {
         onSubmit={async (values) => {
           signUp
             .create(values, user?.lang)
-            .then((res: IAuthUser) => {
-              setUser?.(res);
+            .then((res: RegisterUserDetails) => {
+              setRegisterUserDetails(res);
+              navigate(`/${RoutePaths.VerifyEmail}`);
             })
             .catch((err: Error) => {
               setErrorMessage(err.message);

@@ -783,6 +783,7 @@
   "verifyEmail.clickHereText": "Click here",
   "verifyEmail.info": "info@daspire.com",
   "verifyEmail.pageTitle": "Verify Email",
+  "verifyEmail.resend.success.message": "Email has been resent!",
   "resetPassword.pageTitle": "Reset Password",
   "resetPassword.forgot.title": "Forgot your password?",
   "resetPassword.forgot.explain": "Please enter the email address you used to register your Daspire account. ",

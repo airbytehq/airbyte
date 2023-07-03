@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useStateCallback from "hooks/useStateCallback";
 import { RoutePaths } from "pages/routePaths";
 
+import { RegisterUserDetails } from "../../services/auth/AuthService";
 import { IAuthUser, MyAuthUser } from "./authenticatedUser";
 
 interface IUserContext {
@@ -16,6 +17,17 @@ interface IUserContext {
 }
 
 const AUTH_USER_KEY = "daspire-user";
+
+const REGISTER_USER_KEY = "register-user-token";
+
+export const getRegisterUserToken = (): string | undefined => {
+  const registerUserDetails: RegisterUserDetails | null = JSON.parse(localStorage.getItem(REGISTER_USER_KEY) as string);
+  return registerUserDetails?.verificationToken;
+};
+
+export const setRegisterUserDetails = (res: RegisterUserDetails): void => {
+  localStorage.setItem(REGISTER_USER_KEY, JSON.stringify(res));
+};
 
 export const getUser = (): IAuthUser => {
   const user: IAuthUser | null = JSON.parse(localStorage.getItem(AUTH_USER_KEY) as string);
