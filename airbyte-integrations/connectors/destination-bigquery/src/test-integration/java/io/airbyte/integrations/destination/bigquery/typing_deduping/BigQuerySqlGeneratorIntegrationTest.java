@@ -861,10 +861,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   /**
    * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
-   * That's annoying for us since we're working with small test data, so pull everything into a list, and convert them
-   * into maps of column name -> value.
-   * <p>
-   * Note that the values have reasonable types; see {@link #toJson(Schema, FieldValueList)} for details.
+   * That's annoying for us since we're working with small test data, so just pull everything into a list.
    */
   public static List<JsonNode> toJsonRecords(TableResult result) {
     return result.streamAll().map(row -> toJson(result.getSchema(), row)).toList();
@@ -872,9 +869,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   /**
    * FieldValueList stores everything internally as string (I think?) but provides conversions to more useful types.
-   * This method does that conversion, using the schema to determine which type is most appropriate.
-   * <p>
-   * SQL nulls are represented as explicit null values. JSON nulls are represented as {@link com.fasterxml.jackson.databind.node.NullNode}.
+   * This method does that conversion, using the schema to determine which type is most appropriate. Then we just dump
+   * everything into a jsonnode for interop with RecordDiffer.
    */
   private static JsonNode toJson(Schema schema, FieldValueList row) {
     final ObjectNode json = (ObjectNode) Jsons.emptyObject();
@@ -896,7 +892,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
           // bigquery returns JSON columns as string; manually parse it into a JsonNode
           case JSON -> Jsons.jsonNode(Jsons.deserialize(value.getStringValue()));
 
-          // Default case for weird types (struct, array, geography, interval)
+          // Default case for weird types (struct, array, geography, interval, bytes)
           default -> Jsons.jsonNode(value.getStringValue());
         };
         json.set(field.getName(), typedValue);
