@@ -31,7 +31,7 @@ Install it in IntelliJ:
    2. Turn on the auto add final. Go into IntelliJ Preferences
       1. Plugins - install Save Actions if not already installed
          1. If you're running Intellij 2023.1 or higher, the official version may not work. Try manually installing [this fork](https://github.com/fishermans/intellij-plugin-save-actions/releases/tag/v2.6.0) (see [Github issue](https://github.com/dubreuia/intellij-plugin-save-actions/issues/427)).
-      2. Go to Save Actions in the preferences [left navigation column](../assets/docs/save_actions_settings.png) (NOT Tools > Actions on Save -- that is a different tool)
+      2. Go to Save Actions in the preferences [left navigation column](../../assets/docs/save_actions_settings.png) (NOT Tools > Actions on Save -- that is a different tool)
          1. `Activate save actions on save` > check the box
          2. `Active save actions on shortcut` > check the box
          3. `Activate save actions on batch` > check the box

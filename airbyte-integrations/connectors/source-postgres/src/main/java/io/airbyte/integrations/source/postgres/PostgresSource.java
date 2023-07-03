@@ -58,6 +58,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
@@ -270,6 +271,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
       // from being able to pick their own cursor.
       final List<AirbyteStream> streams = catalog.getStreams().stream()
+          // We want to make sure every stream can be synced in INCREMENTAL mode and never in FULL_REFRESH mode for xmin.
+          .map(PostgresCatalogHelper::overrideSyncModesForXmin)
           .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
           .collect(toList());
 
@@ -478,8 +481,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             finalListOfStreamsToBeSyncedViaCtid,
             getQuoteString());
         final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
+        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
+            PostgresQueryUtils.getTableBlockSizeForStream(
+                database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                getQuoteString());
+
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
-            fileNodes, ctidStateManager,
+            fileNodes, tableBlockSizes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus),
             (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
