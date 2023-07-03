@@ -1,7 +1,39 @@
 {
-    "properties": {
-      "id": {
-        "type": ["string"]
+  "properties": {
+    "id": {
+      "type": ["integer"]
+    },
+    "users": {
+      "items": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "direct_link": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "time_zone": {
+            "type": "string"
+          },
+          "wrap_up_time": {
+            "type": "integer"
+          }
+        }
       }
     }
+  }
 }
