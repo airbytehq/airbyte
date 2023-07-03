@@ -203,10 +203,10 @@ def persist_registry_entry_to_json(
         registry_entry (ConnectorRegistryV0): The registry_entry.
         registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
         metadata_entry (LatestMetadataEntry): The related Metadata Entry.
-        registry_directory_manager (OutputDataFrame): The registry_entry directory manager.
+        registry_directory_manager (GCSFileHandle): The registry_entry directory manager.
 
     Returns:
-        OutputDataFrame: The registry_entry directory manager.
+        GCSFileHandle: The registry_entry directory manager.
     """
     registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
