@@ -116,6 +116,8 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
+With the field `File Extension`, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with `jsonl` extension.
+
 ## Getting started
 
 ### Requirements
@@ -136,6 +138,7 @@ They will be like this in the output file:
     * Corresponding key to the above user.
   * **Format**
     * Data format that will be use for a migrated data representation in blob.
+    * With the field **File Extension**, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with extension.
 * Make sure your user has access to Azure from the machine running Airbyte.
   * This depends on your networking setup.
   * The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
@@ -144,7 +147,7 @@ They will be like this in the output file:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.1   | 2023-06-26 | [\#27701](https://github.com/airbytehq/airbyte/pull/27701) | File Extensions added for the csv output files                                                                                                                  |
+| 0.2.1   | 2023-06-26 | [\#27701](https://github.com/airbytehq/airbyte/pull/27701) | File Extensions added for the output files                                                                                                                      |
 | 0.2.0   | 2023-01-18 | [\#15318](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
 | 0.1.6   | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
 | 0.1.5   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |

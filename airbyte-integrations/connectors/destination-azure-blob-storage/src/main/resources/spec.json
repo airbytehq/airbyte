@@ -94,6 +94,12 @@
               "format_type": {
                 "type": "string",
                 "const": "JSONL"
+              },
+              "file_extension": {
+                "title": "File Extension",
+                "type": "boolean",
+                "default": false,
+                "description": "Add file extensions to the output file."
               }
             }
           }
