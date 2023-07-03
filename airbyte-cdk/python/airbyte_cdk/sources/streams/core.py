@@ -65,7 +65,7 @@ class IncrementalMixin(ABC):
 
     @state.setter
     @abstractmethod
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
 
 
@@ -76,7 +76,7 @@ class Stream(ABC):
 
     # Use self.logger in subclasses to log any messages
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
@@ -132,7 +132,7 @@ class Stream(ABC):
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
-            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+            stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
 
         keys = Stream._wrapped_primary_key(self.primary_key)
@@ -232,7 +232,7 @@ class Stream(ABC):
         return None
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
         """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
