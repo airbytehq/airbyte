@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.configoss.WorkerDestinationConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -39,6 +40,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -68,20 +70,19 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseTypingDedupingTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTypingDedupingTest.class);
-  private static final Comparator<JsonNode> RAW_RECORD_IDENTITY_COMPARATOR = Comparator
-      .comparingLong((JsonNode record) -> asInt(record.get("_airbyte_data").get("id1")))
-      .thenComparingLong(record -> asInt(record.get("_airbyte_data").get("id2")))
-      .thenComparing(record -> asTimestamp(record.get("_airbyte_data").get("updated_at")))
-      .thenComparing(record -> asTimestamp(record.get("_airbyte_extracted_at")));
-  private static final Comparator<JsonNode> RAW_RECORD_SORT_COMPARATOR = RAW_RECORD_IDENTITY_COMPARATOR
-      .thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-  private static final Comparator<JsonNode> FINAL_RECORD_IDENTITY_COMPARATOR = Comparator
-      .comparingLong((JsonNode record) -> asInt(record.get("id1")))
-      .thenComparingLong(record -> asInt(record.get("id2")))
-      .thenComparing(record -> asTimestamp(record.get("updated_at")))
-      .thenComparing(record -> asTimestamp(record.get("_airbyte_extracted_at")));
-  private static final Comparator<JsonNode> FINAL_RECORD_SORT_COMPARATOR = FINAL_RECORD_IDENTITY_COMPARATOR
-      .thenComparing(record -> asString(record.get("_airbyte_raw_id")));
+  private static final JsonNode SCHEMA;
+  static {
+    try {
+      SCHEMA = Jsons.deserialize(MoreResources.readResource("schema.json"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  private static final RecordDiffer DIFFER = new RecordDiffer(
+      Pair.of("id1", AirbyteProtocolType.INTEGER),
+      Pair.of("id2", AirbyteProtocolType.INTEGER),
+      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
+  );
 
   private String randomSuffix;
   private JsonNode config;
@@ -183,7 +184,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
@@ -218,7 +219,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
@@ -257,7 +258,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
@@ -294,7 +295,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
@@ -352,7 +353,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(null)
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
   }
 
   @Test
@@ -369,7 +370,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace + "_1")
                 .withName(streamName)
-                .withJsonSchema(getSchema())),
+                .withJsonSchema(SCHEMA)),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withCursorField(List.of("updated_at"))
@@ -378,7 +379,7 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace + "_2")
                 .withName(streamName)
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(SCHEMA))));
   }
 
   @Test
@@ -413,8 +414,10 @@ public abstract class BaseTypingDedupingTest {
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
-  private static JsonNode getSchema() throws IOException {
-    return Jsons.deserialize(MoreResources.readResource("schema.json"));
+  private void verifySyncResult(List<JsonNode> expectedRawRecords, List<JsonNode> expectedFinalRecords) throws Exception {
+    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
+    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
+    DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
   }
 
   private List<JsonNode> readRecords(String filename) throws IOException {
@@ -433,226 +436,6 @@ public abstract class BaseTypingDedupingTest {
           message.getRecord().setNamespace(streamNamespace);
           message.getRecord().setStream(streamName);
         }).toList();
-  }
-
-  private void verifySyncResult(List<JsonNode> expectedRawRecords, List<JsonNode> expectedFinalRecords) throws Exception {
-    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
-    String rawDiff = diffRawTableRecords(expectedRawRecords, actualRawRecords);
-    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
-    String finalDiff = diffFinalTableRecords(expectedFinalRecords, actualFinalRecords);
-
-    assertAll(
-        () -> assertTrue(rawDiff.isEmpty(), "Raw table was incorrect.\n" + rawDiff),
-        () -> assertTrue(finalDiff.isEmpty(), "Final table was incorrect.\n" + finalDiff));
-  }
-
-  private static String diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
-    return diffRecords(
-        expectedRecords,
-        actualRecords,
-        RAW_RECORD_IDENTITY_COMPARATOR,
-        RAW_RECORD_SORT_COMPARATOR,
-        record -> getFieldIfPresent(record.get("_airbyte_data"), "id1")
-            + getFieldIfPresent(record.get("_airbyte_data"), "id2")
-            + getFieldIfPresent(record.get("_airbyte_data"), "updated_at")
-            + getFieldIfPresent(record, "_airbyte_extracted_at"),
-        true);
-  }
-
-  private static String diffFinalTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
-    return diffRecords(
-        expectedRecords,
-        actualRecords,
-        FINAL_RECORD_IDENTITY_COMPARATOR,
-        FINAL_RECORD_SORT_COMPARATOR,
-        record -> getFieldIfPresent(record, "id1")
-            + getFieldIfPresent(record, "id2")
-            + getFieldIfPresent(record, "updated_at")
-            + getFieldIfPresent(record, "_airbyte_extracted_at"),
-        false);
-  }
-
-  private static String getFieldIfPresent(JsonNode record, String field) {
-    if (record.has(field)) {
-      return field + "=" + record.get(field) + "; ";
-    } else {
-      return "";
-    }
-  }
-
-  /**
-   * Generate a human-readable diff between the two lists. Only checks the keys specified in
-   * expectedRecords. Assumes (in general) that two records with the same PK, cursor, and extracted_at
-   * are the same record.
-   *
-   * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
-   *        PK+cursor+extracted_at)
-   * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
-   *        breaks that tie using _airbyte_raw_id
-   * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
-   * @param extractRawData Whether to look inside the _airbyte_data column and diff its subfields
-   * @return The diff, or empty string if there were no differences
-   */
-  private static String diffRecords(List<JsonNode> originalExpectedRecords,
-                                    List<JsonNode> originalActualRecords,
-                                    Comparator<JsonNode> identityComparator,
-                                    Comparator<JsonNode> sortComparator,
-                                    Function<JsonNode, String> recordIdExtractor,
-                                    boolean extractRawData) {
-    List<JsonNode> expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList();
-    List<JsonNode> actualRecords = originalActualRecords.stream().sorted(sortComparator).toList();
-
-    // Iterate through both lists in parallel and compare each record.
-    // Build up an error message listing any incorrect, missing, or unexpected records.
-    String message = "";
-    int expectedRecordIndex = 0;
-    int actualRecordIndex = 0;
-    while (expectedRecordIndex < expectedRecords.size() && actualRecordIndex < actualRecords.size()) {
-      JsonNode expectedRecord = expectedRecords.get(expectedRecordIndex);
-      JsonNode actualRecord = actualRecords.get(actualRecordIndex);
-      int compare = identityComparator.compare(expectedRecord, actualRecord);
-      if (compare == 0) {
-        // These records should be the same. Find the specific fields that are different.
-        boolean foundMismatch = false;
-        String mismatchedRecordMessage = "Row had incorrect data:" + recordIdExtractor.apply(expectedRecord) + "\n";
-        // Iterate through each column in the expected record and compare it to the actual record's value.
-        for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
-          if (extractRawData && "_airbyte_data".equals(column)) {
-            // For the raw data in particular, we should also diff the fields inside _airbyte_data.
-            JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
-            JsonNode actualRawData = actualRecord.get("_airbyte_data");
-            // Iterate through all the subfields of the expected raw data and check that they match the actual
-            // record...
-            for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
-              JsonNode expectedValue = expectedRawData.get(field);
-              JsonNode actualValue = actualRawData.get(field);
-              if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
-                mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
-                foundMismatch = true;
-              }
-            }
-            // ... and then check the actual raw data for any subfields that we weren't expecting.
-            LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRawData, actualRawData);
-            if (extraColumns.size() > 0) {
-              for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
-                mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
-                foundMismatch = true;
-              }
-            }
-          } else {
-            // For all other columns, we can just compare their values directly.
-            JsonNode expectedValue = expectedRecord.get(column);
-            JsonNode actualValue = actualRecord.get(column);
-            if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
-              mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
-              foundMismatch = true;
-            }
-          }
-        }
-        // Then check the entire actual record for any columns that we weren't expecting.
-        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord);
-        if (extraColumns.size() > 0) {
-          for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
-            mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
-            foundMismatch = true;
-          }
-        }
-        if (foundMismatch) {
-          message += mismatchedRecordMessage;
-        }
-
-        expectedRecordIndex++;
-        actualRecordIndex++;
-      } else if (compare < 0) {
-        // The expected record is missing from the actual records. Print it and move on to the next expected
-        // record.
-        message += "Row was expected but missing: " + expectedRecord + "\n";
-        expectedRecordIndex++;
-      } else {
-        // There's an actual record which isn't present in the expected records. Print it and move on to the
-        // next actual record.
-        message += "Row was not expected but present: " + actualRecord + "\n";
-        actualRecordIndex++;
-      }
-    }
-    // Tail loops in case we reached the end of one list before the other.
-    while (expectedRecordIndex < expectedRecords.size()) {
-      message += "Row was expected but missing: " + expectedRecords.get(expectedRecordIndex) + "\n";
-      expectedRecordIndex++;
-    }
-    while (actualRecordIndex < actualRecords.size()) {
-      message += "Row was not expected but present: " + actualRecords.get(actualRecordIndex) + "\n";
-      actualRecordIndex++;
-    }
-
-    return message;
-  }
-
-  private static boolean jsonNodesNotEquivalent(JsonNode expectedValue, JsonNode actualValue) {
-    // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
-    return !Objects.equals(expectedValue, actualValue)
-        // Objects.equals expects the two values to be the same class.
-        // We need to handle comparisons between e.g. LongNode and IntNode.
-        && !(expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-        && !(expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
-  }
-
-  /**
-   * Verify that all fields in the actual record are present in the expected record. This is primarily
-   * relevant for detecting fields that we expected to be null, but actually were not. See
-   * {@link #dumpFinalTableRecords(String, String)} for an explanation of how SQL/JSON nulls are
-   * represented in the expected record.
-   * <p>
-   * This has the side benefit of detecting completely unexpected columns, which would be a very weird
-   * bug but is probably still useful to catch.
-   */
-  private static LinkedHashMap<String, JsonNode> checkForExtraOrNonNullFields(JsonNode expectedRecord, JsonNode actualRecord) {
-    LinkedHashMap<String, JsonNode> extraFields = new LinkedHashMap<>();
-    for (String column : Streams.stream(actualRecord.fieldNames()).sorted().toList()) {
-      // loaded_at and raw_id are generated dynamically, so we just ignore them.
-      if (!"_airbyte_loaded_at".equals(column) && !"_airbyte_raw_id".equals(column) && !expectedRecord.has(column)) {
-        extraFields.put(column, actualRecord.get(column));
-      }
-    }
-    return extraFields;
-  }
-
-  /**
-   * Produce a pretty-printed error message, e.g. " For column foo, expected 1 but got 2". It's
-   * indented intentionally.
-   */
-  private static String generateFieldError(String fieldname, JsonNode expectedValue, JsonNode actualValue) {
-    String expectedString = expectedValue == null ? "SQL NULL (i.e. no value)" : expectedValue.toString();
-    String actualString = actualValue == null ? "SQL NULL (i.e. no value)" : actualValue.toString();
-    return "  For " + fieldname + ", expected " + expectedString + " but got " + actualString + "\n";
-  }
-
-  // These asFoo methods are used for sorting records, so their defaults are intended to make broken
-  // records stand out.
-  private static long asInt(JsonNode node) {
-    if (node == null || !node.isIntegralNumber()) {
-      return Long.MIN_VALUE;
-    } else {
-      return node.longValue();
-    }
-  }
-
-  private static String asString(JsonNode node) {
-    if (node == null || node.isNull()) {
-      return "";
-    } else if (node.isTextual()) {
-      return node.asText();
-    } else {
-      return Jsons.serialize(node);
-    }
-  }
-
-  private static Instant asTimestamp(JsonNode node) {
-    if (node == null || !node.isTextual()) {
-      return Instant.ofEpochMilli(Long.MIN_VALUE);
-    } else {
-      return Instant.parse(node.asText());
-    }
   }
 
   /*
