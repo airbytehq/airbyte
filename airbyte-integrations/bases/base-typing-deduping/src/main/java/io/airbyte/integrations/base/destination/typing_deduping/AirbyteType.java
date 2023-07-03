@@ -28,17 +28,13 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    * probably fail the sync. (but see also {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
-    if (schema == null) {
-      return AirbyteProtocolType.UNKNOWN;
-    }
     final JsonNode topLevelType = schema.get("type");
     if (topLevelType != null) {
       if (topLevelType.isTextual()) {
         if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
           return getStruct(schema);
         } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
-          final JsonNode items = schema.get("items");
-          return new Array(fromJsonSchema(items));
+          return getArray(schema);
         }
       } else if (topLevelType.isArray()) {
         final List<JsonNode> elements = new ArrayList<>();
@@ -54,8 +50,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
           if (elements.get(0).asText("").equals("object")) {
             return getStruct(schema);
           } else if (elements.get(0).asText("").equals("array")) {
-            final JsonNode items = schema.get("items");
-            return new Array(fromJsonSchema(items));
+            return getArray(schema);
           } else {
             return AirbyteTypeUtils.getAirbyteProtocolType(schema);
           }
@@ -88,6 +83,15 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       });
     }
     return new Struct(propertiesMap);
+  }
+
+  private static Array getArray(final JsonNode schema) {
+    final JsonNode items = schema.get("items");
+    if (items == null) {
+      return new Array(AirbyteProtocolType.UNKNOWN);
+    } else {
+      return new Array(fromJsonSchema(items));
+    }
   }
 
   enum AirbyteProtocolType implements AirbyteType {

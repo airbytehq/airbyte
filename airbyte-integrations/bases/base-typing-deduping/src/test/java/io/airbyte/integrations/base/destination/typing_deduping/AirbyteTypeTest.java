@@ -234,6 +234,42 @@ public class AirbyteTypeTest {
   }
 
   @Test
+  public void testEmptyStruct() {
+    final String structSchema = """
+                               {
+                                 "type": "object"
+                               }
+                               """;
+
+    final AirbyteType struct = new Struct(new LinkedHashMap<>());
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
+  public void testEmptyStructSingletonListDecl() {
+    final String structSchema = """
+                               {
+                                 "type": ["object"]
+                               }
+                               """;
+
+    final AirbyteType struct = new Struct(new LinkedHashMap<>());
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
+  public void testEmptyStructNullableSingletonListDecl() {
+    final String structSchema = """
+                               {
+                                 "type": ["null", "object"]
+                               }
+                               """;
+
+    final AirbyteType struct = new Struct(new LinkedHashMap<>());
+    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+  }
+
+  @Test
   public void testImplicitStruct() {
     final String structSchema = """
                                 {
@@ -300,6 +336,42 @@ public class AirbyteTypeTest {
                                """;
 
     final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+  }
+
+  @Test
+  public void testEmptyArray() {
+    final String arraySchema = """
+                               {
+                                 "type": "array"
+                               }
+                               """;
+
+    final AirbyteType array = new Array(AirbyteProtocolType.UNKNOWN);
+    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+  }
+
+  @Test
+  public void testEmptyArraySingletonListDecl() {
+    final String arraySchema = """
+                               {
+                                 "type": ["array"]
+                               }
+                               """;
+
+    final AirbyteType array = new Array(AirbyteProtocolType.UNKNOWN);
+    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+  }
+
+  @Test
+  public void testEmptyArrayNullableSingletonListDecl() {
+    final String arraySchema = """
+                               {
+                                 "type": ["null", "array"]
+                               }
+                               """;
+
+    final AirbyteType array = new Array(AirbyteProtocolType.UNKNOWN);
     assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
   }
 
