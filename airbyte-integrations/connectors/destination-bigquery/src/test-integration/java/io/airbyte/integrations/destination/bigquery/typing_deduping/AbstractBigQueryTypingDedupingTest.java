@@ -43,8 +43,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
     TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + streamNamespace + "_" + streamName));
-    List<LinkedHashMap<String, Object>> rowsAsMaps = BigQuerySqlGeneratorIntegrationTest.toMaps(result);
-    return rowsAsMaps.stream().map(AbstractBigQueryTypingDedupingTest::toJson).toList();
+    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
@@ -53,8 +52,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
     TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamNamespace + "." + streamName));
-    List<LinkedHashMap<String, Object>> rowsAsMaps = BigQuerySqlGeneratorIntegrationTest.toMaps(result);
-    return rowsAsMaps.stream().map(AbstractBigQueryTypingDedupingTest::toJson).toList();
+    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
@@ -63,20 +61,5 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of("airbyte", streamNamespace + "_" + streamName));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
-  }
-
-  private static JsonNode toJson(LinkedHashMap<String, Object> map) {
-    ObjectNode o = (ObjectNode) Jsons.emptyObject();
-    map.forEach((key, value) -> {
-      if (value == null) {
-        // If the value is null, do nothing. We don't want to insert it into the json at all.
-      } else if (value instanceof Instant i) {
-        // naively converting an Instant returns a DecimalNode with the unix epoch, so instead we manually stringify it
-        o.set(key, Jsons.jsonNode(i.toString()));
-      } else {
-        o.set(key, Jsons.jsonNode(value));
-      }
-    });
-    return o;
   }
 }

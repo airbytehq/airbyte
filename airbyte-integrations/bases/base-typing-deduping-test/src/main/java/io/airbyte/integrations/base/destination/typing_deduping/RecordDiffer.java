@@ -73,7 +73,7 @@ public class RecordDiffer {
     );
   }
 
-  private void diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
+  public void diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
     String diff = diffRecords(
         expectedRecords,
         actualRecords,
@@ -85,7 +85,7 @@ public class RecordDiffer {
     assertTrue(diff.isEmpty(), "Raw table was incorrect.\n" + diff);
   }
 
-  private void diffFinalTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
+  public void diffFinalTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
     String diff = diffRecords(
         expectedRecords,
         actualRecords,
