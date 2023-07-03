@@ -44,7 +44,8 @@ class ZohoCrmStream(HttpStream, ABC):
         yield from data
 
     def path(self, *args, **kwargs) -> str:
-        return f"/crm/v2/{self.module.api_name}"
+        fields = ",".join([field.api_name for field in self.module.fields][0:50]) # Note, limited to 50 fields at max
+        return f"/crm/v4/{self.module.api_name}?fields={fields}"
 
     def get_json_schema(self) -> Optional[Dict[Any, Any]]:
         try:
@@ -91,16 +92,6 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
             yield record
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        last_modified = stream_state.get(self.cursor_field, self._start_datetime)
-        # since API filters inclusively, we add 1 sec to prevent duplicate reads
-        last_modified_dt = datetime.datetime.fromisoformat(last_modified)
-        last_modified_dt += datetime.timedelta(seconds=1)
-        last_modified = last_modified_dt.isoformat("T", "seconds")
-        return {"If-Modified-Since": last_modified}
 
 
 class ZohoStreamFactory:
