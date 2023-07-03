@@ -1,8 +1,15 @@
 import pytest
 from unittest.mock import Mock
-from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from uuid import UUID
 
-from orchestrator.assets.registry_entry import metadata_to_registry_entry
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import RegistryOverrides, Data, UUID, Registry
+
+
+from orchestrator.assets.registry_entry import metadata_to_registry_entry, get_connector_type_from_registry_entry, get_registry_status_lists
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -11,6 +18,64 @@ from orchestrator.assets.registry_report import (
     oss_sources_dataframe,
     cloud_sources_dataframe,
 )
+from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
+
+VALID_REGISTRIES = ["oss", "cloud"]
+
+@pytest.mark.parametrize("registries_data, expected_enabled, expected_disabled", [
+    (
+        {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+        ["oss", "cloud"],
+        [],
+    ),
+    (
+        {"oss": {"enabled": False}, "cloud": {"enabled": True}},
+        ["cloud"],
+        ["oss"],
+    ),
+    (
+        {"oss": {"enabled": False}, "cloud": {"enabled": False}},
+        [],
+        ["oss", "cloud"],
+    ),
+])
+def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
+    metadata_dict = {
+        "metadataSpecVersion": "1.0",
+        "data": {
+            "name": "Test",
+            "definitionId": str(UUID(int=1)),
+            "connectorType": "source",
+            "dockerRepository": "test_repo",
+            "dockerImageTag": "test_tag",
+            "license": "test_license",
+            "documentationUrl": "https://test_documentation_url.com",
+            "githubIssueLabel": "test_label",
+            "connectorSubtype": "api",
+            "releaseStage": "alpha",
+            "registries": registries_data
+        }
+    }
+    metadata_definition = MetadataDefinition.parse_obj(metadata_dict)
+    registry_entry = LatestMetadataEntry(metadata_definition=metadata_definition)
+    enabled, disabled = get_registry_status_lists(registry_entry)
+    assert set(enabled) == set(expected_enabled)
+    assert set(disabled) == set(expected_disabled)
+
+@pytest.mark.parametrize("registry_entry, expected_type, expected_class", [
+    ({"sourceDefinitionId": "abc"}, "source", ConnectorRegistrySourceDefinition),
+    ({"destinationDefinitionId": "abc"}, "destination", ConnectorRegistryDestinationDefinition),
+    ({}, None, None)
+])
+def test_get_connector_type_from_registry_entry(registry_entry, expected_type, expected_class):
+    if expected_type and expected_class:
+        connector_type, connector_class = get_connector_type_from_registry_entry(registry_entry)
+        assert connector_type == expected_type
+        assert connector_class == expected_class
+    else:
+        with pytest.raises(Exception) as e_info:
+            get_connector_type_from_registry_entry(registry_entry)
+        assert str(e_info.value) == "Could not determine connector type from registry entry"
 
 
 def test_merged_registry_dataframes(oss_registry_dict, cloud_registry_dict):

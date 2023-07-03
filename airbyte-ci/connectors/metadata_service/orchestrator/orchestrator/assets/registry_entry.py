@@ -248,12 +248,10 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
         registry_entry (LatestMetadataEntry): The metadata entry.
 
     Returns:
-        List[str]: The enabled registries.
+        Tuple[List[str], List[str]]: The enabled and disabled registries.
     """
     metadata_data_dict = registry_entry.metadata_definition.dict()
     registries_field = metadata_data_dict["data"].get("registries", {})
-
-    print(f"registries_field: {registries_field}")
 
     # registries is a dict of registry_name -> {enabled: bool}
     all_enabled_registries = [registry_name for registry_name, registry_data in registries_field.items() if registry_data.get("enabled")]
