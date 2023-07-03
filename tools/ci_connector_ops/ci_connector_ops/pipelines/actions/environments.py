@@ -460,6 +460,8 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
+    cat_metadata_output = await cat_container.with_exec(["cat", "metadata.yaml"], skip_entrypoint=True).stdout()
+    context.logger.info(f"CAT metadata content: {cat_metadata_output}")
     return cat_container
 
 
