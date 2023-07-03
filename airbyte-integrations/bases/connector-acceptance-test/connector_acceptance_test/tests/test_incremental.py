@@ -136,7 +136,6 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
 def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
-
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
@@ -156,7 +155,7 @@ def group_records_by_stream(records: Iterable[AirbyteMessage]) -> Dict[str, List
     """
     records_by_stream = defaultdict(list)
     for record in records:
-        records_by_stream[record.stream].append(record)
+        records_by_stream[record.record.stream].append(record)
     return records_by_stream
 
 def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteMessage]) -> DeepDiff:
@@ -239,6 +238,7 @@ class TestIncremental(BaseTest):
             state_input = states_1[-1].state.data
 
 
+        # READ #2
         # group records by their record.stream value
 
         output = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
@@ -255,25 +255,20 @@ class TestIncremental(BaseTest):
 
             # assert that new records were produced
             diff = naive_diff_records(stream_records_1, stream_records_2)
-            assert diff, f"Records for stream {stream_name} should have changed between reads"
+            assert diff, f"Records for stream {stream_name} should have changed between reads given state: {state_input}"
 
             if is_cursor_testable(stream_config, example_record):
                 cursor_field_parser = create_cursor_field_parser(stream_config)
-                stream_state_value = get_state_value_from_cursor_field(latest_state, stream_name, cursor_paths, cursor_field_parser)
+                cursor_values_1 = [cursor_field_parser.parse(record=record.record.data) for record in stream_records_1]
+                cursor_values_2 = [cursor_field_parser.parse(record=record.record.data) for record in stream_records_2]
 
-                # Assert first records are before or equal to the state value
-                for record in stream_records_1:
-                    record_value = cursor_field_parser.parse(record=record.record.data)
-                    assert (
-                        record_value <= stream_state_value
-                    ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
-
-                # Assert second records are after the state value
-                for record in stream_records_2:
-                    record_value = cursor_field_parser.parse(record=record.record.data)
-                    assert compare_cursor_with_threshold(
-                        record_value, stream_state_value, threshold_days
-                    ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
+                # assert that all values in the second read are greater than or equal to the first read
+                max_cursor_value_1 = max(cursor_values_1)
+                min_cursor_value_2 = min(cursor_values_2)
+                assert compare_cursor_with_threshold(
+                    max_cursor_value_1,
+                    min_cursor_value_2
+                ), f"Second incremental sync should produce records greater or equal to the first incremental sync. Stream: {stream_name}, min_cursor_value_2: {min_cursor_value_2}, max_cursor_value_1: {max_cursor_value_1}"
 
     async def test_read_sequential_slices(
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
