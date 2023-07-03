@@ -173,17 +173,32 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
     return diff
 
 
-def is_comparable(obj):
+def is_comparable(obj: dict) -> bool:
+    """
+    Checks if the object is comparable (i.e. has __lt__ and __gt__ methods).
+    """
     return hasattr(obj, "__lt__") and hasattr(obj, "__gt__")
 
 
-def create_cursor_field_parser(stream_config):
+def create_cursor_field_parser(stream_config: dict) -> JsonSchemaHelper:
+    """
+    Create a JsonSchemaHelper for the cursor field of a stream.
+    """
     helper = JsonSchemaHelper(schema=stream_config.stream.json_schema)
     cursor_field = helper.field(stream_config.cursor_field)
     return cursor_field
 
 
-def is_cursor_testable(stream_config, example_record):
+def is_cursor_testable(stream_config: dict, example_record: AirbyteMessage) -> bool:
+    """
+    Not all streams have cursor fields that are comparable.
+
+    For example, a cursor field that is a date is comparable, but a cursor field that is a
+    UUID is not.
+
+    Also, some streams do not have cursor fields at all and use a source defined cursor which is
+    meant to be opaque to the platform and should not be relied on.
+    """
     source_defined_cursor = stream_config.stream.source_defined_cursor
 
     if not source_defined_cursor:
@@ -192,24 +207,6 @@ def is_cursor_testable(stream_config, example_record):
     cursor_field_helper = create_cursor_field_parser(stream_config)
     record_value = cursor_field_helper.parse(record=example_record.record.data)
     return is_comparable(record_value)
-
-
-def get_state_value_from_cursor_field(state, stream_name, state_cursor_paths, cursor_field_parser) -> Iterable[Tuple[Any, Any, Any]]:
-    """Get corresponding cursor value from state"""
-
-    try:
-        if state[stream_name] is None:
-            return None
-
-        # first attempt to parse the state value assuming the state object is namespaced on stream names
-        state_value = cursor_field_parser.parse(record=state[stream_name], path=state_cursor_paths[stream_name])
-    except KeyError:
-        try:
-            # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
-            state_value = cursor_field_parser.parse(record=state, path=state_cursor_paths[stream_name])
-        except KeyError:
-            return None
-    return state_value
 
 
 @pytest.mark.default_timeout(20 * 60)
@@ -274,7 +271,7 @@ class TestIncremental(BaseTest):
                 max_cursor_value_1 = max(cursor_values_1)
                 min_cursor_value_2 = min(cursor_values_2)
                 assert compare_cursor_with_threshold(
-                    max_cursor_value_1, min_cursor_value_2
+                    max_cursor_value_1, min_cursor_value_2, threshold_days
                 ), f"Second incremental sync should produce records greater or equal to the first incremental sync. Stream: {stream_name}, min_cursor_value_2: {min_cursor_value_2}, max_cursor_value_1: {max_cursor_value_1}"
 
     async def test_read_sequential_slices(
