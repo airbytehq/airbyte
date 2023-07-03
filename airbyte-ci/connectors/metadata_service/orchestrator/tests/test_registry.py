@@ -1,15 +1,16 @@
 import pytest
-from unittest.mock import Mock
+import yaml
+from unittest import mock
+
 from uuid import UUID
+from pydantic import ValidationError
+from google.cloud import storage
 
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import RegistryOverrides, Data, UUID, Registry
 
-
-from orchestrator.assets.registry_entry import metadata_to_registry_entry, get_connector_type_from_registry_entry, get_registry_status_lists
+from orchestrator.assets.registry_entry import metadata_to_registry_entry, get_connector_type_from_registry_entry, get_registry_status_lists, safe_parse_metadata_definition
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -20,7 +21,44 @@ from orchestrator.assets.registry_report import (
 )
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 
-VALID_REGISTRIES = ["oss", "cloud"]
+VALID_METADATA_DICT = {
+    "metadataSpecVersion": "1.0",
+    "data": {
+        "name": "Test",
+        "definitionId": str(UUID(int=1)),
+        "connectorType": "source",
+        "dockerRepository": "test_repo",
+        "dockerImageTag": "test_tag",
+        "license": "test_license",
+        "documentationUrl": "https://test_documentation_url.com",
+        "githubIssueLabel": "test_label",
+        "connectorSubtype": "api",
+        "releaseStage": "alpha",
+        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}}
+    }
+}
+INVALID_METADATA_DICT = {"invalid": "metadata"}
+
+@pytest.mark.parametrize("blob_name, blob_content, expected_result, expected_exception", [
+    ("1.2.3/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+    ("latest/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+    ("1.2.3/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, None),
+    ("latest/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, ValidationError)
+])
+def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result, expected_exception):
+    # Mock the Blob object
+    mock_blob = mock.create_autospec(storage.Blob, instance=True)
+    mock_blob.name = blob_name
+    mock_blob.download_as_string.return_value = blob_content.encode("utf-8")
+
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            safe_parse_metadata_definition(mock_blob)
+    else:
+        result = safe_parse_metadata_definition(mock_blob)
+        # assert the name is set correctly
+        assert result == expected_result
+
 
 @pytest.mark.parametrize("registries_data, expected_enabled, expected_disabled", [
     (
@@ -135,7 +173,7 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     """
     metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registries": {registry_type: {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -150,7 +188,7 @@ def test_tombstone_custom_public_set():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -166,7 +204,7 @@ def test_fields_deletion():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -197,7 +235,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -219,7 +257,7 @@ def test_source_type_extraction():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -233,7 +271,7 @@ def test_release_stage_default():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -255,7 +293,7 @@ def test_migration_documentation_url_default():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -284,7 +322,7 @@ def test_breaking_changes_migration_documentation_url():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
@@ -299,7 +337,7 @@ def test_icon_url():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
