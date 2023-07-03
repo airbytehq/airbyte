@@ -1,32 +1,52 @@
 # Delighted
 
-This page contains the setup guide and reference information for the Delighted source connector.
+This page contains the setup guide and reference information for the [Delighted](https://delighted.com/) source connector.
 
 ## Prerequisites
+- A Delighted API Key.
+- A desired start date and time. Only data added on and after this point will be replicated.
 
-To set up the Delighted source connector, you'll need the [Delighted API key](https://app.delighted.com/docs/api#authentication).
+## Setup guide
+### Obtain a Delighted API Key
 
-## Set up the Delighted connector in Airbyte
+To set up the Delighted source connector, you'll need a Delighted API key. For detailed instructions, please refer to the 
+[official Delighted documentation](https://app.delighted.com/docs/api).
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, enter the name for the Delighted connector and select **Delighted** from the Source type dropdown.
-4. For **Since**, enter the date in a Unix Timestamp format. The data added on and after this date will be replicated.
-5. For **API Key**, enter your [Delighted `API Key`](https://delighted.com/account/api).
-6. Click **Set up source**.
+### Set up the Delighted connector in Airbyte
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**.
+
+:::tip
+If this is your first time setting up an Airbyte source, skip the next step and proceed to step 4.
+:::
+
+3. In the top-right corner, click **+ New source**.
+4. Find and select **Delighted** from the list of available sources.
+5. Enter a **Source name** of your choosing.
+6. Enter your **Delighted API Key**.
+7. In the **Date Since** field, enter the desired UTC date and time in an 
+[ISO 8601 format](https://www.iso.org/iso-8601-date-and-time-format.html). Only the data added on and after this date will be replicated.
+
+:::note
+Please format your date as such: `yyyy-mm-ddThh:mm:ssZ`. For example, an input of `2022-05-30T14:50:00Z` signifies a start date of May 30th, 2022 at 2:50 PM UTC. For help converting UTC to your local time, 
+[use a UTC Time Zone Converter](https://dateful.com/convert/utc).
+:::
+
+8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
-The Delighted source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Delighted source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-## Supported Streams
+## Supported streams
 
-This Source is capable of syncing the following core Streams:
+This source is capable of syncing the following core streams:
 
 * [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
 * [People](https://app.delighted.com/docs/api/listing-people)
