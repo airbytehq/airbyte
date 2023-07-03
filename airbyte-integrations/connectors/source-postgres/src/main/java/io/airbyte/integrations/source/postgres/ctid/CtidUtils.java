@@ -63,7 +63,6 @@ public class CtidUtils {
           final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
                                                                                          streamDescriptor.getNamespace());
           if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
-            System.out.println("IN CTID ");
             statesFromCtidSync.add(stateMessage);
             stillInCtidStreamPairs.add(pair);
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {

@@ -32,24 +32,25 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class CtidUtilsTest{
+public class CtidUtilsTest {
+
   private static final ConfiguredAirbyteStream MODELS_STREAM = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-          "MODELS_STREAM_NAME",
-          "MODELS_SCHEMA",
-          Field.of("COL_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MODEL", JsonSchemaType.STRING))
-                                                                                                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                                                                                                            .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
+      "MODELS_STREAM_NAME",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
   private static final ConfiguredAirbyteStream MODELS_STREAM_2 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-          "MODELS_STREAM_NAME_2",
-          "MODELS_SCHEMA",
-          Field.of("COL_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MODEL", JsonSchemaType.STRING))
-                                                                                                              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                                                                                                              .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
+      "MODELS_STREAM_NAME_2",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
   @Test
   public void emptyStateTest() {
@@ -74,13 +75,13 @@ public class CtidUtilsTest{
         .withNumWraparound(1L);
     final JsonNode xminStatusAsJson = Jsons.jsonNode(xminStatus);
     final AirbyteStateMessage xminState = generateStateMessage(xminStatusAsJson,
-                                                               new StreamDescriptor().withName(MODELS_STREAM.getStream().getName()).withNamespace(MODELS_STREAM.getStream().getNamespace()));
+        new StreamDescriptor().withName(MODELS_STREAM.getStream().getName()).withNamespace(MODELS_STREAM.getStream().getNamespace()));
 
     final CtidStatus ctidStatus = new CtidStatus().withStateType(StateType.CTID).withVersion(2L).withCtid("123").withRelationFilenode(456L)
         .withIncrementalState(xminStatusAsJson);
     final JsonNode ctidStatusAsJson = Jsons.jsonNode(ctidStatus);
     final AirbyteStateMessage ctidState = generateStateMessage(ctidStatusAsJson,
-                                                               new StreamDescriptor().withName(MODELS_STREAM_2.getStream().getName()).withNamespace(MODELS_STREAM_2.getStream().getNamespace()));
+        new StreamDescriptor().withName(MODELS_STREAM_2.getStream().getName()).withNamespace(MODELS_STREAM_2.getStream().getNamespace()));
 
     final StreamStateManager streamStateManager = new StreamStateManager(Arrays.asList(xminState, ctidState), configuredCatalog);
     final StreamsCategorised streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
