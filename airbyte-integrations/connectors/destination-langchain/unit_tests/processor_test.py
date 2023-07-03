@@ -41,16 +41,42 @@ def test_process_single_chunk_with_metadata_and_natural_ids():
         "text": "This is the text",
     }
 
-    chunks, chunk_ids, ids_to_delete = processor.process(record)
+    chunks, id_to_delete = processor.process(record)
 
     # Assert single chunk
     assert len(chunks) == 1
 
-    # Assert chunk IDs
-    assert len(chunk_ids) == 1
-
     # Assert IDs to delete (should be empty in this case)
-    assert len(ids_to_delete) == 0
+    assert id_to_delete is None
+
+def test_metadat_normalization():
+    processor = initialize_processor()
+
+    record = mock.MagicMock()
+    record.stream = "stream1"
+    record.data = {
+        "id": 1,
+        "a_complex_field": {
+            "a_nested_field": "a_nested_value"
+        },
+        "too_big": "a" * 1000,
+        "small": "a",
+        "text": "This is the text",
+    }
+
+    processor.text_fields = ["text"]
+    processor.max_metadata_size = 100
+
+    chunks, id_to_delete = processor.process(record)
+
+    # Assert single chunk
+    assert len(chunks) == 1
+
+    for chunk in chunks:
+        assert len(chunk.metadata) == 3
+        assert "a_complex_field" not in chunk.metadata
+        assert "too_big" not in chunk.metadata
+        assert "small" in chunk.metadata
 
 
 def test_process_multiple_chunks_with_relevant_fields():
@@ -67,18 +93,15 @@ def test_process_multiple_chunks_with_relevant_fields():
 
     processor.text_fields = ["text"]
 
-    chunks, chunk_ids, ids_to_delete = processor.process(record)
+    chunks, id_to_delete = processor.process(record)
 
     # Assert multiple chunks
     assert len(chunks) == 2
 
-    # Assert chunk IDs
-    assert len(chunk_ids) == len(chunks)
-
     for chunk in chunks:
         assert chunk.metadata["age"] == 25
     # Assert IDs to delete (should be empty in this case)
-    assert len(ids_to_delete) == 0
+    assert id_to_delete is None
 
 
 def test_process_multiple_chunks_with_dedupe_mode():
@@ -97,16 +120,10 @@ def test_process_multiple_chunks_with_dedupe_mode():
     processor.streams["stream1"].destination_sync_mode = DestinationSyncMode.append_dedup
     processor.streams["stream1"].primary_key = [["id"]]  # Primary key defined
 
-    chunks, chunk_ids, ids_to_delete = processor.process(record)
+    chunks, id_to_delete = processor.process(record)
 
     # Assert single chunk
     assert len(chunks) > 1
 
-    # Assert chunk IDs
-    assert len(chunk_ids) == len(chunks)
-    assert chunk_ids[0] == "99_0"  # Natural ID + chunk count
-    assert chunk_ids[1] == "99_1"  # Natural ID + chunk count
-
     # Assert IDs to delete (should contain the natural ID)
-    assert len(ids_to_delete) == 1
-    assert ids_to_delete[0] == 99
+    assert id_to_delete == 99

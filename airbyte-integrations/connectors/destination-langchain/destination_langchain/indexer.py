@@ -1,16 +1,27 @@
 from abc import ABC, abstractmethod
+import uuid
 from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
 from destination_langchain.processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
 from langchain.document_loaders.base import Document
 from typing import Any, List, Optional, Tuple
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Type, Level, ConfiguredAirbyteCatalog, Status, AirbyteRecordMessage, AirbyteLogMessage
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    Type,
+    Level,
+    ConfiguredAirbyteCatalog,
+    Status,
+    AirbyteRecordMessage,
+    AirbyteLogMessage,
+)
 from langchain.vectorstores.docarray import DocArrayHnswSearch
 from langchain.vectorstores import Pinecone
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 import os
 import pinecone
+
 
 class Indexer(ABC):
     def __init__(self, config: Any, embedder: Embedder):
@@ -23,43 +34,49 @@ class Indexer(ABC):
 
     def post_sync(self):
         pass
-    
+
     @abstractmethod
-    def index(self, document_chunks: List[Document], document_ids: List[str], delete_ids: List[str]):
+    def index(self, document_chunks: List[Document], delete_ids: List[str]):
         pass
 
     @abstractmethod
-    def check(self) -> Optional[str]: 
+    def check(self) -> Optional[str]:
         pass
+
+    @property
+    def max_metadata_size(self) -> Optional[int]:
+        return None
+
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
+
     def __init__(self, config: PineconeIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
         self.pinecone_index = pinecone.Index(config.index)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
-    
+
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self.pinecone_index.delete(filter={METADATA_STREAM_FIELD: stream.stream.name})
-    
+
     def post_sync(self):
         self.embed_fn._print_stats()
 
-    def index(self, document_chunks, document_ids, delete_ids):
-        for id in delete_ids:
-            self.pinecone_index.delete(filter={METADATA_NATURAL_ID_FIELD: id})
+    def index(self, document_chunks, delete_ids):
+        if len(delete_ids) > 0:
+            self.pinecone_index.delete(filter={METADATA_NATURAL_ID_FIELD: {"$in": delete_ids}})
         embedding_vectors = self.embed_fn([chunk.page_content for chunk in document_chunks])
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             metadata = chunk.metadata
             metadata["text"] = chunk.page_content
-            pinecone_docs.append((document_ids[i], embedding_vectors[i], metadata))
+            pinecone_docs.append((str(uuid.uuid4()), embedding_vectors[i], metadata))
         self.pinecone_index.upsert(vectors=pinecone_docs)
-    
+
     def check(self) -> Optional[str]:
         try:
             pinecone.describe_index(self.config.index)
@@ -67,12 +84,20 @@ class PineconeIndexer(Indexer):
             return str(e)
         return None
 
+    @property
+    def max_metadata_size(self) -> int:
+        # leave some space for the text field
+        return 40_960 - 10_000
+
 
 class DocArrayHnswSearchIndexer(Indexer):
     config: DocArrayHnswSearchIndexingModel
+
     def __init__(self, config: DocArrayHnswSearchIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-        self.vectorstore = DocArrayHnswSearch.from_params(self.embedder.langchain_embeddings, config.destination_path, self.embedder.embedding_dimensions)
+        self.vectorstore = DocArrayHnswSearch.from_params(
+            self.embedder.langchain_embeddings, config.destination_path, self.embedder.embedding_dimensions
+        )
 
     def _create_directory_recursively(path):
         try:
@@ -88,13 +113,13 @@ class DocArrayHnswSearchIndexer(Indexer):
                 raise Exception("DocArrayHnswSearchIndexer only supports overwrite mode")
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
-    
+
     def post_sync(self):
         self.index._print_stats()
-    
+
     @measure_time
     def index(self, document_chunks):
         self.vectorstore.add_documents(document_chunks)
-    
+
     def check(self) -> Optional[str]:
         return self._create_directory_recursively(self.config.destination_path)

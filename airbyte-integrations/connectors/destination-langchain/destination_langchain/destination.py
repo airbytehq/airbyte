@@ -31,7 +31,7 @@ import uuid
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 
-BATCH_SIZE = 10
+BATCH_SIZE = 32
 
 indexer_map = {
     "pinecone": PineconeIndexer,
@@ -48,22 +48,21 @@ class DestinationLangchain(Destination):
         self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
-        documents = []
-        document_ids = []
+        documents: List[Document] = []
         ids_to_delete = []
         for record in batch:
-            record_documents, record_document_ids, record_ids_to_delete = self.processor.process(record)
+            record_documents, record_id_to_delete = self.processor.process(record)
             documents.extend(record_documents)
-            document_ids.extend(record_document_ids)
-            ids_to_delete.extend(record_ids_to_delete)
-        self.indexer.index(documents, document_ids, ids_to_delete)
+            if record_id_to_delete is not None:
+                ids_to_delete.append(record_id_to_delete)
+        self.indexer.index(documents, ids_to_delete)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
-        self.processor = Processor(config_model.processing, configured_catalog)
         self._init_indexer(config_model)
+        self.processor = Processor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
         batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
         self.indexer.pre_sync(configured_catalog)
         for message in input_messages:
