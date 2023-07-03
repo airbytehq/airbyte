@@ -2,6 +2,152 @@
     "properties": {
       "id": {
         "type": ["integer"]
-      }
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "name": {
+        "type": "string"
+      },    
+      "assigned_to": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "availability_status": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "direct_link": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "time_zone": {
+            "type": "string"
+          },
+          "wrap_up_time": {
+            "type": "integer"
+          }
+        }
+      },
+      "number": {
+        "properties": {
+          "messages": {
+            "type": "object",
+            "properties": {
+              "after_hours": {
+                "type": "string"
+              },
+              "callback_later": {
+                "type": "string"
+              },
+              "closed": {
+                "type": "string"
+              },
+              "ivr": {
+                "type": "string"
+              },
+              "ringing_tone": {
+                "type": "string"
+              },
+              "unanswered_call": {
+                "type": "string"
+              },
+              "voicemail": {
+                "type": "string"
+              },
+              "waiting": {
+                "type": "string"
+              },
+              "welcome": {
+                "type": "string"
+              }
+            }  
+          }
+        }
+      },
+      "teams": {
+        "type": [
+          "array",
+          "null"
+        ],  
+        "items": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "direct_link": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }  
+      },
+      "user": {
+        "properties": {
+          "wrap_up_time": {
+            "type": "integer"
+          }  
+        }
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "direct_link": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "language": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "time_zone": {
+              "type": "string"
+            },
+            "wrap_up_time": {
+              "type": "integer"
+            }
+          }
+        }
+      }  
     }
 }
