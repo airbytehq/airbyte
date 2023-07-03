@@ -353,6 +353,7 @@ public class RecordDiffer {
     }
   }
 
+  // Generics? Never heard of 'em. (I'm sorry)
   private static Comparable extract(JsonNode node, String field, AirbyteType type) {
     if (type instanceof AirbyteProtocolType t) {
       return switch (t) {
