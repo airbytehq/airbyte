@@ -123,7 +123,7 @@ class HubspotAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class API:
-    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic."""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
@@ -206,17 +206,15 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
-    def get_custom_object_schemas(self) -> Mapping[str, Any]:
+    def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any]]]:
         data, response = self.get("/crm/v3/schemas", {})
-        schemas = {}
-        if response.ok and "results" in data:
-            for raw_schema in data["results"]:
-                schema = self.generate_schema(raw_schema=raw_schema)
-                schemas[raw_schema["name"]] = schema
-        else:
+        if not response.ok or "results" not in data:
             self.logger.warn(self._parse_and_handle_errors(response))
+            return ()
 
-        return schemas
+        return (
+            (metadata["name"], metadata["fullyQualifiedName"], self.generate_schema(raw_schema=metadata)) for metadata in data["results"]
+        )
 
     def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
         properties = {}
@@ -985,10 +983,12 @@ class CRMSearchStream(IncrementalStream, ABC):
     updated_at_field = "updatedAt"
     last_modified_field: str = None
     associations: List[str] = None
+    fully_qualified_name: str = None
 
     @property
     def url(self):
-        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
+        object_type_id = self.fully_qualified_name or self.entity
+        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
 
     def __init__(
         self,
@@ -1839,19 +1839,23 @@ class CustomObject(CRMSearchStream, ABC):
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
+    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, **kwargs):
         super().__init__(**kwargs)
         self.entity = entity
         self.schema = schema
+        self.fully_qualified_name = fully_qualified_name
 
     @property
     def name(self) -> str:
         return self.entity
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        if not self.schema:
-            self.schema = self._api.get_custom_object_schemas()[self.entity]
         return self.schema
+
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        # do not make extra api queries
+        return self.get_json_schema()["properties"]["properties"]["properties"]
 
 
 class EmailSubscriptions(Stream):
