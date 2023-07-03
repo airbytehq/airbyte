@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_CDC_DELETED_AT;
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -106,34 +112,34 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$.foo') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$.foo') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", column.originalName(), "_airbyte_data", COLUMN_NAME_DATA)).replace(
           """
           CASE
-            WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'object'
+            WHEN JSON_QUERY(`${_airbyte_data}`, '$.${column_name}') IS NULL
+              OR JSON_TYPE(JSON_QUERY(`${_airbyte_data}`, '$.${column_name}')) != 'object'
               THEN NULL
-            ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+            ELSE JSON_QUERY(`${_airbyte_data}`, '$.${column_name}')
           END
           """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+      return new StringSubstitutor(Map.of("column_name", column.originalName(),"_airbyte_data", COLUMN_NAME_DATA)).replace(
           """
           CASE
-            WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
-              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'array'
+            WHEN JSON_QUERY(`${_airbyte_data}`, '$.${column_name}') IS NULL
+              OR JSON_TYPE(JSON_QUERY(`${_airbyte_data}`, '$.${column_name}')) != 'array'
               THEN NULL
-            ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+            ELSE JSON_QUERY(`${_airbyte_data}`, '$.${column_name}')
           END
           """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
       // This is to avoid needing to convert the raw SQL type back into JSON.
-      return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
+      return new StringSubstitutor(Map.of("_airbyte_data", COLUMN_NAME_DATA)).replace("JSON_QUERY(`${_airbyte_data}`, '$." + column.originalName() + "')");
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
+      return new StringSubstitutor(Map.of("_airbyte_data", COLUMN_NAME_DATA)).replace("SAFE_CAST(JSON_VALUE(`${_airbyte_data}`, '$." + column.originalName() + "') as " + dialectType.name() + ")");
     }
   }
 
@@ -172,17 +178,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "final_table_id", stream.id().finalTableId(suffix, QUOTE),
         "column_declarations", columnDeclarations,
+        "_airbyte_raw_id", COLUMN_NAME_AB_RAW_ID,
+        "_airbyte_extracted_at", COLUMN_NAME_AB_EXTRACTED_AT,
+        "_airbyte_meta", COLUMN_NAME_AB_META,
         "cluster_config", clusterConfig)).replace(
             """
             CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
             CREATE TABLE ${final_table_id} (
-              _airbyte_raw_id STRING NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta JSON NOT NULL,
+              ${_airbyte_raw_id} STRING NOT NULL,
+              ${_airbyte_extracted_at} TIMESTAMP NOT NULL,
+              ${_airbyte_meta} JSON NOT NULL,
             ${column_declarations}
             )
-            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+            PARTITION BY (DATE_TRUNC(${_airbyte_extracted_at}, DAY))
             CLUSTER BY ${cluster_config}
             """);
   }
@@ -267,13 +276,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
+        "pk_null_checks", pkNullChecks, "_airbyte_loaded_at", COLUMN_NAME_AB_LOADED_AT)).replace(
             """
             SET missing_pk_count = (
               SELECT COUNT(1)
               FROM ${raw_table_id}
               WHERE
-                `_airbyte_loaded_at` IS NULL
+                `${_airbyte_loaded_at}` IS NULL
                 ${pk_null_checks}
               );
 
@@ -291,11 +300,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
             "col_type", toDialectType(col.getValue()).name(),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+            "json_extract", extractAndCast(col.getKey(), col.getValue())), "_airbyte_data", COLUMN_NAME_DATA).replace(
                 """
                 CASE
-                  WHEN (JSON_QUERY(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL)
-                    AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${raw_col_name}')) != 'null')
+                  WHEN (JSON_QUERY(`${_airbyte_data}`, '$.${raw_col_name}') IS NOT NULL)
+                    AND (JSON_TYPE(JSON_QUERY(`${_airbyte_data}`, '$.${raw_col_name}')) != 'null')
                     AND (${json_extract} IS NULL)
                     THEN ["Problem with `${raw_col_name}`"]
                   ELSE []
@@ -310,14 +319,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
-        "column_list", columnList)).replace(
+        "column_list", columnList,
+        "_airbyte_raw_id", COLUMN_NAME_AB_RAW_ID,
+        "_airbyte_extracted_at", COLUMN_NAME_AB_EXTRACTED_AT,
+        "_airbyte_meta", COLUMN_NAME_AB_META,
+        "_airbyte_loaded_at", COLUMN_NAME_AB_LOADED_AT,
+        "_airbyte_data", COLUMN_NAME_DATA
+    )).replace(
             """
             INSERT INTO ${final_table_id}
             (
             ${column_list}
-              _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
+              ${_airbyte_meta},
+              ${_airbyte_raw_id},
+              ${_airbyte_extracted_at}
             )
             WITH intermediate_data AS (
               SELECT
@@ -325,21 +340,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               array_concat(
             ${column_errors}
               ) as _airbyte_cast_errors,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
+              ${_airbyte_raw_id},
+              ${_airbyte_extracted_at}
               FROM ${raw_table_id}
               WHERE
-                _airbyte_loaded_at IS NULL
+                ${_airbyte_loaded_at} IS NULL
                 AND (
-                  JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-                  OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+                  JSON_QUERY(`${_airbyte_data}`, '$._ab_cdc_deleted_at') IS NULL
+                  OR JSON_TYPE(JSON_QUERY(`${_airbyte_data}`, '$._ab_cdc_deleted_at')) = 'null'
                 )
             )
             SELECT
             ${column_list}
-              to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
+              to_json(struct(_airbyte_cast_errors AS errors)) AS ${_airbyte_meta},
+              ${_airbyte_raw_id},
+              ${_airbyte_extracted_at}
             FROM intermediate_data;""");
   }
 
@@ -364,30 +379,39 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "pk_list", pkList,
         "pk_cast_list", pkCastList,
         "cursor_name", cursor.name(QUOTE),
-        "cursor_cast", cursorCast)).replace(
+        "cursor_cast", cursorCast,
+        "_airbyte_raw_id", COLUMN_NAME_AB_RAW_ID,
+        "_airbyte_extracted_at", COLUMN_NAME_AB_EXTRACTED_AT,
+        "_airbyte_meta", COLUMN_NAME_AB_META,
+        "_airbyte_loaded_at", COLUMN_NAME_AB_LOADED_AT
+    )).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
-              `_airbyte_raw_id` IN (
-                SELECT `_airbyte_raw_id` FROM (
-                  SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC, `_airbyte_extracted_at` DESC
+              `${_airbyte_raw_id}` IN (
+                SELECT `${_airbyte_raw_id}` FROM (
+                  SELECT `${_airbyte_raw_id}`, row_number() OVER (
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC, `${_airbyte_extracted_at}` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
               )
-              OR (
-                ${pk_list} IN (
-                  SELECT (
-            ${pk_cast_list}
-                  )
-                  FROM ${raw_table_id}
-                  WHERE
-                    JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                    AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
-                    AND ${cursor_name} < ${cursor_cast}
+            ;
+            
+            DELETE FROM ${final_table_id}
+            WHERE
+              ${pk_list} IN (
+                SELECT (
+          ${pk_cast_list}
                 )
-              );""");
+                FROM ${raw_table_id}
+                WHERE
+                  JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                  AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
+                  AND ${cursor_name} < ${cursor_cast}
+              )
+            );
+            """);
   }
 
   @VisibleForTesting
@@ -406,12 +430,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
      */
     String cdcDeletedAtClause;
     if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcDeletedAtClause = """
+      cdcDeletedAtClause = new StringSubstitutor(Map.of("_airbyte_data", COLUMN_NAME_DATA, "_ab_cdc_deleted_at", COLUMN_NAME_AB_CDC_DELETED_AT)).replace("""
                            AND (
-                             JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-                             OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+                             JSON_QUERY(`${_airbyte_data}`, '$.${_ab_cdc_deleted_at}') IS NULL
+                             OR JSON_TYPE(JSON_QUERY(`${_airbyte_data}`, '$.${_ab_cdc_deleted_at}')) = 'null'
                            )
-                           """;
+                           """);
     } else {
       cdcDeletedAtClause = "";
     }
@@ -419,7 +443,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
-        "cdc_deleted_at_clause", cdcDeletedAtClause)).replace(
+        "cdc_deleted_at_clause", cdcDeletedAtClause, "_airbyte_raw_id", COLUMN_NAME_AB_RAW_ID)).replace(
             // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
             // would be painful,
             // and it only matters in a few edge cases.
@@ -427,8 +451,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             DELETE FROM
               ${raw_table_id}
             WHERE
-              `_airbyte_raw_id` NOT IN (
-                SELECT `_airbyte_raw_id` FROM ${final_table_id}
+              `${_airbyte_raw_id}` NOT IN (
+                SELECT `${_airbyte_raw_id}` FROM ${final_table_id}
               )
               ${cdc_deleted_at_clause}
             ;""");
@@ -437,11 +461,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @VisibleForTesting
   String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE))).replace(
+        "raw_table_id", id.rawTableId(QUOTE), "_airbyte_loaded_at", COLUMN_NAME_AB_LOADED_AT)).replace(
             """
             UPDATE ${raw_table_id}
-            SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
-            WHERE `_airbyte_loaded_at` IS NULL
+            SET `${_airbyte_loaded_at}` = CURRENT_TIMESTAMP()
+            WHERE `${_airbyte_loaded_at}` IS NULL
             ;""");
   }
 

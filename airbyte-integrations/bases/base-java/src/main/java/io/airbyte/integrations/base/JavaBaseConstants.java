@@ -24,7 +24,8 @@ public final class JavaBaseConstants {
   public static final String COLUMN_NAME_AB_RAW_ID = "_airbyte_raw_id";
   public static final String COLUMN_NAME_AB_LOADED_AT = "_airbyte_loaded_at";
   public static final String COLUMN_NAME_AB_EXTRACTED_AT = "_airbyte_extracted_at";
-
+  public static final String COLUMN_NAME_AB_META = "_airbyte_meta";
+  public static final String COLUMN_NAME_AB_CDC_DELETED_AT = "_ab_cdc_deleted_at";
   public static final String AIRBYTE_NAMESPACE_SCHEMA = "airbyte";
 
 }
