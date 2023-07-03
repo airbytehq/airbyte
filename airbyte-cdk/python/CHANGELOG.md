@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.44.2
+Ensuring the state value format matches the cursor value from the record
+
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
+## 0.44.0
+Support data feed like incremental syncs
+
+## 0.43.3
+Fix return type of RecordFilter: changed from generator to list
+
+## 0.43.2
+Connector builder module: serialize request body as string
+
 ## 0.43.1
 Fix availability check to handle HttpErrors which happen during slice extraction
 

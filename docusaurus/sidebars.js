@@ -218,26 +218,20 @@ const contributeToAirbyte = {
     id: 'contributing-to-airbyte/README',
   },
   items: [
-    'contributing-to-airbyte/code-of-conduct',
-    'contributing-to-airbyte/issues-and-pull-requests',
-    'contributing-to-airbyte/developing-locally',
-    'contributing-to-airbyte/developing-on-docker',
-    'contributing-to-airbyte/python-gradle-setup',
-    'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/gradle',
+    'contributing-to-airbyte/issues-and-requests',
+    'contributing-to-airbyte/change-cdk-connector',
+    'contributing-to-airbyte/submit-new-connector',
+    'contributing-to-airbyte/writing-docs',
     {
       type: 'category',
-      label: 'Updating documentation',
-      link: {
-        type: 'doc',
-        id: 'contributing-to-airbyte/contribute-documentation',
-      },
+      label: 'Resources',
       items: [
-        {
-          type: 'link',
-          label: 'Connector doc template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
+        'contributing-to-airbyte/resources/pull-requests-handbook',
+        'contributing-to-airbyte/resources/code-style',
+        'contributing-to-airbyte/resources/developing-locally',
+        'contributing-to-airbyte/resources/developing-on-docker',
+        'contributing-to-airbyte/resources/gradle',
+        'contributing-to-airbyte/resources/python-gradle-setup',        
       ],
     },
   ],
@@ -362,6 +356,7 @@ const operatorGuide = {
     'operator-guides/using-prefect-task',
     'operator-guides/using-dagster-integration',
     'operator-guides/locating-files-local-destination',
+    'operator-guides/collecting-metrics',
     {
       type: 'category',
       label: 'Transformations and Normalization',
@@ -371,15 +366,7 @@ const operatorGuide = {
         'operator-guides/transformation-and-normalization/transformations-with-airbyte',
       ],
     },
-    {
-      type: 'category',
-      label: 'Configuring Airbyte',
-      link: {
-        type: 'doc',
-        id: 'operator-guides/configuring-airbyte',
-      },
-      items: ['operator-guides/sentry-integration'],
-    },
+    'operator-guides/configuring-airbyte',
     'operator-guides/using-custom-connectors',
     'operator-guides/scaling-airbyte',
     'operator-guides/configuring-sync-notifications',
@@ -426,6 +413,11 @@ const security = {
   id: 'operator-guides/security',
 };
 
+const support = {
+  type: 'doc',
+  id: 'operator-guides/contact-support',
+};
+
 module.exports = {
   mySidebar: [
     {
@@ -458,6 +450,7 @@ module.exports = {
     understandingAirbyte,
     contributeToAirbyte,
     sectionHeader('Resources'),
+    support,
     security,
     {
       type: 'category',
@@ -470,6 +463,7 @@ module.exports = {
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
+        'project-overview/code-of-conduct',
         {
           type: 'link',
           label: 'Airbyte Repository',
