@@ -126,7 +126,7 @@ public class PostgresCdcCtidInitializer {
         final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes, stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
-                Instant.now().toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
+                emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
             PostgresQueryUtils.getTableBlockSizeForStream(
                 database,
