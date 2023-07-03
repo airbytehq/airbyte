@@ -109,10 +109,10 @@ public class PostgresCdcCtidInitializer {
       final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
           savedOffsetAfterReplicationSlotLSN);
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
+      final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
       if (!ctidStreams.streamsForCtidSync().isEmpty()) {
-        // This has an issue, we skip these streams but WAL from these streams would be processed, and we would never complete the snapshot of these streams
-        final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
-            ctidStreams.streamsForCtidSync(), quoteString);
+        streamsUnderVacuum.addAll(streamsUnderVacuum(database,
+            ctidStreams.streamsForCtidSync(), quoteString));
 
         final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
             streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
@@ -142,6 +142,8 @@ public class PostgresCdcCtidInitializer {
 
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
+      } else {
+        LOGGER.info("No streams will be synced via ctid");
       }
 
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
@@ -160,12 +162,17 @@ public class PostgresCdcCtidInitializer {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
-      // This starts processing the WAL as soon as initial sync is complete, this is a bit different from the current cdc syncs.
-      // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the WAL
-      return Stream
-          .of(ctidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+      if (streamsUnderVacuum.isEmpty()) {
+        // This starts processing the WAL as soon as initial sync is complete, this is a bit different from the current cdc syncs.
+        // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the WAL
+        return Stream
+            .of(ctidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+      } else {
+        LOGGER.warn("Streams are under vacuuming, not going to process WAL");
+        return ctidIterator;
+      }
 
     } catch (final SQLException e) {
       throw new RuntimeException(e);
