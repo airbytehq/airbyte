@@ -1,7 +1,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Streams;
@@ -87,7 +86,9 @@ public class RecordDiffer {
         rawRecordIdentityExtractor,
         true);
 
-    assertTrue(diff.isEmpty(), "Raw table was incorrect.\n" + diff);
+    if (!diff.isEmpty()) {
+      fail("Raw table was incorrect.\n" + diff);
+    }
   }
 
   public void diffFinalTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
@@ -99,7 +100,9 @@ public class RecordDiffer {
         finalRecordIdentityExtractor,
         false);
 
-    assertTrue(diff.isEmpty(), "Final table was incorrect.\n" + diff);
+    if (!diff.isEmpty()) {
+      fail("Final table was incorrect.\n" + diff);
+    }
   }
 
   private static String getPrintableFieldIfPresent(JsonNode record, String field) {
