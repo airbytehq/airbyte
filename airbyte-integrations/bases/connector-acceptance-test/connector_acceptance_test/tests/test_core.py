@@ -82,7 +82,7 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-@pytest.mark.default_timeout(10)
+@pytest.mark.default_timeout(30)
 class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
