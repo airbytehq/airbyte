@@ -89,7 +89,7 @@
         "type": [
           "array",
           "null"
-        ],  
+        ],
         "items": {
           "type": "object",
           "properties": {
@@ -107,8 +107,8 @@
               "type": "string"
             }
           }
-        }  
-      },
+        }
+      },  
       "user": {
         "properties": {
           "wrap_up_time": {
@@ -146,6 +146,157 @@
             "wrap_up_time": {
               "type": "integer"
             }
+          }
+        }
+      },
+      "transferred_by": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "authentication_token": {
+            "type": "string"
+          },
+          "company_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "custom_price": {
+            "type": "null"
+          },
+          "custom_twilio_edge": {
+            "type": "null"
+          },
+          "custom_twilio_jitter_buffer_size": {
+            "type": "null"
+          },
+          "custom_twilio_region": {
+            "type": "null"
+          },
+          "default_out_number_id": {
+            "type": "null"
+          },
+          "default_prefix": {
+            "type": "null"
+          },
+          "deleted_at": {
+            "type": "null"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "intercom_android_hash": {
+            "type": "string"
+          },
+          "intercom_hash": {
+            "type": "string"
+          },
+          "is_admin": {
+            "type": "boolean"
+          },
+          "is_onboarded_for_teams_in_numbers": {
+            "type": "boolean"
+          },
+          "is_onboarded_on_app": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "marked_for_deletion": {
+            "type": "boolean"
+          },
+          "migrated_on_authentication_manager": {
+            "type": "boolean"
+          },
+          "onboarding_step": {
+            "type": "integer"
+          },
+          "phone_numbers_count": {
+            "type": "integer"
+          },
+          "picture_url": {
+            "type": "null"
+          },
+          "ring_timeout": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "time_zone": {
+            "type": "string"
+          },
+          "unavailable_until": {
+            "type": "null"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "use_aircall_phonenumber_as_callerid": {
+            "type": "boolean"
+          },
+          "use_mobile_incoming_calls": {
+            "type": "null"
+          },
+          "use_react_phone": {
+            "type": "boolean"
+          },
+          "wrap_up_time": {
+            "type": "integer"
+          }
+        }
+      },
+      "transferred_to": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "availability_status": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "direct_link": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "time_zone": {
+            "type": "string"
+          },
+          "wrap_up_time": {
+            "type": "integer"
           }
         }
       }  
