@@ -136,6 +136,7 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
 def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
+
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
@@ -149,6 +150,7 @@ def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict
             latest_per_stream_by_name[per_stream.stream_descriptor.name] = per_stream.stream_state.dict() if per_stream.stream_state else {}
     return latest_per_stream_by_name
 
+
 def group_records_by_stream(records: Iterable[AirbyteMessage]) -> Dict[str, List[AirbyteMessage]]:
     """
     Group records by stream name
@@ -157,6 +159,7 @@ def group_records_by_stream(records: Iterable[AirbyteMessage]) -> Dict[str, List
     for record in records:
         records_by_stream[record.record.stream].append(record)
     return records_by_stream
+
 
 def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteMessage]) -> DeepDiff:
     """
@@ -169,13 +172,16 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
     diff = DeepDiff(records_1_data, records_2_data, ignore_order=True)
     return diff
 
+
 def is_comparable(obj):
     return hasattr(obj, "__lt__") and hasattr(obj, "__gt__")
+
 
 def create_cursor_field_parser(stream_config):
     helper = JsonSchemaHelper(schema=stream_config.stream.json_schema)
     cursor_field = helper.field(stream_config.cursor_field)
     return cursor_field
+
 
 def is_cursor_testable(stream_config, example_record):
     source_defined_cursor = stream_config.stream.source_defined_cursor
@@ -186,6 +192,7 @@ def is_cursor_testable(stream_config, example_record):
     cursor_field_helper = create_cursor_field_parser(stream_config)
     record_value = cursor_field_helper.parse(record=example_record.record.data)
     return is_comparable(record_value)
+
 
 def get_state_value_from_cursor_field(state, stream_name, state_cursor_paths, cursor_field_parser) -> Iterable[Tuple[Any, Any, Any]]:
     """Get corresponding cursor value from state"""
@@ -203,6 +210,7 @@ def get_state_value_from_cursor_field(state, stream_name, state_cursor_paths, cu
         except KeyError:
             return None
     return state_value
+
 
 @pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
@@ -266,8 +274,7 @@ class TestIncremental(BaseTest):
                 max_cursor_value_1 = max(cursor_values_1)
                 min_cursor_value_2 = min(cursor_values_2)
                 assert compare_cursor_with_threshold(
-                    max_cursor_value_1,
-                    min_cursor_value_2
+                    max_cursor_value_1, min_cursor_value_2
                 ), f"Second incremental sync should produce records greater or equal to the first incremental sync. Stream: {stream_name}, min_cursor_value_2: {min_cursor_value_2}, max_cursor_value_1: {max_cursor_value_1}"
 
     async def test_read_sequential_slices(
