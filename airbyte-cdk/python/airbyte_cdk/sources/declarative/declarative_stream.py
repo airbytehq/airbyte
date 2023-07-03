@@ -5,13 +5,13 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass

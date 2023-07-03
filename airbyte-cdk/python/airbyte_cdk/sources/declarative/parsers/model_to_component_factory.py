@@ -488,7 +488,7 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
-            transformations=transformations
+            transformations=transformations,
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
@@ -768,11 +768,15 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
-    def create_record_selector(self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs) -> RecordSelector:
+    def create_record_selector(
+        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs
+    ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
-        return RecordSelector(extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters)
+        return RecordSelector(
+            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters
+        )
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:

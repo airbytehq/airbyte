@@ -2,19 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import mock
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
-from airbyte_cdk.models import (
-    AirbyteLogMessage,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteTraceMessage,
-    Level,
-    SyncMode,
-    TraceType,
-    Type,
-)
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
