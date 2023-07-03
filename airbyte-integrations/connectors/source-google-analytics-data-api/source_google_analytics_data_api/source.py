@@ -423,7 +423,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         metadata = None
         try:
             # explicitly setting small page size for the check operation not to cause OOM issues
-            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"], page_size=100)
+            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
             error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
@@ -482,4 +482,4 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if cohort_spec:
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
-        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"])
+        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], page_size=100)
