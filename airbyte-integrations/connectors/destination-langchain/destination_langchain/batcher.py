@@ -8,8 +8,7 @@ class Batcher:
 
     def add(self, item: Any):
         self.buffer.append(item)
-        if len(self.buffer) >= self.batch_size:
-            self.flush()
+        self.flush_if_necessary()
 
     def flush(self):
         if self.buffer:

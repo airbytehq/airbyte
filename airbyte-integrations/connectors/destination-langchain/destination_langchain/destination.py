@@ -73,7 +73,6 @@ class DestinationLangchain(Destination):
                 yield message
             if message.type == Type.RECORD:
                 batcher.add(message.record)
-                batcher.flush_if_necessary()
             else:
                 continue
         batcher.flush()
