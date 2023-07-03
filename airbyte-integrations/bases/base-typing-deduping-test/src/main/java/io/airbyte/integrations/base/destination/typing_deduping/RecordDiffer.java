@@ -50,11 +50,11 @@ public class RecordDiffer {
 
     rawRecordIdentityExtractor = record -> Arrays.stream(columns)
         .map(column -> getPrintableFieldIfPresent(record.get("_airbyte_data"), column.getKey()))
-        .collect(Collectors.joining("; "))
+        .collect(Collectors.joining(", "))
         + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
     finalRecordIdentityExtractor = record -> Arrays.stream(columns)
         .map(column -> getPrintableFieldIfPresent(record, column.getKey()))
-        .collect(Collectors.joining("; "))
+        .collect(Collectors.joining(", "))
         + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
   }
 
@@ -99,7 +99,7 @@ public class RecordDiffer {
 
   private static String getPrintableFieldIfPresent(JsonNode record, String field) {
     if (record.has(field)) {
-      return field + "=" + record.get(field) + "; ";
+      return field + "=" + record.get(field);
     } else {
       return "";
     }
@@ -139,7 +139,7 @@ public class RecordDiffer {
       if (compare == 0) {
         // These records should be the same. Find the specific fields that are different.
         boolean foundMismatch = false;
-        String mismatchedRecordMessage = "Row had incorrect data:" + recordIdExtractor.apply(expectedRecord) + "\n";
+        String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
         // Iterate through each column in the expected record and compare it to the actual record's value.
         for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
           if (extractRawData && "_airbyte_data".equals(column)) {

@@ -333,7 +333,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     logAndExecute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build());
-    DIFFER.diffFinalTableRecords(
+    DIFFER.diffRawTableRecords(
         List.of(
             Jsons.deserialize(
                 """
