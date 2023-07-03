@@ -11,6 +11,14 @@ export interface Signup {
   confirmPassword: string;
 }
 
+export interface RegisterUserDetails {
+  verificationToken: string;
+}
+
+export interface RegisterUserData {
+  data: RegisterUserDetails;
+}
+
 export interface AuthRead {
   data: IAuthUser;
 }
@@ -21,10 +29,10 @@ export interface Signin {
 }
 
 export class AuthService extends AirbyteRequestService {
-  public async create(signup: Signup, lang?: string): Promise<IAuthUser> {
+  public async create(signup: Signup, lang?: string): Promise<RegisterUserDetails> {
     return new Promise((resolve, reject) => {
-      this.fetch<AuthRead>(`/user/register`, signup, lang)
-        .then((res: AuthRead) => {
+      this.fetch<RegisterUserData>(`/user/register`, signup, lang)
+        .then((res: RegisterUserData) => {
           resolve(res.data);
         })
         .catch((err: Error) => {
@@ -61,6 +69,18 @@ export class AuthService extends AirbyteRequestService {
     return new Promise((resolve, reject) => {
       userInfo(this.requestOptions)
         .then((res: AuthRead) => {
+          resolve(res.data);
+        })
+        .catch((err: Error) => {
+          reject(err);
+        });
+    });
+  }
+
+  public async resendVerificationMail(verificationToken: string): Promise<RegisterUserDetails> {
+    return new Promise((resolve, reject) => {
+      this.fetch<RegisterUserData>(`/user/resendVerificationEmail?verificationToken=${verificationToken}`)
+        .then((res: RegisterUserData) => {
           resolve(res.data);
         })
         .catch((err: Error) => {
