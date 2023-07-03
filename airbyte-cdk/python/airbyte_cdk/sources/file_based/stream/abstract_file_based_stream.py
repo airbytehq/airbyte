@@ -14,7 +14,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
-from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
