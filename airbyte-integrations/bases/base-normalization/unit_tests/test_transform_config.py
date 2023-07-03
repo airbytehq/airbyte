@@ -453,6 +453,34 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "default"
 
+    def test_transform_clickhouse_with_jcbd_params(self):
+        input = {
+            "host": "airbyte.io",
+            "port": 9440,
+            "database": "default",
+            "username": "ch",
+            "password": "password1234",
+            "ssl": True,
+            "jdbc_url_params": "socket_timeout=12345&connect_timeout=54321"
+        }
+
+        actual = TransformConfig().transform_clickhouse(input)
+        expected = {
+            "type": "clickhouse",
+            "driver": "http",
+            "verify": False,
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": True,
+            "send_receive_timeout": "12345",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {

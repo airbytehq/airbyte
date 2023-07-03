@@ -124,6 +124,14 @@ class TransformConfig:
         return ssh_ready_config
 
     @staticmethod
+    def get_parsed_jdbc_url_params(config: Dict[str, Any]) -> Dict[str, Any]:
+        if "jdbc_url_params" in config:
+            raw_params = [params.split("=") for params in config["jdbc_url_params"].split("&")]
+            return {key: value for key, value in raw_params}
+
+        return {}
+
+    @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
@@ -316,6 +324,10 @@ class TransformConfig:
     @staticmethod
     def transform_clickhouse(config: Dict[str, Any]):
         print("transform_clickhouse")
+
+        # Extract the JDBC URL params
+        jdbc_url_params = TransformConfig.get_parsed_jdbc_url_params(config=config)
+
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
@@ -328,6 +340,8 @@ class TransformConfig:
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
+        if "socket_timeout" in jdbc_url_params:
+            dbt_config["send_receive_timeout"] = jdbc_url_params["socket_timeout"]
 
         # ssl is an optional configuration and is not present in strict-encrypt config
         # if ssl option is not present in the config - default to True
