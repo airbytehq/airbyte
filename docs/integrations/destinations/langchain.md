@@ -12,17 +12,19 @@ There are three parts to this:
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. The meta fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored).
+Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. The meta fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Depending on the chosen vector store, additional limitations might apply.
+
+When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
-The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. Otherwise, a uuid is generated.
+The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_natural_id` metadata field.
 
 ### Embedding
 
 THe OpenAI embedding API is used to calculate embeddings - see [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) for details. To do so, an OpenAI API key is required.
 
-This integration will be mostly constrained by the speed of the OpenAI embedding API.
+This integration will be mostly constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
 
 ### Indexing
 
@@ -30,7 +32,7 @@ This integration will be mostly constrained by the speed of the OpenAI embedding
 
 For local testing, the [DocArrayHnswSearch](https://python.langchain.com/docs/modules/data_connection/vectorstores/integrations/docarray_hnsw) is recommended - it stores the vectors in a local file with a sqlite database for metadata. It is not suitable for production use, but it is the easiest to set up for testing and development purposes.
 
-The `destination_path` will always start with `/local` whether it is specified by the user or not. Any directory nesting within local will be mapped onto the local mount.
+The `destination_path` has to start with `/local`. Any directory nesting within local will be mapped onto the local mount.
 
 By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
 
@@ -63,7 +65,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 #### Pinecone vector store
 
-For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination.
+For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document.
 
 To initialize a langchain QA chain based on the indexed data, use the following code (set the open API key and pinecone key and environment as `OPENAI_API_KEY`, `PINECONE_KEY` and `PINECONE_ENV` env variables):
 
