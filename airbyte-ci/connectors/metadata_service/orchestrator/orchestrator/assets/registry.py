@@ -45,8 +45,7 @@ def generate_and_persist_registry(
 
     Args:
         context (OpExecutionContext): The execution context.
-        registry_entry_file_blobs (storage.Blob): The metadata definitions.
-        cached_specs (OutputDataFrame): The cached specs.
+        registry_entry_file_blobs (storage.Blob): The registry entries.
 
     Returns:
         Output[ConnectorRegistryV0]: The registry.
@@ -74,7 +73,7 @@ def generate_and_persist_registry(
 @asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
-    This asset is used to generate the oss registry from the metadata definitions.
+    This asset is used to generate the oss registry from the registry entries.
     """
     registry_name = "oss"
     registry_directory_manager = context.resources.registry_directory_manager
@@ -90,7 +89,7 @@ def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[Con
 @asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persist_cloud_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
-    This asset is used to generate the cloud registry from the metadata definitions.
+    This asset is used to generate the cloud registry from the registry entries.
     """
     registry_name = "cloud"
     registry_directory_manager = context.resources.registry_directory_manager
