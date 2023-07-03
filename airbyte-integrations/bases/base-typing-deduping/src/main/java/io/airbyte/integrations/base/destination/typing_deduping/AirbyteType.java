@@ -74,8 +74,6 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     return AirbyteTypeUtils.getAirbyteProtocolType(schema);
   }
 
-  public LinkedHashMap<String, AirbyteType> asColumns();
-
   private static Struct getStruct(final JsonNode schema) {
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
     final JsonNode properties = schema.get("properties");
@@ -109,11 +107,6 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       }
     }
 
-    @Override
-    public LinkedHashMap<String, AirbyteType> asColumns() {
-      throw new UnsupportedOperationException("Basic types cannot be converted to columns.");
-    }
-
   }
 
   /**
@@ -121,18 +114,10 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    */
   record Struct(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
 
-    @Override
-    public LinkedHashMap<String, AirbyteType> asColumns() {
-      return properties;
-    }
   }
 
   record Array(AirbyteType items) implements AirbyteType {
 
-    @Override
-    public LinkedHashMap<String, AirbyteType> asColumns() {
-      throw new UnsupportedOperationException("Arrays cannot be converted to columns.");
-    }
   }
 
   /**
@@ -142,10 +127,6 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    */
   record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
 
-    @Override
-    public LinkedHashMap<String, AirbyteType> asColumns() {
-      throw new UnsupportedOperationException("OneOf cannot be converted to columns.");
-    }
   }
 
   /**
