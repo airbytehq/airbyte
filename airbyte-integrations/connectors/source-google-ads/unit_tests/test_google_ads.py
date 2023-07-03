@@ -96,11 +96,65 @@ def test_interval_chunking():
     assert mock_intervals == intervals
 
 
-def test_convert_schema_into_query():
-    report_name = "ad_group_ad_report"
-    query = "SELECT segment.date FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-03-01' ORDER BY segments.date ASC"
-    response = GoogleAds.convert_schema_into_query(SAMPLE_SCHEMA, report_name, "2020-01-01", "2020-03-01", "segments.date")
-    assert response == query
+generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campaign_id": {}, "account_id": {}}}
+
+
+@pytest.mark.parametrize(
+    "stream_schema, report_name, slice_start, slice_end, cursor, expected_sql",
+    (
+        (
+            generic_schema,
+            "ad_group_ads",
+            "2020-01-01",
+            "2020-01-10",
+            "segments.date",
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
+        ),
+        (
+            generic_schema,
+            "ad_group_ads",
+            "2020-01-01",
+            "2020-01-02",
+            "segments.date",
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
+        ),
+        (
+            generic_schema,
+            "ad_group_ads",
+            None,
+            None,
+            None,
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad"
+        ),
+        (
+            generic_schema,
+            "click_view",
+            "2020-01-01",
+            "2020-01-10",
+            "segments.date",
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
+        ),
+        (
+            generic_schema,
+            "click_view",
+            "2020-01-01",
+            "2020-01-02",
+            "segments.date",
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
+        ),
+        (
+            generic_schema,
+            "click_view",
+            None,
+            None,
+            None,
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view"
+        ),
+    ),
+)
+def test_convert_schema_into_query(stream_schema, report_name, slice_start, slice_end, cursor, expected_sql):
+    query = GoogleAds.convert_schema_into_query(stream_schema, report_name, slice_start, slice_end, cursor)
+    assert query == expected_sql
 
 
 def test_get_field_value():
