@@ -19,7 +19,7 @@ import anyio
 import asyncer
 from anyio import Path
 from ci_connector_ops.pipelines.actions import remote_storage
-from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, format_duration, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
@@ -404,7 +404,7 @@ class Report:
             flags=gcs_cp_flags,
         )
         gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
-        public_url = f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{remote_key}"
+        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
         if report_upload_exit_code != 0:
             self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
         else:
@@ -502,7 +502,7 @@ class ConnectorReport(Report):
 
     @property
     def html_report_url(self) -> str:  # noqa D102
-        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
@@ -546,7 +546,7 @@ class ConnectorReport(Report):
         global_status_emoji = "✅" if self.success else "❌"
         commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
         markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
-        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} seconds\n\n"
+        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} \n\n"
         report_data = [
             [step_result.step.title, step_result.status.get_emoji()]
             for step_result in self.steps_results
