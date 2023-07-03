@@ -129,37 +129,37 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     connector_type = metadata_data["connectorType"]
 
     # apply overrides from the registry
-    overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
+    overridden_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
 
     # remove fields that are not needed in the registry
-    del overrode_metadata_data["registries"]
-    del overrode_metadata_data["connectorType"]
+    del overridden_metadata_data["registries"]
+    del overridden_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
-    connection_type = overrode_metadata_data.get("connectorSubtype")
-    if connection_type:
-        overrode_metadata_data["sourceType"] = overrode_metadata_data["connectorSubtype"]
-        del overrode_metadata_data["connectorSubtype"]
+    connector_subtype = overridden_metadata_data.get("connectorSubtype")
+    if connector_subtype:
+        overridden_metadata_data["sourceType"] = overridden_metadata_data["connectorSubtype"]
+        del overridden_metadata_data["connectorSubtype"]
 
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
-    overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]
-    del overrode_metadata_data["definitionId"]
+    overridden_metadata_data[id_field] = overridden_metadata_data["definitionId"]
+    del overridden_metadata_data["definitionId"]
 
     # add in useless fields that are currently required for porting to the actor definition spec
-    overrode_metadata_data["tombstone"] = False
-    overrode_metadata_data["custom"] = False
-    overrode_metadata_data["public"] = True
+    overridden_metadata_data["tombstone"] = False
+    overridden_metadata_data["custom"] = False
+    overridden_metadata_data["public"] = True
 
     # if there is no releaseStage, set it to "alpha"
-    if not overrode_metadata_data.get("releaseStage"):
-        overrode_metadata_data["releaseStage"] = "alpha"
+    if not overridden_metadata_data.get("releaseStage"):
+        overridden_metadata_data["releaseStage"] = "alpha"
 
     # apply generated fields
-    overrode_metadata_data["iconUrl"] = metadata_entry.icon_url
-    overrode_metadata_data["releases"] = apply_connector_release_defaults(overrode_metadata_data)
+    overridden_metadata_data["iconUrl"] = metadata_entry.icon_url
+    overridden_metadata_data["releases"] = apply_connector_release_defaults(overridden_metadata_data)
 
-    return overrode_metadata_data
+    return overridden_metadata_data
 
 
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
@@ -364,17 +364,17 @@ def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEn
         for registry_name in disabled_registries
     }
 
-    metadata_persist = {
+    dagster_metadata_persist = {
         f"create_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in persisted_registry_entries.items()
     }
 
-    metadata_delete = {
+    dagster_metadata_delete = {
         f"delete_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in deleted_registry_entries.items()
     }
 
-    metadata = {
-        **metadata_persist,
-        **metadata_delete,
+    dagster_metadata = {
+        **dagster_metadata_persist,
+        **dagster_metadata_delete,
     }
 
-    return Output(metadata=metadata, value=persisted_registry_entries)
+    return Output(metadata=dagster_metadata, value=persisted_registry_entries)
