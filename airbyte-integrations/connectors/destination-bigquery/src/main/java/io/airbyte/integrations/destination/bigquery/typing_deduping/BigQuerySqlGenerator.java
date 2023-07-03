@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -162,10 +163,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing deduping, therefore we have a primary key.
       // Cluster on all the PK columns, and also extracted_at.
-      clusterConfig = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(",")) + ", _airbyte_extracted_at";
+      clusterConfig = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(",")) + ", " + COLUMN_NAME_AB_EXTRACTED_AT;
     } else {
       // Otherwise just cluser on extracted_at.
-      clusterConfig = "_airbyte_extracted_at";
+      clusterConfig = COLUMN_NAME_AB_EXTRACTED_AT;
     }
 
     return new StringSubstitutor(Map.of(
@@ -376,18 +377,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 )
                 WHERE row_number != 1
               )
-              OR (
-                ${pk_list} IN (
-                  SELECT (
-            ${pk_cast_list}
-                  )
-                  FROM ${raw_table_id}
-                  WHERE
-                    JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                    AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
-                    AND ${cursor_name} < ${cursor_cast}
+           ;
+           
+           DELETE FROM ${final_table_id}
+           WHERE (
+              ${pk_list} IN (
+                SELECT (
+          ${pk_cast_list}
                 )
-              );""");
+                FROM ${raw_table_id}
+                WHERE
+                  JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                  AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
+                  AND ${cursor_name} < ${cursor_cast}
+          );""");
   }
 
   @VisibleForTesting
