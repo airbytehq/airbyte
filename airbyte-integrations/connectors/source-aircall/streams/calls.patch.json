@@ -165,27 +165,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "custom_price": {
-            "type": "null"
-          },
-          "custom_twilio_edge": {
-            "type": "null"
-          },
-          "custom_twilio_jitter_buffer_size": {
-            "type": "null"
-          },
-          "custom_twilio_region": {
-            "type": "null"
-          },
-          "default_out_number_id": {
-            "type": "null"
-          },
-          "default_prefix": {
-            "type": "null"
-          },
-          "deleted_at": {
-            "type": "null"
-          },
           "email": {
             "type": "string"
           },
@@ -228,9 +207,6 @@
           "phone_numbers_count": {
             "type": "integer"
           },
-          "picture_url": {
-            "type": "null"
-          },
           "ring_timeout": {
             "type": "integer"
           },
@@ -241,7 +217,11 @@
             "type": "string"
           },
           "unavailable_until": {
-            "type": "null"
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"  
           },
           "updated_at": {
             "type": "string",
@@ -249,9 +229,6 @@
           },
           "use_aircall_phonenumber_as_callerid": {
             "type": "boolean"
-          },
-          "use_mobile_incoming_calls": {
-            "type": "null"
           },
           "use_react_phone": {
             "type": "boolean"
