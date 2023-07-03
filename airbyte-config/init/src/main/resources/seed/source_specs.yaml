@@ -5207,7 +5207,7 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-        no_of_days_to_fetch": 
+        no_of_days_to_fetch: 
           type": "string"
           description": "Number of days for which you wants to fetch the data in one run."
           examples": 
