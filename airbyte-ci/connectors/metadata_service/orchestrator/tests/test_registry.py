@@ -10,7 +10,12 @@ from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegis
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 
-from orchestrator.assets.registry_entry import metadata_to_registry_entry, get_connector_type_from_registry_entry, get_registry_status_lists, safe_parse_metadata_definition
+from orchestrator.assets.registry_entry import (
+    metadata_to_registry_entry,
+    get_connector_type_from_registry_entry,
+    get_registry_status_lists,
+    safe_parse_metadata_definition,
+)
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -34,17 +39,21 @@ VALID_METADATA_DICT = {
         "githubIssueLabel": "test_label",
         "connectorSubtype": "api",
         "releaseStage": "alpha",
-        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}}
-    }
+        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+    },
 }
 INVALID_METADATA_DICT = {"invalid": "metadata"}
 
-@pytest.mark.parametrize("blob_name, blob_content, expected_result, expected_exception", [
-    ("1.2.3/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
-    ("latest/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
-    ("1.2.3/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, None),
-    ("latest/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, ValidationError)
-])
+
+@pytest.mark.parametrize(
+    "blob_name, blob_content, expected_result, expected_exception",
+    [
+        ("1.2.3/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+        ("latest/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+        ("1.2.3/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, None),
+        ("latest/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, ValidationError),
+    ],
+)
 def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result, expected_exception):
     # Mock the Blob object
     mock_blob = mock.create_autospec(storage.Blob, instance=True)
@@ -60,23 +69,26 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
         assert result == expected_result
 
 
-@pytest.mark.parametrize("registries_data, expected_enabled, expected_disabled", [
-    (
-        {"oss": {"enabled": True}, "cloud": {"enabled": True}},
-        ["oss", "cloud"],
-        [],
-    ),
-    (
-        {"oss": {"enabled": False}, "cloud": {"enabled": True}},
-        ["cloud"],
-        ["oss"],
-    ),
-    (
-        {"oss": {"enabled": False}, "cloud": {"enabled": False}},
-        [],
-        ["oss", "cloud"],
-    ),
-])
+@pytest.mark.parametrize(
+    "registries_data, expected_enabled, expected_disabled",
+    [
+        (
+            {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+            ["oss", "cloud"],
+            [],
+        ),
+        (
+            {"oss": {"enabled": False}, "cloud": {"enabled": True}},
+            ["cloud"],
+            ["oss"],
+        ),
+        (
+            {"oss": {"enabled": False}, "cloud": {"enabled": False}},
+            [],
+            ["oss", "cloud"],
+        ),
+    ],
+)
 def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
     metadata_dict = {
         "metadataSpecVersion": "1.0",
@@ -91,8 +103,8 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "githubIssueLabel": "test_label",
             "connectorSubtype": "api",
             "releaseStage": "alpha",
-            "registries": registries_data
-        }
+            "registries": registries_data,
+        },
     }
     metadata_definition = MetadataDefinition.parse_obj(metadata_dict)
     registry_entry = LatestMetadataEntry(metadata_definition=metadata_definition)
@@ -100,11 +112,15 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
     assert set(enabled) == set(expected_enabled)
     assert set(disabled) == set(expected_disabled)
 
-@pytest.mark.parametrize("registry_entry, expected_type, expected_class", [
-    ({"sourceDefinitionId": "abc"}, "source", ConnectorRegistrySourceDefinition),
-    ({"destinationDefinitionId": "abc"}, "destination", ConnectorRegistryDestinationDefinition),
-    ({}, None, None)
-])
+
+@pytest.mark.parametrize(
+    "registry_entry, expected_type, expected_class",
+    [
+        ({"sourceDefinitionId": "abc"}, "source", ConnectorRegistrySourceDefinition),
+        ({"destinationDefinitionId": "abc"}, "destination", ConnectorRegistryDestinationDefinition),
+        ({}, None, None),
+    ],
+)
 def test_get_connector_type_from_registry_entry(registry_entry, expected_type, expected_class):
     if expected_type and expected_class:
         connector_type, connector_class = get_connector_type_from_registry_entry(registry_entry)
