@@ -45,7 +45,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
+    return nameTransformer.applyDefaultCase(String.join(".",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }
@@ -91,9 +91,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   private static String fullStageName(final String namespace, final String stageName) {
-    return Arrays.asList(namespace, stageName).stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining("."));
+//    return Arrays.asList(namespace, stageName).stream()
+//            .filter(Objects::nonNull)
+//            .collect(Collectors.joining("."));
+    return stageName;
   }
 
   private void uploadRecordsToBucket(final JdbcDatabase database,
