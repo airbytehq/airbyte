@@ -89,6 +89,7 @@ The Close.com Connector has rate limit. There are 60 RPS for Organizations. You 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2023-06-27 | [27776](https://github.com/airbytehq/airbyte/pull/27776) | Update the `Email Followup Tasks` stream schema                                                        |
 | 0.3.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Update the `Email sequences` stream schema                                                             |
 | 0.2.2   | 2023-05-05 | [25868](https://github.com/airbytehq/airbyte/pull/25868) | Added `CDK TypeTransformer` to gurantee JSON Schema types, added missing properties for `roles` stream |
 | 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification                                                             |

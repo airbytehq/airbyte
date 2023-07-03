@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.0
+Add backward_compatibility.check_if_field_removed test to check if a field has been removed from the catalog.
+
 ## 0.10.8
 Increase the connection timeout to Docker client to 2 minutes ([context](https://github.com/airbytehq/airbyte/issues/27401))
 

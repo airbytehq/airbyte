@@ -69,6 +69,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 3.0.4   | 2023-06-24 | [27680](https://github.com/airbytehq/airbyte/pull/27680) | Fix formatting                                                                        |
 | 3.0.3   | 2023-06-02 | [26978](https://github.com/airbytehq/airbyte/pull/26978) | Skip the stream if subscription level had changed during sync                         |
 | 3.0.2   | 2023-02-06 | [21970](https://github.com/airbytehq/airbyte/pull/21970) | Enable availability strategy for all streams                                          |
 | 3.0.0   | 2023-01-31 | [22164](https://github.com/airbytehq/airbyte/pull/22164) | Rename nested `business_hours` table to `working_hours`                               |
