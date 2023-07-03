@@ -133,7 +133,7 @@ SENSORS = [
 
 SCHEDULES = [ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly")]
 
-JOBS = [generate_registry_reports, generate_oss_registry, generate_cloud_registry]
+JOBS = [generate_registry_reports, generate_oss_registry, generate_cloud_registry, generate_registry_entry, generate_nightly_reports]
 
 """
 START HERE

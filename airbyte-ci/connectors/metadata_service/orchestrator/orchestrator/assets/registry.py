@@ -71,7 +71,7 @@ def generate_and_persist_registry(
 
 
 @asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
-def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
+def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
     """
@@ -87,7 +87,7 @@ def persist_oss_registry_from_entries(context: OpExecutionContext) -> Output[Con
 
 
 @asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
-def persist_cloud_registry_from_entries(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
+def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
     """
