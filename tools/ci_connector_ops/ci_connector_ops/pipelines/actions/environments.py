@@ -24,7 +24,7 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -825,7 +825,7 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
         context.cdk_version = cdk_version
     if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
-        raise Exception(
+        raise DaggerError(
             "Abusive caching might be happening. The connector container should have been built with the correct version as defined in metadata.yaml"
         )
     return await finalize_build(context, connector_container)
