@@ -106,9 +106,13 @@ public class RecordDiffer {
   }
 
   /**
-   * Generate a human-readable diff between the two lists. Only checks the keys specified in
-   * expectedRecords. Assumes (in general) that two records with the same PK, cursor, and extracted_at
-   * are the same record.
+   * Generate a human-readable diff between the two lists. Assumes (in general) that two records with
+   * the same PK, cursor, and extracted_at are the same record.
+   * <p>
+   * Verifies that all values specified in the expected records are correct (_including_ raw_id), and
+   * that no other fields are present (except for loaded_at and raw_id). We assume that it's impossible
+   * to verify loaded_at, since it's generated dynamically; however, we do provide the ability to assert
+   * on the exact raw_id if desired; we simply assume that raw_id is always expected to be present.
    *
    * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
    *        PK+cursor+extracted_at)
