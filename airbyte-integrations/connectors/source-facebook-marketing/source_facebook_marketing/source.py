@@ -46,6 +46,7 @@ from source_facebook_marketing.streams import (
     Images,
     Videos,
 )
+from .streams.streams import AdRuleLibraries
 
 from .utils import validate_end_date, validate_start_date
 
@@ -120,6 +121,10 @@ class SourceFacebookMarketing(AbstractSource):
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
             ),
+            AdRuleLibraries(source=self,
+                            api=api,
+                            start_date=config.start_date,
+                            end_date=config.end_date),
             AdSets(
                 source=self,
                 api=api,
