@@ -95,8 +95,10 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def __init__(self, config: DocArrayHnswSearchIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
+    
+    def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
-            self.embedder.langchain_embeddings, config.destination_path, self.embedder.embedding_dimensions
+            embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
         )
 
     def _create_directory_recursively(self, path):
@@ -113,6 +115,7 @@ class DocArrayHnswSearchIndexer(Indexer):
                 raise Exception(f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}")
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
+        self._init_vectorstore()
 
     def post_sync(self):
         self.index._print_stats()
@@ -123,4 +126,5 @@ class DocArrayHnswSearchIndexer(Indexer):
         self.vectorstore.add_documents(document_chunks)
 
     def check(self) -> Optional[str]:
+        self._init_vectorstore()
         return self._create_directory_recursively(self.config.destination_path)

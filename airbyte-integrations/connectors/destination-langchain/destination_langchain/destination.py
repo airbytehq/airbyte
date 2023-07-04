@@ -87,8 +87,8 @@ class DestinationLangchain(Destination):
         self._init_indexer(ConfigModel.parse_obj(config))
         embedder_error = self.embedder.check()
         indexer_error = self.indexer.check()
-        if embedder_error is not None or indexer_error is not None:
-            errors = [error for error in [embedder_error, indexer_error] if error is not None]
+        errors = [error for error in [embedder_error, indexer_error] if error is not None]
+        if len(errors) > 0:
             return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

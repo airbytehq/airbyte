@@ -40,4 +40,5 @@ class OpenAIEmbedder(Embedder):
 
     @property
     def embedding_dimensions(self) -> int:
+        # vector size produced by text-embedding-ada-002 model
         return 1536
