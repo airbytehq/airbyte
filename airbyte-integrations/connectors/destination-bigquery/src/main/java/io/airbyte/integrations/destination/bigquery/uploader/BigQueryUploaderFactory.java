@@ -20,7 +20,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -32,12 +31,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -55,28 +50,20 @@ public class BigQueryUploaderFactory {
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
-    final String dataset;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      dataset = uploaderConfig.getParsedStream().id().rawNamespace();
-    } else {
-      // This previously needed to handle null namespaces. That's now happening at the top of the
-      // connector, so we can assume namespace is non-null here.
-      dataset = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
-    }
+    final String schemaName = BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
-    final Set<String> existingDatasets = new HashSet<>();
+    final Set<String> existingSchemas = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
-    final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
-    final TableId tmpTable = TableId.of(dataset, uploaderConfig.getTmpTableName());
+    final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
+    final TableId tmpTable = TableId.of(schemaName, uploaderConfig.getTmpTableName());
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
-        existingDatasets,
-        dataset,
+        existingSchemas,
+        schemaName,
         tmpTable,
         datasetLocation,
         bigQuerySchema);
@@ -101,8 +88,7 @@ public class BigQueryUploaderFactory {
             uploaderConfig.getBigQuery(),
             syncMode,
             datasetLocation,
-            recordFormatter,
-            use1s1t));
+            recordFormatter));
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
@@ -158,13 +144,10 @@ public class BigQueryUploaderFactory {
                                                                   final BigQuery bigQuery,
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter,
-                                                                  final boolean use1s1t) {
+                                                                  final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final TableId tableToWriteRawData = use1s1t ? targetTable : tmpTable;
-    LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
-        WriteChannelConfiguration.newBuilder(tableToWriteRawData)
+        WriteChannelConfiguration.newBuilder(tmpTable)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
             .setSchema(formatter.getBigQuerySchema())
             .setFormatOptions(FormatOptions.json())
@@ -201,8 +184,7 @@ public class BigQueryUploaderFactory {
         new BigQueryTableWriter(writer),
         syncMode,
         bigQuery,
-        formatter,
-        use1s1t);
+        formatter);
   }
 
 }
