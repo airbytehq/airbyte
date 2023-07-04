@@ -36,7 +36,7 @@ def http_adapter(
         timeout: float = 5.0,
         max_retries: int = 3,
         retry_on: Sequence[int] = (413, 429, 500, 502, 503, 504, 599),
-        methods: Sequence[str] = ('HEAD', 'GET', 'PUT', 'DELETE', 'OPTIONS', 'TRACE'),
+        methods: Sequence[str] = ('HEAD', 'GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'TRACE'),
         backoff_factor: int = 1,
         allow_http_insecure: bool = False,
 ) -> requests.Session:
