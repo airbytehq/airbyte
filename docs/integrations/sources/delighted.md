@@ -15,7 +15,7 @@ To set up the Delighted source connector, you'll need a Delighted API key. For d
 ### Step 2: Set up the Delighted connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Delighted** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. Enter your **Delighted API Key**.
 5. In the **Replication Start Date** field, enter the desired UTC date and time. Only the data added on and after this date will be replicated.
