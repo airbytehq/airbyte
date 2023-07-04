@@ -1,0 +1,25 @@
+{
+    "properties": {
+        "activities": {
+            "items": {
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer"
+                        ]
+                    }
+                },
+                "type": [
+                    "object"
+                ]
+            },
+            "type": [
+                "array"
+            ]
+        },
+        "type": [
+            "array"
+        ]
+    },
+    "type": "object"
+}
