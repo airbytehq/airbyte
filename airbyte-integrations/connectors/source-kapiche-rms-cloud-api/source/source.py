@@ -454,107 +454,111 @@ class RmsCloudApiKapicheSource(Source):
             logger.info(
                 f"Fetching for week {date_from.isoformat()} to {date_to.isoformat()}"
             )
-            payload = {
-                "propertyIds": all_property_ids,
-                "reportBy": "departDate",
-                "dateFrom": date_to_rms_string(date_from),
-                "dateTo": date_to_rms_string(date_to),
-                "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            }
-            logger.debug(f"{payload=}")
-            data = self._post(
-                "https://restapi8.rmscloud.com/reports/npsResults",
-                payload=payload,
-            )
-            results = data["npsResults"]
-            logger.info(f"Got {len(results)} for date range")
-            if not results:
-                continue
+            for properties_chunk in chunks(all_property_ids, 5):
+                payload = {
+                    "propertyIds": properties_chunk,
+                    "reportBy": "departDate",
+                    "dateFrom": date_to_rms_string(date_from),
+                    "dateTo": date_to_rms_string(date_to),
+                    "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                }
+                logger.debug(f"{payload=}")
+                data = self._post(
+                    "https://restapi8.rmscloud.com/reports/npsResults",
+                    payload=payload,
+                )
+                results = data["npsResults"]
+                logger.info(f"Got {len(results)} npsResults for date range")
+                if not results:
+                    continue
 
-            if not categories:
-                # `categories` has not yet been loaded, fetch now and
-                # store for use during the rest of the sync.
-                categories = self._fetch_categories(logger, properties)
+                if not categories:
+                    # `categories` has not yet been loaded, fetch now and
+                    # store for use during the rest of the sync.
+                    categories = self._fetch_categories(logger, properties)
 
-            # Collect all the reservation Ids upfront. We use this to fetch
-            # all reservation upfront so that we can look up reservation
-            # details during the construction of the output record later.
-            reservation_ids = [
-                s["reservationId"]
-                for property_result in results
-                for s in property_result.get("surveyDetails", [])
-            ]
+                # Collect all the reservation Ids upfront. We use this to fetch
+                # all reservation upfront so that we can look up reservation
+                # details during the construction of the output record later.
+                reservation_ids = [
+                    s["reservationId"]
+                    for property_result in results
+                    for s in property_result.get("surveyDetails", [])
+                ]
 
-            # TODO: these can be fetched simultaneously
-            reservation_lookup = {
-                r["id"]: r for r in self._fetch_reservations(logger, reservation_ids)
-            }
-            reservation_account_lookup = {
-                r["reservationId"]: r
-                for r in self._fetch_reservation_accounts(logger, reservation_ids)
-            }
-            guest_lookup = {
-                r["id"]: r for r in self._fetch_guests(logger, reservation_ids)
-            }
+                # TODO: these can be fetched simultaneously
+                reservation_lookup = {
+                    r["id"]: r for r in self._fetch_reservations(logger, reservation_ids)
+                }
+                reservation_account_lookup = {
+                    r["reservationId"]: r
+                    for r in self._fetch_reservation_accounts(logger, reservation_ids)
+                }
+                guest_lookup = {
+                    r["id"]: r for r in self._fetch_guests(logger, reservation_ids)
+                }
 
-            for result in results:
-                # Each "npsResult" will correspond to a single category
-                property_id = result["propertyId"]
-                property = properties[property_id]
-                surveys = result["surveyDetails"]
-                for s in surveys:
-                    # Within that "npsResult" there are many survey
-                    # responses known as "surveyDetails"
-                    record = {}
-                    self.update_record_from_property(
-                        record,
-                        properties,
-                        property_id,
-                    )
-
-                    category_id = s["categoryId"]
-                    self.update_record_from_category(
-                        record,
-                        categories,
-                        category_id,
-                    )
-
-                    self.update_record_from_survey_detail(
-                        record, s, rms_timezone_name=property["timeZone"]
-                    )
-
-                    reservation_id = s.get("reservationId")
-                    if reservation_id:
-                        reservation = reservation_lookup.get(reservation_id)
-                        reservation_account = reservation_account_lookup.get(
-                            reservation_id, {}
+                for result in results:
+                    # Each "npsResult" will correspond to a single category
+                    property_id = result["propertyId"]
+                    logger.info(f"{property_id=}")
+                    property = properties[property_id]
+                    surveys = result["surveyDetails"]
+                    logger.info(f"{len(surveys)=}")
+                    for s in surveys:
+                        # Within that "npsResult" there are many survey
+                        # responses known as "surveyDetails"
+                        record = {}
+                        self.update_record_from_property(
+                            record,
+                            properties,
+                            property_id,
                         )
-                        if reservation:
-                            self.update_record_from_reservation(
-                                record,
-                                reservation,
-                                reservation_account,
-                                rms_timezone_name=property["timeZone"],
-                            )
 
-                            guest = guest_lookup.get(reservation["guestId"])
-                            if guest:
-                                logger.debug(f"{guest=}")
-                                self.update_record_from_guest(record, guest)
+                        category_id = s["categoryId"]
+                        self.update_record_from_category(
+                            record,
+                            categories,
+                            category_id,
+                        )
+
+                        self.update_record_from_survey_detail(
+                            record, s, rms_timezone_name=property["timeZone"]
+                        )
+
+                        reservation_id = s.get("reservationId")
+                        logger.info(f"{reservation_id=}")
+                        if reservation_id:
+                            reservation = reservation_lookup.get(reservation_id)
+                            reservation_account = reservation_account_lookup.get(
+                                reservation_id, {}
+                            )
+                            if reservation:
+                                self.update_record_from_reservation(
+                                    record,
+                                    reservation,
+                                    reservation_account,
+                                    rms_timezone_name=property["timeZone"],
+                                )
+
+                                guest = guest_lookup.get(reservation["guestId"])
+                                if guest:
+                                    logger.debug(f"{guest=}")
+                                    self.update_record_from_guest(record, guest)
+                                else:
+                                    logger.warning(
+                                        f"{reservation_id=} with guest "
+                                        f"{reservation['guestId']=} could not "
+                                        f"be found in the guest lookup map."
+                                    )
                             else:
                                 logger.warning(
-                                    f"{reservation_id=} with guest "
-                                    f"{reservation['guestId']=} could not "
-                                    f"be found in the guest lookup map."
+                                    f"{reservation_id=} not found in the lookup table. "
+                                    f"Something might be wrong with how registrations are "
+                                    f" being prefetched."
                                 )
-                        else:
-                            logger.warning(
-                                f"{reservation_id=} not found in the lookup table. "
-                                f"Something might be wrong with how registrations are "
-                                f" being prefetched."
-                            )
 
-                    yield record
+                        yield record
 
     def reservation_data_by_id(
         self, logger: logging.Logger, reservation_ids: list[int]
@@ -756,7 +760,7 @@ class RmsCloudApiKapicheSource(Source):
             headers={"authtoken": self.auth_token},
         )
         properties = response.json()
-        logger.info(f"{len(properties)} retrieved")
+        logger.info(f"{len(properties)} properties retrieved")
         return {p["id"]: p for p in properties}
 
     # @cache("_fetch_categories")
@@ -895,6 +899,11 @@ def convert_rms_datetime_to_python_datetime(
             f"{rms_property_timezone_windows_id_name} "
             "as a known timezone value"
         )
+
+
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def rms_timezone_to_python_timezone(s: str) -> str | None:
