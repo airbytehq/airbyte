@@ -1,7 +1,0 @@
-plugins {
-    id 'java-library'
-}
-
-dependencies {
-  implementation libs.airbyte.protocol
-}
