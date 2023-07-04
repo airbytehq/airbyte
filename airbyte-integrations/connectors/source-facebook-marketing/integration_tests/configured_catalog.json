@@ -13,6 +13,18 @@
     },
     {
       "stream" : {
+        "name" : "ad_rule_libraries",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "append"
+    },
+    {
+      "stream" : {
         "name" : "ad_sets",
         "json_schema" : {},
         "supported_sync_modes" : [
