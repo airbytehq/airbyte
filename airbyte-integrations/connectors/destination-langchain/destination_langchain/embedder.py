@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from destination_langchain.config import EmbeddingConfigModel
+from destination_langchain.config import OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings.fake import FakeEmbeddings
 
 class Embedder(ABC):
     def __init__(self):
@@ -22,8 +23,11 @@ class Embedder(ABC):
     def embedding_dimensions(self) -> int:
         pass
 
+
+OPEN_AI_VECTOR_SIZE = 1536
+
 class OpenAIEmbedder(Embedder):
-    def __init__(self, config: EmbeddingConfigModel):
+    def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
         self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)
     
@@ -41,4 +45,25 @@ class OpenAIEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         # vector size produced by text-embedding-ada-002 model
-        return 1536
+        return OPEN_AI_VECTOR_SIZE
+
+class FakeEmbedder(Embedder):
+    def __init__(self, config: FakeEmbeddingConfigModel):
+        super().__init__()
+        self.embeddings = FakeEmbeddings(size=OPEN_AI_VECTOR_SIZE)
+    
+    def check(self) -> Optional[str]:
+        try:
+            self.embeddings.embed_query("test")
+        except Exception as e:
+            return str(e)
+        return None
+    
+    @property
+    def langchain_embeddings(self) -> Embeddings:
+        return self.embeddings
+
+    @property
+    def embedding_dimensions(self) -> int:
+        # use same vector size as for OpenAI embeddings to keep it realistic
+        return OPEN_AI_VECTOR_SIZE

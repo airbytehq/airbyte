@@ -29,12 +29,18 @@ class ProcessingConfigModel(BaseModel):
         schema_extra = {"group":"processing"}
 
 
-class EmbeddingConfigModel(BaseModel):
+class OpenAIEmbeddingConfigModel(BaseModel):
     mode: Literal["openai"] = Field("openai", const=True)
     openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
 
     class Config:
-        schema_extra = {"group":"embedding"}
+        title="OpenAI"
+
+class FakeEmbeddingConfigModel(BaseModel):
+    mode: Literal["fake"] = Field("fake", const=True)
+
+    class Config:
+        title="Fake"
 
 
 class PineconeIndexingModel(BaseModel):
@@ -62,7 +68,9 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: EmbeddingConfigModel
+    embedding: Union[OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
+        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
+    )
     indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel] = Field(
         ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object"
     )
@@ -79,6 +87,7 @@ class ConfigModel(BaseModel):
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
+        # config schemas can't contain references, so inline them
         json_schema_ref_resolver = RefResolver.from_schema(schema)
         str_schema = json.dumps(schema)
         for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):

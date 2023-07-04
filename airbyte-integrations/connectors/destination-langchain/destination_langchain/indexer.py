@@ -3,7 +3,7 @@ import uuid
 from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
-from destination_langchain.processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
+from destination_langchain.document_processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
 from langchain.document_loaders.base import Document
 from typing import Any, List, Optional, Tuple
 from airbyte_cdk.models import (

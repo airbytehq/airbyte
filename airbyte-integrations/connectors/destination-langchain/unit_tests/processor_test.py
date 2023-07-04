@@ -5,7 +5,7 @@
 
 import unittest.mock as mock
 from typing import List, Tuple
-from destination_langchain.processor import Processor
+from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.config import ProcessingConfigModel
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -28,7 +28,7 @@ def initialize_processor():
             ),
         ]
     )
-    return Processor(config=config, catalog=catalog)
+    return DocumentProcessor(config=config, catalog=catalog)
 
 
 def test_process_single_chunk_with_metadata_and_natural_ids():

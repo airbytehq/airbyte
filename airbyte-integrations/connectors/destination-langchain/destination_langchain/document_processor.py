@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Mapping
+from typing import List, Optional, Tuple, Mapping, Union
 from destination_langchain.config import ProcessingConfigModel
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
@@ -6,24 +6,30 @@ from langchain.document_loaders.base import Document
 from langchain.utils import stringify_dict
 import dpath.util
 from dpath.exceptions import PathNotFound
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, AirbyteStream
 import uuid
 from dataclasses import dataclass
 
 METADATA_STREAM_FIELD = "_airbyte_stream"
 METADATA_NATURAL_ID_FIELD = "_natural_id"
 
-class Processor:
+class DocumentProcessor:
     streams: Mapping[str, ConfiguredAirbyteStream]
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog, max_metadata_size: Optional[int] = None):
-        self.streams = {stream.stream.name: stream for stream in catalog.streams}
+        self.streams = {self._stream_identifier(stream.stream): stream for stream in catalog.streams}
         self.max_metadata_size = max_metadata_size
 
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
         )
         self.text_fields = config.text_fields
+
+    def _stream_identifier(self, stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
+        if isinstance(stream, AirbyteStream):
+            return stream.name if stream.namespace is None else f"{stream.namespace}_{stream.name}"
+        else:
+            return stream.stream if stream.namespace is None else f"{stream.namespace}_{stream.stream}"
 
     def process(self, record: AirbyteRecordMessage) -> Tuple[List[Document], Optional[str]]:
         """
@@ -62,8 +68,9 @@ class Processor:
                 except PathNotFound:
                     pass  # if the field doesn't exist, do nothing
         metadata = self._normalize_metadata(metadata)
-        current_stream = self.streams[record.stream]
-        metadata[METADATA_STREAM_FIELD] = record.stream
+        stream_identifier = self._stream_identifier(record)
+        current_stream = self.streams[stream_identifier]
+        metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
         if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
             # TODO support nested and composite primary keys

@@ -10,7 +10,7 @@ data:
   githubIssueLabel: destination-langchain
   icon: langchain.svg
   license: MIT
-  name: Langchain
+  name: Vector Database (powered by LangChain)
   releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/langchain

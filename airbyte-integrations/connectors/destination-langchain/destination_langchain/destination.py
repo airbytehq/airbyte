@@ -8,9 +8,9 @@ import random
 import json
 import os
 from destination_langchain.batcher import Batcher
-from destination_langchain.embedder import Embedder, OpenAIEmbedder
+from destination_langchain.embedder import Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_langchain.indexer import DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
-from destination_langchain.processor import Processor
+from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.config import ConfigModel
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 
@@ -38,13 +38,19 @@ indexer_map = {
     "DocArrayHnswSearch": DocArrayHnswSearchIndexer
 }
 
+embedder_map = {
+    "openai": OpenAIEmbedder,
+    "fake": FakeEmbedder
+}
+
+
 class DestinationLangchain(Destination):
     indexer: Indexer
-    processor: Processor
+    processor: DocumentProcessor
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        self.embedder = OpenAIEmbedder(config.embedding)
+        self.embedder = embedder_map[config.embedding.mode](config.embedding)
         self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
@@ -62,7 +68,7 @@ class DestinationLangchain(Destination):
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        self.processor = Processor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
+        self.processor = DocumentProcessor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
         batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
         self.indexer.pre_sync(configured_catalog)
         for message in input_messages:

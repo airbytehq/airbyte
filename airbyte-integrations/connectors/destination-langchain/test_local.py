@@ -5,7 +5,9 @@ from langchain.vectorstores import DocArrayHnswSearch
 from langchain.embeddings import OpenAIEmbeddings
 
 embeddings = OpenAIEmbeddings()
-vector_store = DocArrayHnswSearch.from_params(embeddings, "/tmp/airbyte_local/my_hnsw_index", 1536)
+vector_store = DocArrayHnswSearch.from_params(embeddings, "/tmp/airbyte_local/special_path", 1536)
+
+# print(vector_store.similarity_search("python", 1))
 
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 
