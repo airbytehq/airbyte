@@ -3,6 +3,7 @@
 #
 
 from dataclasses import dataclass
+from datetime import datetime
 from functools import partial
 from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
@@ -24,6 +25,8 @@ class MondayGraphqlRequester(HttpRequester):
 
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
+        # used for streams
+        self.json_name = parameters.get("json_name", "").lower() or self.name
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -33,12 +36,18 @@ class MondayGraphqlRequester(HttpRequester):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.json_name})
         schema = schema_loader.get_json_schema()
         return schema["properties"]
 
     def _get_object_arguments(self, **object_arguments) -> str:
-        return ",".join([f"{argument}:{value}" for argument, value in object_arguments.items() if value is not None])
+        return ",".join(
+            [
+                f"{argument}:{value}" if argument != "fromt" else f'from:"{value}"'
+                for argument, value in object_arguments.items()
+                if value is not None
+            ]
+        )
 
     def _build_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
         """
@@ -69,9 +78,18 @@ class MondayGraphqlRequester(HttpRequester):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page)
+        query = self._build_query("items", field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
+
+    def _build_items_incremental_query(self, object_name: str, field_schema: dict, stream_slice: dict, **object_arguments) -> str:
+        """
+        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+        """
+        object_arguments["limit"] = self.NESTED_OBJECTS_LIMIT_MAX_VALUE
+        object_arguments["ids"] = stream_slice["ids"]
+        return self._build_query("items", field_schema, **object_arguments)
 
     def _build_teams_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
         """
@@ -85,6 +103,21 @@ class MondayGraphqlRequester(HttpRequester):
             query = f"{{id,name,picture_url,users(limit:{teams_limit}){{id}}}}"
             return f"{object_name}({arguments}){query}"
         return self._build_query(object_name=object_name, field_schema=field_schema, **object_arguments)
+
+    def _build_activity_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
+        """
+        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+        """
+        created_at = (object_arguments.get("stream_slice", dict()) or dict()).get("prior_state").get("created_at_int")
+        object_arguments.pop("stream_slice")
+
+        if created_at:
+            created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page, fromt=created_at)
+        arguments = self._get_object_arguments(**object_arguments)
+        return f"boards({arguments}){{{query}}}"
 
     def get_request_params(
         self,
@@ -104,6 +137,16 @@ class MondayGraphqlRequester(HttpRequester):
             query_builder = partial(self._build_items_query, sub_page=sub_page)
         elif self.name == "teams":
             query_builder = self._build_teams_query
+        elif self.name == "activity_logs":
+            page, sub_page = page if page else (None, None)
+            print(f"{stream_slice=} {stream_state=}")
+            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_slice=stream_slice)
+        elif self.name == "items_incremental":
+            page, sub_page = page if page else (None, None)
+            if not stream_slice:
+                query_builder = partial(self._build_items_query, sub_page=sub_page)
+            else:
+                query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
         else:
             query_builder = self._build_query
         query = query_builder(

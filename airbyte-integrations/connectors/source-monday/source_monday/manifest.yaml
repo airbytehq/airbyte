@@ -3,7 +3,7 @@ version: "0.29.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_monday/schemas/{{ parameters['name'] }}.json"
+    file_path: "./source_monday/schemas/{{ parameters.get('json_name') or parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -54,6 +54,12 @@ definitions:
       type: "PageIncrement"
       start_from_page: 1
       page_size: 100
+  double_paginator:
+    $ref: "#/definitions/default_paginator"
+    pagination_strategy:
+      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+      type: "CustomPaginationStrategy"
+      page_size: 50
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -122,6 +128,75 @@ definitions:
       name: "workspaces"
       path: ""
 
+  # semi-incremental
+  # (full-refresh and emit records >= *prior state)
+  # (prior state - frozen state from previous sync, it automatically updates with next sync)
+  stream_semi_incremental:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_monday.components.IncrementalSingleSlice
+      cursor_field: "created_at_int"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          class_name: "source_monday.extractor.MondayActivityExtractor"
+      paginator:
+        $ref: "#/definitions/double_paginator"
+
+  activity_logs_stream:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
+    $ref: "#/definitions/stream_semi_incremental"
+    $parameters:
+      name: "activity_logs"
+      json_name: "activity_logs"
+      primary_key: "id"
+      path: ""
+      items_per_page: 1
+
+  # semi-incremental substreams
+  substream_semi_incremental:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_monday.components.IncrementalSubstreamSlicer
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        $ref: "#/definitions/double_paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          class_name: "source_monday.extractor.MondayItemsExtractor"
+          field_path: [ "data", "items", "*" ]
+          additional_field_path: [ "data", "boards", "*", "items", "*" ]
+
+  items_incremental_stream:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "items_incremental"
+      json_name: "items"
+      primary_key: "id"
+      path: ""
+      items_per_page: 1
+
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_complete_fetch: false
+      items_per_request: 100
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/activity_logs_stream"
+          parent_key: "pulse_id"
+          partition_field: "ids"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+
+
+
 streams:
   - "#/definitions/items_stream"
   - "#/definitions/boards_stream"
@@ -130,6 +205,8 @@ streams:
   - "#/definitions/updates_stream"
   - "#/definitions/users_stream"
   - "#/definitions/workspaces_stream"
+  - "#/definitions/items_incremental_stream"
+  - "#/definitions/activity_logs_stream"
 
 check:
   stream_names:

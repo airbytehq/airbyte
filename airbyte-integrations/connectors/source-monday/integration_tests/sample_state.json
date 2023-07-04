@@ -1,5 +1,27 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_descriptor" : {
+        "name" : "items_incremental"
+      },
+      "stream_state" : {
+          "updated_at" : "2021-06-20T12:21:27Z",
+          "activity_logs" : {
+            "created_at_int" : 1619041749
+          }
+      }
+    }
+  },
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_descriptor" : {
+        "name" : "activity_logs"
+      },
+      "stream_state" : {
+        "created_at_int" : 1619041749
+      }
+    }
   }
-}
+]
