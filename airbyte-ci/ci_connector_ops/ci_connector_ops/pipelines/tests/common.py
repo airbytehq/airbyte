@@ -134,7 +134,7 @@ class QaChecks(Step):
         """Run QA checks on a connector.
 
         The QA checks are defined in this module:
-        https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
+        https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/ci_connector_ops/ci_connector_ops/qa_checks.py
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.

@@ -1,12 +1,12 @@
-# Airbyte CI CLI 
+# Airbyte CI CLI
 
 ## What is it?
 `airbyte-ci` is a command line interface to run CI/CD pipelines.
 The goal of this CLI is to offer developers a tool to run these pipelines locally and in a CI context with the same guarantee.
 It can prevent unnecessary commit -> push cycles developers typically go through when they when to test their changes against a remote CI.
 This is made possible thanks to the use of [Dagger](https://dagger.io), a CI/CD engine relying on Docker Buildkit to provide reproducible builds.
-Our pipeline are declared with Python code, the main entrypoint is [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/commands/airbyte_ci.py).
-This documentation should be helpful for both local and CI use of the CLI. We indeed [power connector testing in the CI with this CLI](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/connector_integration_test_single_dagger.yml#L78). 
+Our pipeline are declared with Python code, the main entrypoint is [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/ci_connector_ops/ci_connector_ops/pipelines/commands/airbyte_ci.py).
+This documentation should be helpful for both local and CI use of the CLI. We indeed [power connector testing in the CI with this CLI](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/connector_integration_test_single_dagger.yml#L78).
 
 ## How to install
 ### Requirements
@@ -17,7 +17,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ```bash
 # Make sure that the current Python version is >= 3.10
 pyenv shell 3.10
-pip install "ci-connector-ops[pipelines] @ git+https://github.com/airbytehq/airbyte.git@master#subdirectory=tools/ci_connector_ops"
+pip install "ci-connector-ops[pipelines] @ git+https://github.com/airbytehq/airbyte.git@master#subdirectory=airbyte-ci/ci_connector_ops"
 cd airbyte
 airbyte-ci
 ```
@@ -77,7 +77,7 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
 
 Available commands:
 * `airbyte-ci connectors test`: Run tests for one or multiple connectors.
-* `airbyte-ci connectors build`: Build docker images for one or multiple connectors. 
+* `airbyte-ci connectors build`: Build docker images for one or multiple connectors.
 * `airbyte-ci connectors publish`: Publish a connector to Airbyte's DockerHub.
 
 #### Options
@@ -229,7 +229,7 @@ flowchart TD
     java_base[Build integration base Java]
     normalization[Build Normalization]
     connector[Build connector image]
-    
+
     arch-->base-->java_base-->connector
     distTar-->connector
     normalization--"if supports normalization"-->connector
@@ -334,7 +334,7 @@ This command runs tests for the metadata service orchestrator.
 #### Example
 `airbyte-ci metadata test orchestrator`
 
-## Changelog 
+## Changelog
 | Version | PR  | Description                                                                                |
 | ------- | --- | ------------------------------------------------------------------------------------------ |
 | 0.1.0   |     | Alpha version not in production yet. All the commands described in this doc are available. |

@@ -12,7 +12,7 @@ Set up the world the same way Google Actions does it in `test-command.yml`.
 source venv/bin/activate
 pip install --quiet tox==3.24.4
 tox -r -c ./tools/tox_ci.ini
-pip install --quiet -e ./tools/ci_*
+pip install --quiet -e ./airbyte-ci/ci_*
 ```
 
 Download a Service account json key that has access to Google Secrets Manager.
@@ -30,9 +30,9 @@ Download a Service account json key that has access to Google Secrets Manager.
 
 ### Setup ci_credentials
 * In your .zshrc, add: `export GCP_GSM_CREDENTIALS=$(cat <path to JSON file>)`
-* Follow README.md under `tools/ci_credentials`
+* Follow README.md under `airbyte-ci/ci_credentials`
 
-After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./tools/ci_*`
+After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./airbyte-ci/ci_*`
 
 ## Run it
 
