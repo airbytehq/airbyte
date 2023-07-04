@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [Chartmogul
 2. In the left navbar, select **Profile** > **View Profile**.
 3. Select **NEW API KEY**.
 4. In the **Name** field, enter a unique name for the key.
-5. If you are a Staff, Admin, or Owner, set the **Access Level** to either **Read-only** or **Read & Write** using the dropdown menu.
+5. If you are a Staff, Admin, or Owner, set the **Access Level** to either **Read-only** or **Read & Write** using the dropdown menu. We recommend **Read-only**.
 6. Click **ADD** to create the key.
 7. Click the **Reveal** icon to see the key, and the **Copy** icon to copy it to your clipboard.
 
@@ -21,24 +21,17 @@ For further reading on Chartmogul API Key creation and maintenance, please refer
 
 ### Step 2: Set up the Chartmogul connector in Airbyte
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**.
-
-:::tip
-If this is your first time setting up an Airbyte source, skip the next step and proceed to step 4.
-:::
-
-3. In the top-right corner, click **+ New source**.
-4. Select **Chartmogul** from the list of available sources.
-5. Enter a **Source name** of your choosing.
-6. Enter the **API key** that you obtained.
-7. Enter a **Start date**. The **Start date** must be formatted as a UTC date and time in the following format: `yyyy-mm-ddThh:mm:ssZ`. For example, an input of `2017-01-25T06:30:00Z` will signify a start date of 6:30 AM UTC on January 25th, 2017. When feasible, any data before this date will not be replicated.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Chartmogul** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. Enter the **API key** that you obtained.
+5. Enter a **Start date**. If you are configuring this connector programmatically, please format the date as such: `yyyy-mm-ddThh:mm:ssZ`. For example, an input of `2017-01-25T06:30:00Z` will signify a start date of 6:30 AM UTC on January 25th, 2017. When feasible, any data before this date will not be replicated.
 
 :::note
 The **Start date** will only apply to the `Activities` stream. The `Customers` endpoint does not provide a way to filter by the creation or update dates.
 :::
 
-8. From the **Interval** dropdown menu, select an interval period for the `CustomerCount` stream. 
-9. Click **Set up source** and wait for the tests to complete.
+6. From the **Interval** dropdown menu, select an interval period for the `CustomerCount` stream. 
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
