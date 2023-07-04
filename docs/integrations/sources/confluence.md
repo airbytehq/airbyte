@@ -10,26 +10,19 @@ This page contains the setup guide and reference information for the
 * Your Confluence login email
 
 ## Setup guide
-### Create an API Token 
+### Step 1: Create an API Token 
 
 For detailed instructions on creating an Atlassian API Token, please refer to the 
 [official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
 
-### Set up Confluence connector in Airbyte
+### Step 2: Set up the Confluence connector in Airbyte
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**.
-
-:::tip
-If this is your first time setting up an Airbyte source, skip the next step and proceed to step 4.
-:::
-
-3. In the top-right corner, click **+ New source**.
-4. Find and select **Confluence** from the list of available sources.
-5. Enter a **Source name** of your choosing.
-6. In the **API Token** field, enter your Atlassian API Token.
-7. In the **Domain name** field, enter your Confluence domain name.
-8. In the **Email** field, enter your Confluence login email.
-9. Click **Set up source** and wait for the tests to complete.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. In the **API Token** field, enter your Atlassian API Token.
+5. In the **Domain name** field, enter your Confluence domain name.
+6. In the **Email** field, enter your Confluence login email.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -43,11 +36,13 @@ If this is your first time setting up an Airbyte source, skip the next step and 
 
 ## Supported streams
 
-* [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
-* [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
 * [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
+* [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+* [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
+* [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+* [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
+
+
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
