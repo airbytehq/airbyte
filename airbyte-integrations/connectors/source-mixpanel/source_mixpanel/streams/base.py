@@ -59,6 +59,7 @@ class MixpanelStream(HttpStream, ABC):
         self.region = region
         self.project_timezone = project_timezone
         self.project_id = project_id
+        self.retries = 0
         self._reqs_per_hour_limit = reqs_per_hour_limit
 
         super().__init__(authenticator=authenticator)
@@ -103,9 +104,15 @@ class MixpanelStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> float:
         """
         Some API endpoints do not return "Retry-After" header.
+        https://developer.mixpanel.com/reference/import-events#rate-limits (exponential backoff)
         """
 
-        return int(response.headers.get("Retry-After", 120))
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            return float(retry_after)
+
+        self.retries += 1
+        return 2 ** self.retries * 60
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 402:
