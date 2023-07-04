@@ -3,6 +3,7 @@
 #
 
 
+from time import sleep
 from typing import Any, Iterable, Mapping, List, Dict, Optional
 import random
 import json
@@ -13,6 +14,9 @@ from destination_langchain.indexer import DocArrayHnswSearchIndexer, Indexer, Pi
 from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.config import ConfigModel
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+import queue
+import threading
+
 
 import dpath.util
 from dpath.exceptions import PathNotFound
@@ -44,6 +48,40 @@ embedder_map = {
 }
 
 
+class Worker:
+    indexer: Indexer
+    processor: DocumentProcessor
+    embedder: Embedder
+
+    def __init__(self, config: ConfigModel, configured_catalog: ConfiguredAirbyteCatalog):
+        self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
+        self.processor = DocumentProcessor(config.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
+
+    def process_batch(self, batch: List[AirbyteRecordMessage]):
+        documents: List[Document] = []
+        ids_to_delete = []
+        for record in batch:
+            record_documents, record_id_to_delete = self.processor.process(record)
+            documents.extend(record_documents)
+            if record_id_to_delete is not None:
+                ids_to_delete.append(record_id_to_delete)
+        self.indexer.index(documents, ids_to_delete)
+
+def worker_thread(worker_id, shared_queue, worker):
+    while True:
+        # Wait for data package to arrive
+        data = shared_queue.get()
+
+        print("Starting worker thread %d" % worker_id)
+        # Process the data package
+        worker.process_batch(data)
+        print("Done worker thread %d" % worker_id)
+
+        # Mark the task as done
+        shared_queue.task_done()
+
+
 class DestinationLangchain(Destination):
     indexer: Indexer
     processor: DocumentProcessor
@@ -54,14 +92,7 @@ class DestinationLangchain(Destination):
         self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
-        documents: List[Document] = []
-        ids_to_delete = []
-        for record in batch:
-            record_documents, record_id_to_delete = self.processor.process(record)
-            documents.extend(record_documents)
-            if record_id_to_delete is not None:
-                ids_to_delete.append(record_id_to_delete)
-        self.indexer.index(documents, ids_to_delete)
+        self.shared_queue.put(batch)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -69,8 +100,20 @@ class DestinationLangchain(Destination):
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
         self.processor = DocumentProcessor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
-        batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
+        batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(list(batch)))
         self.indexer.pre_sync(configured_catalog)
+        num_workers = 5
+
+        # Shared queue for data packages
+        self.shared_queue = queue.Queue(num_workers)
+
+        # Start the worker threads
+        for i in range(num_workers):
+            worker = Worker(config_model, configured_catalog)
+            t = threading.Thread(target=worker_thread, args=(i, self.shared_queue, worker))
+            t.daemon = True  # Set threads as daemons to exit when the main program finishes
+            t.start()
+
         for message in input_messages:
             if batcher.processed_count % 100 == 0 and batcher.processed_count > 0:
                 yield AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(
@@ -87,7 +130,7 @@ class DestinationLangchain(Destination):
             else:
                 continue
         batcher.flush()
-        self.indexer.post_sync()
+        self.shared_queue.join()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._init_indexer(ConfigModel.parse_obj(config))
