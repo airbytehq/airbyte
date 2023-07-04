@@ -33,7 +33,7 @@ COPY pytest.ini setup.py ./
 COPY connector_acceptance_test ./connector_acceptance_test
 RUN pip install .
 
-LABEL io.airbyte.version=0.11.0
+LABEL io.airbyte.version=0.11.1
 LABEL io.airbyte.name=airbyte/connector-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"]

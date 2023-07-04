@@ -22,7 +22,7 @@ from ci_connector_ops.pipelines.actions import remote_storage
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, format_duration, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
-from dagger import Container, QueryError
+from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group
 from rich.panel import Panel
@@ -164,9 +164,9 @@ class Step(ABC):
             self.stopped_at = datetime.utcnow()
             self.log_step_result(result)
             return result
-        except QueryError as e:
+        except (DaggerError, QueryError) as e:
             self.stopped_at = datetime.utcnow()
-            self.logger.error(f"QueryError on step {self.title}: {e}")
+            self.logger.error(f"Dagger error on step {self.title}: {e}")
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     def log_step_result(self, result: StepResult) -> None:
