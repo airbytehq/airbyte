@@ -99,7 +99,7 @@ class DocArrayHnswSearchIndexer(Indexer):
             self.embedder.langchain_embeddings, config.destination_path, self.embedder.embedding_dimensions
         )
 
-    def _create_directory_recursively(path):
+    def _create_directory_recursively(self, path):
         try:
             os.makedirs(path, exist_ok=True)
         except OSError as e:
@@ -109,8 +109,8 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
-            if stream.destination_sync_mode != "overwrite":
-                raise Exception("DocArrayHnswSearchIndexer only supports overwrite mode")
+            if stream.destination_sync_mode != DestinationSyncMode.overwrite:
+                raise Exception(f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}")
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
 
@@ -118,7 +118,8 @@ class DocArrayHnswSearchIndexer(Indexer):
         self.index._print_stats()
 
     @measure_time
-    def index(self, document_chunks):
+    def index(self, document_chunks, delete_ids: List[str]):
+        # does not support deleting documents, always full refresh sync
         self.vectorstore.add_documents(document_chunks)
 
     def check(self) -> Optional[str]:
