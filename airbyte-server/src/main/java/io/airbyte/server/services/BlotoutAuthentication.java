@@ -64,7 +64,6 @@ public class BlotoutAuthentication {
     }
 
     public boolean validateEdgeTagBasedAuthentication(String origin, String token) throws IOException, InterruptedException {
-        System.out.println(" inside validateEdgeTagBasedAuthentication ");
         final var request = HttpRequest
                 .newBuilder(URI.create(configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint()))
                 .timeout(Duration.ofSeconds(120))
@@ -74,8 +73,6 @@ public class BlotoutAuthentication {
                 .build();
         HttpResponse response = httpClient.send(request, BodyHandlers.ofString());
         LOGGER.info(" response " + response.body());
-        System.out.println(" response " + response.body());
-        System.out.println(" response code " + response.statusCode());
         if (response.statusCode() == 200) {
             return true;
         } else {
