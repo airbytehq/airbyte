@@ -501,10 +501,8 @@ class RmsCloudApiKapicheSource(Source):
                 for result in results:
                     # Each "npsResult" will correspond to a single category
                     property_id = result["propertyId"]
-                    logger.info(f"{property_id=}")
                     property = properties[property_id]
                     surveys = result["surveyDetails"]
-                    logger.info(f"{len(surveys)=}")
                     for s in surveys:
                         # Within that "npsResult" there are many survey
                         # responses known as "surveyDetails"
@@ -527,7 +525,6 @@ class RmsCloudApiKapicheSource(Source):
                         )
 
                         reservation_id = s.get("reservationId")
-                        logger.info(f"{reservation_id=}")
                         if reservation_id:
                             reservation = reservation_lookup.get(reservation_id)
                             reservation_account = reservation_account_lookup.get(
