@@ -3,18 +3,30 @@ CLI tooling to read and manage GSM secrets:
 - `write-to-storage` download a connector's secrets locally in the connector's `secret` folder
 - `update-secrets` uploads new connector secret version that were locally updated.
 
+## Requirements
 
-## Development
+This project requires Python 3.9 and pipx.
 
-Set up the world the same way Google Actions does it in `test-command.yml`.
+## Installation
 
+The recommended way to install `ci_credentials` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
+
+If you haven't installed pipx, you can do it with pip:
+
+```bash
+python -m pip install --user pipx
+python -m pipx ensurepath
 ```
-source venv/bin/activate
-pip install --quiet tox==3.24.4
-tox -r -c ./tools/tox_ci.ini
-pip install --quiet -e ./airbyte-ci/ci_*
+
+Once pipx is installed, navigate to the root directory of the project, then run:
+
+```bash
+pipx install airbyte-ci/ci/ci_credentials/
 ```
 
+This command installs ci_credentials and makes it globally available in your terminal.
+
+## Get GSM access
 Download a Service account json key that has access to Google Secrets Manager.
 
 ### Create Service Account
@@ -30,9 +42,18 @@ Download a Service account json key that has access to Google Secrets Manager.
 
 ### Setup ci_credentials
 * In your .zshrc, add: `export GCP_GSM_CREDENTIALS=$(cat <path to JSON file>)`
-* Follow README.md under `airbyte-ci/ci_credentials`
 
-After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./airbyte-ci/ci_*`
+## Development
+During development, you can use the `--editable` option to make changes to the `ci_credentials` package and have them immediately take effect without needing to reinstall the package:
+
+```bash
+pipx install --editable airbyte-ci/ci/ci_credentials/
+```
+
+This is useful when you are making changes to the package and want to test them in real-time.
+
+## Usage
+After installation, you can use the ci_credentials command in your terminal.
 
 ## Run it
 
@@ -40,25 +61,25 @@ The `VERSION=dev` will make it so it knows to use your local current working dir
 
 ### Help
 ```bash
-ci_credentials --help
+VERSION=dev ci_credentials --help
 ```
 
 ### Write credentials for a specific connector to local storage
 To download GSM secrets to `airbyte-integrations/connectors/source-bings-ads/secrets`:
 ```bash
-ci_credentials source-bing-ads write-to-storage
+VERSION=dev ci_credentials source-bing-ads write-to-storage
 ```
 
 ### Write credentials for all connectors to local storage
 To download GSM secrets to for all available connectors into their respective `secrets` directories:
 ```bash
-ci_credentials all write-to-storage
+VERSION=dev ci_credentials all write-to-storage
 ```
 
 ### Update secrets
 To upload to GSM newly updated configurations from `airbyte-integrations/connectors/source-bings-ads/secrets/updated_configurations`:
 
 ```bash
-ci_credentials source-bing-ads update-secrets
+VERSION=dev ci_credentials source-bing-ads update-secrets
 ```
 
