@@ -14,11 +14,14 @@ on:
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
+      runs-on:
+        type: string
+        default: conn-prod-xlarge-runner
         required: true
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: conn-prod-xlarge-runner
+    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
