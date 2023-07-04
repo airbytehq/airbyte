@@ -10,16 +10,20 @@ acceptance_tests:
     tests:
     - config_path: "secrets/config_old.json"
       status: "succeed"
+      timeout_seconds: 75
     - config_path: "secrets/config_project_secret.json"
       status: "succeed"
+      timeout_seconds: 75
     - config_path: "secrets/config.json"
       status: "succeed"
+      timeout_seconds: 75
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+      timeout_seconds: 75
   discovery:
     tests:
     - config_path: "secrets/config_old.json"
-      timeout_seconds: 60
+      timeout_seconds: 135
   basic_read:
     tests:
     - config_path: "secrets/config.json"

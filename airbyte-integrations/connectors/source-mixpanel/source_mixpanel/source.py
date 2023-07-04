@@ -86,11 +86,16 @@ class SourceMixpanel(AbstractSource):
         # https://github.com/airbytehq/airbyte/pull/27252
         # https://github.com/airbytehq/oncall/issues/2363
         # On one hand there's a number of APIs that is limited by the account plan, so we should probably try to connect to each stream.
-        # On the other hand, we have a 30 seconds timeout for this operation and connecting to each stream may take up to one minute.
+        # On the other hand, we have a timeout for this operation and connecting to each stream may take up to one minute.
         # That's why we're validating connectivity by only reading from the stream we definitely know is available independent of a plan.
 
         try:
-            stream = Export(authenticator=auth, reqs_per_hour_limit=0, **config)
+            stream_kwargs = {"authenticator": auth, **config}
+            if not config.get("_testing"):
+                # We preserve sleeping between requests in case this is a running acceptance test.
+                # Otherwise, we do not want to wait to not time out
+                stream_kwargs["reqs_per_hour_limit"] = 0
+            stream = Export(**stream_kwargs)
             next(read_full_refresh(stream), None)
         except Exception as e:
             try:
@@ -106,6 +111,7 @@ class SourceMixpanel(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config = self._validate_and_transform(config)
+        test_mode = config.get("_testing")
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
@@ -123,9 +129,14 @@ class SourceMixpanel(AbstractSource):
             ],
             [Engage, Cohorts, CohortMembers, Funnels, Revenue],
         ]
-        for stream_set in streams_by_api_types:
+        stream_kwargs = {"authenticator": auth, **config}
+        if not test_mode:
             # set reqs_per_hour_limit = 0 to save time for discovery
-            current_stream_set = [stream(authenticator=auth, reqs_per_hour_limit=0, **config) for stream in stream_set]
+            # We preserve sleeping between requests in case this is a running acceptance test.
+            # Otherwise, we do not want to wait to not time out
+            stream_kwargs["reqs_per_hour_limit"] = 0
+        for stream_set in streams_by_api_types:
+            current_stream_set = [stream(**stream_kwargs) for stream in stream_set]
             test_stream, *_ = current_stream_set
             try:
                 next(read_full_refresh(test_stream), None)
