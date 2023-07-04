@@ -3,6 +3,7 @@
 #
 
 import base64
+import json
 import logging
 from typing import Any, List, Mapping, Tuple
 
@@ -82,28 +83,22 @@ class SourceMixpanel(AbstractSource):
         except Exception as e:
             return False, e
 
-        # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
-        # temporary solution, testing access for all streams to avoid 402 error
-        streams = [Annotations, Cohorts, Engage, Export, Revenue]
-        connected = False
-        reason = None
-        for stream_class in streams:
-            try:
-                stream = stream_class(authenticator=auth, **config)
-                next(read_full_refresh(stream), None)
-                connected = True
-                break
-            except requests.HTTPError as e:
-                reason = e.response.json()["error"]
-                if e.response.status_code == 402:
-                    logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
-                else:
-                    return connected, reason
-            except Exception as e:
-                return connected, e
+        # https://github.com/airbytehq/airbyte/pull/27252
+        # https://github.com/airbytehq/oncall/issues/2363
+        # On one hand there's a number of APIs that is limited by the account plan, so we should probably try to connect to each stream.
+        # On the other hand, we have a 30 seconds timeout for this operation and connecting to each stream may take up to one minute.
+        # That's why we're validating connectivity by only reading from the stream we definitely know is available independent of a plan.
 
-        reason = None if connected else reason
-        return connected, reason
+        try:
+            stream = Export(authenticator=auth, reqs_per_hour_limit=0, **config)
+            next(read_full_refresh(stream), None)
+        except Exception as e:
+            try:
+                reason = e.response.json()["error"]
+                return False, reason
+            except json.decoder.JSONDecodeError:
+                return False, e
+        return True, None
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -115,24 +110,35 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        streams = []
-        for stream in [
-            Annotations(authenticator=auth, **config),
-            Cohorts(authenticator=auth, **config),
-            Funnels(authenticator=auth, **config),
-            Revenue(authenticator=auth, **config),
-            CohortMembers(authenticator=auth, **config),
-            Engage(authenticator=auth, **config),
+        streams = [
             Export(authenticator=auth, **config),
-        ]:
+        ]
+
+        # we only make calls to one stream of each API type to save time, based on the assumption that
+        # if one stream of the API type is available, all others are available as well and vice versa
+
+        streams_by_api_types = [
+            [
+                Annotations,
+            ],
+            [Engage, Cohorts, CohortMembers, Funnels, Revenue],
+        ]
+        for stream_set in streams_by_api_types:
+            # set reqs_per_hour_limit = 0 to save time for discovery
+            current_stream_set = [stream(authenticator=auth, reqs_per_hour_limit=0, **config) for stream in stream_set]
+            test_stream, *_ = current_stream_set
             try:
-                next(read_full_refresh(stream), None)
-                stream.get_json_schema()
+                next(read_full_refresh(test_stream), None)
             except requests.HTTPError as e:
                 if e.response.status_code != 402:
                     raise e
-                logger.warning("Stream '%s' - is disabled, reason: 402 Payment Required", stream.name)
+                logger.warning(
+                    f"Streams {', '.join([stream.name for stream in current_stream_set])} are disabled, reason: 402 Payment Required"
+                )
             else:
-                streams.append(stream)
+                streams.extend(current_stream_set)
 
+        for stream in streams:
+            # roll back to default value
+            stream.reqs_per_hour_limit = stream.DEFAULT_REQS_PER_HOUR_LIMIT
         return streams

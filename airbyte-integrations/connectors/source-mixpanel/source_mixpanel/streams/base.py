@@ -21,14 +21,21 @@ class MixpanelStream(HttpStream, ABC):
       60 queries per hour.
     """
 
+    DEFAULT_REQS_PER_HOUR_LIMIT = 60
+
     @property
     def url_base(self):
         prefix = "eu." if self.region == "EU" else ""
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
-    # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    reqs_per_hour_limit: int = 60  # 1 query per minute
-    retries: int = 0
+    @property
+    def reqs_per_hour_limit(self):
+        # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+        return self._reqs_per_hour_limit
+
+    @reqs_per_hour_limit.setter
+    def reqs_per_hour_limit(self, value):
+        self._reqs_per_hour_limit = value
 
     def __init__(
         self,
@@ -41,6 +48,7 @@ class MixpanelStream(HttpStream, ABC):
         attribution_window: int = 0,  # in days
         select_properties_by_default: bool = True,
         project_id: int = None,
+        reqs_per_hour_limit: int = DEFAULT_REQS_PER_HOUR_LIMIT,
         **kwargs,
     ):
         self.start_date = start_date
@@ -51,6 +59,7 @@ class MixpanelStream(HttpStream, ABC):
         self.region = region
         self.project_timezone = project_timezone
         self.project_id = project_id
+        self._reqs_per_hour_limit = reqs_per_hour_limit
 
         super().__init__(authenticator=authenticator)
 
@@ -62,15 +71,6 @@ class MixpanelStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
-
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        try:
-            return super()._send_request(request, request_kwargs)
-        except requests.exceptions.HTTPError as e:
-            error_message = e.response.text
-            if error_message:
-                self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
-            raise e
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -105,7 +105,7 @@ class MixpanelStream(HttpStream, ABC):
         Some API endpoints do not return "Retry-After" header.
         """
 
-        return int(response.headers.get("Retry-After", 60))
+        return int(response.headers.get("Retry-After", 120))
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 402:

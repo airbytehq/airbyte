@@ -15,33 +15,14 @@ def funnel_slices_patched(self: Funnels, sync_mode):
     Return only first result from funnels
     """
     funnel_slices_values = self.get_funnel_slices(sync_mode)
-    return [funnel_slices_values[0]] if funnel_slices_values else funnel_slices_values
+    single_slice = next(funnel_slices_values, None)
+    return [single_slice] if single_slice else []
 
 
 def adapt_streams_if_testing(func):
-    """
-    Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
-    so we're reducing amount of requests by, if `_testing` flag is set in config:
-
-    1. Patch Funnels, so we download data only for one Funnel entity
-    2. Removing RPS limit for faster testing
-    """
-
-    @wraps(func)
-    def wrapper(self, config):
-        if not config.get("_testing"):
-            return func(self, config)
-
-        # Patch Funnels, so we download data only for one Funnel entity
-        Funnels.funnel_slices = funnel_slices_patched
-
-        streams = func(self, config)
-
-        for stream in streams:
-            stream.reqs_per_hour_limit = 0
-        return streams
-
-    return wrapper
+    # Patch Funnels, so we download data only for one Funnel entity
+    Funnels.funnel_slices = funnel_slices_patched
+    return func
 
 
 def adapt_validate_if_testing(func):
