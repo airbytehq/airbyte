@@ -24,7 +24,7 @@ workflows:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
       - docker/hadolint:
-          dockerfiles: ~/airbyte/airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
+          dockerfiles: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
           ignore-rules: "DL3059"
       - aws-ecr/build-and-push-image:
           executor:
