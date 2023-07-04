@@ -1,0 +1,22 @@
+{
+    "properties": {
+      "emails": {
+        "items": {
+          "properties": {
+            "id": {
+              "type": [
+                "integer"
+              ]
+            }
+          },
+          "type": [
+            "object"
+          ]
+        },
+        "type": [
+          "array"
+        ]
+      }
+    },
+    "type": "object"
+  }
