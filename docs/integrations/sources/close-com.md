@@ -26,18 +26,11 @@ For further reading on creating and maintaining Close.com API keys, refer to the
 ### Step 2: Set up the Close.com connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**.
-
-:::tip
-If this is your first time setting up an Airbyte source, skip the next step and proceed to step 4.
-:::
-
-3. In the top-right corner, click **+ New source**.
-4. Find and select **Close.com** from the list of available sources.
-5. Enter a **Source name** of your choosing.
-6. In the **api_key** field, enter your Close.com **API Key**
-7. *Optional* - In the **start_date** field, you may enter a starting date cutoff for the data you want to replicate. The format for this date should be as such: `YYYY-MM-DD`. Leaving this field blank will replicate all data. 
-8. Click **Set up source** and wait for the tests to complete.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Close.com** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. In the **API Key** field, enter your Close.com **API Key**
+5. *Optional* - In the **Replication Start Date** field, you may enter a starting date cutoff for the data you want to replicate. The format for this date should be as such: `YYYY-MM-DD`. Leaving this field blank will replicate all data. 
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
