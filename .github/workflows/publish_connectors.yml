@@ -9,10 +9,10 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group"
+        description: "Options to pass to the 'airbyte-ci connectors' command group."
         default: "--name=source-pokeapi"
       publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish' command"
+        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
       runs-on:
         type: string
