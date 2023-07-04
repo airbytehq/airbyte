@@ -31,7 +31,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             String token = authorizationHeader
                     .substring(AUTHENTICATION_SCHEME.length()).trim();
             LOGGER.info(" Token " + token);
-            System.out.println(" Token " + token);
             // Validate the Authorization header
             if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
@@ -41,7 +40,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             String originHeader =
                     requestContext.getHeaderString("origin");
             LOGGER.info(" originHeader " + originHeader);
-            System.out.println(" originHeader " + originHeader);
             if (isEdgeTagBasedAuthentication(originHeader)) {
                 try {
                     if (!validateEdgeBasedToken(originHeader, token)) {
@@ -99,7 +97,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private boolean isEdgeTagBasedAuthentication(String originHeader) {
-        System.out.println(" Inside isEdgeTagBasedAuthentication ");
+        System.out.println("originHeader" + originHeader);
+        System.out.println("EDGETAG_ORIGIN" + EDGETAG_ORIGIN);
+        if(originHeader != null && originHeader.toLowerCase()
+                .equalsIgnoreCase(EDGETAG_ORIGIN)) {
+            System.out.println("inside if ");
+        }
         return originHeader != null && originHeader.toLowerCase()
                 .equalsIgnoreCase(EDGETAG_ORIGIN);
     }
