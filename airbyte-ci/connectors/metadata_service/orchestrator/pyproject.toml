@@ -8,10 +8,10 @@ packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-dagit = "^1.1.21"
+dagit = "^1.3.11"
 dagster = "^1.1.21"
 pandas = "^1.5.3"
-dagster-gcp = "^0.18.6"
+dagster-gcp = "^0.19.11"
 google = "^3.0.0"
 jinja2 = "^3.1.2"
 pygithub = "^1.58.0"
@@ -24,6 +24,7 @@ dagster-cloud = "^1.2.6"
 grpcio = "^1.47.0"
 poetry2setup = "^1.1.0"
 slack-sdk = "^3.21.3"
+poetry = "^1.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
