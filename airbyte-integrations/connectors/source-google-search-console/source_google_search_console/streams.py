@@ -104,7 +104,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     aggregation_type = QueryAggregationType.auto
     start_row = 0
     dimensions = []
-    search_types = ["web", "news", "image", "video"]
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     range_of_days = 3
 
     def path(
@@ -129,7 +129,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         """
         The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
-        searchType` value from [` web`, `news `,` image`, `video`]. It's just a double nested loop with a yield statement.
+        searchType` value from [` web`, `news `,` image`, `video`,  `discover`, `googleNews`].
+        It's just a double nested loop with a yield statement.
         """
 
         for site_url in self._site_urls:
@@ -184,7 +185,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         2. The `endDate` is retrieved from the `config.json`.
         3. The `sizes` parameter is used to group the result by some dimension.
         The following dimensions are available: `date`, `country`, `page`, `device`, `query`.
-        4. For the `searchType` check the paragraph stream_slices method.
+        4. For the `type` check the paragraph stream_slices method.
+         Filter results to the following type ["web", "news", "image", "video", "discover", "googleNews"]
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
@@ -192,7 +194,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "startDate": stream_slice["start_date"],
             "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
-            "searchType": stream_slice.get("search_type"),
+            "type": stream_slice.get("search_type"),
             "aggregationType": self.aggregation_type.value,
             "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
