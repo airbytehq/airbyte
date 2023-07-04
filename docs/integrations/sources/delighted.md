@@ -7,33 +7,25 @@ This page contains the setup guide and reference information for the [Delighted]
 - A desired start date and time. Only data added on and after this point will be replicated.
 
 ## Setup guide
-### Obtain a Delighted API Key
+### Step 1: Obtain a Delighted API Key
 
 To set up the Delighted source connector, you'll need a Delighted API key. For detailed instructions, please refer to the 
 [official Delighted documentation](https://app.delighted.com/docs/api).
 
-### Set up the Delighted connector in Airbyte
+### Step 2: Set up the Delighted connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**.
-
-:::tip
-If this is your first time setting up an Airbyte source, skip the next step and proceed to step 4.
-:::
-
-3. In the top-right corner, click **+ New source**.
-4. Find and select **Delighted** from the list of available sources.
-5. Enter a **Source name** of your choosing.
-6. Enter your **Delighted API Key**.
-7. In the **Date Since** field, enter the desired UTC date and time in an 
-[ISO 8601 format](https://www.iso.org/iso-8601-date-and-time-format.html). Only the data added on and after this date will be replicated.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. Enter your **Delighted API Key**.
+5. In the **Replication Start Date** field, enter the desired UTC date and time. Only the data added on and after this date will be replicated.
 
 :::note
-Please format your date as such: `yyyy-mm-ddThh:mm:ssZ`. For example, an input of `2022-05-30T14:50:00Z` signifies a start date of May 30th, 2022 at 2:50 PM UTC. For help converting UTC to your local time, 
+If you are configuring this connector programmatically, please format your date as such: `yyyy-mm-ddThh:mm:ssZ`. For example, an input of `2022-05-30T14:50:00Z` signifies a start date of May 30th, 2022 at 2:50 PM UTC. For help converting UTC to your local time, 
 [use a UTC Time Zone Converter](https://dateful.com/convert/utc).
 :::
 
-8. Click **Set up source** and wait for the tests to complete.
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -48,9 +40,9 @@ The Delighted source connector supports the following [sync modes](https://docs.
 
 This source is capable of syncing the following core streams:
 
-* [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
-* [People](https://app.delighted.com/docs/api/listing-people)
 * [Bounced People](https://app.delighted.com/docs/api/listing-bounced-people)
+* [People](https://app.delighted.com/docs/api/listing-people)
+* [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
 * [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
 
 ## Changelog
