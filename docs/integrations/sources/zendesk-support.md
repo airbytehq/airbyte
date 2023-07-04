@@ -48,6 +48,7 @@ The Zendesk Support source connector supports the following streams:
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
 - [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
