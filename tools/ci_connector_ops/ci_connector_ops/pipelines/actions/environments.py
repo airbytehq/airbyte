@@ -12,7 +12,7 @@ import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 import yaml
 from ci_connector_ops.pipelines import consts
@@ -414,6 +414,13 @@ def with_bound_docker_host(
     )
 
 
+def bound_docker_host(context: ConnectorContext) -> Container:
+    def bound_docker_host_inner(container: Container) -> Container:
+        return with_bound_docker_host(context, container)
+
+    return bound_docker_host_inner
+
+
 def with_docker_cli(context: ConnectorContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
@@ -449,14 +456,11 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
 
     test_input = context.get_connector_dir().with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
-    cat_container = (
+    return (
         with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
         .with_mounted_directory("/test_input", test_input)
-    )
-    cat_container = (
-        with_mounted_connector_secrets(context, cat_container, "/test_input/secrets")
         .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
         # This bursts the CAT cached results everyday.
         # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
@@ -464,9 +468,9 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
+        .with_(mounted_connector_secrets(context, "/test_input/secrets"))
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
-    return cat_container
 
 
 def with_gradle(
@@ -940,7 +944,10 @@ def with_crane(
     return base_container
 
 
-def with_mounted_connector_secrets(context: PipelineContext, container: Container, secret_directory_path="secrets") -> Container:
-    for secret_file_name, secret in context.connector_secrets.items():
-        container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
-    return container
+def mounted_connector_secrets(context: PipelineContext, secret_directory_path="secrets") -> Callable:
+    def mounted_connector_secrets_inner(container: Container):
+        for secret_file_name, secret in context.connector_secrets.items():
+            container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+        return container
+
+    return mounted_connector_secrets_inner
