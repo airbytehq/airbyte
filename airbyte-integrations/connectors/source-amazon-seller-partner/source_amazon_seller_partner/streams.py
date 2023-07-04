@@ -63,7 +63,7 @@ class AmazonSPStream(HttpStream, ABC):
         self._session.auth = aws_signature
         
         # added by Jerry 2023.6.20, if replication_start_date is none, set the replication_start_date to the previous day
-        if self._replication_start_date is None:
+        if self._replication_start_date is None or len(replication_start_date.strip())<=0:
             self._replication_start_date = pendulum.yesterday("utc").strftime(DATE_TIME_FORMAT)
             self._replication_end_date = pendulum.today("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
 
@@ -620,7 +620,7 @@ class SalesAndTrafficReports(ReportsAmazonSPStream):
                          authenticator=authenticator)
         
         # added by Jerry 2023.6.29, if replication_start_date is none, set the replication_start_date to the previous day
-        if replication_start_date is None:
+        if replication_start_date is None or len(replication_start_date.strip())<=0:
             self._replication_start_date = pendulum.yesterday("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
             self._replication_end_date = pendulum.yesterday("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
     
