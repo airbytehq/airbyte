@@ -161,7 +161,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                               |
 |:---------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
-| `0.4.3`  | 2023-07-05 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `audience` and `user_interest` streams                                                                                            |
+| `0.4.3`  | 2023-07-05 | [27959](https://github.com/airbytehq/airbyte/pull/27959) | Add `audience` and `user_interest` streams                                                                                            |
 | `0.3.3`  | 2023-07-03 | [27913](https://github.com/airbytehq/airbyte/pull/27913) | Improve Google Ads exception handling (wrong customer ID)                                                                             |
 | `0.3.2`  | 2023-06-29 | [27835](https://github.com/airbytehq/airbyte/pull/27835) | Fix bug introduced in 0.3.1: update query template                                                                                    |
 | `0.3.1`  | 2023-06-26 | [27711](https://github.com/airbytehq/airbyte/pull/27711) | Refactor date slicing; make start date inclusive                                                                                      |
