@@ -1239,6 +1239,5 @@
   dockerRepository: yuanrui2014/source-feishu
   dockerImageTag: 0.0.1
   documentationUrl: https://docsurl.com
-  icon:
   sourceType: api
   releaseStage: alpha

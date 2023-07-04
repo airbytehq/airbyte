@@ -209,25 +209,32 @@ class SourceFeishu(AbstractSource):
 
         object_types = config.get("object_types")
         approval_code = object_types[0]
+        resp_list = []
 
-        date_time_o = get_date_time(config)
+        for obj in object_types:
 
-        params = {
-            "approval_code": approval_code, 
-            "page_size": "100", 
-            "start_time": date_time_o.get("start_time"), 
-            "end_time": date_time_o.get("end_time"), 
-            "page_token": ""
-            }
-        url = BASE_URL + "/open-apis/approval/v4/instances"
+            date_time_o = get_date_time(config)
 
-        resp = requests.get(url, headers=headers, params=params)
+            params = {
+                "approval_code": approval_code, 
+                "page_size": "100", 
+                "start_time": date_time_o.get("start_time"), 
+                "end_time": date_time_o.get("end_time"), 
+                "page_token": ""
+                }
+            url = BASE_URL + "/open-apis/approval/v4/instances"
 
-        resp_json = resp.json()
-        if resp_json.get("code") == 0:
-            return True, None
+            resp = requests.get(url, headers=headers, params=params)
+
+            resp_json = resp.json()
+            if resp_json.get("code") != 0:
+                resp_list.append(obj)
+            
+
+        if(len(resp_list)==0):
+             return True, None
         else:
-            return False, f"No streams to connect to from source -> {resp.text}"
+            return False, f"No streams to connect to from source -> {','.join(resp_list)}"
 
     # def get_session(self, auth: str) -> requests.Session:
     #     session = requests.Session()

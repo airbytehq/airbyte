@@ -12554,7 +12554,7 @@
           title: Object Types
           items:
             type: string
-          description: The API names of the Feishu objects you want to sync
+          description: The Approval Code of the Feishu you want to sync.
           order: 3
           examples: []
           default: []
@@ -12576,9 +12576,7 @@
                   description: "days"
                   type: "integer"
                   examples:
-                    - 1
-                  minimum: 1
-                  maximum: 48
+                    - 6
             - title: "Manual Acquisition"
               required:
                 - "tunnel_method"
@@ -12586,7 +12584,7 @@
                 - "start_time"
               properties:
                 tunnel_method:
-                  description: "Manually obtain time range data, limit 48 hours"
+                  description: "Manually obtain time range data"
                   type: "string"
                   const: "MANUAL"
                   order: 2
