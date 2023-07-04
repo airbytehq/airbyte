@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Link } from "components";
@@ -7,14 +7,48 @@ import HeadTitle from "components/HeadTitle";
 
 import { RoutePaths } from "pages/routePaths";
 
+import { getRegisterUserToken, setRegisterUserDetails } from "../../../core/AuthContext";
+import { RegisterUserDetails } from "../../../services/auth/AuthService";
+import { useAuthenticationService } from "../../../services/auth/AuthSpecificationService";
 import { LogoIcon } from "./components/LogoIcon";
 import styles from "./VerifyEmailPage.module.scss";
 
 const VerifyEmailPage: React.FC = () => {
+  const signUp = useAuthenticationService();
+  const registerUserToken = getRegisterUserToken();
+  const [verificationToken, setVerificationToken] = useState<string>();
   const [message, setMessage] = useState<string>("");
+  const [msgType, setMsgType] = useState<"info" | "error">("info");
 
   const onClose = useCallback(() => {
     setMessage("");
+  }, []);
+
+  useEffect(() => {
+    if (registerUserToken) {
+      setVerificationToken(registerUserToken);
+    }
+  }, [registerUserToken]);
+
+  const setNotification = (msg: string, type: "info" | "error") => {
+    setMessage(msg);
+    setMsgType(type);
+  };
+
+  const onResendMail = useCallback(async (token: string) => {
+    signUp
+      .resendVerificationMail(token)
+      .then((res: RegisterUserDetails) => {
+        if (res.verificationToken !== null && res.verificationToken !== "") {
+          setRegisterUserDetails(res);
+          setNotification("verifyEmail.resend.success.message", "info");
+        } else {
+          setNotification("notifications.error.somethingWentWrong", "error");
+        }
+      })
+      .catch((err: Error) => {
+        setNotification(err.message, "error");
+      });
   }, []);
 
   return (
@@ -35,7 +69,7 @@ const VerifyEmailPage: React.FC = () => {
         </div>
       </div>
       <div className={styles.messageBox}>
-        <MessageBox message={message} type="info" fixed={false} onClose={onClose} />
+        <MessageBox message={message} type={msgType} fixed={false} onClose={onClose} />
       </div>
 
       <div className={styles.bodyPanel}>
@@ -51,9 +85,9 @@ const VerifyEmailPage: React.FC = () => {
               id="verifyEmail.text2"
               values={{
                 resentText: (
-                  <div className={styles.links}>
+                  <Link to="" className={styles.links} onClick={() => onResendMail(verificationToken as string)}>
                     <FormattedMessage id="verifyEmail.resentText" />
-                  </div>
+                  </Link>
                 ),
                 clickHereText: (
                   <Link to={`/${RoutePaths.Signin}`} className={styles.links}>
