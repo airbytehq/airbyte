@@ -418,16 +418,14 @@ class SimpleRetriever(Retriever, HttpStream):
             self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
         return
 
-    def _get_most_recent_record(self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+    def _get_most_recent_record(
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+    ) -> Optional[Record]:
         if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
             if not current_most_recent:
                 return record
             else:
-                return (
-                    current_most_recent
-                    if self.cursor.is_greater_than_or_equal(current_most_recent, record)
-                    else record
-                )
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
         else:
             return None
 
