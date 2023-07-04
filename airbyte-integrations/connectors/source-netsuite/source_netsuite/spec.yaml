@@ -10,8 +10,8 @@ connectionSpecification:
     - token_key
     - token_secret
     - language
-    - start_datetime
     - object_types
+    - start_datetime
 
   additionalProperties: true
   properties:
