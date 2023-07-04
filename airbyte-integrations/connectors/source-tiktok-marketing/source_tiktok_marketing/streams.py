@@ -512,21 +512,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
     @property
     def filters(self) -> List[MutableMapping[str, Any]]:
         return [
-            {
-                "filter_value": ["STATUS_ALL"],
-                "field_name": "ad_status",
-                "filter_type": "IN"
-            },
-            {
-                "filter_value": ["STATUS_ALL"],
-                "field_name": "campaign_status",
-                "filter_type": "IN"
-            },
-            {
-                "filter_value": ["STATUS_ALL"],
-                "field_name": "adgroup_status",
-                "filter_type": "IN"
-            },
+            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
         ]
     
     @property
