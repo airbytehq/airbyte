@@ -15,7 +15,7 @@
         "order": 0
       },
       "since": {
-        "title": "Date Since",
+        "title": "Replication Start Date",
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
         "examples": ["2022-05-30T04:50:23Z", "2022-05-30 04:50:23"],
