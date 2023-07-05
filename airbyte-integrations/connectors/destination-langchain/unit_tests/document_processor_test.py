@@ -96,16 +96,27 @@ def test_complex_text_fields():
             "non_text": "a",
             "non_text_2": 1,
             "text": "This is the regular text",
+            "other_nested": {
+                "non_text": {
+                    "a": "xyz",
+                    "b": "abc"
+                }
+            }
         },
         emitted_at=1234,
     )
 
-    processor.text_fields = ["nested.texts.*.text", "text"]
+    processor.text_fields = ["nested.texts.*.text", "text", "other_nested.non_text"]
 
     chunks, _ = processor.process(record)
 
     assert len(chunks) == 1
-    assert chunks[0].page_content == "nested.texts.*.text: This is the text\nAnd another\ntext: This is the regular text"
+    assert chunks[0].page_content == """nested.texts.*.text: This is the text
+And another
+text: This is the regular text
+other_nested.non_text: 
+a: xyz
+b: abc"""
     assert chunks[0].metadata == {
         "id": 1,
         "non_text": "a",

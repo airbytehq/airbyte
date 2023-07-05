@@ -60,7 +60,7 @@ class DocumentProcessor:
         return relevant_fields
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> dict:
-        metadata = record.data.copy()
+        metadata = record.data
         if self.text_fields:
             for field in self.text_fields:
                 try:
