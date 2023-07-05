@@ -130,7 +130,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     StringBuilder query = new StringBuilder("TRUNCATE TABLE ${schema}.${table}");
     if (config.deploy_config().type().equals("self-hosted-cluster")) {
-      query.append(" ON CLUSTER ${cluster}");
+      query.append("_mat ON CLUSTER ${cluster}");
     }
     query.append(";\n");
 
