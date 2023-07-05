@@ -1,0 +1,12 @@
+{
+    "properties": {
+        "opening": {
+            "opening_id": {
+                "type": ["string", "null"]
+            },
+            "close_reason": {
+                "type": ["object", "null"]
+            }
+        }
+    }
+}
