@@ -7,7 +7,13 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "api_token": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
               "type": "string"
             }
           }
@@ -26,7 +32,13 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "api_token": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
               "type": "string"
             }
           }
@@ -45,7 +57,13 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "api_token": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
               "type": "string"
             }
           }
@@ -64,7 +82,13 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "api_token": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
               "type": "string"
             }
           }
