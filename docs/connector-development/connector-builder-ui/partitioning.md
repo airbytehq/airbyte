@@ -45,7 +45,7 @@ To enable user-configurable static partitions for the [Woocommerce API](https://
 * Name it `Order IDs`, set type to `array` and click create
 * Set "Current partition value identifier" to `order`
 * "Inject partition value into outgoing HTTP request" is disabled, because the order id needs to be injected into the path
-* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
+* In the general section of the stream configuration, the "URL Path" is set to `/orders/{{ stream_partition.order }}/notes`
 
 <iframe width="640" height="777" src="https://www.loom.com/embed/df5d437eeaf545a9be25a1e7649217dc" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
@@ -70,7 +70,7 @@ The following fields have to be configured to use the substream partition router
 To enable dynamic partition routing for the [Woocommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) order notes, first an "orders" stream needs to be configured for the `/orders` endpoint to fetch a list of orders. Once this is done, the partition router for responses has be configured like this:
 * "Parent key" is set to `id`
 * "Current partition value identifier" is set to `order`
-* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
+* In the general section of the stream configuration, the "URL Path" is set to `/orders/{{ stream_partition.order }}/notes`
 
 <iframe width="640" height="765" src="https://www.loom.com/embed/41bb2ffba45644bbbda43f7e679f2754" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
