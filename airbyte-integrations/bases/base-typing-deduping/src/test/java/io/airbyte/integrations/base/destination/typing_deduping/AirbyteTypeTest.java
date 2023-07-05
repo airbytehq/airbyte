@@ -300,7 +300,6 @@ public class AirbyteTypeTest {
                     }
                     """);
 
-
     final AirbyteType array = new Array(AirbyteProtocolType.UNKNOWN);
     for (final String schema : arraySchema) {
       assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
