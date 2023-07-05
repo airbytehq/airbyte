@@ -856,6 +856,8 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
 
 
 class PostComments(SourceZendeskSupportFullRefreshStream, HttpSubStream):
+    response_list_name = "comments"
+    
     def __init__(self, **kwargs):
         parent = Posts(**kwargs)
         super().__init__(parent=parent, **kwargs)
