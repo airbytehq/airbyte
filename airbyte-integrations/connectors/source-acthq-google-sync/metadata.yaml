@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9ad2a6dd-d4b8-4e33-8fff-5154f61d42a2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-acthq-google-sync
+  githubIssueLabel: source-acthq-google-sync
+  icon: acthq-google-sync.svg
+  license: MIT
+  name: Acthq Google Sync
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/acthq-google-sync
+metadataSpecVersion: "1.0"

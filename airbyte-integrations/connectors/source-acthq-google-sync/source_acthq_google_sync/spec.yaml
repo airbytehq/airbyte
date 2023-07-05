@@ -1,0 +1,101 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
+connectionSpecification:
+  "$schema": http://json-schema.org/draft-07/schema#
+  title: ACTHQ Spec
+  type: object
+  required:
+    - backendUrl
+    - backendAuth
+    - customerInstanceId
+    - accessKey
+    - secretKey
+    - region
+    - s3Bucket
+  additionalProperties: false
+  properties:
+    backendUrl:
+      title: ActHQ Backend Url
+      description: URL of the ActHQ Backend Url
+      type: string
+      examples:
+        - https://api.mywebsite.com
+      order: 0
+    backendAuth:
+      title: ActHQ Backend Auth Access Key for AirByte
+      description: Auth Access Key to access Backend
+      type: string
+      airbyte_secret: true
+      default: abc1@gmail.com
+      examples:
+        - ldkjs3098dfn
+      order: 1
+    customerInstanceId:
+      title: Customer Instance Id
+      description: Customer Instance Id
+      type: string
+      airbyte_secret: true
+      default: 20e52ad0-b816-436d-b3c6-e23fcc85cea8
+      examples:
+        - xxxx
+      order: 2
+    region:
+      title: AWS Region
+      description: AWS Region of the SQS Queue
+      type: string
+      enum:
+        - us-east-1
+        - us-east-2
+        - us-west-1
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - cn-north-1
+        - cn-northwest-1
+        - eu-central-1
+        - eu-north-1
+        - eu-south-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - sa-east-1
+        - me-south-1
+        - us-gov-east-1
+        - us-gov-west-1
+      order: 3
+    isGmail:
+      title: Is for Gmail
+      description: If Enabled, sync gmail else will use to sync calendar
+      type: boolean
+      default: true
+      order: 4
+    accessKey:
+      title: AWS IAM Access Key ID
+      description: The Access Key ID of the AWS IAM Role to use for pulling sqs and writing in s3 bucket
+      type: string
+      examples:
+        - xxxxxHRNxxx3TBxxxxxx
+      airbyte_secret: true
+      order: 5
+    secretKey:
+      title: AWS IAM Secret Key
+      description: The Secret Key of the AWS IAM Role to use for pulling messages
+      type: string
+      examples:
+        - hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz
+      airbyte_secret: true
+      order: 6
+    s3Bucket:
+      title: S3 Bucket name
+      description: Name of bucket to put s3 raw data
+      type: string
+      default: "gmail-records"
+      examples:
+        - MyEmails
+      order: 7

@@ -1,0 +1,66 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "gmail",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "thread_id": {
+              "type": "string"
+            },
+            "snippet": {
+              "type": "string"
+            },
+            "mail_date": {
+              "type": "string"
+            },
+            "msg_from": {
+              "type": "string"
+            },
+            "msg_to": {
+              "type": "string"
+            },
+            "msg_subject": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },   
+            "historyId": {
+              "type": "string"
+            },
+            "emailAddress": {
+              "type": "string"
+            },
+            "customerSlug": {
+              "type": "string"
+            },
+            "customerInstanceId": {
+              "type": "string"
+            },
+            "customerId": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            },
+            "provider": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["historyId"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
