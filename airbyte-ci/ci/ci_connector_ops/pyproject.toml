@@ -21,20 +21,20 @@ pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
 
-[tool.poetry.group.dev.dependencies]
-pyinstrument = "*"
-
-[tool.poetry.group.pipelines.dependencies]
+# Pipeline deps
+# TODO: Move Pipelines to new package
 dagger-io = "^0.6.2"
 asyncer = "^0.0.2"
 anyio = "^3.4.1"
 more-itertools = "^8.11.0"
 docker = "^5.0.3"
-requests = "^2.28.2"
-semver = "^2.13.0"
+semver = "^3.0.1"
 airbyte-protocol-models = "*"
 tabulate = "^0.8.9"
 jinja2 = "^3.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pyinstrument = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
