@@ -100,7 +100,6 @@ By default, the find function in IntelliJ is not scoped and will include all fil
 4. Add the following filter to the `Exclude files` option: `connectors/**/.venv`
 5. Press OK to confirm your options.
 
-![](../.gitbook/assets/monorepo-exclude-files.png)
 
 #### Manual Workaround
 

@@ -12,8 +12,9 @@ import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional
 
+import yaml
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
@@ -23,7 +24,7 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -413,6 +414,13 @@ def with_bound_docker_host(
     )
 
 
+def bound_docker_host(context: ConnectorContext) -> Container:
+    def bound_docker_host_inner(container: Container) -> Container:
+        return with_bound_docker_host(context, container)
+
+    return bound_docker_host_inner
+
+
 def with_docker_cli(context: ConnectorContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
@@ -435,22 +443,24 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
     Returns:
         Container: A container with connector acceptance tests installed.
     """
-    connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
+
+    patched_cat_config = context.connector.acceptance_test_config
+    patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
+        ":dev", f":{context.git_revision}"
+    )
+    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, patched_cat_config["connector_image"])
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
 
-    cat_container = (
+    test_input = context.get_connector_dir().with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
+    return (
         with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
-        .with_mounted_directory("/test_input", context.get_connector_dir())
-    )
-    cat_container = (
-        with_mounted_connector_secrets(context, cat_container, "/test_input/secrets")
+        .with_mounted_directory("/test_input", test_input)
         .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
         # This bursts the CAT cached results everyday.
         # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
@@ -458,9 +468,9 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
+        .with_(mounted_connector_secrets(context, "/test_input/secrets"))
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
-    return cat_container
 
 
 def with_gradle(
@@ -812,13 +822,16 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .build(context.get_connector_dir())
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
     cdk_version = await get_cdk_version_from_python_connector(connector_container)
     if cdk_version:
         connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
         context.cdk_version = cdk_version
+    if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
+        raise DaggerError(
+            "Abusive caching might be happening. The connector container should have been built with the correct version as defined in metadata.yaml"
+        )
     return await finalize_build(context, connector_container)
 
 
@@ -931,7 +944,10 @@ def with_crane(
     return base_container
 
 
-def with_mounted_connector_secrets(context: PipelineContext, container: Container, secret_directory_path="secrets") -> Container:
-    for secret_file_name, secret in context.connector_secrets.items():
-        container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
-    return container
+def mounted_connector_secrets(context: PipelineContext, secret_directory_path="secrets") -> Callable:
+    def mounted_connector_secrets_inner(container: Container):
+        for secret_file_name, secret in context.connector_secrets.items():
+            container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+        return container
+
+    return mounted_connector_secrets_inner
