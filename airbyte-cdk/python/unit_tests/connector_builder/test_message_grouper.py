@@ -586,6 +586,23 @@ def test_given_multiple_control_messages_with_same_timestamp_then_stream_read_ha
     assert stream_read.latest_config_update == latest_config
 
 
+@patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
+def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
+    mock_source = make_mock_source(mock_entrypoint_read, iter(
+        any_request_and_response_with_a_record() +
+        [
+            global_request_log_message()
+        ]
+    )
+                                   )
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert len(stream_read.global_requests) == 1
+
+
 def make_mock_source(mock_entrypoint_read, return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_entrypoint_read.return_value = return_value
@@ -619,6 +636,17 @@ def connector_configuration_control_message(emitted_at: float, config: dict) -> 
     )
 
 
+def global_request_log_message():
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
+            "log": {"logger": "a logger"},
+            "http": {
+                "request": {},
+                "response": {},
+            },
+            "url": {"full": "https://a-url.com"}
+        })))
+
+
 def request_response_log_message(request: dict, response: dict, url: str):
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
             "log": {"logger": SimpleRetriever.LOGGER_NAME},
@@ -632,6 +660,6 @@ def request_response_log_message(request: dict, response: dict, url: str):
 
 def any_request_and_response_with_a_record():
     return [
-        request_response_log_message({"request": 1}, {"respomse": 2}, "http://any_url.com"),
+        request_response_log_message({"request": 1}, {"response": 2}, "http://any_url.com"),
         record_message("hashiras", {"name": "Shinobu Kocho"}),
     ]
