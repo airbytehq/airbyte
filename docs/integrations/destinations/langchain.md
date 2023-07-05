@@ -87,3 +87,9 @@ vector_store = Pinecone(index, embeddings.embed_query, "text")
 
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 ```
+
+## CHANGELOG
+
+| Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
+|:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.1   | 2023-07-26 | [#26184](https://github.com/airbytehq/airbyte/pull/26184)     | Initial release  |
