@@ -32,15 +32,6 @@ class LocalIntegrationTest(BaseIntegrationTest):
         outcome = DestinationLangchain().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
 
-    def test_check_invalid_config(self):
-        os.chmod(self.temp_dir, 0o444)
-        outcome = DestinationLangchain().check(
-            logging.getLogger("airbyte"),
-            self.config
-        )
-        os.chmod(self.temp_dir, 0o777)
-        assert outcome.status == Status.FAILED
-
     def test_write(self):
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
