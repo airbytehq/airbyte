@@ -16,11 +16,10 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
-
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
-from airbyte_cdk.v2.state import PartitionType, StateManager, LegacyStateManager
+from airbyte_cdk.v2.state import LegacyStateManager, PartitionType, StateManager
 from airbyte_cdk.v2.state_obj import StateType
+from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -213,8 +212,7 @@ class Stream(ABC):
 
     def generate_partitions(self, stream_state) -> Iterable[PartitionDescriptor]:
         # FIXME: pass parameters to stream_slices
-        return [PartitionDescriptor(metadata=stream_slice)
-                for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
+        return [PartitionDescriptor(metadata=stream_slice) for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh)]
 
     async def parse_response_async(self, aio_response, stream_state) -> Iterable[Mapping]:
         return self.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
@@ -283,4 +281,3 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
-

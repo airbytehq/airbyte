@@ -1,13 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import dataclasses
+import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Mapping, Any, Union, AsyncIterable, TypeVar, Generic, Optional, Tuple
+from typing import Any, AsyncIterable, Generic, Mapping, Optional, Tuple, TypeVar, Union
 
 import aiohttp
-
-from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester, Client, RequestType
+import requests
+from airbyte_cdk.v2.concurrency.async_requesters import Client
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 
 
@@ -25,7 +30,8 @@ class HttpRequestDescriptor:
     follow_redirects: bool = True
     body_json: Mapping[str, Any] = None
     paginator: Optional[
-        "Paginator"] = None  # FIXME: I liked that this was a dataclass. adding the paginator here isn't great + it creates a circular dependency
+        "Paginator"
+    ] = None  # FIXME: I liked that this was a dataclass. adding the paginator here isn't great + it creates a circular dependency
 
 
 @dataclass
@@ -46,7 +52,7 @@ class PostRequest(HttpRequestDescriptor):
             raise ValueError("Exactly one of of body_text, body_json, or body_urlencoded_params must be set")
 
 
-ResponseType = TypeVar('ResponseType')
+ResponseType = TypeVar("ResponseType")
 
 
 class Paginator(ABC, Generic[ResponseType]):
@@ -100,8 +106,9 @@ class DefaultExponentialBackoffHandler(ErrorHandler[aiohttp.ClientResponse]):
 
 
 class RequestGenerator:
-    async def next_request(self, partition_descriptor: PartitionDescriptor, response: Optional[aiohttp.ClientResponse]) -> Optional[
-        HttpRequestDescriptor]:
+    async def next_request(
+        self, partition_descriptor: PartitionDescriptor, response: Optional[requests.Response]
+    ) -> Optional[HttpRequestDescriptor]:
         """
         :param partition_descriptor:
         :param response: last response. Used to generate the next request if needed
@@ -110,7 +117,7 @@ class RequestGenerator:
         pass
 
 
-class AiohttpClient(Client[HttpRequestDescriptor, aiohttp.ClientResponse]):
+class AiohttpClient(Client[HttpRequestDescriptor]):
     def __init__(self):
         self._client: aiohttp.ClientSession = None
 
@@ -121,60 +128,23 @@ class AiohttpClient(Client[HttpRequestDescriptor, aiohttp.ClientResponse]):
 
         return self._client
 
-    async def request(self, request: HttpRequestDescriptor) -> aiohttp.ClientResponse:
-        args = {
-            'headers': request.headers,
-            'allow_redirects': request.follow_redirects,
-            'cookies': request.cookies
-        }
+    async def request(self, request: HttpRequestDescriptor) -> requests.Response:
+        args = {"headers": request.headers, "allow_redirects": request.follow_redirects, "cookies": request.cookies}
         if isinstance(request, GetRequest):
             get_descriptor: GetRequest = request
-            args['params'] = get_descriptor.request_parameters
+            args["params"] = get_descriptor.request_parameters
         elif isinstance(request, PostRequest):
             post_descriptor: PostRequest = request
-            args['json'] = post_descriptor.body_json
-            args['data'] = post_descriptor.body_data
-        return (await self.get_client()).request(request.method, request.base_url + request.path,  **args)
+            args["json"] = post_descriptor.body_json
+            args["data"] = post_descriptor.body_data
+        return await aio_response_to_requests_response(
+            await (await self.get_client()).request(request.method, request.base_url + request.path, **args)
+        )
 
 
-class AiohttpRequester(AsyncRequester):
-    def __init__(self, client: AiohttpClient, request_generator: RequestGenerator, error_handler: ErrorHandler = None):
-        self._request_generator = request_generator
-        # FIXME: can we initialize the client in __init__?
-        self._client = client
-        # TODO this should be a list of error handlers
-        self.error_handler = error_handler or DefaultExponentialBackoffHandler()
-
-    async def request(self, partition_descriptor: PartitionDescriptor) -> AsyncIterable[aiohttp.ClientResponse]:
-        pagination_complete = False
-        last_response = None
-        while not pagination_complete:
-            request = await self._request_generator.next_request(partition_descriptor, last_response)
-            async with (await self._client.request(request)) as last_response:
-                try:
-                    self.error_handler.observe_response(last_response)
-                except Retry as e:
-                    # TODO implement retry logic
-                    raise Exception(f"We should be retrying here!! {e}. Response: {last_response} ")
-                else:
-                    print(f"response: {last_response}")
-                    yield last_response
-                    request = await self._request_generator.next_request(partition_descriptor, last_response)
-                    pagination_complete = request is None
-
-    @staticmethod
-    def _get_request_args(request_descriptor: HttpRequestDescriptor) -> Tuple[str, str, Mapping[str, Any]]:
-        args = {
-            'headers': request_descriptor.headers,
-            'allow_redirects': request_descriptor.follow_redirects,
-            'cookies': request_descriptor.cookies
-        }
-
-        if isinstance(request_descriptor, GetRequest):
-            get_descriptor: GetRequest = request_descriptor
-            args['params'] = get_descriptor.request_parameters
-        elif isinstance(request_descriptor, PostRequest):
-            post_descriptor: PostRequest = request_descriptor
-            args['json'] = post_descriptor.body_json
-            args['data'] = post_descriptor.body_data
-        return request_descriptor.method, request_descriptor.base_url + request_descriptor.path, args
+async def aio_response_to_requests_response(aio_response: aiohttp.ClientResponse) -> requests.Response:
+    response = requests.Response()
+    response.status_code = aio_response.status
+    response.request = aio_response.request_info
+    response._content = bytes(json.dumps(await aio_response.json()), "utf-8")
+    return response

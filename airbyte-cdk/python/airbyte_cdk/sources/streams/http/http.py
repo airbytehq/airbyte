@@ -1,27 +1,28 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
 import logging
 import os
-import aiohttp
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, AsyncIterable
+from typing import Any, AsyncIterable, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
+import aiohttp
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.v2.concurrency.http import GetRequest, HttpRequestDescriptor, PostRequest, RequestGenerator
+from airbyte_cdk.v2.concurrency.http_pagination import HttpStreamPaginator
+from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
-from airbyte_cdk.v2.concurrency.http import HttpRequestDescriptor, GetRequest, PostRequest, RequestGenerator
-from airbyte_cdk.v2.concurrency.http_pagination import HttpStreamPaginator
-from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
@@ -212,14 +213,14 @@ class HttpStream(Stream, ABC):
         response = requests.Response()
         response.status_code = aio_response.status
         response.request = aio_response.request_info
-        response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
+        response._content = bytes(json.dumps(await aio_response.json()), "utf-8")
         return self.parse_response(response, stream_state=stream_state)
 
     async def async_response_to_response(self, aio_response: aiohttp.ClientResponse) -> requests.Response:
         response = requests.Response()
         response.status_code = aio_response.status
         response.request = aio_response.request_info
-        response._content = bytes(json.dumps(await aio_response.json()), 'utf-8')
+        response._content = bytes(json.dumps(await aio_response.json()), "utf-8")
         return response
 
     @abstractmethod
@@ -495,7 +496,7 @@ class HttpStream(Stream, ABC):
                     paginator=paginator
 
                 )
-                """
+            """
             partitions.append(PartitionDescriptor(metadata=stream_slice))
         return partitions
 
@@ -528,26 +529,27 @@ class HttpSubStream(HttpStream, ABC):
             for record in parent_records:
                 yield {"parent": record}
 
-class HttpStreamRequestGenerator(RequestGenerator):
 
+class HttpStreamRequestGenerator(RequestGenerator):
     def __init__(self, stream: HttpStream):
         self._stream = stream
 
-    async def next_request(self,
-                           partition_descriptor: PartitionDescriptor,
-                           # stream_state: Mapping[str, Any], # Requests shouldn't be based off the stream state,
-                           # but we cannot enforce this because stream_state is part of the public API...
-                           response: aiohttp.ClientResponse) -> Optional[HttpRequestDescriptor]:
+    async def next_request(
+        self,
+        partition_descriptor: PartitionDescriptor,
+        # stream_state: Mapping[str, Any], # Requests shouldn't be based off the stream state,
+        # but we cannot enforce this because stream_state is part of the public API...
+        response: requests.Response,
+    ) -> Optional[HttpRequestDescriptor]:
         """
         :param partition_descriptor:
         :param response: last response. Used to generate the next request if needed
         :return:
         """
-        stream_state = {} # requests shouldn't be based off the stream state
+        stream_state = {}  # requests shouldn't be based off the stream state
         stream_slice = partition_descriptor.metadata
         if response:
-            requests_response = await self._stream.async_response_to_response(response)
-            next_page_token = self._stream.next_page_token(requests_response)
+            next_page_token = self._stream.next_page_token(response)
             print(f"next_page_token: {next_page_token}")
             if next_page_token is None:
                 return None
@@ -557,16 +559,28 @@ class HttpStreamRequestGenerator(RequestGenerator):
             request = GetRequest(
                 base_url=self._stream.url_base,
                 path=self._stream.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers={**self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token), **self._stream.authenticator.get_auth_header()},
-                request_parameters=self._stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                body_json=self._stream.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers={
+                    **self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    **self._stream.authenticator.get_auth_header(),
+                },
+                request_parameters=self._stream.request_params(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                ),
+                body_json=self._stream.request_body_json(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                ),
             )
         elif self._stream.http_method == "POST":
             request = PostRequest(
                 base_url=self._stream.url_base,
                 path=self._stream.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers={**self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token), **self._stream.authenticator.get_auth_header()},
-                body_json=self._stream.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers={
+                    **self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    **self._stream.authenticator.get_auth_header(),
+                },
+                body_json=self._stream.request_body_json(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                ),
             )
         else:
             raise ValueError(f"Unsupported http method: {self._stream.http_method}")

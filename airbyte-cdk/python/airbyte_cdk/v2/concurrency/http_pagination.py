@@ -1,15 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Optional
 
 import aiohttp
-
-from airbyte_cdk.v2.concurrency.http import Paginator, ResponseType, HttpRequestDescriptor, GetRequest
+from airbyte_cdk.v2.concurrency.http import GetRequest, HttpRequestDescriptor, Paginator, ResponseType
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 
 
 class HttpStreamPaginator(Paginator[aiohttp.ClientResponse]):
-
     def __init__(self, stream):
-        self._stream = stream # type: HttpStream - there's a circular dependency here
+        self._stream = stream  # type: HttpStream - there's a circular dependency here
 
     def get_next_page_info(self, response: ResponseType, partition: PartitionDescriptor) -> Optional[HttpRequestDescriptor]:
         """
@@ -22,10 +24,15 @@ class HttpStreamPaginator(Paginator[aiohttp.ClientResponse]):
                 request = GetRequest(
                     base_url=self._stream.url_base,
                     path=self._stream.path(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers={**self._stream.request_headers(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token), **self._stream.authenticator.get_auth_header()},
-                    request_parameters=self._stream.request_params(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token),
+                    headers={
+                        **self._stream.request_headers(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token),
+                        **self._stream.authenticator.get_auth_header(),
+                    },
+                    request_parameters=self._stream.request_params(
+                        stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token
+                    ),
                     body_json=self._stream.request_body_json(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token),
-                    paginator=self
+                    paginator=self,
                 )
                 return request
             else:

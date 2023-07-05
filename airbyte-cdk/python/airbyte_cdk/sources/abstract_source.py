@@ -5,8 +5,9 @@
 import json
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-from datetime import datetime, timedelta
+
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -30,12 +31,9 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
-from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.v2.concurrency.async_requesters import DefaultAsyncRequester
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
-from airbyte_cdk.v2.concurrency.http import AiohttpRequester, AiohttpClient
+from airbyte_cdk.v2.concurrency.http import AiohttpClient
 from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
 from airbyte_cdk.v2.state import LegacyStateManager
 
@@ -121,28 +119,28 @@ class AbstractSource(Source, ABC):
         stream_group = ConcurrentStreamGroup(
             self.get_requester_constructor(stream_instances),
             ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
-            streams=stream_instances.values()
+            streams=stream_instances.values(),
         )
         record_count = 0
         t0 = datetime.now()
         for record in stream_group.read_all({}, None, None):
             if isinstance(record, AirbyteMessage) and record.record:
-                record_count +=1
+                record_count += 1
             yield record
         logger.info(f"Finished syncing {self.name}")
         logger.info(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
         logger.info(f"Read {record_count} records from {self.name}")
 
     def get_requester_constructor(self, streams):
-        import functools
+        # FIXME: I think this should be all instead of any
         if any(isinstance(stream, HttpStream) for stream in streams.values()):
             client = AiohttpClient()
-            return functools.partial(AiohttpRequester, client=client)
+            return client
         if any(isinstance(stream, DeclarativeStream) for stream in streams.values()):
             client = AiohttpClient()
-            return functools.partial(AiohttpRequester, client=client)
+            return client
         else:
-            return DefaultAsyncRequester
+            raise NotImplementedError()
 
     def get_concurrency_factor(self):
         return 1

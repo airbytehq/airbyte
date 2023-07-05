@@ -1,9 +1,13 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import asyncio
 import concurrent.futures
+import queue
 import threading
 from asyncio import AbstractEventLoop
-from typing import TypeVar, AsyncIterable, Iterable
-import queue
+from typing import AsyncIterable, Iterable, TypeVar
 
 T = TypeVar("T")
 SENTINEL_VALUE = None

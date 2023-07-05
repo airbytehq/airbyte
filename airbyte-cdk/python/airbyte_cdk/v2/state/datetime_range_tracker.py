@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
@@ -28,11 +32,7 @@ class DatetimeRangeTracker:
         return self.copied_ranges
 
     def get_uncopied_ranges(
-            self,
-            start: datetime,
-            end: datetime = None,
-            preferred_range_size: timedelta = None,
-            descending: bool = False
+        self, start: datetime, end: datetime = None, preferred_range_size: timedelta = None, descending: bool = False
     ) -> List[Tuple[datetime, datetime]]:
         """
         Returns a list of date ranges within the given range that haven't been copied. The returned ranges will be at most as large as

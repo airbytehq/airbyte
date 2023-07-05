@@ -7,6 +7,4 @@ __all__ = [
     "DatetimeState",
     "StateType",
     "StateManager",
-
-
 ]

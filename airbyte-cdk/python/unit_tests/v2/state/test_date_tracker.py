@@ -1,8 +1,11 @@
-from typing import Tuple, List
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from datetime import datetime, timedelta
+from typing import List, Tuple
 
 import pytest
-from datetime import datetime, timedelta
-
 from airbyte_cdk.v2.state import DatetimeRangeTracker
 
 
