@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 [tool.poetry]
 name = "ci_credentials"
 version = "1.1.0"
