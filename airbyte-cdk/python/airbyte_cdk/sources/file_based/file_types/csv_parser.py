@@ -5,12 +5,19 @@
 import csv
 from typing import Any, Dict, Iterable
 
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 DIALECT_NAME = "_config_dialect"
+
+config_to_quoting: [QuotingBehavior, int] = {
+    QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
+    QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
+    QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
+    QuotingBehavior.QUOTE_NONE: csv.QUOTE_NONE,
+}
 
 
 class CsvParser(FileTypeParser):
@@ -26,6 +33,7 @@ class CsvParser(FileTypeParser):
                 quotechar=config_format.quote_char,
                 escapechar=config_format.escape_char,
                 doublequote=config_format.double_quote,
+                quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
             )
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
@@ -53,6 +61,7 @@ class CsvParser(FileTypeParser):
                 quotechar=config_format.quote_char,
                 escapechar=config_format.escape_char,
                 doublequote=config_format.double_quote,
+                quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
             )
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual

@@ -3,19 +3,20 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
 from pydantic import ValidationError
 
 
 @pytest.mark.parametrize(
     "file_type, input_format, expected_format, expected_error",
     [
-        pytest.param("csv", {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True}, {"delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True}, None, id="test_valid_format"),
-        pytest.param("csv", {"filetype": "csv", "double_quote": False}, {"delimiter": ",", "quote_char": "\"", "encoding": "utf8", "double_quote": False}, None, id="test_default_format_values"),
+        pytest.param("csv", {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": "Quote All"}, {"delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL}, None, id="test_valid_format"),
+        pytest.param("csv", {"filetype": "csv", "double_quote": False}, {"delimiter": ",", "quote_char": "\"", "encoding": "utf8", "double_quote": False, "quoting_behavior": QuotingBehavior.QUOTE_SPECIAL_CHARACTERS}, None, id="test_default_format_values"),
         pytest.param("csv", {"filetype": "csv", "delimiter": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_delimiter"),
         pytest.param("csv", {"filetype": "csv", "quote_char": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_quote_char"),
         pytest.param("csv", {"filetype": "csv", "escape_char": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_escape_char"),
         pytest.param("csv", {"filetype": "csv", "delimiter": ",", "quote_char": "\"", "encoding": "not_a_format", "double_quote": True}, {}, ValidationError, id="test_invalid_encoding_type"),
+        pytest.param("csv", {"filetype": "csv", "double_quote": True, "quoting_behavior": "Quote Invalid"}, None, ValidationError, id="test_invalid_quoting_behavior"),
         pytest.param("invalid", {"filetype": "invalid", "double_quote": False}, {}, ValidationError, id="test_config_format_file_type_mismatch"),
     ]
 )

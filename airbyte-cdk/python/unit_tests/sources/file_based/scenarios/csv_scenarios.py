@@ -503,6 +503,7 @@ csv_custom_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
+                        "quoting_behavior": "Quote Special Characters"
                     }
                 }
             ]
@@ -601,7 +602,8 @@ multi_stream_custom_format = (
                         "delimiter": "#",
                         "escape_char": "@",
                         "double_quote": True,
-                        "newlines_in_values": False
+                        "newlines_in_values": False,
+                        "quoting_behavior": "Quote All"
                     }
                 }
             ]

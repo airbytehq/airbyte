@@ -3,6 +3,7 @@
 #
 
 import codecs
+from enum import Enum
 from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -13,12 +14,20 @@ PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
 
 
+class QuotingBehavior(Enum):
+    QUOTE_ALL = "Quote All"
+    QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
+    QUOTE_NONNUMERIC = "Quote Non-numeric"
+    QUOTE_NONE = "Quote None"
+
+
 class CsvFormat(BaseModel):
     delimiter: str = ","
     quote_char: str = '"'
     escape_char: Optional[str]
     encoding: Optional[str] = "utf8"
     double_quote: bool
+    quoting_behavior: Optional[QuotingBehavior] = QuotingBehavior.QUOTE_SPECIAL_CHARACTERS
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
     # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks
     # of using pyarrow
