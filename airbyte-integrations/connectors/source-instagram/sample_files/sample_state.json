@@ -1,0 +1,15 @@
+[
+    {
+        "type": "STREAM",
+        "stream": {
+            "stream_state": {
+                "17841400000000000": {
+                    "date": "2023-06-28T07:00:00+00:00"
+                }
+            },
+            "stream_descriptor": {
+                "name": "user_insights"
+            }
+        }
+    }
+]
