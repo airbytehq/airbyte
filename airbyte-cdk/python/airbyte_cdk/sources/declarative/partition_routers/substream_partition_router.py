@@ -6,11 +6,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.http_logger import create_new_log_with_updated_logger
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -47,9 +49,12 @@ class SubstreamPartitionRouter(StreamSlicer):
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
     """
 
+    LOGGER_NAME = "SubstreamPartitionRouter"
+
     parent_stream_configs: List[ParentStreamConfig]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
@@ -138,6 +143,14 @@ class SubstreamPartitionRouter(StreamSlicer):
                         if isinstance(parent_record, AirbyteMessage):
                             if parent_record.type == Type.RECORD:
                                 parent_record = parent_record.record.data
+                            elif parent_record.type == Type.LOG:
+                                try:
+                                    new_log_message = create_new_log_with_updated_logger(parent_record.log.message, self.LOGGER_NAME)
+                                    self.message_repository.log_message(Level.DEBUG, lambda: new_log_message)
+                                except ValueError:
+                                    # we are only concerned about HTTP logging
+                                    pass
+                                continue
                             else:
                                 continue
                         elif isinstance(parent_record, Record):

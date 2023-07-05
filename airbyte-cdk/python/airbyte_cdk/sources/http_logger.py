@@ -43,5 +43,19 @@ def create_airbyte_log_message(response: requests.Response, logger: str):
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.DEBUG, message=format_http_json(response, logger)))
 
 
+def create_new_log_with_updated_logger(log: str, logger: str) -> str:
+    """
+    Only supports HTTP logs. If log is not HTTP, will raise ValueError
+    """
+    try:
+        log_as_json = json.loads(log)
+        if "http" not in log_as_json:
+            raise ValueError(f"Log is not HTTP")
+        log_as_json["log"]["logger"] = logger
+        return json.dumps(log_as_json)
+    except json.JSONDecodeError:
+        return False
+
+
 def _normalize_body_string(body_str: Optional[Union[str, bytes]]) -> Optional[str]:
     return body_str.decode() if isinstance(body_str, (bytes, bytearray)) else body_str
