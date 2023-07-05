@@ -1,15 +1,37 @@
 {
     "properties": {
         "opening": {
-            "opening_id": {
-                "type": ["string", "null"]
+            "properties": {
+                "opening_id": {
+                    "type": ["string", "null"]
+                },
+                "close_reason": {
+                    "type": ["object", "null"]
+                }
             },
-            "close_reason": {
-                "type": ["object", "null"]
-            }
-        },
+        "type": ["object", "null"]
+    },
         "starts_at": {
             "type": ["string", "null"]
         }
-    }
+    },
+    "keyed_custom_fields": {
+        "properties": {
+          "employment_type": {
+            "properties": {
+              "name": {
+                "type": ["string", "null"]
+              },
+              "type": {
+                "type": ["string", "null"]
+              },
+              "value": {
+                "type": ["string", "null"]
+              }
+            },
+            "type": ["object", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      }
 }
