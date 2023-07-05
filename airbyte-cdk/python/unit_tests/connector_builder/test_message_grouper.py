@@ -593,8 +593,7 @@ def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
         [
             global_request_log_message()
         ]
-    )
-                                   )
+    ))
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
     stream_read: StreamRead = connector_builder_handler.get_message_groups(
         source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
