@@ -1,0 +1,30 @@
+{
+    "properties": {
+        "questions": {
+            "items": {
+             "properties": {
+                "answer": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+                },
+                "id": {
+                "type": [
+                    "null",
+                    "integer"
+                ]
+                },
+                "question": {
+                "type": "string"
+                }
+            },
+            "type": "object"
+            },
+            "type": "array"
+        }
+    },
+    "overall_recommendation": {
+      "type": ["string", "null"]
+    }
+}
