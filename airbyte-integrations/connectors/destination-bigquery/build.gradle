@@ -52,11 +52,3 @@ configurations.all {
     force 'com.google.api-client:google-api-client:1.31.5'
   }
 }
-
-integrationTestJava {
-    systemProperties = [
-        'junit.jupiter.execution.parallel.enabled': 'true'
-        // TODO what's preventing us from turning this on? (probably a lot of things)
-        // 'junit.jupiter.execution.parallel.mode.default': 'concurrent'
-    ]
-}

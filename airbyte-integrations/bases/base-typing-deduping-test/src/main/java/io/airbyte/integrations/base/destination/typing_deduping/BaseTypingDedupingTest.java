@@ -51,9 +51,6 @@ import org.slf4j.LoggerFactory;
  * sync modes which use a cursor, the stream provides an updated_at field. The stream also has an
  * _ab_cdc_deleted_at field.
  */
-// Remember to set `'junit.jupiter.execution.parallel.enabled': 'true'` in your connector's
-// build.gradle.
-// See destination-bigquery for an example.
 // If you're running from inside intellij, you must run your specific subclass to get concurrent
 // execution.
 @Execution(ExecutionMode.CONCURRENT)
