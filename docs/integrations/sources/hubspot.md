@@ -2,13 +2,16 @@
 
 This page guides you through setting up the HubSpot source connector.
 
-## Prerequisite
+## Prerequisites
 
 You can use OAuth or a Private App to authenticate your HubSpot account.
 
-In Airbyte Cloud, we highly recommend you use OAuth and not Private App authentication as it significantly simplifies the setup process.
+:::note
+For Airbyte Cloud users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+:::
 
-If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate 
+[scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams.
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -36,17 +39,20 @@ If you are using either OAuth in Airbyte OSS or Private App authentication, you 
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-## Set up the HubSpot source connector
+## Setup guide
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+### Step 1: Set up the HubSpot source connector
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
-4. Enter a name for your source.
-5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
+4. Enter a **Source name** for your source.
+5. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
    - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
    - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).
-7. Click **Set up source**.
+6. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -55,14 +61,14 @@ The HubSpot source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
 :::note
 There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-   :::
+:::
 
 The HubSpot source connector supports the following streams:
 
