@@ -1,0 +1,21 @@
+{
+    "properties": {
+        "applications": {
+            "items": {
+              "properties": {
+                "credited_to": {
+                    "properties": {
+                    },
+                    "type": ["object", "null"]
+                }
+            }
+        }
+    }, 
+    "coordinator": {
+     "type": ["object", "null"]
+    }, 
+    "recruiter": {
+     "type": ["object", "null"]
+    }
+    }
+}
