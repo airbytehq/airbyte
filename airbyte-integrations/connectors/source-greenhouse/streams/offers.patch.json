@@ -7,6 +7,9 @@
             "close_reason": {
                 "type": ["object", "null"]
             }
+        },
+        "starts_at": {
+            "type": ["string", "null"]
         }
     }
 }
