@@ -3,45 +3,34 @@
 #
 
 
-from typing import Any, Iterable, Mapping, List, Dict, Optional
-import random
-import json
-import os
+from typing import Any, Iterable, List, Mapping
+
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.destinations import Destination
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    Level,
+    Status,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_langchain.batcher import Batcher
+from destination_langchain.config import ConfigModel
+from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.embedder import Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_langchain.indexer import DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
-from destination_langchain.document_processor import DocumentProcessor
-from destination_langchain.config import ConfigModel
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-
-import dpath.util
-from dpath.exceptions import PathNotFound
-import pinecone
-import jsonref
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, SyncMode
-from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Type, Level, ConfiguredAirbyteCatalog, Status, AirbyteRecordMessage, AirbyteLogMessage
-from langchain.utils import stringify_dict
-from langchain.document_loaders.base import BaseLoader, Document
-from langchain.vectorstores.docarray import DocArrayHnswSearch
-from langchain.vectorstores import Pinecone
-import uuid
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.document_loaders.base import Document
 
 BATCH_SIZE = 128
 
-indexer_map = {
-    "pinecone": PineconeIndexer,
-    "DocArrayHnswSearch": DocArrayHnswSearchIndexer
-}
+indexer_map = {"pinecone": PineconeIndexer, "DocArrayHnswSearch": DocArrayHnswSearchIndexer}
 
-embedder_map = {
-    "openai": OpenAIEmbedder,
-    "fake": FakeEmbedder
-}
+embedder_map = {"openai": OpenAIEmbedder, "fake": FakeEmbedder}
 
 
 class DestinationLangchain(Destination):
@@ -73,10 +62,13 @@ class DestinationLangchain(Destination):
         self.indexer.pre_sync(configured_catalog)
         for message in input_messages:
             if batcher.processed_count % 100 == 0 and batcher.processed_count > 0:
-                yield AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message=f"Processed {batcher.processed_count} records",
-                )) 
+                yield AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.INFO,
+                        message=f"Processed {batcher.processed_count} records",
+                    ),
+                )
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
                 # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
@@ -98,7 +90,7 @@ class DestinationLangchain(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        
+
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/langchain",

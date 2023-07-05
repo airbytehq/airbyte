@@ -3,12 +3,10 @@
 #
 
 
-import unittest.mock as mock
-from typing import List, Tuple
-from destination_langchain.document_processor import DocumentProcessor
-from destination_langchain.config import ProcessingConfigModel
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode, AirbyteRecordMessage
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
+from destination_langchain.config import ProcessingConfigModel
+from destination_langchain.document_processor import DocumentProcessor
 
 
 def initialize_processor():
@@ -76,8 +74,9 @@ def test_process_single_chunk_without_namespace():
         emitted_at=1234,
     )
 
-    chunks, id_to_delete = processor.process(record)
+    chunks, _ = processor.process(record)
     assert chunks[0].metadata["_airbyte_stream"] == "stream1"
+
 
 def test_complex_text_fields():
     processor = initialize_processor()
@@ -114,8 +113,7 @@ def test_complex_text_fields():
     assert chunks[0].page_content == """nested.texts.*.text: This is the text
 And another
 text: This is the regular text
-other_nested.non_text: 
-a: xyz
+other_nested.non_text: \na: xyz
 b: abc"""
     assert chunks[0].metadata == {
         "id": 1,
@@ -123,6 +121,7 @@ b: abc"""
         "non_text_2": 1,
         "_airbyte_stream": "namespace1_stream1"
     }
+
 
 def test_metadata_normalization():
     processor = initialize_processor()

@@ -1,4 +1,9 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import time
+
 
 def measure_time(func):
     def wrapper(*args, **kwargs):

@@ -1,16 +1,10 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock, patch
-from typing import List, Mapping, Any, Iterable
-from airbyte_cdk.models.airbyte_protocol import (
-    ConfiguredAirbyteCatalog,
-    AirbyteMessage,
-    Type,
-    AirbyteRecordMessage,
-    Level,
-    AirbyteConnectionStatus,
-    AirbyteLogMessage,
-    Status,
-    ConnectorSpecification,AirbyteStateMessage
-)
+
+from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, Type
 from destination_langchain.config import ConfigModel
 from destination_langchain.destination import DestinationLangchain, embedder_map, indexer_map
 
@@ -59,7 +53,7 @@ def test_write():
 
     mock_embedder = MagicMock()
     embedder_map["openai"].return_value = mock_embedder
-    
+
     mock_indexer = MagicMock()
     indexer_map["pinecone"].return_value = mock_indexer
     mock_indexer.max_metadata_size = 1000

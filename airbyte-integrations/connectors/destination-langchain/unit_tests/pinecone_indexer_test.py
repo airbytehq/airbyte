@@ -1,9 +1,13 @@
-from unittest.mock import MagicMock
-from destination_langchain.indexer import PineconeIndexer
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from unittest.mock import ANY, MagicMock
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import PineconeIndexingModel
+from destination_langchain.indexer import PineconeIndexer
 from langchain.document_loaders.base import Document
-from unittest.mock import ANY
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
 def create_pinecone_indexer():
@@ -36,6 +40,7 @@ def test_pinecone_index_upsert_and_delete():
         show_progress=False
     )
 
+
 def test_pinecone_index_upsert_batching():
     indexer = create_pinecone_indexer()
     indexer.embed_fn = MagicMock(return_value=[[i, i, i] for i in range(50)])
@@ -48,6 +53,7 @@ def test_pinecone_index_upsert_batching():
         assert indexer.pinecone_index.upsert.call_args_list[0].kwargs["vectors"][i] == (ANY, [i, i, i], {"_airbyte_stream": "abc", "text": f"test {i}"})
     for i in range(40, 50):
         assert indexer.pinecone_index.upsert.call_args_list[1].kwargs["vectors"][i-40] == (ANY, [i, i, i], {"_airbyte_stream": "abc", "text": f"test {i}"})
+
 
 def test_pinecone_pre_sync():
     indexer = create_pinecone_indexer()

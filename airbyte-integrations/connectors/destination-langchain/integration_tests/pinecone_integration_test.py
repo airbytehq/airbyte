@@ -4,32 +4,14 @@
 
 import json
 import logging
-import time
-from typing import Any, Dict, Mapping
-import unittest
+
+import pinecone
+from airbyte_cdk.models import DestinationSyncMode, Status
+from destination_langchain.destination import DestinationLangchain
 from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
 from integration_tests.base_integration_test import BaseIntegrationTest
-
-import pytest
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    Status,
-    SyncMode,
-    Type,
-)
-from destination_langchain.destination import DestinationLangchain
-from langchain import OpenAI, PromptTemplate
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
-from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
-import pinecone
+from langchain.vectorstores import Pinecone
 
 
 class PineconeIntegrationTest(BaseIntegrationTest):
@@ -79,8 +61,8 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = (
-            pinecone.Index("testdata").query(vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_natural_id": 2}, include_metadata=True)
+        result = pinecone.Index("testdata").query(
+            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_natural_id": 2}, include_metadata=True
         )
         assert len(result.matches) == 1
         assert result.matches[0].metadata["text"] == "str_col: Cats are nice"

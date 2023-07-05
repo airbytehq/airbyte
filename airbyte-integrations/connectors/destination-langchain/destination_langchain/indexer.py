@@ -1,27 +1,22 @@
-from abc import ABC, abstractmethod
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import itertools
+import os
 import uuid
+from abc import ABC, abstractmethod
+from typing import Any, List, Optional
+
+import pinecone
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
+from destination_langchain.document_processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
 from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
-from destination_langchain.document_processor import METADATA_NATURAL_ID_FIELD, METADATA_STREAM_FIELD
 from langchain.document_loaders.base import Document
-from typing import Any, List, Optional, Tuple
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    Type,
-    Level,
-    ConfiguredAirbyteCatalog,
-    Status,
-    AirbyteRecordMessage,
-    AirbyteLogMessage,
-)
 from langchain.vectorstores.docarray import DocArrayHnswSearch
-from langchain.vectorstores import Pinecone
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-import os
-import pinecone
 
 
 class Indexer(ABC):
@@ -47,6 +42,7 @@ class Indexer(ABC):
     @property
     def max_metadata_size(self) -> Optional[int]:
         return None
+
 
 def chunks(iterable, batch_size):
     """A helper function to break an iterable into chunks of size batch_size."""
@@ -109,7 +105,7 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def __init__(self, config: DocArrayHnswSearchIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-    
+
     def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
             embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
@@ -118,7 +114,9 @@ class DocArrayHnswSearchIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
             if stream.destination_sync_mode != DestinationSyncMode.overwrite:
-                raise Exception(f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}")
+                raise Exception(
+                    f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}"
+                )
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
         self._init_vectorstore()

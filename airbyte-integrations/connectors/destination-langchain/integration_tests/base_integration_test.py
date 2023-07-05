@@ -2,16 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import logging
-import os
-import tempfile
-import time
-from typing import Any, Dict, Mapping
 import unittest
-from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
+from typing import Any, Dict
 
-import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,19 +13,9 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    Status,
     SyncMode,
     Type,
 )
-from destination_langchain.destination import DestinationLangchain
-from langchain import OpenAI, PromptTemplate
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
-from langchain.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import DocArrayHnswSearch
-from langchain.embeddings import FakeEmbeddings
-import pinecone
 
 
 class BaseIntegrationTest(unittest.TestCase):

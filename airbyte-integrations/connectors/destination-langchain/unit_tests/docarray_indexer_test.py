@@ -1,12 +1,14 @@
-import os
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import unittest
 from unittest.mock import MagicMock, patch
-from destination_langchain.indexer import DocArrayHnswSearchIndexer
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import DocArrayHnswSearchIndexingModel
+from destination_langchain.indexer import DocArrayHnswSearchIndexer
 from langchain.document_loaders.base import Document
-from unittest.mock import ANY
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-import tempfile
 
 
 class BaseIntegrationTest(unittest.TestCase):
@@ -16,7 +18,6 @@ class BaseIntegrationTest(unittest.TestCase):
         self.embedder.embedding_dimensions = 3
         self.indexer = DocArrayHnswSearchIndexer(self.config, self.embedder)
         self.indexer.vectorstore = MagicMock()
-
 
     def test_docarray_index(self):
         docs = [
