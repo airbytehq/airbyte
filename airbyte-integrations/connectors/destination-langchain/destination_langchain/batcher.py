@@ -14,10 +14,10 @@ class Batcher:
         self.flush_if_necessary()
 
     def flush(self):
-        if self.buffer:
-            # Process the batch
-            self.flush_handler(self.buffer)
-            self.buffer.clear()
+        if len(self.buffer) == 0:
+            return
+        self.flush_handler(self.buffer)
+        self.buffer.clear()
 
     def flush_if_necessary(self):
         if len(self.buffer) >= self.batch_size:

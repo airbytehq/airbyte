@@ -35,12 +35,14 @@ class OpenAIEmbeddingConfigModel(BaseModel):
 
     class Config:
         title="OpenAI"
+        schema_extra={"description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."}
 
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
     class Config:
         title="Fake"
+        schema_extra={"description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."}
 
 
 class PineconeIndexingModel(BaseModel):
@@ -51,6 +53,7 @@ class PineconeIndexingModel(BaseModel):
 
     class Config:
         title="Pinecone"
+        schema_extra={"description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain."}
 
 
 class DocArrayHnswSearchIndexingModel(BaseModel):

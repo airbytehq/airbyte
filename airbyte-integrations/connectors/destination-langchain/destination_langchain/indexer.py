@@ -101,14 +101,6 @@ class DocArrayHnswSearchIndexer(Indexer):
             embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
         )
 
-    def _create_directory_recursively(self, path):
-        try:
-            os.makedirs(path, exist_ok=True)
-        except OSError as e:
-            return f"Creation of the directory {path} failed, with error: {str(e)}"
-        else:
-            return None
-
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
             if stream.destination_sync_mode != DestinationSyncMode.overwrite:
@@ -126,5 +118,8 @@ class DocArrayHnswSearchIndexer(Indexer):
         self.vectorstore.add_documents(document_chunks)
 
     def check(self) -> Optional[str]:
-        self._init_vectorstore()
-        return self._create_directory_recursively(self.config.destination_path)
+        try:
+            self._init_vectorstore()
+        except Exception as e:
+            return str(e)
+        return None
