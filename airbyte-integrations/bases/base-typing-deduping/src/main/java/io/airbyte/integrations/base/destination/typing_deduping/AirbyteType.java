@@ -28,48 +28,53 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    * probably fail the sync. (but see also {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
-    final JsonNode topLevelType = schema.get("type");
-    if (topLevelType != null) {
-      if (topLevelType.isTextual()) {
-        if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
-          return getStruct(schema);
-        } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
-          return getArray(schema);
-        }
-      } else if (topLevelType.isArray()) {
-        final List<JsonNode> elements = new ArrayList<>();
-        topLevelType.elements().forEachRemaining(element -> {
-          // ignore "null" type
-          if (!element.asText("").equals("null")) {
-            elements.add(element);
-          }
-        });
-
-        // we encounter an array of types that actually represents a single type rather than a OneOf
-        if (elements.size() == 1) {
-          if (elements.get(0).asText("").equals("object")) {
+    try {
+      final JsonNode topLevelType = schema.get("type");
+      if (topLevelType != null) {
+        if (topLevelType.isTextual()) {
+          if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
             return getStruct(schema);
-          } else if (elements.get(0).asText("").equals("array")) {
+          } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
             return getArray(schema);
-          } else {
-            return AirbyteTypeUtils.getAirbyteProtocolType(schema);
           }
-        }
+        } else if (topLevelType.isArray()) {
+          final List<JsonNode> elements = new ArrayList<>();
+          topLevelType.elements().forEachRemaining(element -> {
+            // ignore "null" type
+            if (!element.asText("").equals("null")) {
+              elements.add(element);
+            }
+          });
 
-        final List<AirbyteType> typeOptions = elements.stream().map(AirbyteType::fromJsonSchema).toList();
-        return new OneOf(typeOptions);
+          // we encounter an array of types that actually represents a single type rather than a OneOf
+          if (elements.size() == 1) {
+            if (elements.get(0).asText("").equals("object")) {
+              return getStruct(schema);
+            } else if (elements.get(0).asText("").equals("array")) {
+              return getArray(schema);
+            } else {
+              return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+            }
+          }
+
+          final List<AirbyteType> typeOptions = elements.stream().map(AirbyteType::fromJsonSchema).toList();
+          return new OneOf(typeOptions);
+        }
+      } else if (schema.hasNonNull("oneOf")) {
+        final List<AirbyteType> options = new ArrayList<>();
+        schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
+        return new UnsupportedOneOf(options);
+      } else if (schema.hasNonNull("properties")) {
+        // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a
+        // struct.
+        // This is for backwards-compatibility with legacy normalization.
+        return getStruct(schema);
       }
-    } else if (schema.hasNonNull("oneOf")) {
-      final List<AirbyteType> options = new ArrayList<>();
-      schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
-      return new UnsupportedOneOf(options);
-    } else if (schema.hasNonNull("properties")) {
-      // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a
-      // struct.
-      // This is for backwards-compatibility with legacy normalization.
-      return getStruct(schema);
+      return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+    } catch (final Exception e) {
+      LOGGER.warn("Exception parsing JSON schema {}: {}", schema, e);
+      return AirbyteProtocolType.UNKNOWN;
     }
-    return AirbyteTypeUtils.getAirbyteProtocolType(schema);
   }
 
   private static Struct getStruct(final JsonNode schema) {
