@@ -142,16 +142,16 @@ class MessageGrouper:
                 # parsing the first slice
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
-                if json_message and json_message.get("http"):
-                    if self._is_page_request_response_log(json_message):
-                        at_least_one_page_in_group = True
-                        current_page_request = self._create_request_from_log_message(json_message)
-                        current_page_response = self._create_response_from_log_message(json_message)
-                    else:
+                if self._is_http_log(json_message):
+                    if self._is_global_request(json_message):
                         yield GlobalRequest(
                             request=self._create_request_from_log_message(json_message),
                             response=self._create_response_from_log_message(json_message),
                         )
+                    else:
+                        at_least_one_page_in_group = True
+                        current_page_request = self._create_request_from_log_message(json_message)
+                        current_page_response = self._create_response_from_log_message(json_message)
                 else:
                     if message.log.level == Level.ERROR:
                         had_error = True
@@ -176,12 +176,22 @@ class MessageGrouper:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
-            and (MessageGrouper._is_page_request_response_log(json_message) or message.log.message.startswith("slice:"))
+            and (MessageGrouper._is_global_request(json_message) or message.log.message.startswith("slice:"))
         )
 
     @staticmethod
-    def _is_page_request_response_log(message: Optional[dict]):
-        return message and message.get("http") and message.get("log", {}).get("logger", "") == SimpleRetriever.LOGGER_NAME
+    def _is_http_log(message: Optional[dict]) -> bool:
+        return message and bool(message.get("http", False))
+
+    @staticmethod
+    def _is_global_request(message: Optional[dict]) -> bool:
+        if not message:
+            return False
+
+        is_http = MessageGrouper._is_http_log(message)
+        has_stream_name = message.get("airbyte_cdk", {}).get("stream", {}).get("name", False)
+        is_substream = message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False)
+        return is_http and (not has_stream_name or is_substream)
 
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete: bool):

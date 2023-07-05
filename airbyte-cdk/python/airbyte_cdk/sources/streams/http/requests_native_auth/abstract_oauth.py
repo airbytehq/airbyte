@@ -27,7 +27,7 @@ class AbstractOauth2Authenticator(AuthBase):
     delegating that behavior to the classes implementing the interface.
     """
 
-    LOGGER_NAME = "AbstractOauth2Authenticator"
+    _NO_STREAM_NAME = None
 
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -167,4 +167,4 @@ class AbstractOauth2Authenticator(AuthBase):
         return _NOOP_MESSAGE_REPOSITORY
 
     def _log_response(self, response: requests.Response):
-        self._message_repository.log_message(Level.DEBUG, lambda: format_http_json(response, self.LOGGER_NAME))
+        self._message_repository.log_message(Level.DEBUG, lambda: format_http_json(response, self._NO_STREAM_NAME))
