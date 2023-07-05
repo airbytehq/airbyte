@@ -25,8 +25,7 @@ class PartitionDescriptor:
 
 class PartitionGenerator(ABC, Generic[PartitionType, StateType]):
     @abstractmethod
-    def generate_partitions(self, state: StateType, catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]) -> Iterable[
-            PartitionType]:
+    def generate_partitions(self, state: StateType) -> Iterable[PartitionType]:
         """ Generates partitions """
 
 

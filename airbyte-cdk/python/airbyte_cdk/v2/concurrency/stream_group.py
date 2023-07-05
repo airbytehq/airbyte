@@ -11,7 +11,7 @@ from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, AirbyteMessage, Type as MessageType, AirbyteStateMessage, AirbyteStateType, \
     AirbyteStreamState, StreamDescriptor
 
-from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester
+from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester, Client
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
@@ -28,14 +28,14 @@ class StreamAndPartition(Generic[PartitionType]):
 
 
 class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
-    requester: AsyncRequester
-    concurrency_policy: ConcurrencyPolicy
+    _requester_client: Client
+    _concurrency_policy: ConcurrencyPolicy
     _streams: List[Stream]
 
-    def __init__(self, requester: AsyncRequester, concurrency_policy: ConcurrencyPolicy, streams: List[Stream]):
-        self.requester = requester
-        self.concurrency_policy = concurrency_policy
+    def __init__(self, requester_constructor, concurrency_policy: ConcurrencyPolicy, streams: List[Stream]):
+        self._requester_constructor = requester_constructor
         self._streams = streams  # TODO we probably don't need full streams, as long as we can get partitions and stream names
+        self._concurrency_policy = concurrency_policy
 
     def streams(self, configured_catalog: ConfiguredAirbyteCatalog) -> List[Stream]:
         # TODO
@@ -48,7 +48,8 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         # TODO parsing and error handling
         # TODO this likely needs to be an async for because request() should probably return an async iterable
         #print(f"partition_descriptor: {partition_descriptor}")
-        async for response in self.requester.request(partition_descriptor):
+        async for response in self._requester_constructor(request_generator=stream.get_request_generator()).request(partition_descriptor):
+        #async for response in self.requester.request(partition_descriptor):
             #print(f"response: {response}")
             #print(f"stream.parse_response(response): {stream.parse_response(response)}")
             # FFIXME: should parsing be async?
@@ -83,7 +84,7 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
     import asyncio
 
     async def _read_partitions_async(self, partitions_with_streams: Iterable[StreamAndPartition[PartitionType]]):
-        semaphore = asyncio.Semaphore(self.concurrency_policy.maximum_number_of_concurrent_requests())
+        semaphore = asyncio.Semaphore(self._concurrency_policy.maximum_number_of_concurrent_requests())
         queue = asyncio.Queue()
 
         async def process_partition_and_stream(partition_and_stream):

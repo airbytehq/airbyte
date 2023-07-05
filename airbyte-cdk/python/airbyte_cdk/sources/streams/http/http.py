@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
-from airbyte_cdk.v2.concurrency.http import HttpPartitionDescriptor, HttpRequestDescriptor, GetRequest, PostRequest
+from airbyte_cdk.v2.concurrency.http import HttpRequestDescriptor, GetRequest, PostRequest, RequestGenerator
 from airbyte_cdk.v2.concurrency.http_pagination import HttpStreamPaginator
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from .auth.core import HttpAuthenticator, NoAuth
@@ -476,6 +476,7 @@ class HttpStream(Stream, ABC):
         partitions = []
         paginator = HttpStreamPaginator(self)
         for stream_slice in self.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+            """
             if self.http_method == "GET":
                 request = GetRequest(
                     base_url=self.url_base,
@@ -494,8 +495,12 @@ class HttpStream(Stream, ABC):
                     paginator=paginator
 
                 )
-            partitions.append(HttpPartitionDescriptor(metadata=stream_slice, request_descriptor=request))
+                """
+            partitions.append(PartitionDescriptor(metadata=stream_slice))
         return partitions
+
+    def get_request_generator(self):
+        return HttpStreamRequestGenerator(self)
 
 
 class HttpSubStream(HttpStream, ABC):
@@ -522,3 +527,48 @@ class HttpSubStream(HttpStream, ABC):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 yield {"parent": record}
+
+class HttpStreamRequestGenerator(RequestGenerator):
+
+    def __init__(self, stream: HttpStream):
+        self._stream = stream
+
+    async def next_request(self,
+                           partition_descriptor: PartitionDescriptor,
+                           # stream_state: Mapping[str, Any], # Requests shouldn't be based off the stream state,
+                           # but we cannot enforce this because stream_state is part of the public API...
+                           response: aiohttp.ClientResponse) -> Optional[HttpRequestDescriptor]:
+        """
+        :param partition_descriptor:
+        :param response: last response. Used to generate the next request if needed
+        :return:
+        """
+        stream_state = {} # requests shouldn't be based off the stream state
+        stream_slice = partition_descriptor.metadata
+        if response:
+            requests_response = await self._stream.async_response_to_response(response)
+            next_page_token = self._stream.next_page_token(requests_response)
+            print(f"next_page_token: {next_page_token}")
+            if next_page_token is None:
+                return None
+        else:
+            next_page_token = None
+        if self._stream.http_method == "GET":
+            request = GetRequest(
+                base_url=self._stream.url_base,
+                path=self._stream.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers={**self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token), **self._stream.authenticator.get_auth_header()},
+                request_parameters=self._stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                body_json=self._stream.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            )
+        elif self._stream.http_method == "POST":
+            request = PostRequest(
+                base_url=self._stream.url_base,
+                path=self._stream.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers={**self._stream.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token), **self._stream.authenticator.get_auth_header()},
+                body_json=self._stream.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            )
+        else:
+            raise ValueError(f"Unsupported http method: {self._stream.http_method}")
+        print(f"request: {request}")
+        return request

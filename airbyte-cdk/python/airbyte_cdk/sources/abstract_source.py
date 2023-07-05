@@ -35,7 +35,7 @@ from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_s
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.v2.concurrency.async_requesters import DefaultAsyncRequester
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
-from airbyte_cdk.v2.concurrency.http import AiohttpRequester
+from airbyte_cdk.v2.concurrency.http import AiohttpRequester, AiohttpClient
 from airbyte_cdk.v2.concurrency.stream_group import ConcurrentStreamGroup
 from airbyte_cdk.v2.state import LegacyStateManager
 
@@ -119,7 +119,7 @@ class AbstractSource(Source, ABC):
 
         concurrency_factor = self.get_concurrency_factor()
         stream_group = ConcurrentStreamGroup(
-            self.get_requester(stream_instances),
+            self.get_requester_constructor(stream_instances),
             ConcurrencyPolicy(max_concurrent_requests=concurrency_factor),
             streams=stream_instances.values()
         )
@@ -133,13 +133,16 @@ class AbstractSource(Source, ABC):
         logger.info(f"Runtime with {concurrency_factor} concurrent workers: {datetime.now() - t0} seconds")
         logger.info(f"Read {record_count} records from {self.name}")
 
-    def get_requester(self, streams):
+    def get_requester_constructor(self, streams):
+        import functools
         if any(isinstance(stream, HttpStream) for stream in streams.values()):
-            return AiohttpRequester()
+            client = AiohttpClient()
+            return functools.partial(AiohttpRequester, client=client)
         if any(isinstance(stream, DeclarativeStream) for stream in streams.values()):
-            return AiohttpRequester()
+            client = AiohttpClient()
+            return functools.partial(AiohttpRequester, client=client)
         else:
-            return DefaultAsyncRequester()
+            return DefaultAsyncRequester
 
     def get_concurrency_factor(self):
         return 1

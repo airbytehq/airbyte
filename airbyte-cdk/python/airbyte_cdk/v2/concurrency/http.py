@@ -7,7 +7,7 @@ from typing import Mapping, Any, Union, AsyncIterable, TypeVar, Generic, Optiona
 
 import aiohttp
 
-from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester
+from airbyte_cdk.v2.concurrency.async_requesters import AsyncRequester, Client, RequestType
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 
 
@@ -24,7 +24,8 @@ class HttpRequestDescriptor:
     cookies: Mapping[str, Any] = field(default_factory=dict)
     follow_redirects: bool = True
     body_json: Mapping[str, Any] = None
-    paginator: Optional["Paginator"] = None #FIXME: I liked that this was a dataclass. adding the paginator here isn't great + it creates a circular dependency
+    paginator: Optional[
+        "Paginator"] = None  # FIXME: I liked that this was a dataclass. adding the paginator here isn't great + it creates a circular dependency
 
 
 @dataclass
@@ -45,11 +46,6 @@ class PostRequest(HttpRequestDescriptor):
             raise ValueError("Exactly one of of body_text, body_json, or body_urlencoded_params must be set")
 
 
-@dataclass
-class HttpPartitionDescriptor(PartitionDescriptor):
-    request_descriptor: HttpRequestDescriptor
-
-
 ResponseType = TypeVar('ResponseType')
 
 
@@ -59,6 +55,7 @@ class Paginator(ABC, Generic[ResponseType]):
         """
         Given the response representing the previous page of data return an HttpRequestDescriptor containing any info for the next page
         """
+
 
 class RequestException(Exception):
     pass
@@ -101,40 +98,69 @@ class DefaultExponentialBackoffHandler(ErrorHandler[aiohttp.ClientResponse]):
     def observe_response(self, response: aiohttp.ClientResponse) -> Optional[RequestException]:
         return None
 
-class AiohttpRequester(AsyncRequester[HttpPartitionDescriptor]):
-    def __init__(self, error_handler: ErrorHandler = None):
-        self._client = None
-        # TODO this should be a list of error handlers
-        self.error_handler = error_handler or DefaultExponentialBackoffHandler()
 
-    async def get_client(self) -> aiohttp.ClientSession:
+class RequestGenerator:
+    async def next_request(self, partition_descriptor: PartitionDescriptor, response: Optional[aiohttp.ClientResponse]) -> Optional[
+        HttpRequestDescriptor]:
+        """
+        :param partition_descriptor:
+        :param response: last response. Used to generate the next request if needed
+        :return:
+        """
+        pass
+
+
+class AiohttpClient(Client[HttpRequestDescriptor, aiohttp.ClientResponse]):
+    def __init__(self):
+        self._client: aiohttp.ClientSession = None
+
+    async def get_client(self):
         if not self._client:
             self._client = aiohttp.ClientSession()
             await self._client.__aenter__()
 
         return self._client
 
-    async def request(self, partition_descriptor: HttpPartitionDescriptor) -> AsyncIterable[aiohttp.ClientResponse]:
-        # async with self.client() as client:
+    async def request(self, request: HttpRequestDescriptor) -> aiohttp.ClientResponse:
+        args = {
+            'headers': request.headers,
+            'allow_redirects': request.follow_redirects,
+            'cookies': request.cookies
+        }
+        if isinstance(request, GetRequest):
+            get_descriptor: GetRequest = request
+            args['params'] = get_descriptor.request_parameters
+        elif isinstance(request, PostRequest):
+            post_descriptor: PostRequest = request
+            args['json'] = post_descriptor.body_json
+            args['data'] = post_descriptor.body_data
+        return (await self.get_client()).request(request.method, request.base_url + request.path,  **args)
+
+
+class AiohttpRequester(AsyncRequester):
+    def __init__(self, client: AiohttpClient, request_generator: RequestGenerator, error_handler: ErrorHandler = None):
+        self._request_generator = request_generator
+        # FIXME: can we initialize the client in __init__?
+        self._client = client
+        # TODO this should be a list of error handlers
+        self.error_handler = error_handler or DefaultExponentialBackoffHandler()
+
+    async def request(self, partition_descriptor: PartitionDescriptor) -> AsyncIterable[aiohttp.ClientResponse]:
         pagination_complete = False
-        request = partition_descriptor.request_descriptor
+        last_response = None
         while not pagination_complete:
-            #print(f"Requesting first page: {request}")
-            method, url, request_description = self._get_request_args(request)
-            async with (await self.get_client()).request(method, url, **request_description) as response:
+            request = await self._request_generator.next_request(partition_descriptor, last_response)
+            async with (await self._client.request(request)) as last_response:
                 try:
-                    self.error_handler.observe_response(response)
+                    self.error_handler.observe_response(last_response)
                 except Retry as e:
                     # TODO implement retry logic
-                    raise Exception(f"We should be retrying here!! {e}. Response: {response} ")
+                    raise Exception(f"We should be retrying here!! {e}. Response: {last_response} ")
                 else:
-                    yield response
-                    if request.paginator:
-                        request = partition_descriptor.request_descriptor.paginator.get_next_page_info(await partition_descriptor.request_descriptor.paginator._stream.async_response_to_response(response), partition_descriptor)
-                        if not request:
-                            pagination_complete = True
-                    else:
-                        pagination_complete = True
+                    print(f"response: {last_response}")
+                    yield last_response
+                    request = await self._request_generator.next_request(partition_descriptor, last_response)
+                    pagination_complete = request is None
 
     @staticmethod
     def _get_request_args(request_descriptor: HttpRequestDescriptor) -> Tuple[str, str, Mapping[str, Any]]:
