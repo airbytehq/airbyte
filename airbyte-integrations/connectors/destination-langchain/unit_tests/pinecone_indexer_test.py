@@ -28,11 +28,26 @@ def test_pinecone_index_upsert_and_delete():
     )
     indexer.pinecone_index.delete.assert_called_with(filter={"_natural_id": {"$in": ["delete_id1", "delete_id2"]}})
     indexer.pinecone_index.upsert.assert_called_with(
-        vectors=[
+        vectors=(
             (ANY, [1, 2, 3], {"_airbyte_stream": "abc", "text": "test"}),
             (ANY, [4, 5, 6], {"_airbyte_stream": "abc", "text": "test2"}),
-        ]
+        ),
+        async_req=True,
+        show_progress=False
     )
+
+def test_pinecone_index_upsert_batching():
+    indexer = create_pinecone_indexer()
+    indexer.embed_fn = MagicMock(return_value=[[i, i, i] for i in range(50)])
+    indexer.index(
+        [Document(page_content=f"test {i}", metadata={"_airbyte_stream": "abc"}) for i in range(50)],
+        [],
+    )
+    assert indexer.pinecone_index.upsert.call_count == 2
+    for i in range(40):
+        assert indexer.pinecone_index.upsert.call_args_list[0].kwargs["vectors"][i] == (ANY, [i, i, i], {"_airbyte_stream": "abc", "text": f"test {i}"})
+    for i in range(40, 50):
+        assert indexer.pinecone_index.upsert.call_args_list[1].kwargs["vectors"][i-40] == (ANY, [i, i, i], {"_airbyte_stream": "abc", "text": f"test {i}"})
 
 def test_pinecone_pre_sync():
     indexer = create_pinecone_indexer()

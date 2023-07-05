@@ -31,7 +31,7 @@ import uuid
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 
 indexer_map = {
     "pinecone": PineconeIndexer,

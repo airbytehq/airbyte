@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import itertools
 import uuid
 from destination_langchain.config import DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.embedder import Embedder
@@ -47,14 +48,22 @@ class Indexer(ABC):
     def max_metadata_size(self) -> Optional[int]:
         return None
 
+def chunks(iterable, batch_size):
+    """A helper function to break an iterable into chunks of size batch_size."""
+    it = iter(iterable)
+    chunk = tuple(itertools.islice(it, batch_size))
+    while chunk:
+        yield chunk
+        chunk = tuple(itertools.islice(it, batch_size))
+
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
 
     def __init__(self, config: PineconeIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
-        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
-        self.pinecone_index = pinecone.Index(config.index)
+        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
+        self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
@@ -75,7 +84,12 @@ class PineconeIndexer(Indexer):
             metadata = chunk.metadata
             metadata["text"] = chunk.page_content
             pinecone_docs.append((str(uuid.uuid4()), embedding_vectors[i], metadata))
-        self.pinecone_index.upsert(vectors=pinecone_docs)
+        async_results = [
+            self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+            for ids_vectors_chunk in chunks(pinecone_docs, batch_size=40)
+        ]
+        # Wait for and retrieve responses (this raises in case of error)
+        [async_result.get() for async_result in async_results]
 
     def check(self) -> Optional[str]:
         try:
