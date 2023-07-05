@@ -21,20 +21,8 @@ pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
 
-# Pipeline deps
-# TODO: Move Pipelines to new package
-dagger-io = "^0.6.2"
-asyncer = "^0.0.2"
-anyio = "^3.4.1"
-more-itertools = "^8.11.0"
-docker = "^5.0.3"
-semver = "^3.0.1"
-airbyte-protocol-models = "*"
-tabulate = "^0.8.9"
-jinja2 = "^3.0.2"
-
 [tool.poetry.group.dev.dependencies]
-pyinstrument = "*"
+pyinstrument = "^0.24.4"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
@@ -47,4 +35,3 @@ write-review-requirements-file = "ci_connector_ops.acceptance_test_config_checks
 print-mandatory-reviewers = "ci_connector_ops.acceptance_test_config_checks:print_mandatory_reviewers"
 allowed-hosts-checks = "ci_connector_ops.allowed_hosts_checks:check_allowed_hosts"
 run-qa-checks = "ci_connector_ops.qa_checks:run_qa_checks"
-airbyte-ci = "ci_connector_ops.pipelines.commands.airbyte_ci:airbyte_ci"
