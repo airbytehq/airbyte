@@ -6,6 +6,7 @@ from typing import Mapping
 from unittest.mock import MagicMock, Mock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
+import json
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
@@ -17,14 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
-    SimpleRetriever,
-    SimpleRetrieverTestReadDecorator,
-    _prepared_request_to_airbyte_message,
-    _response_to_airbyte_message,
-)
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.http import HttpStream
+
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}
@@ -513,198 +510,6 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
     assert expected_path == actual_path
 
 
-@pytest.mark.parametrize(
-    "test_name, http_method, url, headers, params, body_json, body_data, expected_airbyte_message",
-    [
-        (
-            "test_basic_get_request",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {},
-            {},
-            {},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO, message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {}, "body": null}'
-                ),
-            ),
-        ),
-        (
-            "test_get_request_with_headers",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {"h1": "v1", "h2": "v2"},
-            {},
-            {},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"h1": "v1", "h2": "v2"}, "body": null}',
-                ),
-            ),
-        ),
-        (
-            "test_get_request_with_request_params",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {},
-            {"p1": "v1", "p2": "v2"},
-            {},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {}, "body": null}',
-                ),
-            ),
-        ),
-        (
-            "test_get_request_with_request_body_json",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {"Content-Type": "application/json"},
-            {},
-            {"b1": "v1", "b2": "v2"},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}"}',
-                ),
-            ),
-        ),
-        (
-            "test_get_request_with_headers_params_and_body",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {"Content-Type": "application/json", "h1": "v1"},
-            {"p1": "v1", "p2": "v2"},
-            {"b1": "v1", "b2": "v2"},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {"Content-Type": "application/json", "h1": "v1", "Content-Length": "24"}, "body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}"}',
-                ),
-            ),
-        ),
-        (
-            "test_get_request_with_request_body_data",
-            HttpMethod.GET,
-            "https://airbyte.io",
-            {"Content-Type": "application/x-www-form-urlencoded"},
-            {},
-            {},
-            {"b1": "v1", "b2": "v2"},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/x-www-form-urlencoded", "Content-Length": "11"}, "body": "b1=v1&b2=v2"}',
-                ),
-            ),
-        ),
-        (
-            "test_basic_post_request",
-            HttpMethod.POST,
-            "https://airbyte.io",
-            {},
-            {},
-            {},
-            {},
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "POST", "headers": {"Content-Length": "0"}, "body": null}',
-                ),
-            ),
-        ),
-    ],
-)
-def test_prepared_request_to_airbyte_message(test_name, http_method, url, headers, params, body_json, body_data, expected_airbyte_message):
-    request = requests.Request(method=http_method.name, url=url, headers=headers, params=params)
-    if body_json:
-        request.json = body_json
-    if body_data:
-        request.data = body_data
-    prepared_request = request.prepare()
-
-    actual_airbyte_message = _prepared_request_to_airbyte_message(prepared_request)
-
-    assert expected_airbyte_message == actual_airbyte_message
-
-
-@pytest.mark.parametrize(
-    "test_name, response_body, response_headers, status_code, expected_airbyte_message",
-    [
-        (
-            "test_response_no_body_no_headers",
-            b"",
-            {},
-            200,
-            AirbyteMessage(
-                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message='response:{"body": "", "headers": {}, "status_code": 200}')
-            ),
-        ),
-        (
-            "test_response_no_body_with_headers",
-            b"",
-            {"h1": "v1", "h2": "v2"},
-            200,
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO, message='response:{"body": "", "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}'
-                ),
-            ),
-        ),
-        (
-            "test_response_with_body_no_headers",
-            b'{"b1": "v1", "b2": "v2"}',
-            {},
-            200,
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='response:{"body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}", "headers": {}, "status_code": 200}',
-                ),
-            ),
-        ),
-        (
-            "test_response_with_body_and_headers",
-            b'{"b1": "v1", "b2": "v2"}',
-            {"h1": "v1", "h2": "v2"},
-            200,
-            AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.INFO,
-                    message='response:{"body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}", "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}',
-                ),
-            ),
-        ),
-    ],
-)
-def test_response_to_airbyte_message(test_name, response_body, response_headers, status_code, expected_airbyte_message):
-    response = requests.Response()
-    response.status_code = status_code
-    response.headers = response_headers
-    response._content = response_body
-
-    actual_airbyte_message = _response_to_airbyte_message(response)
-
-    assert expected_airbyte_message == actual_airbyte_message
-
-
 def test_limit_stream_slices():
     maximum_number_of_slices = 4
     stream_slicer = MagicMock()
@@ -841,16 +646,13 @@ def test_emit_log_request_response_messages():
         config={},
     )
 
-    request_log_message, response_log_message, record_1, record_2 = [
+    request_response_log_message, record_1, record_2 = [
         record for record in retriever.parse_records(request=request, response=response, stream_slice={}, stream_state={})
     ]
 
-    assert isinstance(request_log_message, AirbyteMessage)
-    assert request_log_message.type == Type.LOG
-    assert "request:" in request_log_message.log.message
-    assert isinstance(response_log_message, AirbyteMessage)
-    assert response_log_message.type == Type.LOG
-    assert "response:" in response_log_message.log.message
+    assert isinstance(request_response_log_message, AirbyteMessage)
+    assert request_response_log_message.type == Type.LOG
+    json.loads(request_response_log_message.log.message)
     assert isinstance(record_1, Mapping)
     assert record_1 == records[0]
     assert isinstance(record_1, Mapping)

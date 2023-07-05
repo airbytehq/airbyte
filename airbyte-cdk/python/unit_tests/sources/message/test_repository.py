@@ -8,6 +8,7 @@ from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteStateMessage,
+    Level,
     OrchestratorType,
     Type,
 )
@@ -62,3 +63,15 @@ def test_given_message_is_not_control_nor_log_message_when_emit_message_then_rai
     repo = InMemoryMessageRepository()
     with pytest.raises(ValueError):
         repo.emit_message(AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "state value"})))
+
+
+def test_given_log_level_is_severe_enough_when_log_message_then_allow_message_to_be_consumed():
+    repo = InMemoryMessageRepository(Level.DEBUG)
+    repo.log_message(Level.INFO, lambda: "this is a log message")
+    assert list(repo.consume_queue())
+
+
+def test_given_log_level_not_severe_enough_when_log_message_then_do_not_allow_message_to_be_consumed():
+    repo = InMemoryMessageRepository(Level.ERROR)
+    repo.log_message(Level.INFO, lambda: "this is a log message")
+    assert not list(repo.consume_queue())
