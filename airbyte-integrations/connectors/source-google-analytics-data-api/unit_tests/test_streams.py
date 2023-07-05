@@ -396,3 +396,88 @@ def test_read_incremental(requests_mock):
         {"date": "20230101", "totalUsers": 140, "property_id": 123},
         {"date": "20230102", "totalUsers": 150, "property_id": 123},
     ]
+
+def test_read_end_date(requests_mock):
+    config = {
+        "property_id": 123,
+        "date_ranges_start_date": datetime.date(2022, 12, 28),
+        "date_ranges_end_date": datetime.date(2022, 12, 31),
+        "window_in_days": 1,
+        "dimensions": ["date"],
+        "metrics": ["totalUsers"],
+    }
+
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    stream_state = {}
+
+    responses = [
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221228"}], "metricValues": [{"value": "100"}]}],
+            "rowCount": 1,
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "110"}]}],
+            "rowCount": 1,
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "120"}]}],
+            "rowCount": 1,
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "130"}]}],
+            "rowCount": 1,
+        },
+        # 2-nd incremental read
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "112"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "125"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "126"}]}],
+            "rowCount": 1
+        },
+]
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/123:runReport",
+        json=lambda request, context: responses.pop(0),
+    )
+
+    with freeze_time("2023-01-01 12:00:00"):
+        records = list(read_incremental(stream, stream_state))
+
+    assert records == [
+        {"date": "20221228", "totalUsers": 100, "property_id": 123},
+        {"date": "20221229", "totalUsers": 110, "property_id": 123},
+        {"date": "20221230", "totalUsers": 120, "property_id": 123},
+        {"date": "20221231", "totalUsers": 130, "property_id": 123},
+    ]
+
+    assert stream_state == {"date": "20221231"}
+
+    with freeze_time("2023-01-02 12:00:00"):
+        records = list(read_incremental(stream, stream_state))
+
+    assert records == [
+        {"date": "20221229", "totalUsers": 112, "property_id": 123},
+        {"date": "20221230", "totalUsers": 125, "property_id": 123},
+        {"date": "20221231", "totalUsers": 126, "property_id": 123},
+    ]

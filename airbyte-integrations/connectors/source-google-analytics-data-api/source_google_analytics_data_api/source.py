@@ -271,6 +271,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         today: datetime.date = datetime.date.today()
 
+        end_date = self.config.get("date_ranges_end_date", today)
+        end_date = datetime.datetime.strptime(end_date) if isinstance(end_date, str) else end_date
+        end_date = min(end_date, today)
+
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
@@ -279,7 +283,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        while start_date <= today:
+        while start_date <= end_date:
             # stop producing slices if 429 + specific scenario is hit
             # see GoogleAnalyticsQuotaHandler for more info.
             if GoogleAnalyticsQuotaHandler.stop_iter:
