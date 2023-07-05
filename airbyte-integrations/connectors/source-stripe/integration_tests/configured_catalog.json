@@ -268,6 +268,15 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"],
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "credit_notes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

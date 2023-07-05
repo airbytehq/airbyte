@@ -6,14 +6,15 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Dict, List, Optional, Type
+from typing import Dict, Iterable, List
 
+from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy, DefaultSchemaValidationPolicy
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
@@ -24,33 +25,37 @@ class InMemoryFilesSource(FileBasedSource):
             file_type,
             availability_strategy: AvailabilityStrategy,
             discovery_policy: AbstractDiscoveryPolicy,
+            validation_policies: AbstractSchemaValidationPolicy,
             parsers: Dict[str, FileTypeParser],
-            stream_cls: Type[AbstractFileBasedStream],
+            stream_reader: AbstractFileBasedStreamReader,
     ):
+        stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type)
+        availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         super().__init__(
-            InMemoryFilesStreamReader(files=files, file_type=file_type),
+            stream_reader,
             availability_strategy=availability_strategy,
             discovery_policy=discovery_policy,
             parsers=parsers,
+            validation_policies=validation_policies or DefaultSchemaValidationPolicy,
         )
+
+        # Attributes required for test purposes
         self.files = files
         self.file_type = file_type
-        self.discovery_policy = discovery_policy
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     files: Dict[str, dict]
     file_type: str
 
-    def list_matching_files(
+    def get_matching_files(
         self,
         globs: List[str],
-        from_date: Optional[datetime] = None,
-    ) -> List[RemoteFile]:
-        return [
-            RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
+    ) -> Iterable[RemoteFile]:
+        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
+            RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), file_type=self.file_type)
             for f, data in self.files.items()
-        ]
+        ], globs)
 
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.StringIO(self._make_file_contents(file.uri))
