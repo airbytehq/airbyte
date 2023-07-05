@@ -53,10 +53,10 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   }
 
-  private static boolean useAsyncSnowflake(final JsonNode config) {
+  public static boolean useAsyncSnowflake(final JsonNode config) {
     // this is how we toggle async snowflake on.
-    final Set<String> stagingLoadingMethods = Collections.emptySet();
-//    final Set<String> stagingLoadingMethods = Set.of("standard", "internal staging", "internal-staging", "internal_staging");
+    // final Set<String> stagingLoadingMethods = Collections.emptySet();
+    final Set<String> stagingLoadingMethods = Set.of("standard", "internal staging", "internal-staging", "internal_staging");
 
     return Optional.of(config)
             .map(node -> node.get("loading_method"))
