@@ -50,6 +50,8 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     base_container = (
         context.dagger_client.container()
         .from_(python_image_name)
+        .with_exec(["apt-get", "update"])
+        .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "pip==23.1.2"])
     )
