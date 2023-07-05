@@ -66,7 +66,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
             try:
-                for record in parser.parse_records(file, self._stream_reader):
+                for record in parser.parse_records(self.config, file, self._stream_reader):
                     if not self.record_passes_validation_policy(record):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
@@ -147,7 +147,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
         try:
-            return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
+            return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader)
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
