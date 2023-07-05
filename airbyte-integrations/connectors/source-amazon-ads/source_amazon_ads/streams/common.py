@@ -24,6 +24,7 @@ airbyte_cdk.sources.streams.core.Stream
     ├── airbyte_cdk.sources.streams.http.HttpStream
     │   └── AmazonAdsStream
     │       ├── Profiles
+    │       ├── Portfolios
     │       └── SubProfilesStream
     │           ├── SponsoredDisplayAdGroups
     │           ├── SponsoredDisplayCampaigns
@@ -40,6 +41,7 @@ airbyte_cdk.sources.streams.core.Stream
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
+        ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
 
