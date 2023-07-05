@@ -243,10 +243,9 @@ class UserInsights(InstagramIncrementalStream):
 
         # update state using IncrementalMixin
         # reference issue: https://github.com/airbytehq/airbyte/issues/24697
-        if sync_mode == SyncMode.incremental:
-            if complete_records:
-                for record in complete_records:
-                    self.state = self._update_state(self.state, record)
+        if sync_mode == SyncMode.incremental and complete_records:
+            for record in complete_records:
+                self.state = self._update_state(self.state, record)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
