@@ -3,6 +3,7 @@
 #
 
 import logging
+import os
 from functools import wraps
 
 from .streams import Funnels
@@ -28,7 +29,7 @@ def adapt_streams_if_testing(func):
 def adapt_validate_if_testing(func):
     """
     Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
-    so we're reducing amount of requests by, if `_testing` flag is set in config:
+    so we're reducing amount of requests by, if `ALIGN_DATE_RANGE` flag is set in env variables:
 
     1. Take time range in only 1 month
     """
@@ -36,7 +37,7 @@ def adapt_validate_if_testing(func):
     @wraps(func)
     def wrapper(self, config):
         config = func(self, config)
-        if config.get("_testing"):
+        if os.environ.get("ALIGN_DATE_RANGE_TO_LAST_N_DAYS", False):
             logger = logging.getLogger("airbyte")
             logger.info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
             # Take time range in only 1 month

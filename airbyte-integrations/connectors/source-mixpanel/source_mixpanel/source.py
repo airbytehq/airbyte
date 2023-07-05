@@ -5,6 +5,7 @@
 import base64
 import json
 import logging
+import os
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -91,7 +92,7 @@ class SourceMixpanel(AbstractSource):
 
         try:
             stream_kwargs = {"authenticator": auth, **config}
-            if not config.get("_testing"):
+            if not os.environ.get("SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS", False):
                 # We preserve sleeping between requests in case this is a running acceptance test.
                 # Otherwise, we do not want to wait to not time out
                 stream_kwargs["reqs_per_hour_limit"] = 0
@@ -111,7 +112,6 @@ class SourceMixpanel(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config = self._validate_and_transform(config)
-        test_mode = config.get("_testing")
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
@@ -130,7 +130,7 @@ class SourceMixpanel(AbstractSource):
             [Engage, Cohorts, CohortMembers, Funnels, Revenue],
         ]
         stream_kwargs = {"authenticator": auth, **config}
-        if not test_mode:
+        if not os.environ.get("SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS", False):
             # set reqs_per_hour_limit = 0 to save time for discovery
             # We preserve sleeping between requests in case this is a running acceptance test.
             # Otherwise, we do not want to wait to not time out

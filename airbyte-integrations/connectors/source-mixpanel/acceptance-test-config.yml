@@ -1,6 +1,9 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mixpanel:dev
+custom_environment_variables:
+  SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS: true
+  ALIGN_DATE_RANGE_TO_LAST_N_DAYS: true
 test_strictness_level: "high"
 acceptance_tests:
   spec:
