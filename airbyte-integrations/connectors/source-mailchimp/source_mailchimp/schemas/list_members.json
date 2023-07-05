@@ -254,23 +254,21 @@
         "description": "The count of tags associated with the member."
       },
       "tags": {
-        "type": ["null", "object"],
+        "type": ["null", "array"],
         "title": "Tags",
         "description": "Tags associated with the member.",
-        "items": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"],
-              "title": "ID",
-              "description": "The ID of the tag."
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "integer"],
+            "title": "ID",
+            "description": "The ID of the tag."
             },
-            "name": {
-              "type": ["null", "string"],
-              "title": "Name",
-              "description": "The name of the tag."
+          "name": {
+            "type": ["null", "string"],
+            "title": "Name",
+            "description": "The name of the tag."
             }
-          }
         }
       },
       "list_id": {
@@ -279,9 +277,10 @@
         "description": "A string that uniquely identifies this list."
       },
       "_links": {
-        "type": ["null", "object"],
+        "type": ["null", "array"],
         "title": "Links",
         "description": "Links associated with the member.",
+        "additionalProperties": true,
         "properties": {
           "rel": {
             "type": ["null", "string"],
