@@ -61,7 +61,7 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 # strings, when are substrings of error messages should be retried
-TOKEN_EXPIRED_ERROR = "oauth-token is expired"
+TOKEN_EXPIRED_ERROR = ["oauth-token is expired", "oauth token used to make this call expired"]
 TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR = "Max retries exceeded with url: /oauth/v1/token"
 
 
@@ -74,7 +74,8 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
-        if isinstance(exc, HubspotInvalidAuth) and TOKEN_EXPIRED_ERROR.lower() in exc.response.text.lower():
+        if (isinstance(exc, HubspotInvalidAuth) or isinstance(exc, HTTPError)) \
+                and any([m in exc.response.text.lower() for m in TOKEN_EXPIRED_ERROR]):
             return False
         if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
             return False
@@ -205,7 +206,7 @@ class API:
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
-        if TOKEN_EXPIRED_ERROR in response.json():
+        if any([m in response.json() for m in TOKEN_EXPIRED_ERROR]):
             logger.info("Oauth token expired. Re-fetching token")
             self._session.auth = self.get_authenticator()
         return self._parse_and_handle_errors(response), response
@@ -357,6 +358,7 @@ class Stream(HttpStream, ABC):
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
+    @retry_connection_handler(max_tries=2)
     def handle_request(
         self,
         stream_slice: Mapping[str, Any] = None,
