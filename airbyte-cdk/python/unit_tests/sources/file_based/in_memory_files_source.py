@@ -48,7 +48,7 @@ class InMemoryFilesSource(FileBasedSource):
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     files: Dict[str, dict]
     file_type: str
-    file_write_options: Optional[Dict[str, str]]
+    file_write_options: Optional[Dict[str, Any]]
 
     def get_matching_files(
         self,

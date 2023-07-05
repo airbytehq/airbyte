@@ -17,7 +17,7 @@ class CsvParser(FileTypeParser):
     async def infer_schema(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
-        config_format = config.format
+        config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             dialect_name = config.name + DIALECT_NAME
             csv.register_dialect(
@@ -42,7 +42,7 @@ class CsvParser(FileTypeParser):
     def parse_records(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
-        config_format = config.format
+        config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
             # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records

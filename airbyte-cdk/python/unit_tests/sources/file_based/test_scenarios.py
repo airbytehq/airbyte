@@ -28,9 +28,9 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
     invalid_csv_scenario,
-    multi_csv_custom_format_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_stream_custom_format,
     single_csv_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
@@ -74,7 +74,7 @@ scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
-    multi_csv_custom_format_scenario,
+    multi_stream_custom_format,
 ]
 
 

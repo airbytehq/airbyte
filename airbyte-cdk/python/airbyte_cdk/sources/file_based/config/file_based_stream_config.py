@@ -6,13 +6,14 @@ import codecs
 from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 
+VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
+
 
 class CsvFormat(BaseModel):
-    filetype: str
     delimiter: str = ","
     quote_char: str = '"'
     escape_char: Optional[str]
@@ -61,16 +62,13 @@ class FileBasedStreamConfig(BaseModel):
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[CsvFormat]  # this will eventually be a Union once we have more than one format type
+    format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
 
-    @root_validator(pre=True)
-    def validate_filetype(cls, values):
-        # In the existing S3 configs, we specify file_type in two places. Ideally it should only be set at the
-        # top-level of the config, but while we have it in two places we should emit an error if there is a mismatch
-        config_format = values.get("format", {})
-        if config_format:
-            format_file_type = config_format.get("filetype")
-            file_type = values.get("file_type")
-            if file_type != format_file_type:
-                raise ValueError(f"type mismatch between config file_type {file_type} and format filetype {format_file_type}")
-        return values
+    @validator("format", pre=True)
+    def transform_format(cls, v):
+        if isinstance(v, Mapping):
+            file_type = v.get("filetype", "")
+            if file_type.casefold() not in VALID_FILE_TYPES:
+                raise ValueError(f"Format filetype {file_type} is not a supported file type")
+            return {file_type: {key: val for key, val in v.items()}}
+        return v

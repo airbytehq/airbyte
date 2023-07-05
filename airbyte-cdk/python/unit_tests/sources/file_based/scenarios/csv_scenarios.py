@@ -503,7 +503,6 @@ csv_custom_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "newlines_in_values": False
                     }
                 }
             ]
@@ -573,9 +572,9 @@ csv_custom_format_scenario = (
     )
 ).build()
 
-multi_csv_custom_format_scenario = (
+multi_stream_custom_format = (
     TestScenarioBuilder()
-    .set_name("multi_csv_custom_format")
+    .set_name("multi_stream_custom_format_scenario")
     .set_config(
         {
             "streams": [
