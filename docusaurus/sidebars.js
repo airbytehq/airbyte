@@ -8,7 +8,10 @@ const destinationDocs = `${connectorsDocsRoot}/destinations`;
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
     .readdirSync(dir)
-    .filter((fileName) => !(fileName.endsWith('.inapp.md') || fileName.endsWith('-migrations.md')))
+    .filter(
+      (fileName) =>
+        !(fileName.endsWith('.inapp.md') || fileName.endsWith('-migrations.md'))
+    )
     .map((fileName) => fileName.replace('.md', ''))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
@@ -231,7 +234,7 @@ const contributeToAirbyte = {
         'contributing-to-airbyte/resources/developing-locally',
         'contributing-to-airbyte/resources/developing-on-docker',
         'contributing-to-airbyte/resources/gradle',
-        'contributing-to-airbyte/resources/python-gradle-setup',        
+        'contributing-to-airbyte/resources/python-gradle-setup',
       ],
     },
   ],
@@ -505,6 +508,7 @@ module.exports = {
               ],
         },
         */
+        'release_notes/june_2023',
         'release_notes/may_2023',
         'release_notes/april_2023',
         'release_notes/march_2023',
