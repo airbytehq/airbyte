@@ -12,18 +12,32 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ### Requirements
 * A running Docker engine
 * Python >= 3.10
+* [pipx](https://pypa.github.io/pipx/installation/)
 
-### Install
+## Requirements
+
+This project requires Python 3.10 and pipx.
+
+## Installation
+
+The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
+
+If you haven't installed pipx, you can do it with pip:
+
 ```bash
-# Make sure that the current Python version is >= 3.10
-pyenv shell 3.10
-pip install "ci-connector-ops[pipelines] @ git+https://github.com/airbytehq/airbyte.git@master#subdirectory=airbyte-ci/ci_connector_ops"
-cd airbyte
-airbyte-ci
+python -m pip install --user pipx
+python -m pipx ensurepath
 ```
 
+Once pipx is installed, navigate to the root directory of the project, then run:
+
+```bash
+pipx install airbyte-ci/ci/ci_pipelines/
+```
+
+This command installs `airbyte-ci` and makes it globally available in your terminal.
+
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
-N.B: This project will eventually be moved to `airbyte-ci` root directory.
 
 
 ## Commands reference
