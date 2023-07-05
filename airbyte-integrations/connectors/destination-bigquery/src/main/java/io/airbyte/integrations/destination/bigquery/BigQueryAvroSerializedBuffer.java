@@ -19,6 +19,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class differs from {@link AvroSerializedBuffer} in that 1) the Avro schema can be customized
@@ -51,7 +52,7 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     return (pair, catalog) -> {
       final AirbyteStream stream = catalog.getStreams()
           .stream()
-          .filter(s -> s.getStream().getName().equals(pair.getName()))
+          .filter(s -> s.getStream().getName().equals(pair.getName()) && StringUtils.equals(s.getStream().getNamespace(), pair.getNamespace()))
           .findFirst()
           .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
           .getStream();

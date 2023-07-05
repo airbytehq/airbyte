@@ -8,6 +8,7 @@ See [destinations/bigquery](https://docs.airbyte.com/integrations/destinations/b
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| 1.5.1   | 2023-06-30 | [\#27891](https://github.com/airbytehq/airbyte/pull/27891) | Revert bugged update                                                                                                     |
 | 1.5.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                     |
 | 1.4.1   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
 | 1.4.0   | 2023-04-28 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Fix: all integer schemas should be converted to Avro longs                                                               |
