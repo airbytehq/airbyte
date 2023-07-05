@@ -112,7 +112,7 @@ class MixpanelStream(HttpStream, ABC):
             return float(retry_after)
 
         self.retries += 1
-        return 2 ** self.retries * 60
+        return 2**self.retries * 60
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 402:
