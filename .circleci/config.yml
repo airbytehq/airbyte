@@ -27,6 +27,7 @@ workflows:
           dockerfiles: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
           ignore-rules: "DL3059"
       - aws-ecr/build-and-push-image:
+          dockerfile: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
