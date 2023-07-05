@@ -104,7 +104,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     aggregation_type = QueryAggregationType.auto
     start_row = 0
     dimensions = []
-    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
+    search_types = ["web", "news", "image", "video"]
     range_of_days = 3
 
     def path(
@@ -288,18 +288,22 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date"]
 
 
 class SearchAnalyticsByCountry(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "page"]
 
 
@@ -363,11 +367,13 @@ class SearchAnalyticsSiteReportBySite(SearchAnalytics):
 
 
 class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsPageReport(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device", "page"]
 
 
