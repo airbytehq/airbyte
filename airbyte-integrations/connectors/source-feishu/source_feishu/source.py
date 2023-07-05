@@ -61,7 +61,7 @@ def get_date_time (config: Mapping[str, Any]) -> Mapping[str, Any]:
     if config["tunnel_method"]["tunnel_method"] == "PERIODIC":
         days = config["tunnel_method"]["days"]
         today = datetime.today()
-        day_ago = today + relativedelta(hours=-1 * days)
+        day_ago = today + relativedelta(days=-1 * days)
         start_time = day_ago.strftime("%Y-%m-%d %H:%M:%S")
         end_time = today.strftime("%Y-%m-%d %H:%M:%S")
 
