@@ -19,10 +19,10 @@ import anyio
 import asyncer
 from anyio import Path
 from ci_connector_ops.pipelines.actions import remote_storage
-from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, format_duration, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
-from dagger import Container, QueryError
+from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group
 from rich.panel import Panel
@@ -164,9 +164,9 @@ class Step(ABC):
             self.stopped_at = datetime.utcnow()
             self.log_step_result(result)
             return result
-        except QueryError as e:
+        except (DaggerError, QueryError) as e:
             self.stopped_at = datetime.utcnow()
-            self.logger.error(f"QueryError on step {self.title}: {e}")
+            self.logger.error(f"Dagger error on step {self.title}: {e}")
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     def log_step_result(self, result: StepResult) -> None:
@@ -374,12 +374,12 @@ class Report:
         return len(self.failed_steps) == 0
 
     @property
-    def run_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+    def run_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> int:  # noqa D102
-        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+    def lead_duration(self) -> timedelta:  # noqa D102
+        return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
     def remote_storage_enabled(self) -> bool:  # noqa D102
@@ -404,7 +404,7 @@ class Report:
             flags=gcs_cp_flags,
         )
         gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
-        public_url = f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{remote_key}"
+        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
         if report_upload_exit_code != 0:
             self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
         else:
@@ -429,7 +429,7 @@ class Report:
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -450,7 +450,7 @@ class Report:
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
@@ -465,8 +465,8 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time_seconds = round((step_result.created_at - step_result.step.started_at).total_seconds())
-                step_results_table.add_row(step, result, f"{run_time_seconds}s")
+                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]
         if self.failed_steps:
@@ -502,7 +502,7 @@ class ConnectorReport(Report):
 
     @property
     def html_report_url(self) -> str:  # noqa D102
-        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
@@ -524,7 +524,7 @@ class ConnectorReport(Report):
                 "connector_technical_name": self.pipeline_context.connector.technical_name,
                 "connector_version": self.pipeline_context.connector.version,
                 "run_timestamp": self.created_at.isoformat(),
-                "run_duration": self.run_duration,
+                "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
@@ -546,7 +546,7 @@ class ConnectorReport(Report):
         global_status_emoji = "✅" if self.success else "❌"
         commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
         markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
-        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} \n\n"
         report_data = [
             [step_result.step.title, step_result.status.get_emoji()]
             for step_result in self.steps_results
@@ -570,10 +570,11 @@ class ConnectorReport(Report):
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
-            "run_duration": round(self.run_duration),
+            "run_duration": self.run_duration,
             "created_at": self.created_at.isoformat(),
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
+            "dagger_logs_url": None,
             "git_branch": self.pipeline_context.git_branch,
             "git_revision": self.pipeline_context.git_revision,
             "commit_url": None,
@@ -583,6 +584,7 @@ class ConnectorReport(Report):
         if self.pipeline_context.is_ci:
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
@@ -605,7 +607,7 @@ class ConnectorReport(Report):
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}")
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
