@@ -384,8 +384,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
-              )
-              OR (
+              );
+            
+            DELETE FROM ${final_table_id}
+            WHERE
                 (${pk_list}) IN (
                   SELECT (
             ${pk_cast_list}
@@ -395,8 +397,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                     AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
                     AND ${cursor_name} < ${cursor_cast}
-                )
-              );""");
+               );""");
   }
 
   @VisibleForTesting
