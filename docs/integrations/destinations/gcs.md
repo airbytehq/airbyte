@@ -237,6 +237,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |
 | 0.4.1   | 2023-06-28 | [#27268](https://github.com/airbytehq/airbyte/pull/27268)  | Internal code update                                                                                                       |
 | 0.4.0   | 2023-06-26 | [#27725](https://github.com/airbytehq/airbyte/pull/27725)  | License Update: Elv2                                                                                                       |
 | 0.3.0   | 2023-04-28 | [#25570](https://github.com/airbytehq/airbyte/pull/25570)  | Fix: all integer schemas should be converted to Avro longs                                                                 |

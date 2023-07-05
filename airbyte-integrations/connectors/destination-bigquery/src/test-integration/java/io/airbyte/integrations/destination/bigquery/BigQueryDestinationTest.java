@@ -30,7 +30,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -176,8 +175,6 @@ class BigQueryDestinationTest {
     // config - basic config for standard inserts that should succeed check and write tests
     // this config is also used for housekeeping (checking records, and cleaning up)
     config = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, datasetId);
-
-    DestinationConfig.initialize(config);
 
     // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
