@@ -40,6 +40,10 @@
         "title": "Email Type",
         "description": "The type of email associated with the member."
       },
+      "interests":{
+        "type": ["null", "object"],
+        "title": "Interests"
+      },
       "status": {
         "type": ["null", "string"],
         "title": "Status",
@@ -59,36 +63,7 @@
         "type": ["null", "object"],
         "title": "Merge Fields",
         "description": "Additional merge fields for the member.",
-        "properties": {
-          "property1": {
-            "type": ["null", "string"],
-            "title": "Property 1",
-            "description": "The value of property 1 for the member."
-          },
-          "property2": {
-            "type": ["null", "string"],
-            "title": "Property 2",
-            "description": "The value of property 2 for the member."
-          }
-        },
         "additionalProperities": true
-      },
-      "interests": {
-        "type": ["null", "object"],
-        "title": "Interests",
-        "description": "Interests of the member.",
-        "properties": {
-          "property1": {
-            "type": ["null", "boolean"],
-            "title": "Property 1",
-            "description": "Indicates the interest status of property 1 for the member."
-          },
-          "property2": {
-            "type": ["null", "boolean"],
-            "title": "Property 2",
-            "description": "Indicates the interest status of property 2 for the member."
-          }
-        }
       },
       "stats": {
         "type": ["null","object"],
@@ -136,7 +111,6 @@
       },
       "timestamp_signup": {
         "type": ["null", "string"],
-        "format": "date-time",
         "title": "Timestamp Signup",
         "description": "The timestamp of the signup."
       },
@@ -147,7 +121,6 @@
       },
       "timestamp_opt": {
         "type": ["null", "string"],
-        "format": "date-time",
         "title": "Timestamp Opt",
         "description": "The timestamp of the opt."
       },
@@ -158,7 +131,6 @@
       },
       "last_changed": {
         "type": ["null", "string"],
-        "format": "date-time",
         "title": "Last Changed",
         "description": "The timestamp of the last change."
       },
@@ -220,7 +192,7 @@
         }
       },
       "marketing_permissions": {
-        "type": "array",
+        "type": "object",
         "title": "Marketing Permissions",
         "description": "Marketing permissions of the member.",
         "items": {
@@ -256,7 +228,6 @@
           },
           "created_at": {
             "type": ["null", "string"],
-            "format": "date-time",
             "title": "Created At",
             "description": "The timestamp of note creation."
           },
@@ -283,7 +254,7 @@
         "description": "The count of tags associated with the member."
       },
       "tags": {
-        "type": ["null", "array"],
+        "type": ["null", "object"],
         "title": "Tags",
         "description": "Tags associated with the member.",
         "items": {
@@ -308,37 +279,34 @@
         "description": "A string that uniquely identifies this list."
       },
       "_links": {
-        "type": ["null", "array"],
+        "type": ["null", "object"],
         "title": "Links",
         "description": "Links associated with the member.",
-        "items": {
-          "type": ["null", "object"],
-          "properties": {
-            "rel": {
-              "type": ["null", "string"],
-              "title": "Rel",
-              "description": "The relationship of the link."
-            },
-            "href": {
-              "type": ["null", "string"],
-              "title": "Href",
-              "description": "The URL of the link."
-            },
-            "method": {
-              "type": ["null", "string"],
-              "title": "Method",
-              "description": "The HTTP method of the link."
-            },
-            "targetSchema": {
-              "type": ["null", "string"],
-              "title": "Target Schema",
-              "description": "The schema of the target."
-            },
-            "schema": {
-              "type": ["null", "string"],
-              "title": "Schema",
-              "description": "The schema of the link."
-            }
+        "properties": {
+          "rel": {
+            "type": ["null", "string"],
+            "title": "Rel",
+            "description": "The relationship of the link."
+          },
+          "href": {
+            "type": ["null", "string"],
+            "title": "Href",
+            "description": "The URL of the link."
+          },
+          "method": {
+            "type": ["null", "string"],
+            "title": "Method",
+            "description": "The HTTP method of the link."
+          },
+          "targetSchema": {
+            "type": ["null", "string"],
+            "title": "Target Schema",
+            "description": "The schema of the target."
+          },
+          "schema": {
+            "type": ["null", "string"],
+            "title": "Schema",
+            "description": "The schema of the link."
           }
         }
       }
