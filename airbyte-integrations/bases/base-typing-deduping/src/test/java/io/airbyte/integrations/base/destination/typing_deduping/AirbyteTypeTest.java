@@ -363,6 +363,7 @@ public class AirbyteTypeTest {
   @Test
   public void testInvalid() {
     final List<String> invalidSchema = new ArrayList<>();
+    invalidSchema.add("");
     invalidSchema.add("null");
     invalidSchema.add("true");
     invalidSchema.add("false");
