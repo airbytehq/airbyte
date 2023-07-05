@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 2.1.0
+  dockerImageTag: 2.2.0
   dockerRepository: airbyte/source-amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
