@@ -6,7 +6,7 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
@@ -28,8 +28,9 @@ class InMemoryFilesSource(FileBasedSource):
             validation_policies: AbstractSchemaValidationPolicy,
             parsers: Dict[str, FileTypeParser],
             stream_reader: AbstractFileBasedStreamReader,
+            file_write_options: Dict[str, Any]
     ):
-        stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type)
+        stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
         availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         super().__init__(
             stream_reader,
@@ -47,6 +48,7 @@ class InMemoryFilesSource(FileBasedSource):
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     files: Dict[str, dict]
     file_type: str
+    file_write_options: Optional[Dict[str, Any]]
 
     def get_matching_files(
         self,
@@ -68,6 +70,12 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
 
     def _make_csv_file_contents(self, file_name: str) -> str:
         fh = io.StringIO()
-        writer = csv.writer(fh)
-        writer.writerows(self.files[file_name]["contents"])
+        if self.file_write_options:
+            csv.register_dialect("in_memory_dialect", **self.file_write_options)
+            writer = csv.writer(fh, dialect="in_memory_dialect")
+            writer.writerows(self.files[file_name]["contents"])
+            csv.unregister_dialect("in_memory_dialect")
+        else:
+            writer = csv.writer(fh)
+            writer.writerows(self.files[file_name]["contents"])
         return fh.getvalue()
