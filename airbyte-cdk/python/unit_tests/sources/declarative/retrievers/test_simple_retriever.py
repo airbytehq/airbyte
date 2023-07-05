@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from typing import Mapping
 from unittest.mock import MagicMock, Mock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
-import json
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
@@ -21,7 +21,6 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.http import HttpStream
-
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}

@@ -9,13 +9,12 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 import backoff
 import pendulum
 import requests
-from requests.auth import AuthBase
-
-from ..exceptions import DefaultBackoffException
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.http_logger import format_http_json
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from requests.auth import AuthBase
 
+from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
 _NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
@@ -27,6 +26,7 @@ class AbstractOauth2Authenticator(AuthBase):
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
+
     LOGGER_NAME = "AbstractOauth2Authenticator"
 
     def __call__(self, request: requests.Request) -> requests.Request:

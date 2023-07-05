@@ -1,10 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
+
 import pytest
 import requests
-
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.http_logger import format_http_json
-
 
 A_LOGGER = "a logger"
 ANY_REQUEST = requests.Request(method="POST", url="http://a-url.com", headers={}, params={}).prepare()

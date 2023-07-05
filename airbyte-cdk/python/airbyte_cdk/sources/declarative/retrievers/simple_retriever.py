@@ -2,13 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -418,16 +417,14 @@ class SimpleRetriever(Retriever, HttpStream):
             self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
         return
 
-    def _get_most_recent_record(self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+    def _get_most_recent_record(
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+    ) -> Optional[Record]:
         if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
             if not current_most_recent:
                 return record
             else:
-                return (
-                    current_most_recent
-                    if self.cursor.is_greater_than_or_equal(current_most_recent, record)
-                    else record
-                )
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
         else:
             return None
 
@@ -505,4 +502,3 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     ) -> Iterable[StreamData]:
         yield create_airbyte_log_message(response, self.LOGGER_NAME)
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
-

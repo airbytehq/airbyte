@@ -16,7 +16,7 @@ class MessageRepository(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def log_message(self, level: Level, message_provider: Callable[[], AirbyteMessage])  -> None:
+    def log_message(self, level: Level, message_provider: Callable[[], AirbyteMessage]) -> None:
         """
         Computing messages can be resource consuming. This method is specialized for logging because we want to allow for lazy evaluation if
         the log level is less severe than what is configured

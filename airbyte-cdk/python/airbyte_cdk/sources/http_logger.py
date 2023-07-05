@@ -1,9 +1,12 @@
-import json
-import requests
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import json
 from typing import Optional, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+import requests
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
@@ -25,15 +28,13 @@ def format_http_json(response: requests.Response, logger: str):
                 },
                 "headers": dict(response.headers),
                 "status_code": response.status_code,
-            }
+            },
         },
         "log": {
             "logger": logger,
             "level": "debug",
         },
-        "url": {
-            "full": request.url
-        }
+        "url": {"full": request.url},
     }
     return filter_secrets(json.dumps(log_message))
 

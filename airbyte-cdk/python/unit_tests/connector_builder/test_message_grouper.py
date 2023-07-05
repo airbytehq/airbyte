@@ -407,10 +407,12 @@ def test_get_grouped_messages_invalid_group_format(mock_entrypoint_read):
             {
                 "http": {
                     "response": {
-                "status_code": 200,
-                "headers": {"field": "name"},
-                "body": {"content": '[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]'},
-            }}},
+                        "status_code": 200,
+                        "headers": {"field": "name"},
+                        "body": {"content": '[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]'},
+                    }
+                }
+            },
             HttpResponse(
                 status=200,
                 headers={"field": "name"},
@@ -626,6 +628,7 @@ def request_response_log_message(request: dict, response: dict, url: str):
             },
             "url": {"full": url}
         })))
+
 
 def any_request_and_response_with_a_record():
     return [

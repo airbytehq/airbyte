@@ -9,7 +9,15 @@ from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
-from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, GlobalRequest, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
+from airbyte_cdk.connector_builder.models import (
+    GlobalRequest,
+    HttpRequest,
+    HttpResponse,
+    LogMessage,
+    StreamRead,
+    StreamReadPages,
+    StreamReadSlices,
+)
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -206,7 +214,7 @@ class MessageGrouper:
         # protocol change is worked on.
         try:
             return json.loads(log_message.message)
-        except JSONDecodeError as error:
+        except JSONDecodeError:
             return None
 
     @staticmethod
