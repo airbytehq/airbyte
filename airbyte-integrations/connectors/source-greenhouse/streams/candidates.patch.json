@@ -7,6 +7,12 @@
                     "properties": {
                     },
                     "type": ["object", "null"]
+                },
+                "prospective_department":{
+                    "type": ["object", "null"]
+                },
+                "prospective_office":{
+                    "type": ["object", "null"]
                 }
             }
         }
