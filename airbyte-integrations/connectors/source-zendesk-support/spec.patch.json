@@ -1,4 +1,44 @@
 {
-    "properties": {
+  "properties": {
+    "credentials": {
+      "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
+      "oneOf": [
+        {
+          "additionalProperties": true,
+          "properties": {
+            "api_token": {
+              "airbyte_secret": true,
+              "description": "The value of the API token generated. See https://go.estuary.dev/zendesk-support for more information.",
+              "title": "API Token",
+              "type": "string"
+            },
+            "credentials": {
+              "const": "api_token",
+              "order": 0,
+              "type": "string",
+              "default": "api_token"
+            },
+            "email": {
+              "description": "The user email for your Zendesk account.",
+              "title": "Email",
+              "type": "string"
+            }
+          },
+          "required": [
+            "email",
+            "api_token"
+          ],
+          "title": "API Token",
+          "type": "object"
+        }
+      ],
+      "title": "Authentication",
+      "type": "object"
     }
-  }
+  },
+  "required": [
+    "start_date",
+    "subdomain",
+    "credentials"
+  ]
+}
