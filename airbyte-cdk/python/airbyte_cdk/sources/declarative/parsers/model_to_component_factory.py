@@ -735,6 +735,7 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
+            message_repository=self._message_repository,
         )
 
     @staticmethod

@@ -135,6 +135,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
             token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
             token_expiry_date_format (Optional[str]): Date format of the token expiry date field (set by expires_in_name). If not specified the token expiry date is interpreted as number of seconds until expiration.
+            message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
         """
         self._client_id = client_id if client_id is not None else dpath.util.get(connector_config, ("credentials", "client_id"))
         self._client_secret = (
