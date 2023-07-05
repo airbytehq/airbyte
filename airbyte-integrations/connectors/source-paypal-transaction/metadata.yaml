@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 0.1.13
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-paypal-transaction
   githubIssueLabel: source-paypal-transaction
   icon: paypal.svg
