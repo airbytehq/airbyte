@@ -130,7 +130,7 @@ class GoogleAnalyticsApiQuotaBase:
                 self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
                 return None
-            else:
+            elif self.error_message:
                 self.logger.warning(self.error_message)
 
     def _check_for_errors(self, response: requests.Response) -> None:

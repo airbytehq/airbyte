@@ -205,10 +205,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void doTypingAndDeduping(final StreamConfig stream) throws InterruptedException {
-    String suffix;
-    suffix = overwriteStreamsWithTmpTable.getOrDefault(stream.id(), "");
-    final String sql = sqlGenerator.updateTable(suffix, stream);
-    destinationHandler.execute(sql);
+    if (use1s1t) {
+      String suffix;
+      suffix = overwriteStreamsWithTmpTable.getOrDefault(stream.id(), "");
+      final String sql = sqlGenerator.updateTable(suffix, stream);
+      destinationHandler.execute(sql);
+    }
   }
 
 }
