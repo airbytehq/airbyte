@@ -109,8 +109,7 @@ class SourceTiktokMarketing(AbstractSource):
         try:
             advertisers = Advertisers(**self._prepare_stream_args(config))
             for slice_ in advertisers.stream_slices():
-                next(advertisers.read_records(
-                    SyncMode.full_refresh, stream_slice=slice_))
+                next(advertisers.read_records(SyncMode.full_refresh, stream_slice=slice_))
         except Exception as err:
             return False, err
         return True, None
@@ -204,8 +203,7 @@ class SourceTiktokMarketing(AbstractSource):
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
-                    streams.append(get_report_stream(
-                        Report, Granularity)(**args))
+                    streams.append(get_report_stream(Report, Granularity)(**args))
                     # add a for loop here for the other dimension to split by
 
             # 3. Audience report streams:
