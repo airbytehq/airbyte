@@ -1,31 +1,59 @@
 {
-    "properties": {
-      "custom_fields": {
-        "items": {
-          "properties": {
-            "name": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "value": {
-              "type": [
-                "null",
-                "string"
-              ]
-            }
+  "properties": {
+    "custom_fields": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           },
-          "type": [
-            "null",
-            "object"
-          ]
-        },
-        "type": [
-          "null",
-          "array"
-        ]
+          "value": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        }
       }
     },
-    "type": "object"
+    "subscription_items": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer"
+          },
+          "free_quantity": {
+            "type": "integer"
+          },
+          "item_price_id": {
+            "type": "string"
+          },
+          "item_type": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "trial_end": {
+            "type": "integer"
+          },
+          "unit_price": {
+            "type": "integer"
+          }
+        }
+      }
+    }  
   }
+}
