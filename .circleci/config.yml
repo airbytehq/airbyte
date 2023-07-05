@@ -25,7 +25,7 @@ workflows:
             - VOODOO_INFRA_TOOLS
       - docker/hadolint:
           dockerfiles: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
-          ignore-rules: ["DL3059", "DL3008"]
+          ignore-rules: "DL3059,DL3008"
       - aws-ecr/build-and-push-image:
           path: airbyte-integrations/connectors/source-facebook-marketing/
           executor:
