@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from unit_tests.sources.file_based.helpers import (
     FailingSchemaValidationPolicy,
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
@@ -19,7 +19,7 @@ _base_success_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -57,13 +57,13 @@ success_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "csv",
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -81,7 +81,7 @@ success_extensionless_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -111,7 +111,7 @@ success_user_provided_schema_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "input_schema": {"col1": "string", "col2": "string"},
                 }
             ],
@@ -175,7 +175,7 @@ error_record_validation_user_provided_schema_scenario = (
         }
     )
     .set_validation_policies(FailingSchemaValidationPolicy)
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD)
+    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.ERROR_VALIDATING_RECORD)
 ).build()
 
 
@@ -189,13 +189,13 @@ error_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "jsonl",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ],
         }
