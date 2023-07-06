@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 1.1.1
+  dockerImageTag: 1.1.2
   dockerRepository: airbyte/source-google-analytics-data-api
   githubIssueLabel: source-google-analytics-data-api
   icon: google-analytics.svg
@@ -19,12 +19,6 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  resourceRequirements:
-    jobSpecific:
-      - jobType: check_connection
-        resourceRequirements:
-          memory_limit: 500Mi
-          memory_request: 500Mi
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   tags:
     - language:python
