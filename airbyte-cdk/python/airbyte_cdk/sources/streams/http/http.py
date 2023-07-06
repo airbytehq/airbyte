@@ -534,7 +534,7 @@ class HttpStreamRequestGenerator(RequestGenerator):
     def __init__(self, stream: HttpStream):
         self._stream = stream
 
-    def next_request(
+    async def next_request(
         self,
         partition_descriptor: PartitionDescriptor,
         # stream_state: Mapping[str, Any], # Requests shouldn't be based off the stream state,

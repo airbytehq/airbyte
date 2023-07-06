@@ -53,7 +53,7 @@ from source_stripe.streams import (
 
 class SourceStripe(AbstractSource):
     def get_concurrency_factor(self):
-        return 4
+        return 1
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:

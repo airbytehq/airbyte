@@ -40,8 +40,8 @@ def consume_async_iterable(gen: AsyncIterable[T]) -> Iterable[T]:
         loop = asyncio.new_event_loop()
         future = executor.submit(run_async_gen_in_thread, loop, gen, q)
         while True:
-            print(f"queue size: {q.qsize()}")
             # raise an error if it has occurred
+
             try:
                 if future.done():
                     future.result()
