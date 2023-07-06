@@ -550,7 +550,6 @@ class HttpStreamRequestGenerator(RequestGenerator):
         stream_slice = partition_descriptor.metadata
         if response:
             next_page_token = self._stream.next_page_token(response)
-            print(f"next_page_token: {next_page_token}")
             if next_page_token is None:
                 return None
         else:
@@ -584,5 +583,4 @@ class HttpStreamRequestGenerator(RequestGenerator):
             )
         else:
             raise ValueError(f"Unsupported http method: {self._stream.http_method}")
-        print(f"request: {request}")
         return request
