@@ -4,10 +4,15 @@
 
 package io.airbyte.integrations.source.postgres.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +50,16 @@ public class PostgresUnitTestsUtil {
       }
 
     };
+  }
+
+  public static AirbyteStateMessage generateStateMessage(final String streamName, final String namespace, final JsonNode stateData) {
+    return new AirbyteStateMessage()
+        .withType(AirbyteStateType.STREAM)
+        .withStream(new AirbyteStreamState()
+            .withStreamDescriptor(new StreamDescriptor()
+                .withName(streamName)
+                .withNamespace(namespace))
+            .withStreamState(stateData));
   }
 
 }
