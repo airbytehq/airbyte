@@ -82,9 +82,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             configJson.get("env_password").asText());
     var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
     ((ObjectNode) configJson).put("host", response.ip());
-    logger.info("host name: " + configJson.get("host").asText());
-    logger.info("user name: " + configJson.get("username").asText());
-    logger.info("password: " + configJson.get("password").asText());
+    LOGGER.info("host name: " + configJson.get("host").asText());
+    LOGGER.info("user name: " + configJson.get("username").asText());
+    LOGGER.info("password: " + configJson.get("password").asText());
 
   }
 
@@ -105,7 +105,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
         .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
     final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
-    logger.info("failed check config got success");
+    LOGGER.info("failed check config got success");
     return credentialsJsonString;
   }
 
@@ -137,10 +137,10 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     try {
       this.configJson = Jsons.clone(getStaticConfig());
       ((ObjectNode) configJson).put("schema", SCHEMA_NAME);
-      logger.info("schema name: " +  configJson.get("schema").asText());  
+      LOGGER.info("schema name: " +  configJson.get("schema").asText());
       dataSource = getDataSource(configJson);
       database = getDatabase(dataSource);
-      logger.info("create schema query: " +  createSchemaQuery);
+      LOGGER.info("create schema query: " +  createSchemaQuery);
       database.execute(createSchemaQuery);
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
@@ -174,10 +174,10 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
-    logger.info("JDBC URL : " + jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-      logger.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
-      logger.info("PASSWORD_KEY : " + jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
-      logger.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    LOGGER.info("JDBC URL : " + jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+      LOGGER.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+      LOGGER.info("PASSWORD_KEY : " + jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+      LOGGER.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         TeradataDestination.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
