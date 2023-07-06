@@ -46,15 +46,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def __init__(
         self,
-        cursor: FileBasedCursor,
-        config: FileBasedStreamConfig,
-        stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AvailabilityStrategy,
-        discovery_policy: AbstractDiscoveryPolicy,
-        parsers: Dict[str, FileTypeParser],
-        validation_policies: Type[AbstractSchemaValidationPolicy],
+            cursor: FileBasedCursor,
+            **kwargs
     ):
-        super().__init__(config, stream_reader, availability_strategy, discovery_policy, parsers, validation_policies)
+        super().__init__(**kwargs)
         self._cursor = cursor
 
     @property

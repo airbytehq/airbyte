@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 DIALECT_NAME = "_config_dialect"
 
-config_to_quoting: Dict[QuotingBehavior, int] = {
+config_to_quoting: [QuotingBehavior, int] = {
     QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
     QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
     QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
@@ -38,14 +38,13 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                reader = csv.DictReader(fp, dialect=dialect_name)
                 schema = {field.strip(): {"type": "string"} for field in next(reader)}
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
             with stream_reader.open_file(file) as fp:
-                # FIXME: dialect_name isn't set here. What is the right default?
-                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                reader = csv.DictReader(fp)
                 return {field.strip(): {"type": "string"} for field in next(reader)}
 
     def parse_records(
@@ -67,9 +66,9 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                reader = csv.DictReader(fp, dialect=dialect_name)
                 yield from reader
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)  # type: ignore
+                reader = csv.DictReader(fp)
                 yield from reader

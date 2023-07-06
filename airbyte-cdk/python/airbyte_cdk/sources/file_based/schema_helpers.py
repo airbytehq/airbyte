@@ -45,7 +45,8 @@ def get_comparable_type(value: Any) -> ComparableType:
     if value == "object":
         return ComparableType.OBJECT
     else:
-        raise ValueError(f"Unrecognized type: {value}")
+        #raise ValueError(f"Unrecognized type: {value}")
+        return None
 
 
 def get_inferred_type(value: Any) -> ComparableType:
@@ -62,7 +63,8 @@ def get_inferred_type(value: Any) -> ComparableType:
     if isinstance(value, dict):
         return ComparableType.OBJECT
     else:
-        raise ValueError(f"Unrecognized type: {value}")
+        #raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, details=f"Unrecognized type: {value}")
+        return None
 
 
 def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
@@ -82,7 +84,7 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
     and nothing else.
     """
     for k, t in list(schema1.items()) + list(schema2.items()):
-        if "type" not in t or not isinstance(t, dict) or not _is_valid_type(t["type"]):
+        if not isinstance(t, dict) or not _is_valid_type(t.get("type")):
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=k, type=t)
 
     merged_schema: Dict[str, Any] = deepcopy(schema1)
