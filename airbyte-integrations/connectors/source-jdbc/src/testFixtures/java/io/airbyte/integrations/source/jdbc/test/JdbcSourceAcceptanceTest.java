@@ -757,9 +757,7 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setCursorField(List.of(COL_ID));
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
-
-    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
+    final List<AirbyteMessage> actualMessagesFirstSync = readCatalogForInitialSync(configuredCatalog);
 
     // get last state message.
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
@@ -773,31 +771,13 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // Represents the state after the first stream has been updated
     final List<DbStreamState> expectedStateStreams1 = List.of(
-        new DbStreamState()
-            .withStreamName(streamName)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L),
-        new DbStreamState()
-            .withStreamName(streamName2)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID)));
+        buildExpectedStreamState(streamName, namespace, List.of(COL_ID), "3", 1L),
+        buildExpectedStreamState(streamName2, namespace, List.of(COL_ID), null, null));
 
     // Represents the state after both streams have been updated
     final List<DbStreamState> expectedStateStreams2 = List.of(
-        new DbStreamState()
-            .withStreamName(streamName)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L),
-        new DbStreamState()
-            .withStreamName(streamName2)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("3")
-            .withCursorRecordCount(1L));
+        buildExpectedStreamState(streamName, namespace, List.of(COL_ID), "3", 1L),
+        buildExpectedStreamState(streamName2, namespace, List.of(COL_ID), "3", 1L));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
@@ -874,6 +854,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
+    addStandardStateTypeToSyncState(firstSyncState);
 
     final List<String> firstSyncNames = firstSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
@@ -902,6 +883,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
+    addStandardStateTypeToSyncState(secondSyncState);
 
     final List<String> secondSyncNames = secondSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
@@ -944,7 +926,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-  private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
     for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
       if (stream.get("stream_name").asText().equals(streamName)) {
         return stream;
@@ -953,25 +935,25 @@ public abstract class JdbcSourceAcceptanceTest {
     throw new IllegalArgumentException("Stream not found in state message: " + streamName);
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages)
+  protected void incrementalCursorCheck(
+                                        final String initialCursorField,
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(initialCursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages,
         getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages,
-                                      final ConfiguredAirbyteStream airbyteStream)
+  protected void incrementalCursorCheck(
+                                        final String initialCursorField,
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages,
+                                        final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(List.of(cursorField));
@@ -1016,7 +998,6 @@ public abstract class JdbcSourceAcceptanceTest {
             .collect(Collectors.toList()));
     return catalog;
   }
-
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream(
@@ -1271,6 +1252,49 @@ public abstract class JdbcSourceAcceptanceTest {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
+  }
+
+  /**
+   * Method to add state_type: "standard" to state message for CTID based syncs
+   *
+   * @param syncState
+   */
+  protected void addStandardStateTypeToSyncState(final JsonNode syncState) {
+    // no op
+  }
+
+  /**
+   * Read catalog to build iterators for the first sync
+   *
+   * @param configuredCatalog catalog of DB source
+   * @return A list of Airbyte messages generated during sync
+   * @throws Exception
+   */
+  protected List<AirbyteMessage> readCatalogForInitialSync(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    return MoreIterators
+        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, getDefaultNamespace())));
+  }
+
+  /**
+   * Build the expectged DBStreamState object
+   */
+  protected DbStreamState buildExpectedStreamState(final String streamName,
+                                                   final String nameSpace,
+                                                   final List<String> cursorFields,
+                                                   final String cursorValue,
+                                                   final Long cursorRecordCount) {
+    final DbStreamState streamState = new DbStreamState();
+    streamState.setStreamName(streamName);
+    streamState.setStreamNamespace(nameSpace);
+    streamState.setCursorField(cursorFields);
+    if (cursorValue != null) {
+      streamState.setCursor(cursorValue);
+    }
+
+    if (cursorRecordCount != null) {
+      streamState.setCursorRecordCount(cursorRecordCount);
+    }
+    return streamState;
   }
 
 }

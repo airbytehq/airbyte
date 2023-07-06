@@ -192,7 +192,7 @@ public class PostgresXminHandler {
     return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
   }
 
-  static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {
+  public static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {
     // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
     return streamState.has("num_wraparound") && (currentXminStatus.getNumWraparound() - streamState.get("num_wraparound").asLong() >= 2);
   }

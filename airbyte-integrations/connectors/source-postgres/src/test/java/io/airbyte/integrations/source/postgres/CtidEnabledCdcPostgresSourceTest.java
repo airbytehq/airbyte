@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CDC_VIA_CTID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -66,7 +67,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
   @Override
   protected JsonNode getConfig() {
     JsonNode config = super.getConfig();
-    ((ObjectNode) config).put("cdc_via_ctid", true);
+    ((ObjectNode) config).put(CDC_VIA_CTID, true);
     return config;
   }
 
