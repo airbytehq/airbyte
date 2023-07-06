@@ -59,7 +59,7 @@ class PineconeIndexer(Indexer):
     def __init__(self, config: PineconeIndexingModel, embedder: Embedder):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
-        self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
+        self.pinecone_index = pinecone.Index(config.index, pool_threads=60)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):

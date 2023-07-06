@@ -32,7 +32,7 @@ import threading
 
 from langchain.document_loaders.base import Document
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 
 indexer_map = {"pinecone": PineconeIndexer, "DocArrayHnswSearch": DocArrayHnswSearchIndexer}
 
@@ -93,7 +93,7 @@ class DestinationLangchain(Destination):
         self.processor = DocumentProcessor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
         batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(list(batch)))
         self.indexer.pre_sync(configured_catalog)
-        num_workers = 5
+        num_workers = 30
 
         # Shared queue for data packages
         self.shared_queue = queue.Queue(num_workers)
@@ -111,7 +111,7 @@ class DestinationLangchain(Destination):
                     type=Type.LOG,
                     log=AirbyteLogMessage(
                         level=Level.INFO,
-                        message=f"Processed {batcher.processed_count} records",
+                        message=f"Queued {batcher.processed_count} records",
                     ),
                 )
             if message.type == Type.STATE:
