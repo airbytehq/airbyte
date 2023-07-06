@@ -257,6 +257,7 @@ def organization_instance():
         "metadata": "metadata_example",
     }
 
+
 @pytest.fixture()
 def organization_member_instance():
     """
@@ -271,6 +272,7 @@ def organization_member_instance():
         "picture": "my_picture",
     }
 
+
 @pytest.fixture()
 def organization_member_roles_instance():
     """
@@ -283,6 +285,7 @@ def organization_member_roles_instance():
         "name": "my_name",
         "description": "desc",
     }
+
 
 @pytest.fixture()
 def latest_record_instance():

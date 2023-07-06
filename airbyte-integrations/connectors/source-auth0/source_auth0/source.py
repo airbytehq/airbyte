@@ -10,13 +10,11 @@ from urllib import parse
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_auth0.utils import get_api_endpoint, initialize_authenticator
-from airbyte_cdk.sources.streams.core import StreamData
-
-from airbyte_cdk.models import SyncMode
 
 
 def read_full_refresh(stream_instance: Stream):

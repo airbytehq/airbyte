@@ -11,12 +11,12 @@ import requests
 from airbyte_cdk.models import SyncMode
 from source_auth0.source import (
     Auth0Stream,
-    IncrementalAuth0Stream,
-    Users,
     Clients,
-    Organizations,
-    OrganizationMembers,
+    IncrementalAuth0Stream,
     OrganizationMemberRoles,
+    OrganizationMembers,
+    Organizations,
+    Users,
 )
 
 

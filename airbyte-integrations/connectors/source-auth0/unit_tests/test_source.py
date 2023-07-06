@@ -7,13 +7,13 @@ from unittest.mock import MagicMock
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 from source_auth0.authenticator import Auth0Oauth2Authenticator
 from source_auth0.source import (
-    SourceAuth0,
     Clients,
-    Users,
-    initialize_authenticator,
-    Organizations,
     OrganizationMemberRoles,
     OrganizationMembers,
+    Organizations,
+    SourceAuth0,
+    Users,
+    initialize_authenticator,
 )
 
 
