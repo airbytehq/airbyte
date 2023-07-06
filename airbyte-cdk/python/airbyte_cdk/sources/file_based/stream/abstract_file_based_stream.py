@@ -4,8 +4,6 @@
 
 from abc import abstractmethod
 from functools import cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
-from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
@@ -15,7 +13,7 @@ from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, Unde
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 

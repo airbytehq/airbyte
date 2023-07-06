@@ -7,9 +7,8 @@ from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pydantic import BaseModel, root_validator, validator
-
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from pydantic import BaseModel, root_validator, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 

@@ -64,6 +64,7 @@ class IncrementalMixin(ABC):
          syncing process from the point where it stopped.
         """
 
+
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.

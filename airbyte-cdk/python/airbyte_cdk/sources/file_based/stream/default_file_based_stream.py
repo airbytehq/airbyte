@@ -7,16 +7,12 @@ import itertools
 import logging
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Type, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Type, Union
 
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, MissingSchemaError, RecordParseError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
-
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
@@ -24,6 +20,8 @@ from airbyte_cdk.sources.file_based.exceptions import (
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
@@ -108,7 +106,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
             except StopSyncPerValidationPolicy:
                 yield AirbyteMessage(
-                    type=Type.LOG,
+                    type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.INFO,
                         message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy.name} n_skipped={n_skipped}",
@@ -118,7 +116,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
             except Exception as exc:
                 yield AirbyteMessage(
-                    type=Type.LOG,
+                    type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.ERROR,
                         message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
@@ -129,7 +127,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             else:
                 if n_skipped:
                     yield AirbyteMessage(
-                        type=Type.LOG,
+                        type=MessageType.LOG,
                         log=AirbyteLogMessage(
                             level=Level.INFO,
                             message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.config.validation_policy.name}",

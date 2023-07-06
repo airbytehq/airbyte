@@ -46,6 +46,7 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
+
 from .well_known_types import (
     BinaryData,
     Boolean,
@@ -62,4 +63,3 @@ from .well_known_types import (
     TimeWithoutTimezone,
     TimeWithTimezone,
 )
-
