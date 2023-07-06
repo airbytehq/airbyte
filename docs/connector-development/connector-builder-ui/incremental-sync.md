@@ -21,7 +21,7 @@ To configure incremental syncs for a stream in the connector builder, you have t
 In the builder UI, these things are specified like this:
 * The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
 * The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
-* "API time filtering capabilities" specifies if the API allows to filter by start and end datetime or whether it's a "feed" of data going from newest to oldest records. See the "Incremental sync without time filtering" section below for details.
+* "API time filtering capabilities" specifies if the API allows filtering by start and end datetime or whether it's a "feed" of data going from newest to oldest records. See the "Incremental sync without time filtering" section below for details.
 * The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
 * The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
 * The "Inject start/end time into outgoing HTTP request" defines how to request records that got changed in the time range to sync. In most cases the start and end time is added as a request parameter or body parameter
