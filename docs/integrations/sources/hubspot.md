@@ -10,8 +10,17 @@ You can use OAuth or a Private App to authenticate your HubSpot account.
 For Airbyte Cloud users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
 :::
 
-If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate 
-[scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams.
+## Setup guide
+
+### Step 1: Set up the authentication method and scopes in HubSpot
+
+#### Private App setup
+
+For a step-by-step walkthrough on creating a Private App, please refer to the 
+[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps).
+
+If you are using either OAuth in Airbyte Open Source or Private App authentication, you need to configure the appropriate 
+[scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -39,20 +48,18 @@ If you are using either OAuth in Airbyte OSS or Private App authentication, you 
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-## Setup guide
-
-### Step 1: Set up the HubSpot source connector
+### Step 2: Set up the HubSpot source connector in Airbyte
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
-4. Enter a **Source name** for your source.
-5. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
-   - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).
-6. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. From the **Authentication** dropdown, select your chosen authentication method:
+   - To authenticate using OAuth for Airbyte Cloud, ensure you have 
+   [set the appropriate scopes for HubSpot](#step-1-set-up-the-authentication-method-and-scopes-in-hubspot) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+   - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account.
+5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
 `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. Click **Set up source** and wait for the tests to complete.
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -106,7 +113,7 @@ The HubSpot source connector supports the following streams:
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
-If you setup your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+If you set up your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
 First you need to give the connector some additional permissions:
 

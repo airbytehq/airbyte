@@ -1,6 +1,6 @@
 ## Prerequisite
 
-* Access to your HubSpot account
+You can use OAuth or a Private App to authenticate your HubSpot account.
 
 ## Setup guide
 
