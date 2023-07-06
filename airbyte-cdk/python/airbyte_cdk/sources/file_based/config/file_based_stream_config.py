@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union, Dict
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pydantic import BaseModel, validator
@@ -33,7 +33,7 @@ class CsvFormat(BaseModel):
     # of using pyarrow
 
     @validator("delimiter")
-    def validate_delimiter(cls, v):
+    def validate_delimiter(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("delimiter should only be one character")
         if v in {"\r", "\n"}:
@@ -41,19 +41,19 @@ class CsvFormat(BaseModel):
         return v
 
     @validator("quote_char")
-    def validate_quote_char(cls, v):
+    def validate_quote_char(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("quote_char should only be one character")
         return v
 
     @validator("escape_char")
-    def validate_escape_char(cls, v):
+    def validate_escape_char(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
     @validator("encoding")
-    def validate_encoding(cls, v):
+    def validate_encoding(cls, v: str) -> str:
         try:
             codecs.lookup(v)
         except LookupError:
@@ -74,7 +74,7 @@ class FileBasedStreamConfig(BaseModel):
     format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
 
     @validator("format", pre=True)
-    def transform_format(cls, v):
+    def transform_format(cls, v: Mapping[str, str]) -> Any:
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type.casefold() not in VALID_FILE_TYPES:

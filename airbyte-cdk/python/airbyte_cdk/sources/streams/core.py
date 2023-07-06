@@ -48,7 +48,6 @@ class IncrementalMixin(ABC):
             self._state[self.cursor_field] = value[self.cursor_field]
     """
 
-    @property
     @abstractmethod
     def state(self) -> MutableMapping[str, Any]:
         """State getter, should return state in form that can serialized to a string and send to the output
@@ -62,12 +61,6 @@ class IncrementalMixin(ABC):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
-
-    @state.setter
-    @abstractmethod
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        """State setter, accept state serialized by state getter."""
-
 
 class Stream(ABC):
     """
