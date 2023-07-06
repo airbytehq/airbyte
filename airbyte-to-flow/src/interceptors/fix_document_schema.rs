@@ -188,6 +188,21 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
     )
 }
 
+pub fn normalize_schema_date_to_datetime(schema: &mut serde_json::Value) {
+    traverse_jsonschema(
+        schema,
+        &mut |map: &mut Map<String, serde_json::Value>, _| {
+            if let Some(serde_json::Value::String(f)) = map.get("format") {
+                if f == "date" {
+                    // Insert updates values
+                    map.insert("format".to_string(), json!("date-time"));
+                }
+            }
+        },
+        "".to_string(),
+    )
+}
+
 // enums are usually incomplete and new types are added to SaaS connectors over time which leads to enums breaking frequently
 // they also do not usually have a specific materialization type, so we just remove them to avoid
 // schema violations over time
@@ -249,7 +264,9 @@ fn type_for(value: &serde_json::Value) -> &'static str {
 mod test {
     use serde_json::json;
 
-    use super::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums};
+    use super::{
+        fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums,
+        normalize_schema_date_to_datetime};
 
     #[test]
     fn test_fix_document_schema_keys_prop() {
@@ -634,6 +651,37 @@ mod test {
                     "allIntegers": { "type": "integer" },
                     "mixedNumbers": { "type": ["integer", "number"]},
                     "grabBag": { "type": ["array", "boolean", "integer", "object", "string"], "x-untouched-annotation": true }
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn test_date_to_datetime() {
+        let doc_schema = json!({
+            "type": ["object", "null"],
+            "properties": {
+                "x": {
+                    // the existing type should be untouched, even if it's incorrect with respect to the enum values
+                    "type": ["string"],
+                    "format": "date"
+                },
+                "y": {
+                    "format": "date-time"
+                }
+            }
+        })
+        .to_string();
+
+        let mut doc = serde_json::from_str(&doc_schema).unwrap();
+        normalize_schema_date_to_datetime(&mut doc);
+        assert_eq!(
+            doc,
+            json!({
+                "type": ["object", "null"],
+                "properties": {
+                    "x": { "type": ["string"], "format": "date-time" },
+                    "y": { "format": "date-time" }
                 }
             })
         );
