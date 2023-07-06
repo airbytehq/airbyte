@@ -7,12 +7,10 @@ import itertools
 import logging
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
@@ -20,16 +18,12 @@ from airbyte_cdk.sources.file_based.exceptions import (
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
-from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import JsonSchema
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
