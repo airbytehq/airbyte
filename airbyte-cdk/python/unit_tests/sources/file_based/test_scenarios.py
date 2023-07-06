@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
+import math
 import pytest
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
@@ -51,7 +52,7 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
-from unit_tests.sources.file_based.scenarios.parquet_scenarios import single_parquet_scenario
+from unit_tests.sources.file_based.scenarios.parquet_scenarios import multi_parquet_scenario, single_parquet_scenario, parquet_various_types_scenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
@@ -88,7 +89,9 @@ discover_scenarios = [
     csv_custom_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
-    single_parquet_scenario
+    single_parquet_scenario,
+    multi_parquet_scenario,
+    parquet_various_types_scenario,
 ]
 
 
@@ -143,7 +146,11 @@ def run_test_read_full_refresh(capsys, tmp_path, scenario):
 
 def assert_expected_records_match_output(output: List[Dict[str, Any]], expected_output: List[Dict[str, Any]]):
     for actual, expected in zip(output, expected_output):
-        assert actual["record"]["data"] == expected["data"]
+        for key, value in actual["record"]["data"].items():
+            if isinstance(value, float):
+                assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
+            else:
+                assert value == expected["data"][key]
         assert actual["record"]["stream"] == expected["stream"]
 
 

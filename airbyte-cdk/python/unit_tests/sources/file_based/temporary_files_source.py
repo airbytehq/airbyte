@@ -17,6 +17,8 @@ import pyarrow.parquet as pq
 
 
 class TemporaryFilesStreamReader(AbstractFileBasedStreamReader):
+    #FIXME: this is tightly coupled with parquet files.
+    # Either rename or decouple
     files: Dict[str, dict]
     file_type: str
     file_write_options: Optional[Dict[str, Any]]
@@ -35,10 +37,11 @@ class TemporaryFilesStreamReader(AbstractFileBasedStreamReader):
 
     def _make_file_contents(self, file_name: str):
         contents = self.files[file_name]["contents"]
+        schema = self.files[file_name].get("schema")
 
         df = pd.DataFrame(contents[1:], columns=contents[0])
         with tempfile.TemporaryFile() as fp:
-            table = pa.Table.from_pandas(df)
+            table = pa.Table.from_pandas(df, schema)
             pq.write_table(table, fp)
 
             fp.seek(0)
