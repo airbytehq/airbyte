@@ -94,7 +94,7 @@ Some APIs do not allow filtering records by a date field, but instead only provi
 The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter" option, the connector will automatically request the next page of records until the cutoff datetime is encountered. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync - if the cursor value is less than or equal to that cutoff date, the sync is finished. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
 :::warning
-The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records to late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
+The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
 :::
 
 ## Advanced settings
