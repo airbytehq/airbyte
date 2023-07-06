@@ -101,9 +101,9 @@ jobs:
         with:
           python-version: "3.9"
       - name: Install CI scripts
-        # all CI python packages have the prefix "ci_"
         run: |
-          pip install --quiet -e ./tools/ci_*
+          pipx install airbyte-ci/connectors/ci_credentials
+          pipx install airbyte-ci/connectors/connector_ops
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           ci_credentials ${{ github.event.inputs.connector }} write-to-storage

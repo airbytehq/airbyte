@@ -37,14 +37,11 @@ runs:
         distribution: "zulu"
         java-version: "17"
 
-    - name: Tests of CI
+    - name: Install CI scripts
       shell: bash
       run: |
-        # all CI python packages have the prefix "ci_"
-        pip install --quiet tox==3.24.4
-        pip install --quiet -e ./tools/ci_*
-        tox -r -c ./tools/tox_ci.ini
-        echo "::echo::off"
+        pipx install airbyte-ci/connectors/ci_credentials
+        pipx install airbyte-ci/connectors/connector_ops
 
     - name: Auth with gcloud CLI
       uses: google-github-actions/setup-gcloud@v0
