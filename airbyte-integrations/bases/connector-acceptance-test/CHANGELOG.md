@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.2
+Refactor test_oauth_flow_parameters to validate advanced_auth instead of the deprecated authSpecification
+
 ## 0.11.1
 Test connector image labels and make sure they are set correctly and match metadata.yaml.
 
