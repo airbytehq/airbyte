@@ -1,9 +1,15 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC, abstractmethod
 from typing import Optional
-from destination_langchain.config import OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel
+
+from destination_langchain.config import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from langchain.embeddings.base import Embeddings
-from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
+from langchain.embeddings.openai import OpenAIEmbeddings
+
 
 class Embedder(ABC):
     def __init__(self):
@@ -26,18 +32,19 @@ class Embedder(ABC):
 
 OPEN_AI_VECTOR_SIZE = 1536
 
+
 class OpenAIEmbedder(Embedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
         self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)
-    
+
     def check(self) -> Optional[str]:
         try:
             self.embeddings.embed_query("test")
         except Exception as e:
             return str(e)
         return None
-    
+
     @property
     def langchain_embeddings(self) -> Embeddings:
         return self.embeddings
@@ -47,18 +54,19 @@ class OpenAIEmbedder(Embedder):
         # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
 
+
 class FakeEmbedder(Embedder):
     def __init__(self, config: FakeEmbeddingConfigModel):
         super().__init__()
         self.embeddings = FakeEmbeddings(size=OPEN_AI_VECTOR_SIZE)
-    
+
     def check(self) -> Optional[str]:
         try:
             self.embeddings.embed_query("test")
         except Exception as e:
             return str(e)
         return None
-    
+
     @property
     def langchain_embeddings(self) -> Embeddings:
         return self.embeddings

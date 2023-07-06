@@ -1,9 +1,13 @@
-from ast import Dict
-from typing import Any, List, Literal, Optional, Union
-from pydantic import BaseModel, Field
-from jsonschema import RefResolver
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import re
+from typing import List, Literal, Optional, Union
+
+from jsonschema import RefResolver
+from pydantic import BaseModel, Field
 
 
 class ProcessingConfigModel(BaseModel):
@@ -21,12 +25,13 @@ class ProcessingConfigModel(BaseModel):
     text_fields: Optional[List[str]] = Field(
         ...,
         title="Text fields to embed",
-        description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. If none are defined, all fields are considered text fields",
-        always_show=True
+        description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+        always_show=True,
+        examples=["text", "user.name", "users.*.name"],
     )
 
     class Config:
-        schema_extra = {"group":"processing"}
+        schema_extra = {"group": "processing"}
 
 
 class OpenAIEmbeddingConfigModel(BaseModel):
@@ -34,13 +39,20 @@ class OpenAIEmbeddingConfigModel(BaseModel):
     openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
 
     class Config:
-        title="OpenAI"
+        title = "OpenAI"
+        schema_extra = {
+            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        }
+
 
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
     class Config:
-        title="Fake"
+        title = "Fake"
+        schema_extra = {
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+        }
 
 
 class PineconeIndexingModel(BaseModel):
@@ -50,7 +62,10 @@ class PineconeIndexingModel(BaseModel):
     index: str = Field(..., title="Index", description="Pinecone index to use")
 
     class Config:
-        title="Pinecone"
+        title = "Pinecone"
+        schema_extra = {
+            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain."
+        }
 
 
 class DocArrayHnswSearchIndexingModel(BaseModel):
@@ -59,12 +74,15 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
         ...,
         title="Destination Path",
         description="Path to the directory where hnswlib and meta data files will be written. The files will be placed inside that local mount.",
-        examples=["/json_data"],
+        examples=["/local/my_hnswlib_index"],
     )
 
     class Config:
-        title="DocArrayHnswSearch"
-        schema_extra={"description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite."}
+        title = "DocArrayHnswSearch"
+        schema_extra = {
+            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite."
+        }
+
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel

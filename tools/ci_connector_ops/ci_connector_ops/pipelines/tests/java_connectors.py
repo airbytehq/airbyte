@@ -23,7 +23,7 @@ class IntegrationTest(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     gradle_task_name = "integrationTest"
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker", "connectorAcceptanceTest"]
+    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
 
     @property
     def title(self) -> str:

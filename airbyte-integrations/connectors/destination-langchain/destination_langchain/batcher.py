@@ -1,7 +1,13 @@
-from typing import Callable, List, Any
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Any, Callable, List
+
 
 class Batcher:
     processed_count: int
+
     def __init__(self, batch_size: int, flush_handler: Callable[[List[Any]], None]):
         self.batch_size = batch_size
         self.buffer = []
@@ -14,10 +20,10 @@ class Batcher:
         self.flush_if_necessary()
 
     def flush(self):
-        if self.buffer:
-            # Process the batch
-            self.flush_handler(self.buffer)
-            self.buffer.clear()
+        if len(self.buffer) == 0:
+            return
+        self.flush_handler(self.buffer)
+        self.buffer.clear()
 
     def flush_if_necessary(self):
         if len(self.buffer) >= self.batch_size:

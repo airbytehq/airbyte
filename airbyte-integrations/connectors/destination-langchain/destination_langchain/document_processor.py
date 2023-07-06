@@ -1,17 +1,21 @@
-from typing import List, Optional, Tuple, Mapping, Union
-from destination_langchain.config import ProcessingConfigModel
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-from langchain.document_loaders.base import Document
-from langchain.utils import stringify_dict
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from typing import List, Mapping, Optional, Tuple, Union
+
 import dpath.util
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
+from destination_langchain.config import ProcessingConfigModel
 from dpath.exceptions import PathNotFound
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, AirbyteStream
-import uuid
-from dataclasses import dataclass
+from langchain.document_loaders.base import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_airbyte_stream"
 METADATA_NATURAL_ID_FIELD = "_natural_id"
+
 
 class DocumentProcessor:
     streams: Mapping[str, ConfiguredAirbyteStream]
@@ -60,7 +64,7 @@ class DocumentProcessor:
         return relevant_fields
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> dict:
-        metadata = record.data.copy()
+        metadata = record.data
         if self.text_fields:
             for field in self.text_fields:
                 try:
@@ -95,7 +99,6 @@ class DocumentProcessor:
                     current_size += item_size
 
         return result
-
 
     def _split_document(self, doc: Document) -> List[Document]:
         chunks = self.splitter.split_documents([doc])
