@@ -74,7 +74,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @BeforeAll
   void initEnvironment() throws Exception {
+      LOGGER.info("initEnvironment  ");
     this.configJson = Jsons.clone(getStaticConfig());
+      LOGGER.info("Before env called host is:   " + configJson.get("host").asText());
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
     var request = new CreateEnvironmentRequest(
             configJson.get("env_name").asText(),
@@ -82,6 +84,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             configJson.get("env_password").asText());
     var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
     ((ObjectNode) configJson).put("host", response.ip());
+      LOGGER.info("response.ip():  " + response.ip());
     LOGGER.info("host name: " + configJson.get("host").asText());
     LOGGER.info("user name: " + configJson.get("username").asText());
     LOGGER.info("password: " + configJson.get("password").asText());
@@ -96,6 +99,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   public JsonNode getStaticConfig() throws Exception {
+      LOGGER.info("static config json in string format  " + Files.readString(Paths.get("secrets/config.json")));
   	 return Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
   }
 
@@ -135,7 +139,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected void setup(TestDestinationEnv testEnv) {
     final String createSchemaQuery = String.format(CREATE_DATABASE, SCHEMA_NAME);
     try {
-      this.configJson = Jsons.clone(getStaticConfig());
       ((ObjectNode) configJson).put("schema", SCHEMA_NAME);
       LOGGER.info("schema name: " +  configJson.get("schema").asText());
       dataSource = getDataSource(configJson);
