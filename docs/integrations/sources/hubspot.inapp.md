@@ -9,6 +9,22 @@ For more information on which authentication method to choose and the required s
 ### Scopes Required (for Private App and Open Source OAuth)
 Unless you are authenticating via OAuth on **Airbyte Cloud**, you must manually configure scopes to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
 
+* `content`
+* `forms`
+* `tickets`
+* `automation`
+* `e-commerce`
+* `sales-email-read`
+* `crm.objects.companies.read`
+* `crm.schemas.companies.read`
+* `crm.objects.lists.read`
+* `crm.objects.contacts.read`
+* `crm.objects.deals.read`
+* `crm.schemas.deals.read`
+* `crm.objects.goals.read`
+* `crm.objects.owners.read`
+* `crm.objects.custom.read`
+
 ## Setup guide
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
