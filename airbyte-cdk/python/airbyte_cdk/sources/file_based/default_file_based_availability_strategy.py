@@ -64,7 +64,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         parser = stream.get_parser(stream.config.file_type)
 
         try:
-            record = next(iter(parser.parse_records(file, self.stream_reader)))
+            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader)))
         except StopIteration:
             # The file is empty. We've verified that we can open it, so will
             # consider the connection check successful even though it means

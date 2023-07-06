@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
@@ -17,7 +18,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy, DefaultSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
 
@@ -85,7 +85,7 @@ class FileBasedSource(AbstractSource, ABC):
                 stream_config = FileBasedStreamConfig(**stream)
                 streams.append(
                     DefaultFileBasedStream(
-                        config=FileBasedStreamConfig(**stream),
+                        config=stream_config,
                         stream_reader=self.stream_reader,
                         availability_strategy=self.availability_strategy,
                         discovery_policy=self.discovery_policy,
