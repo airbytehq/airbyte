@@ -80,7 +80,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             configJson.get("env_name").asText(),
             configJson.get("env_region").asText(),
             configJson.get("env_password").asText());
-    var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();((ObjectNode) configJson).put("host", response.ip());
+    var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
+    ((ObjectNode) configJson).put("host", response.ip());
   }
 
    @AfterAll

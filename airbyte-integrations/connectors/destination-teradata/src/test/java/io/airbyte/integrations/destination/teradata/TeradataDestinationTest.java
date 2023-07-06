@@ -26,9 +26,6 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TeradataDestinationTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationTest.class);
-
   private JsonNode config;
   final TeradataDestination destination = new TeradataDestination();
 
