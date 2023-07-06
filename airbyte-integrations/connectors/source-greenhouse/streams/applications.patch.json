@@ -8,10 +8,10 @@
             },
             "prospect_detail": {
                 "properties": {
-                    "prospective_pool":{
+                    "prospect_pool":{
                        "type": ["object", "null"]
                      },
-                    "prospective_stage":{
+                    "prospect_stage":{
                         "type": ["object", "null"]
                     }
                 }
