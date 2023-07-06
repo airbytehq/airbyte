@@ -7,7 +7,7 @@ import itertools
 import logging
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union, Set
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
@@ -38,7 +38,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: FileBasedCursor, **kwargs):
+    def __init__(self, cursor: FileBasedCursor, **kwargs):  # type: ignore
         super().__init__(**kwargs)
         self._cursor = cursor
 
@@ -180,8 +180,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
-        base_schema: Dict[str, str] = {}
-        pending_tasks = set()
+        base_schema: Dict[str, Any] = {}
+        pending_tasks: Set[asyncio.tasks.Task[Dict[str, Any]]] = set()
 
         n_started, n_files = 0, len(files)
         files_iterator = iter(files)

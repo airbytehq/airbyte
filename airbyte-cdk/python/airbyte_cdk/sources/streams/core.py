@@ -33,8 +33,7 @@ JsonSchema = Mapping[str, Any]
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
     module: Any = inspect.getmodule(cls)
-    module_name: str = module.__name__
-    return module_name.split(".")[0]
+    return module.__name__.split(".")[0]
 
 
 class IncrementalMixin(ABC):
@@ -50,6 +49,7 @@ class IncrementalMixin(ABC):
             self._state[self.cursor_field] = value[self.cursor_field]
     """
 
+    @property
     @abstractmethod
     def state(self) -> MutableMapping[str, Any]:
         """State getter, should return state in form that can serialized to a string and send to the output
@@ -64,6 +64,11 @@ class IncrementalMixin(ABC):
          syncing process from the point where it stopped.
         """
 
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+
 
 class Stream(ABC):
     """
@@ -72,7 +77,7 @@ class Stream(ABC):
 
     # Use self.logger in subclasses to log any messages
     @property
-    def logger(self) -> logging.Logger:
+    def logger(self):
         return logging.getLogger(f"airbyte.streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
@@ -101,9 +106,9 @@ class Stream(ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
@@ -128,7 +133,7 @@ class Stream(ABC):
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
-            stream.supported_sync_modes.append(SyncMode.incremental)
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
             stream.default_cursor_field = self._wrapped_cursor_field()
 
         keys = Stream._wrapped_primary_key(self.primary_key)
@@ -201,7 +206,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
@@ -228,9 +233,7 @@ class Stream(ABC):
         return None
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
