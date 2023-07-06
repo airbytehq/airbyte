@@ -295,14 +295,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override to return true if a destination implements size limits on record size (then destination
-   * should redefine getMaxRecordValueLimit() too)
-   */
-  protected boolean implementsRecordSizeLimitChecks() {
-    return false;
-  }
-
-  /**
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
@@ -848,10 +840,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncVeryBigRecords() throws Exception {
-    if (!implementsRecordSizeLimitChecks()) {
-      return;
-    }
-
     final AirbyteCatalog catalog =
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
