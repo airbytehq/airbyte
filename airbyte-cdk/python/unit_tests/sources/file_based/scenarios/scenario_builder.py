@@ -41,6 +41,7 @@ class TestScenario:
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
+            file_write_options: Dict[str, Any]
     ):
         self.name = name
         self.config = config
@@ -58,6 +59,7 @@ class TestScenario:
             validation_policies,
             parsers,
             stream_reader,
+            file_write_options,
         )
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
@@ -108,6 +110,7 @@ class TestScenarioBuilder:
         self._expected_discover_error = None, None
         self._expected_read_error = None, None
         self._incremental_scenario_config = None
+        self._file_write_options = {}
 
     def set_name(self, name: str):
         self._name = name
@@ -173,6 +176,10 @@ class TestScenarioBuilder:
         self._expected_read_error = error, message
         return self
 
+    def set_file_write_options(self, file_write_options: Dict[str, Any]):
+        self._file_write_options = file_write_options
+        return self
+
     def copy(self):
         return deepcopy(self)
 
@@ -193,5 +200,6 @@ class TestScenarioBuilder:
             self._expected_check_error,
             self._expected_discover_error,
             self._expected_read_error,
-            self._incremental_scenario_config
+            self._incremental_scenario_config,
+            self._file_write_options,
         )
