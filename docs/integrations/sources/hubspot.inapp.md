@@ -32,5 +32,4 @@ Add the following scopes to your private app to ensure Airbyte can sync all avai
 ## Supported Objects
 Airbyte supports syncing standard and custom CRM objects. Custom CRM objects will appear as streams available for sync, alongside the standard objects.
 
-
 For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Hubspot](https://docs.airbyte.com/integrations/sources/hubspot/).
