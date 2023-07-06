@@ -396,3 +396,8 @@ def pytest_sessionfinish(session, exitstatus):
     except Exception as e:
         logger.info(e)  # debug
         pass
+
+
+@pytest.fixture(name="connector_metadata")
+def connector_metadata_fixture(base_path) -> dict:
+    return load_yaml_or_json_path(base_path / "metadata.yaml")

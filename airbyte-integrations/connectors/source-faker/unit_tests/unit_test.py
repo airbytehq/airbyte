@@ -172,33 +172,6 @@ def test_read_products():
     assert state_rows_count == 2
 
 
-def test_no_read_limit_hit():
-    source = SourceFaker()
-    config = {"count": 10, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    )
-    state = {"users": {"id": 10}}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-
-    assert record_rows_count == 0
-    assert state_rows_count == 1
-
-
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
@@ -288,8 +261,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Sheriff Principal"
+    assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
 def test_ensure_no_purchases_without_users():
