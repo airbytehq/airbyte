@@ -3,7 +3,7 @@
 #
 
 from typing import Mapping
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
     _prepared_request_to_airbyte_message,
     _response_to_airbyte_message,
 )
+from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
@@ -194,7 +195,6 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     assert retriever.parse_response(response, stream_state={}) == request_response_logs
     assert retriever._last_response == response
     assert retriever._records_from_last_response == request_response_logs
-    assert retriever._latest_record == request_response_logs[-1]
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
@@ -727,25 +727,26 @@ def test_limit_stream_slices():
 
 
 @pytest.mark.parametrize(
-    "test_name, last_records, records, latest_record",
+    "test_name, first_greater_than_second",
     [
-        ("test_two_records", [{"id": -1}], records, records[-1]),
-        ("test_no_records", [{"id": -1}], [], None),
-        ("test_no_records_no_previous_records", [], [], None)
-    ]
+        ("test_first_greater_than_second", True),
+        ("test_second_greater_than_first", False),
+    ],
 )
-def test_read_records_then_cursor_close_slice(test_name, last_records, records, latest_record):
-    requester = MagicMock()
-    paginator = MagicMock()
+def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name, first_greater_than_second):
+    first_record = Record({"first": 1}, {})
+    second_record = Record({"second": 2}, {})
+    records = [first_record, second_record]
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
     cursor = MagicMock(spec=Cursor)
+    cursor.is_greater_than_or_equal.return_value = first_greater_than_second
 
     retriever = SimpleRetriever(
         name="stream_name",
         primary_key=primary_key,
-        requester=requester,
-        paginator=paginator,
+        requester=MagicMock(),
+        paginator=Mock(),
         record_selector=record_selector,
         stream_slicer=cursor,
         cursor=cursor,
@@ -753,39 +754,40 @@ def test_read_records_then_cursor_close_slice(test_name, last_records, records, 
         config={},
     )
     stream_slice = {"repository": "airbyte"}
-    with patch.object(HttpStream, "_read_pages", return_value=iter(records), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+
+    with patch.object(HttpStream, "_read_pages", return_value=iter([first_record, second_record]), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
         list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
-        cursor.close_slice.assert_called_once_with(stream_slice, latest_record)
+        cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
+
+
+def test_given_stream_data_is_not_record_when_read_records_then_update_slice_with_optional_record():
+    stream_data = [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="a log message"))]
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = []
+    cursor = MagicMock(spec=Cursor)
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=MagicMock(),
+        paginator=Mock(),
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+    stream_slice = {"repository": "airbyte"}
+
+    with patch.object(HttpStream, "_read_pages", return_value=iter(stream_data), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        cursor.close_slice.assert_called_once_with(stream_slice, None)
 
 
 def parse_two_pages_and_return_records(retriever, stream_slice, records):
     list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
     list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
     return records
-
-
-def test_given_latest_response_has_no_records_when_read_records_then_close_slice_using_latest_record_from_previous_response():
-    requester = MagicMock()
-    paginator = MagicMock()
-    record_selector = MagicMock()
-    record_selector.select_records.side_effect = [records, []]
-    cursor = MagicMock(spec=Cursor)
-
-    retriever = SimpleRetriever(
-        name="stream_name",
-        primary_key=primary_key,
-        requester=requester,
-        paginator=paginator,
-        record_selector=record_selector,
-        stream_slicer=cursor,
-        cursor=cursor,
-        parameters={},
-        config={},
-    )
-    stream_slice = {"repository": "airbyte"}
-    with patch.object(HttpStream, "_read_pages", side_effect=lambda _, __, ___: parse_two_pages_and_return_records(retriever, stream_slice, records)):
-        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
-        cursor.close_slice.assert_called_once_with(stream_slice, records[-1])
 
 
 def _generate_slices(number_of_slices):

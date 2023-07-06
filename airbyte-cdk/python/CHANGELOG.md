@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
+## 0.44.2
+Ensuring the state value format matches the cursor value from the record
+
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
 ## 0.44.0
 Support data feed like incremental syncs
 
