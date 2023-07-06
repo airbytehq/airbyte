@@ -68,7 +68,7 @@ class FileBasedStreamConfig(BaseModel):
     validation_policy: Any
     validation_policies: Dict[str, Any]
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
-    input_schema: Optional[Dict[str, Any]]
+    input_schema: Optional[Mapping[str, Any]]
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]

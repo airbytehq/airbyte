@@ -5,7 +5,7 @@
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, List, Literal, Mapping, Union
+from typing import Any, Dict, List, Literal, Mapping, Union, Optional
 
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, SchemaInferenceError
 
@@ -26,12 +26,12 @@ class ComparableType(Enum):
 
     def __lt__(self, other: Any) -> bool:
         if self.__class__ is other.__class__:
-            return self.value < other.value  # type: ignore
+            return self.value < other.value
         else:
             return NotImplemented
 
 
-def get_comparable_type(value: Any) -> ComparableType:
+def get_comparable_type(value: Any) -> Optional[ComparableType]:
     if value == "null":
         return ComparableType.NULL
     if value == "boolean":
@@ -45,11 +45,10 @@ def get_comparable_type(value: Any) -> ComparableType:
     if value == "object":
         return ComparableType.OBJECT
     else:
-        # raise ValueError(f"Unrecognized type: {value}")
         return None
 
 
-def get_inferred_type(value: Any) -> ComparableType:
+def get_inferred_type(value: Any) -> Optional[ComparableType]:
     if value is None:
         return ComparableType.NULL
     if isinstance(value, bool):
@@ -63,7 +62,6 @@ def get_inferred_type(value: Any) -> ComparableType:
     if isinstance(value, dict):
         return ComparableType.OBJECT
     else:
-        # raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, details=f"Unrecognized type: {value}")
         return None
 
 
@@ -84,7 +82,7 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
     and nothing else.
     """
     for k, t in list(schema1.items()) + list(schema2.items()):
-        if not isinstance(t, dict) or not _is_valid_type(t.get("type")):
+        if not isinstance(t, dict) or "type" not in t or not _is_valid_type(t["type"]):
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=k, type=t)
 
     merged_schema: Dict[str, Any] = deepcopy(schema1)

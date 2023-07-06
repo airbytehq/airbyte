@@ -14,4 +14,4 @@ class AbstractSchemaValidationPolicy(ABC):
         """
         Return True if the record passes the user's validation policy.
         """
-        ...
+        raise NotImplementedError()
