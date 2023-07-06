@@ -40,9 +40,8 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         try:
             files = self._check_list_files(stream)
             self._check_parse_record(stream, files[0])
-        except CheckAvailabilityError as exc:
-            tb = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
-            return False, "".join(tb)
+        except CheckAvailabilityError:
+            return False, "".join(traceback.format_exc())
 
         return True, None
 

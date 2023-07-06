@@ -4,16 +4,15 @@
 
 from abc import abstractmethod
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -38,20 +37,19 @@ class AbstractFileBasedStream(Stream):
     def __init__(
         self,
         config: FileBasedStreamConfig,
+        catalog_schema: Optional[ConfiguredAirbyteCatalog],
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[str, FileTypeParser],
-        validation_policies: Type[AbstractSchemaValidationPolicy],
     ):
         super().__init__()
         self.config = config
-        self._catalog_schema = {}  # TODO: wire through configured catalog
+        self._catalog_schema = catalog_schema
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
         self._parsers = parsers
-        self.validation_policy = validation_policies(self.config.validation_policy)
 
     @property
     @abstractmethod
@@ -124,7 +122,7 @@ class AbstractFileBasedStream(Stream):
             raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
 
     def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
-        return self.validation_policy.record_passes_validation_policy(record, self.get_json_schema())
+        return self.config.validation_policy.record_passes_validation_policy(record, self._catalog_schema)
 
     @cached_property
     def availability_strategy(self):
