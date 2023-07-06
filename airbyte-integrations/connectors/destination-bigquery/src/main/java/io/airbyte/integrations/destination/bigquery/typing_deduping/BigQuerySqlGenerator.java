@@ -381,7 +381,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
-        "quoted_cdc_delete_column", "`" + CDC_DELETED_AT_COLUMN + "`")).replace(
+        "quoted_cdc_delete_column", QUOTE + CDC_DELETED_AT_COLUMN + QUOTE)).replace(
         """
            DELETE FROM ${final_table_id}
            WHERE ${quoted_cdc_delete_column} IS NOT NULL
