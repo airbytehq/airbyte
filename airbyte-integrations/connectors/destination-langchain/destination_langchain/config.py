@@ -25,8 +25,9 @@ class ProcessingConfigModel(BaseModel):
     text_fields: Optional[List[str]] = Field(
         ...,
         title="Text fields to embed",
-        description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. If none are defined, all fields are considered text fields",
+        description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
         always_show=True,
+        examples=["text", "user.name", "users.*.name"],
     )
 
     class Config:
@@ -73,7 +74,7 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
         ...,
         title="Destination Path",
         description="Path to the directory where hnswlib and meta data files will be written. The files will be placed inside that local mount.",
-        examples=["/json_data"],
+        examples=["/local/my_hnswlib_index"],
     )
 
     class Config:
