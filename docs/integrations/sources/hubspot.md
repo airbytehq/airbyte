@@ -80,7 +80,7 @@ Next, you need to configure the appropriate
 - To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
