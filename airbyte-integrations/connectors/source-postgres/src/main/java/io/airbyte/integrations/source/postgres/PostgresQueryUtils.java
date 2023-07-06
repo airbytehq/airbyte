@@ -112,7 +112,7 @@ public class PostgresQueryUtils {
         .withStateType(StateType.XMIN);
   }
 
-  static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
+  public static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
                                                                       final List<ConfiguredAirbyteStream> streams,
                                                                       final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
