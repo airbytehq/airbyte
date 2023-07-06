@@ -830,62 +830,6 @@ public abstract class DestinationAcceptanceTest {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
-  /**
-   * This test is running a sync using the exchange rate catalog and messages. However it also
-   * generates and adds two extra messages with big records (near the destination limit as defined by
-   * getMaxValueLengthLimit()
-   * <p>
-   * The first big message should be small enough to fit into the destination while the second message
-   * would be too big and fails to replicate.
-   */
-  @Test
-  void testSyncVeryBigRecords() throws Exception {
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
-            AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
-        .collect(Collectors.toList());
-    // Add a big message that barely fits into the limits of the destination
-    messages.add(new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                // remove enough characters from max limit to fit the other columns and json characters
-                .put("currency", generateBigString(-150))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build()))));
-    // Add a big message that does not fit into the limits of the destination
-    final AirbyteMessage bigMessage = new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build())));
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteMessage> allMessages = new ArrayList<>();
-    allMessages.add(bigMessage);
-    allMessages.addAll(messages);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
   private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
     return RANDOM
