@@ -57,6 +57,9 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
   @Override
   protected void teardownStreamAndNamespace(String streamNamespace, String streamName) {
+    if (streamNamespace == null) {
+      streamNamespace = BigQueryUtils.getDatasetId(getConfig());
+    }
     // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of("airbyte", streamNamespace + "_" + streamName));
