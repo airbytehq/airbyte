@@ -14,7 +14,7 @@ single_csv_input_state_is_earlier_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -71,9 +71,9 @@ single_csv_input_state_is_earlier_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -100,7 +100,7 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -154,9 +154,9 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -183,7 +183,7 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -239,9 +239,9 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -268,7 +268,7 @@ single_csv_no_input_state_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -297,9 +297,9 @@ single_csv_no_input_state_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -341,7 +341,7 @@ multi_csv_same_timestamp_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -376,13 +376,13 @@ multi_csv_same_timestamp_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -431,7 +431,7 @@ single_csv_input_state_is_later_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -460,9 +460,9 @@ single_csv_input_state_is_later_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             }, "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -516,7 +516,7 @@ multi_csv_different_timestamps_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -551,13 +551,13 @@ multi_csv_different_timestamps_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -613,7 +613,7 @@ multi_csv_per_timestamp_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -656,13 +656,13 @@ multi_csv_per_timestamp_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -724,7 +724,7 @@ multi_csv_skip_file_if_already_in_history = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -767,13 +767,13 @@ multi_csv_skip_file_if_already_in_history = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -844,7 +844,7 @@ multi_csv_include_missing_files_within_history_range = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                 }
             ]
         }
@@ -887,13 +887,13 @@ multi_csv_include_missing_files_within_history_range = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -957,7 +957,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "max_history_size": 3,
                 }
             ]
@@ -1001,13 +1001,13 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -1092,7 +1092,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "max_history_size": 3,
                     "days_to_sync_if_history_is_full": 3,
                 }
@@ -1145,13 +1145,13 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -1209,7 +1209,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "max_history_size": 3,
                     "days_to_sync_if_history_is_full": 3,
                 }
@@ -1262,13 +1262,13 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -1325,7 +1325,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "max_history_size": 3,
                     "days_to_sync_if_history_is_full": 3,
                 }
@@ -1378,13 +1378,13 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -1447,7 +1447,7 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                     "name": "stream1",
                     "file_type": "csv",
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "validation_policy": "emit_record",
                     "max_history_size": 3,
                     "days_to_sync_if_history_is_full": 3,
                 }
@@ -1500,13 +1500,13 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"

@@ -17,12 +17,16 @@ class FileBasedSourceError(Enum):
     ERROR_READING_FILE = (
         "Error opening file. Please check the credentials provided in the config and verify that they provide permission to read files."
     )
-    ERROR_PARSING_FILE = "Error parsing file. This could be due to a mismatch between the config's file type and the actual file type, or because the file is not parseable."
+    ERROR_PARSING_RECORD = "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable."
     ERROR_PARSING_USER_PROVIDED_SCHEMA = "The provided schema could not be transformed into valid JSON Schema."  # TODO
     ERROR_VALIDATING_RECORD = "One or more records do not pass the schema validation policy. Please modify your input schema, or select a more lenient validation policy."
+    STOP_SYNC_PER_SCHEMA_VALIDATION_POLICY = (
+        "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema."
+    )
     NULL_VALUE_IN_SCHEMA = "Error during schema inference: no type was detected for key."
     UNRECOGNIZED_TYPE = "Error during schema inference: unrecognized type."
     SCHEMA_INFERENCE_ERROR = "Error inferring schema for file. Is the file valid?"
+    INVALID_SCHEMA_ERROR = "No fields were identified for this schema. This may happen if the stream is empty. Please check your configuration to verify that there are files that match the stream's glob patterns."
     CONFIG_VALIDATION_ERROR = "Error creating stream config object."
     MISSING_SCHEMA = "Expected `json_schema` in the configured catalog but it is missing."
     UNDEFINED_PARSER = "No parser is defined for this file type."
@@ -36,6 +40,10 @@ class BaseFileBasedSourceError(Exception):
 
 
 class ConfigValidationError(BaseFileBasedSourceError):
+    pass
+
+
+class InvalidSchemaError(BaseFileBasedSourceError):
     pass
 
 
@@ -56,4 +64,8 @@ class CheckAvailabilityError(BaseFileBasedSourceError):
 
 
 class UndefinedParserError(BaseFileBasedSourceError):
+    pass
+
+
+class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
     pass
