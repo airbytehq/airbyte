@@ -291,7 +291,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR, COLUMNS);
+    final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR);
     logAndExecute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
@@ -343,7 +343,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.dedupRawTable(streamId, "", CDC_COLUMNS);
+    final String sql = GENERATOR.dedupRawTable(streamId, "");
     logAndExecute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build());
