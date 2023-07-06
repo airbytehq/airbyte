@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+VALID_REGISTRIES = ["oss", "cloud"]
 REGISTRIES_FOLDER = "registries/v0"
 REPORT_FOLDER = "generated_reports"
 
