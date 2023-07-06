@@ -4,6 +4,7 @@
 
 import pytest as pytest
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
+from airbyte_cdk.sources.file_based.schema_validation_policies import EmitRecordPolicy
 from pydantic import ValidationError
 
 
@@ -25,7 +26,8 @@ def test_csv_config(file_type, input_format, expected_format, expected_error):
         "name": "stream1",
         "file_type": file_type,
         "globs": ["*"],
-        "validation_policy": "emit_record_on_schema_mismatch",
+        "validation_policy": "emit_record",
+        "validation_policies": {"emit_record": EmitRecordPolicy()},
         "format": input_format,
     }
     if expected_error:
