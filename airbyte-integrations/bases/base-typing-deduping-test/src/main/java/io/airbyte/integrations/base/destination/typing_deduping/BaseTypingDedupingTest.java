@@ -444,7 +444,8 @@ public abstract class BaseTypingDedupingTest {
   private void verifySyncResult(List<JsonNode> expectedRawRecords,
                                 List<JsonNode> expectedFinalRecords,
                                 String streamNamespace,
-                                String streamName) throws Exception {
+                                String streamName)
+      throws Exception {
     List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
     DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
