@@ -15,7 +15,7 @@ More information on HubSpot authentication methods can be found
 
 :::note
 Airbyte Cloud users authenticating via OAuth can skip straight to 
-[setting up the connector in Airbyte](#step-3-set-up-the-hubspot-source-connector-in-airbyte).  All other other users must manually set up authentication and configure scopes.
+[setting up the connector in Airbyte](#step-3-set-up-the-hubspot-source-connector-in-airbyte).  All other users must manually set up authentication and configure scopes.
 :::
 
 ### Step 1: Set up the authentication method
