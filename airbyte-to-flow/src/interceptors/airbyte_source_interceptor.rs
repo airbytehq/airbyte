@@ -31,6 +31,7 @@ use json_patch::merge;
 
 use super::fix_document_schema::{
     fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums,
+    normalize_schema_date_to_datetime
 };
 use super::normalize::{automatic_normalizations, normalize_doc, NormalizationEntry};
 use super::remap::remap;
@@ -45,6 +46,7 @@ const SPEC_PATCH_FILE_NAME: &str = "spec.patch.json";
 const SPEC_MAP_FILE_NAME: &str = "spec.map.json";
 const OAUTH2_PATCH_FILE_NAME: &str = "oauth2.patch.json";
 const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
+const SCHEMA_NORMALIZATIONS_FILE_NAME: &str = "normalizations.json";
 const STREAM_PATCH_DIR_NAME: &str = "streams";
 const STREAM_PK_SUFFIX: &str = ".pk.json";
 const STREAM_PATCH_SUFFIX: &str = ".patch.json";
@@ -183,6 +185,11 @@ impl AirbyteSourceInterceptor {
                 .map(|p| sj::from_str::<Vec<String>>(&p))
                 .transpose()?;
 
+            let schema_normalizations = std::fs::read_to_string(SCHEMA_NORMALIZATIONS_FILE_NAME)
+                .ok()
+                .map(|p| sj::from_str::<Vec<String>>(&p))
+                .transpose()?.unwrap_or(Vec::new());
+
             let mut resp = response::Discovered::default();
             for stream in catalog.streams {
                 if let Some(ref selected_streams) = selected_streams_option {
@@ -272,6 +279,15 @@ impl AirbyteSourceInterceptor {
 
                 fix_nonstandard_jsonschema_attributes(&mut doc_schema);
                 remove_enums(&mut doc_schema);
+
+                for normalization in &schema_normalizations {
+                    match normalization.as_str() {
+                        "date-to-datetime" => {
+                            normalize_schema_date_to_datetime(&mut doc_schema);
+                        },
+                        _ => {}
+                    }
+                }
 
                 resp.bindings.push(response::discovered::Binding {
                     recommended_name,
