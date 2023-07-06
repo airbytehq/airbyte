@@ -74,43 +74,31 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @BeforeAll
   void initEnvironment() throws Exception {
-      LOGGER.info("initEnvironment  ");
     this.configJson = Jsons.clone(getStaticConfig());
-      LOGGER.info("Before env called host is:   " + configJson.get("host").asText());
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
     var request = new CreateEnvironmentRequest(
             configJson.get("env_name").asText(),
             configJson.get("env_region").asText(),
             configJson.get("env_password").asText());
-    var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
-    ((ObjectNode) configJson).put("host", response.ip());
-      LOGGER.info("response.ip():  " + response.ip());
-    LOGGER.info("host name: " + configJson.get("host").asText());
-    LOGGER.info("user name: " + configJson.get("username").asText());
-    LOGGER.info("password: " + configJson.get("password").asText());
-
+    var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();((ObjectNode) configJson).put("host", response.ip());
   }
 
    @AfterAll
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
-    //TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
-    //var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
-    //teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText()).get();
+    TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
+    var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
+    teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText()).get();
   }
 
   public JsonNode getStaticConfig() throws Exception {
-      LOGGER.info("static config json in string format  " + Files.readString(Paths.get("secrets/config.json")));
   	 return Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
-    final JsonNode credentialsJsonString = Jsons
-        .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
-    final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
-    LOGGER.info("failed check config got success");
-    return credentialsJsonString;
+      JsonNode failureConfig  = Jsons.clone(this.configJson);
+      ((ObjectNode) failureConfig).put("password", "wrongpassword");
+      return failureConfig;
   }
 
   @Override
@@ -140,10 +128,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     final String createSchemaQuery = String.format(CREATE_DATABASE, SCHEMA_NAME);
     try {
       ((ObjectNode) configJson).put("schema", SCHEMA_NAME);
-      LOGGER.info("schema name: " +  configJson.get("schema").asText());
       dataSource = getDataSource(configJson);
       database = getDatabase(dataSource);
-      LOGGER.info("create schema query: " +  createSchemaQuery);
       database.execute(createSchemaQuery);
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
@@ -155,8 +141,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     final String deleteQuery = String.format(String.format(DELETE_DATABASE, SCHEMA_NAME));
     final String dropQuery = String.format(String.format(DROP_DATABASE, SCHEMA_NAME));
     try {
-      //database.execute(deleteQuery);
-      //database.execute(dropQuery);
+      database.execute(deleteQuery);
+      database.execute(dropQuery);
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " delete got failed.");
     }
@@ -177,10 +163,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
-    LOGGER.info("JDBC URL : " + jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-      LOGGER.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
-      LOGGER.info("PASSWORD_KEY : " + jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
-      LOGGER.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         TeradataDestination.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
@@ -200,7 +182,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return Collections.emptyMap();
+    return destination.getDefaultConnectionProperties(config);
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
