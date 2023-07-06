@@ -123,18 +123,13 @@ class ModelToComponentFactory:
         limit_slices_fetched: int = None,
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
-        message_repository: MessageRepository = None
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
-        self._message_repository = (
-            message_repository
-            if message_repository
-            else InMemoryMessageRepository(self._evaluate_log_level(emit_connector_builder_messages))
-        )
+        self._message_repository = InMemoryMessageRepository(self._evaluate_log_level(emit_connector_builder_messages))
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -219,6 +214,8 @@ class ModelToComponentFactory:
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
+        if "message_repository" not in kwargs and "message_repository" in component_constructor.__code__.co_varnames:
+            kwargs["message_repository"] = self._message_repository
         return component_constructor(model=model, config=config, **kwargs)
 
     @staticmethod
@@ -301,7 +298,7 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_custom_component(self, model, config: Config, **kwargs) -> type:
+    def create_custom_component(self, model, config: Config, message_repository: MessageRepository, **kwargs) -> type:
         """
         Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
         instantiated. Only the model's additional properties that match the custom class definition are passed to the constructor
@@ -331,7 +328,7 @@ class ModelToComponentFactory:
                     model_value["type"] = derived_type
 
             if self._is_component(model_value):
-                model_args[model_field] = self._create_nested_component(model, model_field, model_value, config)
+                model_args[model_field] = self._create_nested_component(model, model_field, model_value, config, message_repository)
             elif isinstance(model_value, list):
                 vals = []
                 for v in model_value:
@@ -340,7 +337,7 @@ class ModelToComponentFactory:
                         if derived_type:
                             v["type"] = derived_type
                     if self._is_component(v):
-                        vals.append(self._create_nested_component(model, model_field, v, config))
+                        vals.append(self._create_nested_component(model, model_field, v, config, message_repository))
                     else:
                         vals.append(v)
                 model_args[model_field] = vals
@@ -386,7 +383,7 @@ class ModelToComponentFactory:
         else:
             return []
 
-    def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
+    def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config, message_repository: MessageRepository) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
             # If no type is specified, we can assume this is a dictionary object which can be returned instead of a subcomponent
@@ -406,6 +403,8 @@ class ModelToComponentFactory:
                 constructor_kwargs = inspect.getfullargspec(model_constructor).kwonlyargs
                 model_parameters = model_value.get("$parameters", {})
                 matching_parameters = {kwarg: model_parameters[kwarg] for kwarg in constructor_kwargs if kwarg in model_parameters}
+                if "message_repository" in model_constructor.__code__.co_varnames:
+                    matching_parameters["message_repository"] = message_repository
                 return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters)
             except TypeError as error:
                 missing_parameters = self._extract_missing_parameters(error)
@@ -424,7 +423,7 @@ class ModelToComponentFactory:
     def _is_component(model_value: Any) -> bool:
         return isinstance(model_value, dict) and model_value.get("type")
 
-    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, **kwargs) -> DatetimeBasedCursor:
+    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, message_repository: MessageRepository, **kwargs) -> DatetimeBasedCursor:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
@@ -467,17 +466,17 @@ class ModelToComponentFactory:
             start_time_option=start_time_option,
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
-            message_repository=self._message_repository,
+            message_repository=message_repository,
             config=config,
             parameters=model.parameters,
         )
 
-    def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
+    def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, message_repository: MessageRepository, **kwargs) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
         # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
         # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
-        combined_slicers = self._merge_stream_slicers(model=model, config=config)
+        combined_slicers = self._merge_stream_slicers(model=model, config=config, message_repository=message_repository)
 
         primary_key = model.primary_key.__root__ if model.primary_key else None
         stop_condition_on_cursor = (
@@ -490,6 +489,7 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
+            message_repository=message_repository,
         )
 
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
@@ -517,27 +517,27 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
+    def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config, message_repository: MessageRepository) -> Optional[StreamSlicer]:
         stream_slicer = None
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
             stream_slicer = (
                 CartesianProductStreamSlicer(
-                    [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
+                    [self._create_component_from_model(model=slicer, config=config, message_repository=message_repository) for slicer in stream_slicer_model], parameters={}
                 )
                 if type(stream_slicer_model) == list
-                else self._create_component_from_model(model=stream_slicer_model, config=config)
+                else self._create_component_from_model(model=stream_slicer_model, config=config, message_repository=message_repository)
             )
 
         if model.incremental_sync and stream_slicer:
             return PerPartitionCursor(
                 cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config, message_repository=message_repository),
                 ),
                 partition_router=stream_slicer,
             )
         elif model.incremental_sync:
-            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
+            return self._create_component_from_model(model=model.incremental_sync, config=config, message_repository=message_repository)
         elif stream_slicer:
             return stream_slicer
         else:
@@ -608,9 +608,9 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, config: Config, message_repository: MessageRepository, *, name: str) -> HttpRequester:
         authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, message_repository=message_repository)
             if model.authenticator
             else None
         )
@@ -707,7 +707,7 @@ class ModelToComponentFactory:
     def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
         return NoPagination(parameters={})
 
-    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, message_repository: MessageRepository, **kwargs) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
@@ -724,7 +724,7 @@ class ModelToComponentFactory:
                 refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
-                message_repository=self._message_repository,
+                message_repository=message_repository,
             )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
@@ -740,7 +740,7 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
-            message_repository=self._message_repository,
+            message_repository=message_repository,
         )
 
     @staticmethod
@@ -751,8 +751,8 @@ class ModelToComponentFactory:
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs) -> PageIncrement:
         return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, parameters=model.parameters)
 
-    def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs) -> ParentStreamConfig:
-        declarative_stream = self._create_component_from_model(model.stream, config=config)
+    def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, message_repository: MessageRepository, **kwargs) -> ParentStreamConfig:
+        declarative_stream = self._create_component_from_model(model.stream, config=config, message_repository=message_repository)
         request_option = self._create_component_from_model(model.request_option, config=config) if model.request_option else None
         return ParentStreamConfig(
             parent_key=model.parent_key,
@@ -811,9 +811,10 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        message_repository: MessageRepository,
         stop_condition_on_cursor: bool = False,
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
+        requester = self._create_component_from_model(model=model.requester, config=config, name=name, message_repository=message_repository)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
@@ -841,7 +842,7 @@ class ModelToComponentFactory:
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
                 disable_retries=self._disable_retries,
-                message_repository=self._message_repository,
+                message_repository=message_repository
             )
         return SimpleRetriever(
             name=name,
@@ -854,7 +855,7 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters,
             disable_retries=self._disable_retries,
-            message_repository=self._message_repository,
+            message_repository=message_repository,
         )
 
     @staticmethod
@@ -866,27 +867,22 @@ class ModelToComponentFactory:
             parameters={},
         )
 
-    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
+    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, message_repository: MessageRepository, **kwargs) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
+            substream_message_repository = LogAppenderMessageRepositoryDecorator(
+                {"airbyte_cdk": {"stream": {"is_substream": True}}},
+                message_repository,
+                self._evaluate_log_level(self._emit_connector_builder_messages)
+            )
             parent_stream_configs.extend(
                 [
-                    self._create_message_repository_substream_wrapper(model=parent_stream_config, config=config)
+                    self._create_component_from_model(model=parent_stream_config, config=config, message_repository=substream_message_repository)
                     for parent_stream_config in model.parent_stream_configs
                 ]
             )
 
         return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
-
-    def _create_message_repository_substream_wrapper(self, model, config):
-        substream_factory = ModelToComponentFactory(
-            limit_pages_fetched_per_slice=self._limit_pages_fetched_per_slice,
-            limit_slices_fetched=self._limit_slices_fetched,
-            emit_connector_builder_messages=self._emit_connector_builder_messages,
-            disable_retries=self._disable_retries,
-            message_repository=LogAppenderMessageRepositoryDecorator({"airbyte_cdk": {"stream": {"is_substream": True}}}, self._message_repository, self._evaluate_log_level(self._emit_connector_builder_messages)),
-        )
-        return substream_factory._create_component_from_model(model=model, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:
