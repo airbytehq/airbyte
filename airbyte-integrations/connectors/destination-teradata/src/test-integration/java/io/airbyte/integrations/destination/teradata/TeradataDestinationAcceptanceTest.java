@@ -21,7 +21,6 @@ import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient
 import io.airbyte.integrations.destination.teradata.envclient.dto.CreateEnvironmentRequest;
 import io.airbyte.integrations.destination.teradata.envclient.dto.DeleteEnvironmentRequest;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,14 +32,10 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
@@ -82,6 +77,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             configJson.get("env_password").asText());
     var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
     ((ObjectNode) configJson).put("host", response.ip());
+    if(configJson.get("password") == null) {
+        ((ObjectNode) configJson).put("password", configJson.get("env_password").asText());
+    }
   }
 
    @AfterAll

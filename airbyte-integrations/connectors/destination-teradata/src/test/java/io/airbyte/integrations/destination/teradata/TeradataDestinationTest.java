@@ -5,23 +5,14 @@
 package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +20,7 @@ public class TeradataDestinationTest {
   private JsonNode config;
   final TeradataDestination destination = new TeradataDestination();
 
-  private static String EXPECTED_JDBC_URL = "jdbc:teradata://localhost/";
+  private final String EXPECTED_JDBC_URL = "jdbc:teradata://localhost/";
 
   private final String EXTRA_JDBC_PARAMS = "key1=value1&key2=value2&key3=value3";
   private String getUserName() {
