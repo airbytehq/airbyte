@@ -868,6 +868,8 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
+      # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
+      # compatibility reason. We should eventually move this to align with the code.
       transformations:
         title: Transformations
         description: A list of transformations to be applied to each output record.
