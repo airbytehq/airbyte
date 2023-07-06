@@ -142,15 +142,21 @@ First you need to give the connector some additional permissions:
 
 Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing.
 
-### A note on the `engagements` stream
+### Notes on the `engagements` stream
 
-Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
+Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
 
 - A `call` engagement has a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
 - An `email` engagement has a corresponding `engagements_metadata` object with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
+
+The `engagements` stream uses two types of API:
+- EngagementsRecent if start_date/last_sync_date is less than 30 days and API is able to return all records (<10k)
+- EngagementsAll which extracts all records, but supports filter on connector side
+
+It means that in order to perform fast incremental sync, it should be scheduled no rarer than once at 30 days and should not sync more than 10k new records. Otherwise, sync of all records is performed with filtering on connector side. 
 
 ## Performance considerations
 
@@ -171,13 +177,6 @@ Example of the output message when trying to read `workflows` stream with missin
 ```
 
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-
-### A note on the `engagements` stream
-Engagements stream uses two types of API:
-- EngagementsRecent if start_date/last_sync_date is less than 30 days and API is able to return all records (<10k)
-- EngagementsAll which extracts all records, but supports filter on connector side
-
-It means that in order to perform fast incremental sync, it should be scheduled no rarer than once at 30 days and should not sync more than 10k new records. Otherwise, sync of all records is performed with filtering on connector side. 
 
 ## Tutorials
 
