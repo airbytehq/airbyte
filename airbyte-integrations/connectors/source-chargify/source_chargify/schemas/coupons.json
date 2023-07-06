@@ -1,0 +1,114 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id" : {
+            "type" : "number"
+        },
+        "name" : {
+            "type" : "string"
+        },
+        "code" : {
+            "type" : "string"
+        },
+        "description" : {
+            "type" : "string"
+        },
+        "amount" : {
+            "type" : ["number", "null"]
+        },
+        "amount_in_cents" : {
+            "type" : ["integer", "null"]
+        },
+        "product_family_id" : {
+            "type" : "integer"
+        },
+        "product_family_name" : {
+            "type" : "string"
+        },
+        "start_date" : {
+            "type" : "string"
+        },
+        "end_date" : {
+            "type" : ["string", "null"]
+        },
+        "percentage" : {
+            "type" : ["number", "null"]
+        },
+        "recurring" : {
+            "type" : "boolean"
+        },
+        "recurring_scheme" : {
+            "type" : "string"
+        },
+        "duration_period_count"  : {
+            "type" : ["integer", "null"]
+        },
+        "duration_interval" : {
+            "type" : ["integer", "null"]
+        },
+        "duration_interval_unit" : {
+            "type" : ["string", "null"]
+        },
+        "duration_interval_span" : {
+            "type" : "string"
+        },
+        "allow_negative_balance" : {
+            "type" : "boolean"
+        },
+        "archived_at" : {
+            "type" : ["string", "null"]
+        },
+        "conversion_limit" : {
+            "type" : ["string", "null"]
+        },
+        "stackable" : {
+            "type" : "boolean"
+        },
+        "compounding_strategy" : {
+            "type" : ["string", "null"]
+        },
+        "use_site_exchange_rate" : {
+            "type" : "boolean"
+        },
+        "created_at" : {
+            "type" : "string"
+        },
+        "updated_at" : {
+            "type" : "string"
+        },
+        "discount_type" : {
+            "type" : "string"
+        },
+        "exclude_mid_period_allocations" : {
+            "type" : "boolean"
+        },
+        "apply_on_cancel_at_end_of_period" : {
+            "type" : "boolean"
+        },
+        "coupon_restrictions" : {
+            "type" : "array",
+            "items" : {
+                "type" : "object",
+                "properties": {
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "item_type" : {
+                        "type" : "string"
+                    },
+                    "item_id" : {
+                        "type" : "integer"
+                    },
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "handle" : {
+                        "type" : ["string", "null"]
+                    }
+                }
+            }
+        }
+    }
+}
+  

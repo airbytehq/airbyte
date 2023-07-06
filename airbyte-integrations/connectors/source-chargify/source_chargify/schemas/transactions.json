@@ -1,0 +1,115 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "subscription": {
+        "type": "integer"
+      },
+      "type": {
+        "type": ["string", "null"]
+      },
+      "kind": {
+        "type": ["string", "null"]
+      },
+      "transaction_type": {
+        "type": ["string", "null"]
+      },
+      "success": {
+        "type": "boolean"
+      },
+      "amount_in_cents": {
+        "type": "integer"
+      },
+      "memo": {
+        "type": ["string", "null"]
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "starting_balance_in_cents": {
+        "type": "integer"
+      },
+      "ending_balance_in_cents": {
+        "type": "integer"
+      },
+      "gateway_used": {
+        "type": ["string", "null"]
+      },
+      "gateway_transaction_id": {
+        "type": ["string", "null"]
+      },
+      "gateway_response_code": {
+        "type": "string"
+      },
+      "gateway_order_id": {
+        "type": ["integer", "null"]
+      },
+      "payment_id": {
+        "type": ["integer", "null"]
+      },
+      "product_id": {
+        "type": ["integer", "null"]
+      },
+      "tax_id": {
+        "type": ["integer", "null"]
+      },
+      "taxations": {
+        "type": "array"
+      },
+      "component_id": {
+        "type": "integer"
+      },
+      "statement_id": {
+        "type": ["integer", "null"]
+      },
+      "customer_id": {
+        "type": "integer"
+      },
+      "item_name": {
+        "type": ["string", "null"]
+      },
+      "period_range_start": {
+        "type": ["string", "null"]
+      },
+      "period_range_end": {
+        "type": ["string", "null"]
+      },
+      "currency": {
+        "type": "string"
+      },
+      "exchange_rate": {
+        "type": "number"
+      },
+      "component_handle": {
+        "type": ["string", "null"]
+      },
+      "component_price_point_id": {
+        "type": ["string", "null"]
+      },
+      "component_price_point_handle": {
+        "type": ["string", "null"]
+      },
+      "parent_id": {
+        "type": ["integer", "null"]
+      },
+      "role": {
+        "type": ["string", "null"]
+      },
+      "card_number": {
+        "type": ["string", "null"]
+      },
+      "card_expiration": {
+        "type": ["string", "null"]
+      },
+      "card_type": {
+        "type": ["string", "null"]
+      },
+      "refunded_amount_in_cents": {
+        "type": ["integer"]
+      }
+    }
+}
+  

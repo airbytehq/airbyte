@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "first_name": {
+        "type": "string"
+      },
+      "last_name": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "integer"
+      },
+      "current_vault": {
+        "type": "string"
+      },
+      "vault_token": {
+        "type": "string"
+      },
+      "billing_address": {
+        "type": "string"
+      },
+      "billing_city": {
+        "type": "string"
+      },
+      "billing_state": {
+        "type": "string"
+      },
+      "billing_zip": {
+        "type": "string"
+      },
+      "billing_country": {
+        "type": "string"
+      },
+      "customer_vault_token": {
+        "type": "null"
+      },
+      "billing_address_2": {
+        "type": "string"
+      },
+      "bank_name": {
+        "type": "string"
+      },
+      "masked_bank_routing_number": {
+        "type": "string"
+      },
+      "masked_bank_account_number": {
+        "type": "string"
+      },
+      "bank_account_type": {
+        "type": "string"
+      },
+      "bank_account_holder_type": {
+        "type": "string"
+      },
+      "payment_type": {
+        "type": "string"
+      },
+      "site_gateway_setting_id": {
+        "type": "integer"
+      },
+      "gateway_handle": {
+        "type": "string"
+      }
+    }
+}
+  

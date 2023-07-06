@@ -8,11 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "api_key": {
+        "title" : "Chargify API Key",
         "type": "string",
         "description": "Chargify API Key.",
         "airbyte_secret": true
       },
       "domain": {
+        "title" : "Chargify Domain",
         "type": "string",
         "description": "Chargify domain. Normally this domain follows the following format companyname.chargify.com"
       }

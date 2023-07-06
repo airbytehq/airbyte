@@ -1,0 +1,149 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "handle": {
+        "type": ["null", "string"]
+      },
+      "description": {
+        "type": "string"
+      },
+      "accounting_code": {
+        "type": ["string", "null"]
+      },
+      "request_credit_card": {
+        "type": "boolean"
+      },
+      "expiration_interval": {
+        "type": ["integer", "null"]
+      },
+      "expiration_interval_unit": {
+        "type": ["string", "null"]
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "price_in_cents": {
+        "type": "integer"
+      },
+      "interval": {
+        "type": "integer"
+      },
+      "interval_unit": {
+        "type": "string"
+      },
+      "initial_charge_in_cents": {
+        "type": ["integer", "null"]
+      },
+      "trial_price_in_cents": {
+        "type": ["integer", "null"]
+      },
+      "trial_interval": {
+        "type": ["null", "integer"]
+      },
+      "trial_interval_unit": {
+        "type": ["string", "null"]
+      },
+      "archived_at": {
+        "type": ["string", "null"]
+      },
+      "require_credit_card": {
+        "type": "boolean"
+      },
+      "return_params": {
+        "type": ["string", "null"]
+      },
+      "taxable": {
+        "type": "boolean"
+      },
+      "update_return_url": {
+        "type": ["string", "null"]
+      },
+      "initial_charge_after_trial": {
+        "type": "boolean"
+      },
+      "version_number": {
+        "type": "integer"
+      },
+      "update_return_params": {
+        "type": ["string", "null"]
+      },
+      "product_family": {
+        "type": "object",
+        "properties": {
+            "id" : {
+                "type" : "integer"
+            },
+            "name" : {
+                "type" : "string"
+            },
+            "handle" : {
+                "type" : "string"
+            },
+            "accounting_code" : {
+                "type" : ["string", "null"]
+            },
+            "description" : {
+                "type" : ["string", "null"]
+            },
+            "created_at" : {
+                "type" : "string"
+            },
+            "updated_at" : {
+                "type" : "string"
+            }
+        }
+      },
+      "public_signup_pages": {
+        "type": "array",
+        "items" : {
+            "id" : {
+                "type" : "integer"
+            },
+            "return_url" : {
+                "type" : ["string", "null"]
+            },
+            "return_params" : {
+                "type" : ["string", "null"]
+            },
+            "url" : {
+                "type" : "string"
+            }
+        }
+      },
+      "product_price_point_name": {
+        "type": "string"
+      },
+      "request_billing_address": {
+        "type": "boolean"
+      },
+      "require_billing_address": {
+        "type": "boolean"
+      },
+      "require_shipping_address": {
+        "type": "boolean"
+      },
+      "tax_code": {
+        "type": ["string", "null"]
+      },
+      "default_product_price_point_id": {
+        "type": "integer"
+      },
+      "use_site_exchange_rate": {
+        "type": ["boolean", "null"]
+      },
+      "item_category": {
+        "type": ["string", "null"]
+      }
+    }
+}
+  

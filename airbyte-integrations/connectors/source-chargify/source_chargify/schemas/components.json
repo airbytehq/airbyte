@@ -1,0 +1,99 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "pricing_scheme": {
+        "type": ["null", "string"]
+      },
+      "unit_name": {
+        "type": "string"
+      },
+      "unit_price": {
+        "type": "string"
+      },
+      "product_family_id": {
+        "type": "integer"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "archived": {
+        "type": "boolean"
+      },
+      "taxable": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "string"
+      },
+      "default_price_point_id": {
+        "type": "integer"
+      },
+      "price_point_count": {
+        "type": "integer"
+      },
+      "price_points_url": {
+        "type": "string"
+      },
+      "tax_code": {
+        "type": ["string", "null"]
+      },
+      "recurring": {
+        "type": "boolean"
+      },
+      "upgrade_charge": {
+        "type": ["null", "string"]
+      },
+      "downgrade_credit": {
+        "type": ["string", "null"]
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "prices": {
+        "type": ["array", "null"],
+        "items" : {
+            "type" : "object",
+            "properties": {
+                "id" : {
+                    "type" : "integer"
+                },
+                "component_id" : {
+                    "type" : "integer"
+                },
+                "starting_quantity" : {
+                    "type" : "integer"
+                },
+                "unit_price" : {
+                    "type" : "string"
+                },
+                "price_point_id" : {
+                    "type" : "integer"
+                },
+                "formatted_unit_price" : {
+                    "type" : "string"
+                }
+            }
+        }
+      },
+      "default_price_point_name": {
+        "type": "string"
+      },
+      "hide_date_range_on_invoice": {
+        "type": "boolean"
+      },
+      "allow_fractional_quantities": {
+        "type": "boolean"
+      },
+      "use_site_exchange_rate": {
+        "type": ["null", "boolean"]
+      }
+    }
+}
+  

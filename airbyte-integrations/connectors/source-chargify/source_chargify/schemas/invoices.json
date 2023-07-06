@@ -1,0 +1,501 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "uid" : {
+            "type" : "string"
+        },
+        "site_id" : {
+            "type" : "integer"
+        },
+        "customer_id" : {
+            "type" : "integer"
+        },
+        "subscription_id" : {
+            "type" : "integer"
+        },
+        "number" : {
+            "type" : "string"
+        },
+        "sequence_number" : {
+            "type" : "integer"
+        },
+        "issue_date" : {
+            "type" : "string"
+        },
+        "due_date" : {
+            "type" : "string"
+        },
+        "paid_date" : {
+            "type" : ["string", "null"]
+        },
+        "status" : {
+            "type" : "string"
+        },
+        "collection_method" : {
+            "type" : "string"
+        },
+        "payment_instructions" : {
+            "type" : "string"
+        },
+        "currency" : {
+            "type" : "string"
+        },
+        "consolidation_level"  : {
+            "type" : "string"
+        },
+        "payment_invoice_uid" : {
+            "type" : ["string", "null"]
+        },
+        "parent_invoice_number" : {
+            "type" : ["integer", "null"]
+        },
+        "group_primary_subscription_id" : {
+            "type" : ["number", "null"]
+        },
+        "product_name" : {
+            "type" : "string"
+        },
+        "product_family_name" : {
+            "type" : "string"
+        },
+        "seller" : {
+            "type" : "object",
+            "properties": {
+                "name" : {
+                    "type" : "string"
+                },
+                "address" : {
+                    "type" : "object",
+                    "properties" : {
+                        "street" : {
+                            "type" : ["null", "string"]
+                        },
+                        "line2" : {
+                            "type" : ["null", "string"]
+                        },
+                        "city" : {
+                            "type" : ["null", "string"]
+                        },
+                        "state" : {
+                            "type" : ["null", "string"]
+                        },
+                        "zip" : {
+                            "type" : ["null", "string"]
+                        },
+                        "country" : {
+                            "type" : ["null", "string"]
+                        }
+                    }
+                },
+                "phone" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "customer" : {
+            "type" : "object",
+            "properties": {
+                "chargify_id" : {
+                    "type" : "integer"
+                },
+                "first_name" : {
+                    "type" : "string"
+                },
+                "last_name" : {
+                    "type" : "string"
+                },
+                "organization" : {
+                    "type" : ["string", "null"]
+                },
+                "email" : {
+                    "type" : "string"                    
+                }
+            }
+        },
+        "memo" : {
+            "type" : "string"
+        },
+        "billing_address" : {
+            "type" : "object",
+            "properties" : {
+                "street" : {
+                    "type" : ["null", "string"]
+                },
+                "line2" : {
+                    "type" : ["null", "string"]
+                },
+                "city" : {
+                    "type" : ["null", "string"]
+                },
+                "state" : {
+                    "type" : ["null", "string"]
+                },
+                "zip" : {
+                    "type" : ["null", "string"]
+                },
+                "country" : {
+                    "type" : ["null", "string"]
+                }
+            }
+        },
+        "shipping_address" : {
+            "type" : "object",
+            "properties" : {
+                "street" : {
+                    "type" : ["null", "string"]
+                },
+                "line2" : {
+                    "type" : ["null", "string"]
+                },
+                "city" : {
+                    "type" : ["null", "string"]
+                },
+                "state" : {
+                    "type" : ["null", "string"]
+                },
+                "zip" : {
+                    "type" : ["null", "string"]
+                },
+                "country" : {
+                    "type" : ["null", "string"]
+                }
+            }
+        },
+        "subtotal_amount" : {
+            "type" : "string"
+        },
+        "discount_amount" : {
+            "type" : "string"
+        },
+        "tax_amount" : {
+            "type" : "string"
+        },
+        "total_amount" : {
+            "type" : "string"
+        },
+        "credit_amount" : {
+            "type" : "string"
+        },
+        "refund_amount" : {
+            "type" : "string"
+        },
+        "paid_amount" : {
+            "type" : "string"
+        },
+        "due_amount" : {
+            "type" : "string"
+        },
+        "line_items" : {
+            "type" : "array",
+            "items" : {
+                "type" : "object",
+                "properties" : {
+                    "uid" : {
+                        "type" : "string"
+                    },
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "description" : {
+                        "type" : "string"
+                    },
+                    "quantity" : {
+                        "type" : "string"
+                    },
+                    "unit_price" : {
+                        "type" : "string"
+                    },
+                    "subtotal_amount" : {
+                        "type" : "string"
+                    },
+                    "discount_amount" : {
+                        "type" : "string"
+                    },
+                    "tax_amount" : {
+                        "type" : "string"
+                    },
+                    "total_amount" : {
+                        "type" : "string"
+                    },
+                    "tiered_unit_price" : {
+                        "type" : "boolean"
+                    },
+                    "period_range_start" : {
+                        "type" : "string"
+                    },
+                    "period_range_end" : {
+                        "type" : "string"
+                    },
+                    "product_id" : {
+                        "type" : "string"
+                    },
+                    "product_version" : {
+                        "type" : ["integer", "null"]
+                    },
+                    "component_id" : {
+                        "type" : ["integer", "null"]
+                    },
+                    "price_point_id" : {
+                        "type" : ["integer", "null"]
+                    },
+                    "product_price_point_id" : {
+                        "type" : ["integer", "null"]
+                    },
+                    "custom_item" : {
+                        "type" : "boolean"
+                    }
+                }
+            }
+        },
+        "discounts" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties": {
+                    "uid" : {
+                        "type" : "string"
+                    },
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "code" : {
+                        "type" : "string"
+                    },
+                    "source_type" : {
+                        "type" : "string"
+                    },
+                    "source_id" : {
+                        "type" : "integer"
+                    },
+                    "discount_id" : {
+                        "type" : "string"
+                    },
+                    "percentage" : {
+                        "type" : "string"
+                    },
+                    "eligible_amount" : {
+                        "type" : "string"
+                    },
+                    "discount_amount" : {
+                        "type" : "string"
+                    },
+                    "line_item_breakouts" : {
+                        "type" : "array",
+                        "items" : {
+                            "type" : "object",
+                            "properties": {
+                                "uid" : {
+                                    "type" : "string"
+                                },
+                                "eligible_amount" : {
+                                    "type" : "string"
+                                },
+                                "discount_amount" : {
+                                    "type" : "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "taxes" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties" : {
+                    "uid" : {
+                        "type" : "string"
+                    },
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "source_type" : {
+                        "type" : "string"
+                    },
+                    "source_id" : {
+                        "type" : "integer"
+                    },
+                    "percentage" : {
+                        "type" : "string"
+                    },
+                    "taxable_amount" : {
+                        "type" : "string"
+                    },
+                    "discount_amount" : {
+                        "type" : "string"
+                    }
+                }
+            }
+        },
+        "credits" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties" : {
+                    "uid" : {
+                        "type" : "string"
+                    },
+                    "credit_note_number" : {
+                        "type" : "string"
+                    },
+                    "credit_note_uid" : {
+                        "type" : "string"
+                    },
+                    "transaction_time" : {
+                        "type" : "string"
+                    },
+                    "memo" : {
+                        "type" : "string"
+                    },
+                    "original_amount" : {
+                        "type" : "string"
+                    },
+                    "applied_amount" : {
+                        "type" : "string"
+                    }
+                }
+            }
+        },
+        "refunds" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties" : {
+                    "transaction_id" : {
+                        "type" : "integer"
+                    },
+                    "payment_id" : {
+                        "type" : "integer"
+                    },
+                    "memo" : {
+                        "type" : "string"
+                    },
+                    "original_amount" : {
+                        "type" : "string"
+                    },
+                    "applied_amount" : {
+                        "type" : "string"
+                    },
+                    "gateway_transaction_id" : {
+                        "type" : ["string", "null"]
+                    }
+                }
+            }
+        },
+        "payments" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties" : {
+                    "transaction_time" : {
+                        "type" : "integer"
+                    },
+                    "memo" : {
+                        "type" : "string"
+                    },
+                    "original_amount" : {
+                        "type" : "string"
+                    },
+                    "applied_amount" : {
+                        "type" : "string"
+                    },
+                    "payment_method" : {
+                        "type" : "object",
+                        "properties": {
+                            "details" : {
+                                "type" : "string"
+                            },
+                            "kind" : {
+                                "type" : "string"
+                            },
+                            "memo" : {
+                                "type" : "string"
+                            },
+                            "type" : {
+                                "type" : "string"
+                            },
+                            "card_brand" : {
+                                "type" : "string"
+                            },
+                            "card_expiration" : {
+                                "type" : "string"
+                            },
+                            "last_four" : {
+                                "type" : "string"
+                            },
+                            "masked_card_number" : {
+                                "type" : "string"
+                            }
+                        }
+                    },
+                    "transaction_id" : {
+                        "type" : "integer"
+                    },
+                    "prepayment" : {
+                        "type" : "boolean"
+                    },
+                    "gateway_handle" : {
+                        "type" : ["string", "null"]
+                    },
+                    "gateway_used" : {
+                        "type" : "string"
+                    },
+                    "gateway_transaction_id" : {
+                        "type" : ["string", "null"]
+                    }
+                }
+            }
+        },
+        "custom_fields" : {
+            "type" : "array",
+            "items": {
+                "type" : "object",
+                "properties" : {
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "value" : {
+                        "type" : "string"
+                    },
+                    "owner_id" : {
+                        "type" : "number"
+                    },
+                    "owner_type" : {
+                        "type" : "string"
+                    }
+                }
+            }
+        },
+        "public_url" : {
+            "type" : "string"
+        },
+        "previous_balance_data" : {
+            "type" : "object",
+            "properties": {
+                "capture_date" : {
+                    "type" : "string"
+                },
+                "invoices" : {
+                    "type" : "array",
+                    "items" : {
+                        "type" : "object",
+                        "properties": {
+                            "uid" : {
+                                "type" : "string"
+                            },
+                            "number" : {
+                                "type" : "string"
+                            },
+                            "outstanding_amount" : {
+                                "type" : "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+  
