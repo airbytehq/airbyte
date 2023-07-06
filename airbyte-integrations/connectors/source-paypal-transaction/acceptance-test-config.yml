@@ -4,22 +4,23 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: source_paypal_transaction/spec.json
+        config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.13"
   connection:
     tests:
-      - config_path: secrets/config.json
-        status: succeed
       - config_path: integration_tests/invalid_config.json
-        status: exception
+        status: failed
       - config_path: secrets/config_oauth.json
         status: succeed
       - config_path: integration_tests/invalid_config_oauth.json
-        status: exception
+        status: failed
   discovery:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
   basic_read:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
         empty_streams:
           - name: balances
             bypass_reason: "value of 'last_refresh_time' field changes during every read"
@@ -31,7 +32,7 @@ acceptance_tests:
           extra_records: yes
   incremental:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
@@ -40,5 +41,5 @@ acceptance_tests:
           balances: ["date"]
   full_refresh:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/configured_catalog.json
