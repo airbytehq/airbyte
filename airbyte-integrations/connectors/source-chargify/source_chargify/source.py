@@ -91,6 +91,91 @@ class Subscriptions(ChargifyStream):
             yield subscription["subscription"]
 
 
+class Invoices(ChargifyStream):
+
+    # Invoices use uid instead of id, see schemas for the invoice schema
+    primary_key = "uid"
+
+    def path(self, **kwargs) -> str:
+        return "invoices.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/aa24a44561ce2-list-invoices
+        invoices = response.json()["invoices"]
+        for invoice in invoices:
+            yield invoice
+
+
+class Coupons(ChargifyStream):
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "coupons.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/1c5e64abcf250-list-coupons
+        coupons = response.json()
+        for coupon in coupons:
+            yield coupon["coupon"]
+
+
+class Components(ChargifyStream):
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "components.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/cb3576aacf9b4-list-components
+        components = response.json()
+        for component in components:
+            yield component["component"]
+
+
+class PaymentProfiles(ChargifyStream):
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "payment_profiles.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/b752e67c19645-list-products
+        payment_profiles = response.json()
+        for payment_profile in payment_profiles:
+            yield payment_profile["payment_profile"]
+
+
+class Products(ChargifyStream):
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "products.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgzODk-list-subscriptions
+        products = response.json()
+        for product in products:
+            yield product["product"]
+
+
+class Transactions(ChargifyStream):
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "transactions.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Chargify API: https://developers.chargify.com/docs/api-docs/21ec3a7e140c2-list-transactions
+        transactions = response.json()
+        for transaction in transactions:
+            yield transaction["transaction"]
+
+
 # Source
 class SourceChargify(AbstractSource):
     BASIC_AUTH_PASSWORD = "x"
@@ -107,10 +192,24 @@ class SourceChargify(AbstractSource):
             next(customers_gen)
             subcriptions_gen = Subscriptions(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)
             next(subcriptions_gen)
+            invoices = Invoices(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)
+            next(invoices)
+            coupons = Coupons(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)
+            next(coupons)
+
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Chargify API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_basic_auth(config)
-        return [Customers(authenticator, domain=config["domain"]), Subscriptions(authenticator, domain=config["domain"])]
+        return [
+            Customers(authenticator, domain=config["domain"]),
+            Subscriptions(authenticator, domain=config["domain"]),
+            Invoices(authenticator, domain=config["domain"]),
+            Coupons(authenticator, domain=config["domain"]),
+            Components(authenticator, domain=config["domain"]),
+            PaymentProfiles(authenticator, domain=config["domain"]),
+            Products(authenticator, domain=config["domain"]),
+            Transactions(authenticator, domain=config["domain"])
+        ]
