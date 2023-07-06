@@ -33,43 +33,29 @@ class ParquetParser(FileTypeParser):
     def _read_file(file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> pa.Table:
         return pq.read_table(stream_reader.open_file(file))
 
-    # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
-    _PARQUET_TYPE_TO_SCHEMA_TYPE = {
-        #pa.null(): , NOT SUPPORTED
-        pa.bool_(): {"type": "boolean"},
-
-        pa.int8(): {"type": "integer"},
-        pa.int16(): {"type": "integer"},
-        pa.int32(): {"type": "integer"},
-        pa.int64(): {"type": "integer"},
-        pa.uint8(): {"type": "integer"},
-        pa.uint16(): {"type": "integer"},
-        pa.uint32(): {"type": "integer"},
-        pa.uint64(): {"type": "integer"},
-        pa.float16(): {"type": "number"},
-        pa.float32(): {"type": "number"},
-        pa.float64(): {"type": "number"},
-
-        #pa.binary(): , NOT SUPPORTED
-        pa.date32(): {"type": "string", "format": "date"},
-        pa.date64(): {"type": "string", "format": "date"},
-        pa.string(): {"type": "string"},
-        #pa.duration('us'):, NOT SUPPORTED
-        # FIXME: what about objects?
-        # What about arrays?
-        # What about unions?
-    }
-
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
+        # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
         elif pa.types.is_time(parquet_type):
             return {"type": "string"}
+        elif pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type):
+            return {"type": "string"}
+        elif pa.types.is_decimal(parquet_type):
+            return {"type": "string"} # Return as a string to ensure no precision is lost
+        elif pa.types.is_boolean(parquet_type):
+            return {"type": "boolean"}
+        elif pa.types.is_integer(parquet_type):
+            return {"type": "integer"}
+        elif pa.types.is_floating(parquet_type):
+            return {"type": "number"}
+        elif pa.types.is_date(parquet_type):
+            return {"type": "string", "format": "date"}
+        elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
+            return {"type": "object"}
+        elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type):
+            return {"type": "array"}
         else:
-            schema_type = ParquetParser._PARQUET_TYPE_TO_SCHEMA_TYPE.get(parquet_type)
-            if schema_type is None:
-                raise ValueError(f"Unsupported parquet type: {parquet_type}")
-            else:
-                return schema_type
+            raise ValueError(f"Unsupported parquet type: {parquet_type}")
 
