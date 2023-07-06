@@ -9,7 +9,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 import pyarrow.parquet as pq
-import pandas as pd
+
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(
@@ -22,10 +22,8 @@ class ParquetParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
 
         table = pq.read_table(stream_reader.open_file(file))
-        # We convert the table to a pandas dataframe iterating over pyarrow chunks is tricky
-        df = table.to_pandas()
-        for _, row in df.iterrows():
-            logging.warning(f"row: {row}")
-            row_dict = row.to_dict()
-            logging.warning(f"row_dict: {row_dict}")
-            yield row_dict
+
+        for batch in table.to_batches():
+            for i in range(batch.num_rows):
+                row_dict = {column: batch.column(column)[i].as_py() for column in table.column_names}
+                yield row_dict
