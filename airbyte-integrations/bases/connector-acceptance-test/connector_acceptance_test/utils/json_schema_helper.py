@@ -240,3 +240,15 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
 
     _scan_schema(schema)
     return paths
+
+def get_paths_in_connector_config(schema: dict) -> List[str]:
+    """
+    Traverse through the provided schema's values and extract the path_in_connector_config paths
+    :param properties: jsonschema containing values which may have path_in_connector_config attributes
+    :returns list of path_in_connector_config paths
+    """
+    paths = []
+    for value in schema.values():
+        if value["path_in_connector_config"]:
+            paths.append("/" + "/".join(value["path_in_connector_config"]))
+    return paths
