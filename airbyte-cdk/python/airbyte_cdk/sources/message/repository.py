@@ -3,7 +3,6 @@
 #
 
 import json
-
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Union
 
@@ -73,7 +72,9 @@ class InMemoryMessageRepository(MessageRepository):
 
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
         if _is_severe_enough(self._log_level, level):
-            self.emit_message(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider())))))
+            self.emit_message(
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider()))))
+            )
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
         while self._message_queue:
@@ -96,8 +97,7 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
             self._decorated.log_message(level, lambda: message)
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
-        # FIXME return or yield from?
-        yield from self._decorated.consume_queue()
+        return self._decorated.consume_queue()
 
     def _append_second_to_first(self, first, second, path=None):
         if path is None:
@@ -110,7 +110,7 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
                 elif first[key] == second[key]:
                     pass
                 else:
-                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+                    raise ValueError("Conflict at %s" % ".".join(path + [str(key)]))
             else:
                 first[key] = second[key]
         return first

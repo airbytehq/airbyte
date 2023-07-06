@@ -10,7 +10,7 @@ import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.http_logger import format_http_json
+from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from requests.auth import AuthBase
 
@@ -167,4 +167,4 @@ class AbstractOauth2Authenticator(AuthBase):
         return _NOOP_MESSAGE_REPOSITORY
 
     def _log_response(self, response: requests.Response):
-        self._message_repository.log_message(Level.DEBUG, lambda: format_http_json(response, self._NO_STREAM_NAME))
+        self._message_repository.log_message(Level.DEBUG, lambda: format_http_message(response, self._NO_STREAM_NAME))

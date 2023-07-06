@@ -21,7 +21,6 @@ from airbyte_cdk.connector_builder.models import (
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -176,8 +175,12 @@ class MessageGrouper:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
-            and (MessageGrouper._is_global_request(json_message) or message.log.message.startswith("slice:"))
+            and (message.log.message.startswith("slice:") or MessageGrouper._is_page_http_request(json_message))
         )
+
+    @staticmethod
+    def _is_page_http_request(json_message):
+        return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_global_request(json_message)
 
     @staticmethod
     def _is_http_log(message: Optional[dict]) -> bool:

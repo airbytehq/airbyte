@@ -20,7 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.http_logger import format_http_json
+from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -64,7 +64,7 @@ class SimpleRetriever(Retriever, HttpStream):
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
     cursor: Optional[Cursor] = None
     disable_retries: bool = False
-    message_repository: MessageRepository = NoopMessageRepository
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
@@ -500,5 +500,5 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        self.message_repository.log_message(Level.DEBUG, lambda: format_http_json(response, self.name))
+        self.message_repository.log_message(Level.DEBUG, lambda: format_http_message(response, self.name))
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)

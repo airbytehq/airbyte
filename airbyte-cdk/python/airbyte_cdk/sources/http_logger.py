@@ -8,7 +8,7 @@ import requests
 from airbyte_cdk.sources.message import LogMessage
 
 
-def format_http_json(response: requests.Response, stream_name: Optional[str]) -> LogMessage:
+def format_http_message(response: requests.Response, stream_name: Optional[str]) -> LogMessage:
     request = response.request
     log_message = {
         "http": {
@@ -33,11 +33,7 @@ def format_http_json(response: requests.Response, stream_name: Optional[str]) ->
         "url": {"full": request.url},
     }
     if stream_name:
-        log_message["airbyte_cdk"] = {
-            "stream": {
-                "name": stream_name
-            }
-        }
+        log_message["airbyte_cdk"] = {"stream": {"name": stream_name}}
     return log_message
 
 
