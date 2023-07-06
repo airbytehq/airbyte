@@ -42,5 +42,6 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2023-07-06 | [10853](https://github.com/airbytehq/airbyte/pull/10853) | Added Invoices, Coupons, Components, PaymentProfiles, Products, and Transactions streams |
 | 0.1.0 | 2022-03-16 | [10853](https://github.com/airbytehq/airbyte/pull/10853) | Initial release |
 
