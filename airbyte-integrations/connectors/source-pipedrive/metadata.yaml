@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   dockerRepository: airbyte/source-pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg

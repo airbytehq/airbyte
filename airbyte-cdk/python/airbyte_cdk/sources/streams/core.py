@@ -27,6 +27,8 @@ if typing.TYPE_CHECKING:
 # AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
+JsonSchema = Mapping[str, Any]
+
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
