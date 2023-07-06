@@ -36,6 +36,12 @@ class ParquetParser(FileTypeParser):
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
         # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
+
+        # Types we do not support
+        # - binary
+        # - month_day_nano_interval
+        # - duration
+
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
         elif pa.types.is_time(parquet_type):

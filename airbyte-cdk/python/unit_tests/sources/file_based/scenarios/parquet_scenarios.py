@@ -62,6 +62,9 @@ _parquet_file_with_various_types = {
              "col_time32s",
              "col_time32ms",
              "col_time64us",
+
+             "col_struct",
+             "col_list",
              ),
             (True,
 
@@ -88,6 +91,8 @@ _parquet_file_with_various_types = {
              datetime.time(1, 2, 3),
              datetime.time(2, 3, 4),
              datetime.time(1, 2, 3, 4),
+             {"struct_key": "struct_value"},
+             [1, 2, 3, 4],
              ),
         ],
         "schema": pa.schema([
@@ -116,6 +121,9 @@ _parquet_file_with_various_types = {
             pa.field("col_time32s", pa.time32("s")),
             pa.field("col_time32ms", pa.time32("ms")),
             pa.field("col_time64us", pa.time64("us")),
+
+            pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
+            pa.field("col_list", pa.list_(pa.int32())),
         ]),
         "last_modified": "2023-06-05T03:54:07.000Z",
     }
@@ -323,6 +331,12 @@ parquet_various_types_scenario = (
                             "col_time64us": {
                                 "type": "string",
                             },
+                            "col_struct": {
+                                "type": "object",
+                            },
+                            "col_list": {
+                                "type": "array",
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
                             },
@@ -358,6 +372,8 @@ parquet_various_types_scenario = (
                       "col_time32s": "01:02:03",
                       "col_time32ms": "02:03:04",
                       "col_time64us": "01:02:03.000004",
+                      "col_struct": {"struct_key": "struct_value"},
+                      "col_list": [1, 2, 3, 4],
                       "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
         ]
