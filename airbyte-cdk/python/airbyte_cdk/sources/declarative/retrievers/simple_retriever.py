@@ -500,5 +500,13 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        self.message_repository.log_message(Level.DEBUG, lambda: format_http_message(response, self.name))
+        self.message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                f"Stream '{self.name}' request",
+                f"Request performed in order to extract records for stream '{self.name}'",
+                self.name,
+            ),
+        )
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)

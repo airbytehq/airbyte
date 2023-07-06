@@ -167,4 +167,12 @@ class AbstractOauth2Authenticator(AuthBase):
         return _NOOP_MESSAGE_REPOSITORY
 
     def _log_response(self, response: requests.Response):
-        self._message_repository.log_message(Level.DEBUG, lambda: format_http_message(response, self._NO_STREAM_NAME))
+        self._message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                "Refresh token",
+                "Obtains access token",
+                self._NO_STREAM_NAME,
+            ),
+        )

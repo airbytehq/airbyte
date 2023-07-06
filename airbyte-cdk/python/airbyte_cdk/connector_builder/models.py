@@ -44,6 +44,8 @@ class LogMessage:
 
 @dataclass
 class GlobalRequest:
+    title: str
+    description: str
     request: HttpRequest
     response: HttpResponse
 

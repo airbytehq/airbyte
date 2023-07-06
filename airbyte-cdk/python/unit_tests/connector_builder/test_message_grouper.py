@@ -638,6 +638,8 @@ def global_request_log_message():
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
             "airbyte_cdk": {"stream": {"is_substream": True}},
             "http": {
+                "title": "a title",
+                "description": "a description",
                 "request": {},
                 "response": {},
             },
@@ -649,6 +651,8 @@ def request_response_log_message(request: dict, response: dict, url: str):
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
             "airbyte_cdk": {"stream": {"name": "a stream name"}},
             "http": {
+                "title": "a title",
+                "description": "a description",
                 "request": request,
                 "response": response
             },

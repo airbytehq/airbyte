@@ -143,7 +143,12 @@ class MessageGrouper:
             elif message.type == MessageType.LOG:
                 if self._is_http_log(json_message):
                     if self._is_global_request(json_message):
+                        title_prefix = (
+                           "Parent stream: " if json_message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False) else ""
+                        )
                         yield GlobalRequest(
+                            title=title_prefix + json_message.get("http", {}).get("title", None),
+                            description=json_message.get("http", {}).get("description", None),
                             request=self._create_request_from_log_message(json_message),
                             response=self._create_response_from_log_message(json_message),
                         )
