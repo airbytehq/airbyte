@@ -152,8 +152,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     final String deleteQuery = String.format(String.format(DELETE_DATABASE, SCHEMA_NAME));
     final String dropQuery = String.format(String.format(DROP_DATABASE, SCHEMA_NAME));
     try {
-      database.execute(deleteQuery);
-      database.execute(dropQuery);
+      //database.execute(deleteQuery);
+      //database.execute(dropQuery);
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " delete got failed.");
     }
@@ -174,6 +174,10 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
+    logger.info("JDBC URL : " + jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+      logger.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+      logger.info("PASSWORD_KEY : " + jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+      logger.info("USERNAME_KEY : " + jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         TeradataDestination.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
