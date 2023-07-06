@@ -67,7 +67,7 @@ class FileBasedStreamConfig(BaseModel):
     file_type: str
     globs: Optional[List[str]]
     validation_policy: Any
-    validation_policies: Dict[str, AbstractSchemaValidationPolicy]
+    validation_policies: Dict[str, Any]
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
     input_schema: Optional[Dict[str, Any]]
     primary_key: PrimaryKeyType
