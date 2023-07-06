@@ -5,7 +5,7 @@
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, List, Literal, Mapping, Union, Optional
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union
 
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, SchemaInferenceError
 

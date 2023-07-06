@@ -46,4 +46,3 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-
