@@ -82,14 +82,17 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             configJson.get("env_password").asText());
     var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
     ((ObjectNode) configJson).put("host", response.ip());
+    logger.info("host name: " + configJson.get("host").asText());
+    logger.info("user name: " + configJson.get("username").asText());
+    logger.info("password: " + configJson.get("password").asText());
 
   }
 
    @AfterAll
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
-    TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
-    var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
-    teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText()).get();
+    //TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
+    //var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
+    //teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText()).get();
   }
 
   public JsonNode getStaticConfig() throws Exception {
@@ -102,6 +105,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
         .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
     final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
+    logger.info("failed check config got success");
     return credentialsJsonString;
   }
 
@@ -111,8 +115,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    final List<JsonNode> records = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
-    return records;
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
 
   }
 
@@ -130,18 +133,17 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    final String schemaName = Strings.addRandomSuffix("integration_test_teradata", "_", 5);
-    final String createSchemaQuery = String
-        .format(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 60e6, SPOOL = 60e6 SKEW = 10 PERCENT", schemaName));
+    final String createSchemaQuery = String.format(CREATE_DATABASE, SCHEMA_NAME);
     try {
       this.configJson = Jsons.clone(getStaticConfig());
-      ((ObjectNode) configJson).put("schema", schemaName);
-
+      ((ObjectNode) configJson).put("schema", SCHEMA_NAME);
+      logger.info("schema name: " +  configJson.get("schema").asText());  
       dataSource = getDataSource(configJson);
       database = getDatabase(dataSource);
+      logger.info("create schema query: " +  createSchemaQuery);
       database.execute(createSchemaQuery);
     } catch (Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + schemaName + " creation got failed.");
+      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
     }
   }
 
