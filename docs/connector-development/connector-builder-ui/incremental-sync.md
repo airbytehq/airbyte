@@ -89,7 +89,7 @@ In some cases, it's helpful to reference the start and end date of the interval 
 
 ## Incremental sync without time filtering
 
-Some APIs do not allow to filter records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In these cases, the "API time filtering capabilities" option needs to be set to "No filter". As they can't be applied in this situation, the "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options as well as the "Split up interval" option are disabled automatically.
+Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In these cases, the "API time filtering capabilities" option needs to be set to "No filter". As they can't be applied in this situation, the "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options as well as the "Split up interval" option are disabled automatically.
 
 The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter" option, the connector will automatically request the next page of records until the cutoff datetime is encountered. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync - if the cursor value is less than or equal to that cutoff date, the sync is finished. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
