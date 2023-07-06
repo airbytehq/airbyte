@@ -38,11 +38,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(
-        self,
-            cursor: FileBasedCursor,
-            **kwargs
-    ):
+    def __init__(self, cursor: FileBasedCursor, **kwargs):
         super().__init__(**kwargs)
         self._cursor = cursor
 

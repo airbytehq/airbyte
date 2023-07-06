@@ -45,7 +45,7 @@ def get_comparable_type(value: Any) -> ComparableType:
     if value == "object":
         return ComparableType.OBJECT
     else:
-        #raise ValueError(f"Unrecognized type: {value}")
+        # raise ValueError(f"Unrecognized type: {value}")
         return None
 
 
@@ -63,7 +63,7 @@ def get_inferred_type(value: Any) -> ComparableType:
     if isinstance(value, dict):
         return ComparableType.OBJECT
     else:
-        #raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, details=f"Unrecognized type: {value}")
+        # raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, details=f"Unrecognized type: {value}")
         return None
 
 
