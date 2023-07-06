@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/destination-snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg

@@ -32,7 +32,11 @@ acceptance_tests:
           - name: "audit_logs"
             bypass_reason: "no records"
           - name: "post_comments"
-            bypass_reason: "can not populate"
+            bypass_reason: "not available in current subscription plan"
+          - name: "post_votes"
+            bypass_reason: "not available in current subscription plan"
+          - name: "post_comment_votes"
+            bypass_reason: "not available in current subscription plan"
   incremental:
     tests:
       - config_path: "secrets/config.json"

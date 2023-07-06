@@ -22,6 +22,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_E
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
+import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
@@ -58,8 +59,13 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcProperties;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcSavedInfoFetcher;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcStateHandler;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
+import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -95,6 +101,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -399,6 +406,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      if (sourceConfig.has("cdc_via_ctid") && sourceConfig.get("cdc_via_ctid").asBoolean()) {
+        LOGGER.info("Using ctid + CDC");
+        return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
+            getReplicationSlot(database, sourceConfig).get(0));
+      }
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       final OptionalInt queueSize = OptionalInt.of(PostgresUtils.getQueueSize(sourceConfig));
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
@@ -480,17 +492,17 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             getQuoteString());
-        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
+        final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
             PostgresQueryUtils.getTableBlockSizeForStream(
                 database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 getQuoteString());
 
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
+        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()),
+            getQuoteString(),
             fileNodes, tableBlockSizes, ctidStateManager,
-            namespacePair -> Jsons.jsonNode(xminStatus),
-            (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
+            namespacePair -> Jsons.jsonNode(xminStatus));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
       } else {
@@ -618,7 +630,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return toSslJdbcParamInternal(sslMode);
   }
 
-  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
+  public static String toSslJdbcParamInternal(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED -> org.postgresql.jdbc.SslMode.DISABLE.value;
       case ALLOWED -> org.postgresql.jdbc.SslMode.ALLOW.value;
