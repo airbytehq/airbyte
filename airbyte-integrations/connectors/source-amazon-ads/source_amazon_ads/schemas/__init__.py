@@ -6,7 +6,14 @@ from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayBudgetRules, DisplayCampaign, DisplayProductAds, DisplayTargeting
-from .sponsored_products import ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
+from .sponsored_products import (
+    ProductAd,
+    ProductAdGroupBidRecommendations,
+    ProductAdGroups,
+    ProductAdGroupSuggestedKeywords,
+    ProductCampaign,
+    ProductTargeting,
+)
 
 __all__ = [
     "BrandsAdGroup",
@@ -22,6 +29,8 @@ __all__ = [
     "NegativeKeywords",
     "ProductAd",
     "ProductAdGroups",
+    "ProductAdGroupBidRecommendations",
+    "ProductAdGroupSuggestedKeywords",
     "ProductCampaign",
     "ProductTargeting",
     "Profile",
