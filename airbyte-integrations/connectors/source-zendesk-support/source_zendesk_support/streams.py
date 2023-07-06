@@ -22,11 +22,13 @@ import pytz
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
@@ -871,3 +873,44 @@ class PostComments(SourceZendeskSupportFullRefreshStream, HttpSubStream):
     ) -> str:
         post_id = stream_slice.get("parent").get("id")
         return f"community/posts/{post_id}/comments"
+
+
+class AbstractVotes(SourceZendeskSupportFullRefreshStream, ABC):
+
+    response_list_name = "votes"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("votes")
+
+
+class PostVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = Posts(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        post_id = stream_slice.get("parent").get("id")
+        return f"community/posts/{post_id}/votes"
+
+
+class PostCommentVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = PostComments(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        post_id = stream_slice.get("parent").get("post_id")
+        comment_id = stream_slice.get("parent").get("id")
+        return f"community/posts/{post_id}/comments/{comment_id}/votes"
