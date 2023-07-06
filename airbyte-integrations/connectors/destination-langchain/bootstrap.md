@@ -17,6 +17,10 @@ For all three components, it's easily possible to add new integrations based on 
 
 The pinecone integration is adding stream and primary key to the vector metadata which allows for deduped incremental and full refreshes. It's using the [official pinecone python client](https://github.com/pinecone-io/pinecone-python-client).
 
+You can use the `test_pinecone.py` file to check whether the pipeline works as expected.
+
 ## DocArrayHnswSearch integration
 
 The DocArrayHnswSearch integration is storing the vector metadata in a local file in the local root (`/local` in the container, `/tmp/airbyte_local` on the host). It's not possible to dedupe records, so only full refresh syncs are supported. DocArrayHnswSearch uses hnswlib under the hood, but the integration is fully relying on the langchain abstraction.
+
+You can use the `test_local.py` file to check whether the pipeline works as expected.

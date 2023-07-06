@@ -7,6 +7,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.vectorstores import DocArrayHnswSearch
 
+# Run with OPENAI_API_KEY set in the environment
+
 embeddings = OpenAIEmbeddings()
 vector_store = DocArrayHnswSearch.from_params(embeddings, "/tmp/airbyte_local/special_path", 1536)
 

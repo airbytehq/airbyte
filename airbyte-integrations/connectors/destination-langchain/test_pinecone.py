@@ -10,6 +10,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.vectorstores import Pinecone
 
+# Run with OPENAI_API_KEY, PINECONE_KEY and PINECONE_ENV set in the environment
+
 embeddings = OpenAIEmbeddings()
 pinecone.init(api_key=os.environ["PINECONE_KEY"], environment=os.environ["PINECONE_ENV"])
 index = pinecone.Index("testdata")
