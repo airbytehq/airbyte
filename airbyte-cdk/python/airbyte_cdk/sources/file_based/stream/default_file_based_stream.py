@@ -8,6 +8,7 @@ import logging
 from functools import cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Type, Union
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -17,7 +18,6 @@ from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -81,7 +81,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
             try:
-                for record in parser.parse_records(file, self._stream_reader):
+                for record in parser.parse_records(self.config, file, self._stream_reader):
                     if not self.record_passes_validation_policy(record):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
@@ -130,7 +130,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs))
+        return list(self._stream_reader.get_matching_files(self.config.globs or []))
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
@@ -162,7 +162,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     async def _infer_file_schema(self, file: RemoteFile) -> Dict[str, Any]:
         try:
-            return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
+            return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader)
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,

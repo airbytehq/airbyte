@@ -155,7 +155,8 @@ Now that you have set up the Hubspot source connector, check out the following H
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-| :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------| :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.1   | 2023-06-23 | [27658](https://github.com/airbytehq/airbyte/pull/27658) | Use fully qualified name to retrieve custom objects                                                                                                                                |
 | 1.0.0   | 2023-06-08 | [27161](https://github.com/airbytehq/airbyte/pull/27161) | Fixed increment sync for engagements stream, 'Recent' API is used for recent syncs of last recent 30 days and less than 10k records, otherwise full sync if performed by 'All' API |
 | 0.9.0   | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                                                                                                               |
 | 0.8.4   | 2023-05-17 | [25667](https://github.com/airbytehq/airbyte/pull/26082) | Fixed bug with wrong parsing of boolean encoded like "false" parsed as True                                                                                                        |
