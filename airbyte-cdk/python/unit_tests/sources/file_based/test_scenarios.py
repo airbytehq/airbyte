@@ -51,6 +51,7 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
+from unit_tests.sources.file_based.scenarios.parquet_scenarios import single_parquet_scenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
@@ -87,6 +88,7 @@ discover_scenarios = [
     csv_custom_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
+    single_parquet_scenario
 ]
 
 

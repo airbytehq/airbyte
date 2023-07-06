@@ -63,6 +63,7 @@ setup(
         "Jinja2~=3.1.2",
         "cachetools",
         "wcmatch==8.4",
+        "pyarrow==12.0.1",
     ],
     python_requires=">=3.8",
     extras_require={
