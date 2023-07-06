@@ -462,10 +462,10 @@ class TestSourceZendeskSupportStream:
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
-                    Organizations,
-                    {"updated_at": "2022-03-17T16:03:07Z"},
-                    {"updated_at": "2023-03-17T16:03:07Z"},
-                    {"updated_at": "2023-03-17T16:03:07Z"},
+                Organizations,
+                {"updated_at": "2022-03-17T16:03:07Z"},
+                {"updated_at": "2023-03-17T16:03:07Z"},
+                {"updated_at": "2023-03-17T16:03:07Z"},
             ),
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
@@ -657,27 +657,27 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketMetricEvents, {}, None),
             (TicketAudits, {}, None),
             (
-                    TicketMetrics,
-                    {
-                        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
-                        "links": {
-                            "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
-                            "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
-                        },
+                TicketMetrics,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
                     },
-                    "<after_cursor>",
+                },
+                "<after_cursor>",
             ),
             (SatisfactionRatings, {}, None),
             (
-                    OrganizationMemberships,
-                    {
-                        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
-                        "links": {
-                            "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
-                            "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
-                        },
+                OrganizationMemberships,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
                     },
-                    "<after_cursor>",
+                },
+                "<after_cursor>",
             ),
             (
                     TicketSkips,

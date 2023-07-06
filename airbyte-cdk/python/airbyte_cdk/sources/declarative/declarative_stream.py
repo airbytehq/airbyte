@@ -5,14 +5,13 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
@@ -27,7 +26,6 @@ class DeclarativeStream(Stream):
         retriever (Retriever): The retriever
         config (Config): The user-provided configuration as specified by the source's spec
         stream_cursor_field (Optional[Union[InterpolatedString, str]]): The cursor field
-        transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
         stream. Transformations are applied in the order in which they are defined.
     """
 
@@ -41,11 +39,9 @@ class DeclarativeStream(Stream):
     _primary_key: str = field(init=False, repr=False, default="")
     _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
     stream_cursor_field: Optional[Union[InterpolatedString, str]] = None
-    transformations: List[RecordTransformation] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.stream_cursor_field = InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
-        self.transformations = self.transformations or []
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
     @property
@@ -100,36 +96,7 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice):
-            yield self._apply_transformations(record, self.config, stream_slice)
-
-    def _apply_transformations(
-        self,
-        message_or_record_data: StreamData,
-        config: Config,
-        stream_slice: StreamSlice,
-    ):
-        # If the input is an AirbyteMessage with a record, transform the record's data
-        # If the input is another type of AirbyteMessage, return it as is
-        # If the input is a dict, transform it
-        if isinstance(message_or_record_data, AirbyteMessage):
-            if message_or_record_data.record:
-                record = message_or_record_data.record.data
-            else:
-                return message_or_record_data
-        elif isinstance(message_or_record_data, dict):
-            record = message_or_record_data
-        elif isinstance(message_or_record_data, Record):
-            record = message_or_record_data.data
-        else:
-            # Raise an error because this is unexpected and indicative of a typing problem in the CDK
-            raise ValueError(
-                f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK."
-            )
-        for transformation in self.transformations:
-            transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
-
-        return message_or_record_data
+        yield from self.retriever.read_records(sync_mode, cursor_field, stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
