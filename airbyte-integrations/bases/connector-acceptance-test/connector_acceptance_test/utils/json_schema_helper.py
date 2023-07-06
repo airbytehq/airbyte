@@ -241,6 +241,7 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
     _scan_schema(schema)
     return paths
 
+
 def get_paths_in_connector_config(schema: dict) -> List[str]:
     """
     Traverse through the provided schema's values and extract the path_in_connector_config paths

@@ -46,7 +46,12 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
-from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure, get_paths_in_connector_config
+from connector_acceptance_test.utils.json_schema_helper import (
+    JsonSchemaHelper,
+    get_expected_schema_structure,
+    get_object_structure,
+    get_paths_in_connector_config,
+)
 from jsonschema._utils import flatten
 
 
@@ -491,12 +496,20 @@ class TestSpec(BaseTest):
         oauth_config_specification = advanced_auth.oauth_config_specification
         if oauth_config_specification:
             if oauth_config_specification.oauth_user_input_from_connector_config_specification:
-                paths_to_validate.update(get_paths_in_connector_config(oauth_config_specification.oauth_user_input_from_connector_config_specification["properties"]))
+                paths_to_validate.update(
+                    get_paths_in_connector_config(
+                        oauth_config_specification.oauth_user_input_from_connector_config_specification["properties"]
+                    )
+                )
             if oauth_config_specification.complete_oauth_output_specification:
-                paths_to_validate.update(get_paths_in_connector_config(oauth_config_specification.complete_oauth_output_specification["properties"]))
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_output_specification["properties"])
+                )
             if oauth_config_specification.complete_oauth_server_output_specification:
-                paths_to_validate.update(get_paths_in_connector_config(oauth_config_specification.complete_oauth_server_output_specification["properties"]))
-            
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_server_output_specification["properties"])
+                )
+
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
