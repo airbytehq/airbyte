@@ -1,25 +1,38 @@
 # HubSpot
 
-This page guides you through setting up the HubSpot source connector.
+This page contains the setup guide and reference information for the [HubSpot](https://www.hubspot.com/) source connector.
 
 ## Prerequisites
 
-You can use OAuth or a Private App to authenticate your HubSpot account.
+You can either use OAuth or set up a Private App to authenticate your HubSpot account.
 
 :::note
-For Airbyte Cloud users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+For Airbyte Cloud users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process. Conversely, for Airbyte Open Source users we recommend Private App authentication.
 :::
+
+More information on HubSpot authentication methods can be found 
+[here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ## Setup guide
 
-### Step 1: Set up the authentication method and scopes in HubSpot
+### Step 1: Set up the authentication method
 
-#### Private App setup
+#### Private App setup (Recommended for Airbyte Open Source)
 
-For a step-by-step walkthrough on creating a Private App, please refer to the 
-[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps).
+If you are authenticating via a Private App, please refer to the 
+[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide and explanation.
 
-If you are using either OAuth in Airbyte Open Source or Private App authentication, you need to configure the appropriate 
+#### Oauth setup for Airbyte Open Source (Not recommended)
+
+If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+
+- Client ID
+- Client Secret
+- Refresh Token
+
+### Step 2: Configure the scopes for your streams
+
+You need to configure the appropriate 
 [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                                               |
@@ -48,15 +61,22 @@ If you are using either OAuth in Airbyte Open Source or Private App authenticati
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-### Step 2: Set up the HubSpot source connector in Airbyte
+### Step 3: Set up the HubSpot source connector in Airbyte
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
+
+
 4. From the **Authentication** dropdown, select your chosen authentication method:
-   - To authenticate using OAuth for Airbyte Cloud, ensure you have 
-   [set the appropriate scopes for HubSpot](#step-1-set-up-the-authentication-method-and-scopes-in-hubspot) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account.
+#### For Airbyte Cloud users:
+- To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   
+#### For Airbyte Open Source users:
+- To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
 `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. Click **Set up source** and wait for the tests to complete.
@@ -68,14 +88,14 @@ The HubSpot source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-## Supported streams
-
 :::note
 There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
 :::
+
+## Supported streams
 
 The HubSpot source connector supports the following streams:
 
