@@ -7,7 +7,7 @@ import itertools
 import logging
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union, Set
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
