@@ -52,6 +52,7 @@ The Amazon Ads source connector supports the following [sync modes](https://docs
 This source is capable of syncing the following streams:
 
 * [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
+* [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
 * [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
 * [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
 * [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
