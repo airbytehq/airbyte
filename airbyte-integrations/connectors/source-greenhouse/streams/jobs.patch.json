@@ -1,6 +1,6 @@
 {
     "properties": {
-        "opening": {
+        "openings": {
             "properties": {
                 "opening_id": {
                     "type": ["string", "null"]
