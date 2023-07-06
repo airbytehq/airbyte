@@ -11,8 +11,8 @@ RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+d
 
 
-
-LABEL io.airbyte.version=2.2.0
+LABEL io.airbyte.version=2.3.0
 LABEL io.airbyte.name=airbyte/source-amazon-ads
