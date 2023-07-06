@@ -117,7 +117,9 @@ does not really make sense. Some common pitfalls:
   not an intuitive schema specification, but it is okay to go ahead and apply
   this patch: this will allow us to get a notification once we see a non-null
   value for this property, and at that point we can fix it by running
-  schema-inference again and get the correct schema.
+  schema-inference again and get the correct schema. However, this may be time-consuming until we have
+  automatic continuous schema-inference running on these collections, so it is also a
+  fair choice to omit these fields from your patch.
 
 
 # CI/CD
