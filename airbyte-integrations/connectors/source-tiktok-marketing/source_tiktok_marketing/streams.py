@@ -56,6 +56,8 @@ NOT_AUDIENCE_METRICS = [
     "onsite_shopping",
     "vta_purchase",
     "cta_purchase",
+    "vta_conversion",
+    "cta_conversion",
     "total_pageview",
     "complete_payment",
     "value_per_complete_payment",
@@ -225,7 +227,8 @@ class TiktokStream(HttpStream, ABC):
             data = response.json()
         except Exception:
             if response.status_code == 504:
-                self.logger.error("Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
+                self.logger.error(
+                    "Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
                 return super().should_retry(response)
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
@@ -271,7 +274,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
 
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+    transformer = TypeTransformer(
+        TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
@@ -287,10 +291,12 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         self.kwargs = kwargs
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._start_time = pendulum.parse(start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
+        self._start_time = pendulum.parse(
+            start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
         # convert end date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
+        self._end_time = pendulum.parse(
+            end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
         self.max_cursor_date = None
         self._advertiser_ids = []
 
@@ -306,8 +312,10 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         else:
             # for prod: return list of all available ids from AdvertiserIds stream if the field is empty
             # in the connector configuration
-            advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
-            ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
+            advertiser_ids = AdvertiserIds(
+                **self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
+            ids = [advertiser["advertiser_id"]
+                   for advertiser in advertiser_ids]
 
         self._advertiser_ids = ids
         return ids
@@ -372,7 +380,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         if not data or not self.cursor_field:
             return None
 
-        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+        cursor_field_path = self.cursor_field if isinstance(
+            self.cursor_field, list) else [self.cursor_field]
 
         # backward capability to support old state objects
         if "dimensions" in data:
@@ -404,7 +413,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
-        state = self.select_cursor_field_value(stream_state) or self._start_time
+        state = self.select_cursor_field_value(
+            stream_state) or self._start_time
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
             record = self.unnest_cursor_and_pk(record)
             updated = self.select_cursor_field_value(record, stream_slice)
@@ -419,14 +429,17 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # needs to save a last state if all advertisers are used before only
-        current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
+        current_stream_state_value = (
+            self.select_cursor_field_value(current_stream_state)) or ""
 
         # a object JsonUpdatedState is related with a current stream and should return a new updated state if needed
         if not isinstance(current_stream_state_value, JsonUpdatedState):
-            current_stream_state_value = JsonUpdatedState(stream=self, current_stream_state=current_stream_state_value)
+            current_stream_state_value = JsonUpdatedState(
+                stream=self, current_stream_state=current_stream_state_value)
 
         # reports streams have cursor fields which be allocated into a nested object
-        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+        cursor_field_path = self.cursor_field if isinstance(
+            self.cursor_field, list) else [self.cursor_field]
         # generate a dict with nested items
         # ["key1", "key1"] => {"key1": {"key2": <value>}}
         tree_dict = current_stream_state_value
@@ -456,7 +469,7 @@ class Advertisers(FullRefreshTiktokStream):
         ids = self.get_advertiser_ids()
         start, end, step = 0, len(ids), 100
         for i in range(start, end, step):
-            yield {"advertiser_ids": ids[i : min(end, i + step)]}
+            yield {"advertiser_ids": ids[i: min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):
@@ -559,7 +572,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
         elif isinstance(start_date, datetime):
             start_date = start_date.subtract(days=attr_window)
 
-        end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
+        end_date = pendulum.parse(
+            ending_date) if ending_date else pendulum.now()
 
         # TikTok API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
@@ -569,7 +583,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
         elif granularity == ReportGranularity.LIFETIME:
             max_interval = 364
         else:
-            raise ValueError(f"Unsupported reporting granularity: {granularity}, must be one of DAY, HOUR, LIFETIME")
+            raise ValueError(
+                f"Unsupported reporting granularity: {granularity}, must be one of DAY, HOUR, LIFETIME")
 
         # for incremental sync with abnormal state produce at least one state message
         # by producing at least one stream slice from today
@@ -581,8 +596,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
         iterations = total_date_diff.days // max_interval
 
         for i in range(iterations + 1):
-            chunk_start = start_date + pendulum.duration(days=(i * max_interval))
-            chunk_end = min(chunk_start + pendulum.duration(days=max_interval, seconds=-1), end_date)
+            chunk_start = start_date + \
+                pendulum.duration(days=(i * max_interval))
+            chunk_end = min(
+                chunk_start + pendulum.duration(days=max_interval, seconds=-1), end_date)
             yield chunk_start, chunk_end
 
     def _get_reporting_dimensions(self):
@@ -687,7 +704,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return result
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_start = self.select_cursor_field_value(stream_state) or self._start_time
+        stream_start = self.select_cursor_field_value(
+            stream_state) or self._start_time
         stream_end = self._end_time
 
         for slice_adv_id in super().stream_slices(**kwargs):
@@ -708,7 +726,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params = super().request_params(stream_state=stream_state,
+                                        stream_slice=stream_slice, **kwargs)
 
         params["advertiser_id"] = stream_slice["advertiser_id"]
         params["service_type"] = "AUCTION"
@@ -781,7 +800,8 @@ class AudienceReport(BasicReports, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params = super().request_params(stream_state=stream_state,
+                                        stream_slice=stream_slice, **kwargs)
         params["report_type"] = "AUDIENCE"
         return params
 
