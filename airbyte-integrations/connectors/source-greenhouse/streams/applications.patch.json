@@ -1,0 +1,22 @@
+{
+    "properties": {
+        "properties": {
+            "prospective_department":{
+                "type": ["object", "null"]
+            },
+            "prospective_office":{
+                "type": ["object", "null"]
+            },
+            "prospect_detail": {
+                "properties": {
+                    "prospective_pool":{
+                       "type": ["object", "null"]
+                     },
+                    "prospective_stage":{
+                        "type": ["object", "null"]
+                    }
+                }
+            }
+        }
+    }
+}
