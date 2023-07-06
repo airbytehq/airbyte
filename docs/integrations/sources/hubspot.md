@@ -15,7 +15,7 @@ More information on HubSpot authentication methods can be found
 
 :::note
 Airbyte Cloud users authenticating via OAuth can skip straight to 
-[setting up the connector](#step-3-set-up-the-hubspot-source-connector-in-airbyte).
+[setting up the connector in Airbyte](#step-3-set-up-the-hubspot-source-connector-in-airbyte).  All other other users must manually set up authentication and configure scopes.
 :::
 
 ### Step 1: Set up the authentication method
@@ -23,7 +23,7 @@ Airbyte Cloud users authenticating via OAuth can skip straight to
 #### Private App setup (Recommended for Airbyte Open Source)
 
 If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the 
-[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide on how to set up the Private App and acquire the Access Token.
+[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 
 #### OAuth setup for Airbyte Open Source (Not recommended)
 
@@ -35,8 +35,9 @@ If you are using Oauth to authenticate on Airbyte Open Source, please refer to [
 
 ### Step 2: Configure the scopes for your streams
 
-Next, you need to configure the appropriate 
-[scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+Next, you need to configure the appropriate scopes for the following streams. Please refer to 
+[Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
+
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -140,7 +141,7 @@ If you set up your connections before April 15th, 2023 (on Cloud) or before 0.8.
 First you need to give the connector some additional permissions:
 
 - **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
-- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your private app or oauth application and add the `crm.objects.custom.read` scope to your app's scopes. See Hubspot's instructions here.
+- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -154,16 +155,16 @@ Then, go to the replication settings of your connection and click **refresh sour
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
 2. The `engagements` stream uses two types of API:
-- EngagementsRecent if start_date/last_sync_date is less than 30 days and API is able to return all records (<10k)
-- EngagementsAll which extracts all records, but supports filter on connector side
+- **EngagementsRecent** if `start_date/last_sync_date` is less than 30 days and the API is able to return all records (<10k).
+- **EngagementsAll** which extracts all records, but supports connector-side filtering.
 
-This means that in order to perform fast incremental sync, it should be scheduled no less than once every 30 days and should not sync more than 10k new records. Otherwise, sync of all records is performed with filtering on connector side. 
+This means that in order to perform fast incremental sync, it should be scheduled no less than once every 30 days and should sync fewer than 10,000 new records. Otherwise, sync of all records is performed with connector-side filtering. 
 
 ## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-Some streams, such as `workflows` need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
+Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
 Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
