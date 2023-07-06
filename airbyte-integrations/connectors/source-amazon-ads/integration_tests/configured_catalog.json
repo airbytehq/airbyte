@@ -12,6 +12,16 @@
     },
     {
       "stream": {
+        "name": "portfolios",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["portfolioId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "sponsored_display_campaigns",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
