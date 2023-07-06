@@ -106,7 +106,7 @@ class DefaultExponentialBackoffHandler(ErrorHandler[aiohttp.ClientResponse]):
 
 
 class RequestGenerator:
-    async def next_request(
+    def next_request(
         self, partition_descriptor: PartitionDescriptor, response: Optional[requests.Response]
     ) -> Optional[HttpRequestDescriptor]:
         """

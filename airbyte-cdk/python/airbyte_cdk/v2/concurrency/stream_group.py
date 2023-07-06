@@ -14,6 +14,7 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 from airbyte_cdk.v2.concurrency.async_requesters import Client
 from airbyte_cdk.v2.concurrency.concurrency_policy import ConcurrencyPolicy
 from airbyte_cdk.v2.concurrency.concurrent_utils import consume_async_iterable
+from airbyte_cdk.v2.concurrency.http import HttpRequestDescriptor
 from airbyte_cdk.v2.concurrency.partition_descriptors import PartitionDescriptor
 from airbyte_cdk.v2.state_obj import State
 from airbyte_protocol.models import (
@@ -25,8 +26,10 @@ from airbyte_protocol.models import (
     StreamDescriptor,
 )
 from airbyte_protocol.models import Type as MessageType
+import requests
 
 PartitionType = TypeVar("PartitionType", bound=PartitionDescriptor)
+RequestType = TypeVar("RequestType")
 StateType = TypeVar("StateType", bound=State)
 
 
@@ -34,6 +37,12 @@ StateType = TypeVar("StateType", bound=State)
 class StreamAndPartition(Generic[PartitionType]):
     stream: Stream
     partition_descriptor: PartitionType
+
+@dataclass
+class StreamAndPartitionAndRequest(Generic[PartitionType, RequestType]):
+    stream: Stream
+    partition_descriptor: PartitionType
+    request: RequestType
 
 
 class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
@@ -50,49 +59,10 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         # TODO
         return self._streams
 
-    async def _read_partition(self, partition_and_stream: StreamAndPartition[PartitionType]) -> AsyncIterable[AirbyteMessage]:
-        partition_descriptor = partition_and_stream.partition_descriptor
-        stream = partition_and_stream.stream
-        stream_state_manager = stream.state_manager
-        # TODO parsing and error handling
-        # TODO this likely needs to be an async for because request() should probably return an async iterable
-        # print(f"partition_descriptor: {partition_descriptor}")
-        pagination_complete = False
-        last_response = None
-        request_generator = stream.get_request_generator()
-        while True:
-            # It's not obvious from the interface, but this technically needs the records that are produced from the last response
-            # This dependency is made explicit in the declarative framework
-            request = await request_generator.next_request(partition_descriptor, last_response)
-            if not request:
-                break
-
-            response = await self.requester_client.request(request)
-            last_response = response
-            # async for response in self.requester.request(partition_descriptor):
-            # print(f"response: {response}")
-            # print(f"stream.parse_response(response): {stream.parse_response(response)}")
-            # FFIXME: should parsing be async?
-            # I think it would be better, but it makes the integration more complicated
-            for record_or_message in stream.parse_response(response, stream_state={}):
-                if isinstance(record_or_message, dict):
-                    message = stream_data_to_airbyte_message(stream.name, record_or_message)
-                elif isinstance(record_or_message, Record):
-                    message = stream_data_to_airbyte_message(stream.name, record_or_message.data)
-                else:
-                    raise ValueError(f"Unexpected type: {type(record_or_message)}")
-                yield message
-
-                # FIXME: This feels off. The requester should only produce record messages
-                # If there are other message types to be produced, they should be passed using the message repository
-                if message.type == MessageType.RECORD:
-                    if state_message := stream_state_manager.observe(message.record.data):
-                        pass
-                        # In what scenario do we need up update the state mid-partition?
-                        # imo this adds complexity
-                        # yield self._to_state_message(state_message, stream)
-
-        yield self._to_state_message(stream_state_manager.notify_partition_complete(partition_descriptor), stream)
+    async def _read_partition(self, partition_and_stream_and_request: StreamAndPartitionAndRequest[PartitionType, HttpRequestDescriptor]) -> AsyncIterable[requests.Response]:
+        stream = partition_and_stream_and_request.stream
+        request = partition_and_stream_and_request.request
+        yield await self.requester_client.request(request)
 
     @staticmethod
     def _to_state_message(state_message, stream):
@@ -104,12 +74,12 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
         )
 
     async def _read_partitions_async(self, partitions_with_streams: Iterable[StreamAndPartition[PartitionType]]):
-        semaphore = asyncio.Semaphore(self._concurrency_policy.maximum_number_of_concurrent_requests())
+        semaphore = asyncio.Semaphore(self._concurrency_policy.maximum_number_of_concurrent_requests() + 1000)
         queue = asyncio.Queue()
+        task_queue = asyncio.Queue()
 
         async def process_partition_and_stream(partition_and_stream):
             async with semaphore:
-                # print(f'acquired semaphore: {semaphore._value}')
                 try:
                     async for x in self._read_partition(partition_and_stream):
                         await queue.put(x)  # Instead of yielding, put the result in the queue
@@ -118,13 +88,32 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
                 finally:
                     await queue.put(None)  # Sentinel value to indicate this generator is done
 
+        async def pull_from_queue():
+            async with semaphore:
+                try:
+                    print(f"pull_from_queue")
+                    work_item = await task_queue.get()
+                    print(f"work_item: {work_item}")
+                except Exception as e:
+                    await queue.put(e)
+                finally:
+                    await queue.put(None)
+
+        for partition_and_stream in partitions_with_streams:
+            partition = partition_and_stream.partition_descriptor
+            stream = partition_and_stream.stream
+            request = stream.get_request_generator().next_request(partition, None)
+            await task_queue.put(StreamAndPartitionAndRequest(stream=stream, partition_descriptor=partition, request=request))
+
+
         # create a separate task for each partition_and_stream
         tasks = [
-            asyncio.create_task(process_partition_and_stream(partition_and_stream)) for partition_and_stream in partitions_with_streams
+            #asyncio.create_task(process_partition_and_stream(partition_and_stream)) for partition_and_stream in partitions_with_streams
+            asyncio.create_task(pull_from_queue()) for partition_and_stream in partitions_with_streams
         ]
 
         num_active_generators = len(tasks)
-        while num_active_generators > 0:
+        while not task_queue.empty():
             x = await queue.get()
             if x is None:  # If we get the sentinel value, decrement the count of active generators
                 num_active_generators -= 1
@@ -147,10 +136,11 @@ class ConcurrentStreamGroup(ABC, Generic[PartitionType]):
 
     def get_partition_descriptors(
         self, catalog: ConfiguredAirbyteCatalog, source_state: Mapping[HashableStreamDescriptor, State]
-    ) -> Iterable[StreamAndPartition[PartitionType]]:
+    ) -> Iterable[StreamAndPartitionAndRequest[PartitionType, HttpRequestDescriptor]]:
         # TODO allow getting the last partition from each stream's partitions so we can enable fast first-syncs
         # TODO allow round-robin getting one stream from each partition to enable "balanced" syncs
         for stream in self._streams:
             stream_state = None  # source_state.get(stream.get_stream_descriptor(), {})
             for partition in stream.generate_partitions(stream_state=stream_state):
-                yield StreamAndPartition(stream=stream, partition_descriptor=partition)
+                request = stream.get_request_generator().next_request(partition, None)
+                yield StreamAndPartitionAndRequest(stream=stream, partition_descriptor=partition, request=request)
