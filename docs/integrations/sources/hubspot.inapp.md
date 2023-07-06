@@ -1,17 +1,13 @@
-## Prerequisite
+## Prerequisites
 
+### Authentication method
 You can use OAuth or a Private App to authenticate your HubSpot account.
 
-## Setup guide
+For more information on which authentication method to choose and the required setup steps, see our full
+[Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
 
-1. You can use OAuth or a Private App to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud.
-   * To authenticate using OAuth for Airbyte Cloud, ensure your user has the appropriate scopes for HubSpot and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   * To authenticate using a Private App, navigate to **Settings** and click **Private Apps** under Account Setup. Create a new private app and add the appropriate scopes to your private app.
-2. (Optional) For **Start date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-3. Click Set up source.
-
-## Scopes Required (for Private App)
-Add the following scopes to your private app to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
+### Scopes Required (for Private App and Open Source OAuth)
+You must add the following scopes to your private app to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
 
 * `content`
 * `forms`
@@ -28,6 +24,25 @@ Add the following scopes to your private app to ensure Airbyte can sync all avai
 * `crm.objects.goals.read`
 * `crm.objects.owners.read`
 * `crm.objects.custom.read`
+
+## Setup guide
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. From the **Authentication** dropdown, select your chosen authentication method:
+
+#### For Airbyte Cloud users:
+- To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   
+#### For Airbyte Open Source users:
+- To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+
+5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported Objects
 Airbyte supports syncing standard and custom CRM objects. Custom CRM objects will appear as streams available for sync, alongside the standard objects.

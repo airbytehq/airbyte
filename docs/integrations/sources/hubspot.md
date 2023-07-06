@@ -22,8 +22,8 @@ Airbyte Cloud users authenticating via OAuth can skip straight to
 
 #### Private App setup (Recommended for Airbyte Open Source)
 
-If you are authenticating via a Private App, please refer to the 
-[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide and explanation.
+If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the 
+[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide on how to set up the Private App and acquire the Access Token.
 
 #### OAuth setup for Airbyte Open Source (Not recommended)
 
