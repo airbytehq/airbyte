@@ -358,6 +358,7 @@ const operatorGuide = {
     'operator-guides/using-the-airflow-airbyte-operator',
     'operator-guides/using-prefect-task',
     'operator-guides/using-dagster-integration',
+    'operator-guides/using-kestra-plugin',
     'operator-guides/locating-files-local-destination',
     'operator-guides/collecting-metrics',
     {
