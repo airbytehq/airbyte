@@ -126,7 +126,7 @@ class AbstractFileBasedStream(Stream):
             raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
 
     def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
-        return self.config.validation_policy.record_passes_validation_policy(record, self._catalog_schema)
+        return self.config.validation_policy.record_passes_validation_policy(record, self._catalog_schema)  # type: ignore
 
     @cached_property
     def availability_strategy(self) -> AvailabilityStrategy:
