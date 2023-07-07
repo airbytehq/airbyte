@@ -16,8 +16,9 @@ class ParquetParser(FileTypeParser):
     async def infer_schema(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
-        table = self._read_file(file, stream_reader)
-        schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type) for field in table.schema}
+        parquet_file = pq.ParquetFile(stream_reader.open_file(file))
+        parquet_schema = parquet_file.schema_arrow
+        schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type) for field in parquet_schema}
         return schema
 
     def parse_records(
