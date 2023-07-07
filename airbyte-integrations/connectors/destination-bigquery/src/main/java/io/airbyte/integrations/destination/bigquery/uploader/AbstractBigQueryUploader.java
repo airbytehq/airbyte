@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
@@ -48,9 +49,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
                            final T writer,
                            final WriteDisposition syncMode,
                            final BigQuery bigQuery,
-                           final BigQueryRecordFormatter recordFormatter,
-                           final boolean use1s1t) {
-    this.use1s1t = use1s1t;
+                           final BigQueryRecordFormatter recordFormatter) {
+    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
