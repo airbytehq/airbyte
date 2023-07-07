@@ -4,7 +4,6 @@
 
 import asyncio
 import itertools
-import logging
 import traceback
 from functools import cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -65,8 +64,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
+
+        If an error is encountered reading records from a file, log a message and do not attempt
+        to sync the rest of the file.
         """
-        schema = self._catalog_schema
+        schema = self.catalog_schema
         if schema is None:
             # On read requests we should always have the catalog available
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
@@ -77,7 +79,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self._stream_reader):
+                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
                     line_no += 1
                     if self.config.schemaless:
                         record = {"data": record}
@@ -93,29 +95,30 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 yield AirbyteMessage(
                     type=Type.LOG,
                     log=AirbyteLogMessage(
-                        level=Level.INFO,
+                        level=Level.WARN,
                         message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
                     ),
                 )
                 break
 
-            except Exception as exc:
+            except Exception:
                 yield AirbyteMessage(
                     type=Type.LOG,
                     log=AirbyteLogMessage(
                         level=Level.ERROR,
                         message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                        stack_trace="\n".join(traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)),
+                        stack_trace=traceback.format_exc(),
                     ),
                 )
+                break
 
             else:
                 if n_skipped:
                     yield AirbyteMessage(
                         type=Type.LOG,
                         log=AirbyteLogMessage(
-                            level=Level.INFO,
-                            message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.config.validation_policy}",
+                            level=Level.WARN,
+                            message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.validation_policy.name}",
                         ),
                     )
 
@@ -138,27 +141,35 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
-            if not schema:
+            schema["properties"] = {**extra_fields, **schema["properties"]}
+            return schema
+
+    def _get_raw_json_schema(self) -> JsonSchema:
+        if self.config.input_schema:
+            return self.config.input_schema
+        elif self.config.schemaless:
+            return schemaless_schema
+        else:
+            files = self.list_files()
+            total_n_files = len(files)
+            max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
+            if total_n_files > max_n_files_for_schema_inference:
+                # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+                self.logger.warn(
+                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+                )
+
+            inferred_schema = self.infer_schema(files)
+
+            if not inferred_schema:
                 raise InvalidSchemaError(
                     FileBasedSourceError.INVALID_SCHEMA_ERROR,
                     details=f"Empty schema. Please check that the files are valid {self.config.file_type}",
                     stream=self.name,
                 )
-            return {"type": "object", "properties": {**extra_fields, **schema}}
 
-    def _get_raw_json_schema(self) -> JsonSchema:
-        if self.config.input_schema:
-            schema = self.config.input_schema
-        elif self.config.schemaless:
-            return schemaless_schema
-        else:
-            files = self.list_files()
-            max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
-            if len(files) > max_n_files_for_schema_inference:
-                # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-                logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
-            schema = self.infer_schema(files)
+            schema = {"type": "object", "properties": inferred_schema}
 
         return schema
 
@@ -201,7 +212,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
         try:
-            return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader)
+            return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader, self.logger)
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
