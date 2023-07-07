@@ -86,10 +86,8 @@ class ParquetParser(FileTypeParser):
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
         """
         Convert a pyarrow data type to an Airbyte schema type.
-        :param parquet_type:
-        :return:
+        Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
         """
-        # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
 
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
