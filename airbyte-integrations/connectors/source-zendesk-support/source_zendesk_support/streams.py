@@ -22,11 +22,13 @@ import pytz
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
@@ -343,13 +345,14 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             if original_exception:
                 raise original_exception
             raise DefaultBackoffException(request=request, response=response)
-        sleep_time = self.backoff_time(response)
-        if response is not None and finished_at and sleep_time:
-            current_retry_at = finished_at + timedelta(seconds=sleep_time)
-            global retry_at
-            if not retry_at or (retry_at < current_retry_at):
-                retry_at = current_retry_at
-            self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
+        if response is not None:
+            sleep_time = self.backoff_time(response)
+            if finished_at and sleep_time:
+                current_retry_at = finished_at + timedelta(seconds=sleep_time)
+                global retry_at
+                if not retry_at or (retry_at < current_retry_at):
+                    retry_at = current_retry_at
+                self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
         self.future_requests.append(
             {
                 "future": self._send_request(request, request_kwargs),
@@ -584,8 +587,12 @@ class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
 
-class Posts(SourceZendeskSupportStream):
+class Posts(SourceZendeskSupportCursorPaginationStream):
     """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
+
+    use_cache = True
+
+    cursor_field = "updated_at"
 
     def path(self, **kwargs):
         return "community/posts"
@@ -848,3 +855,62 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+
+class PostComments(SourceZendeskSupportFullRefreshStream, HttpSubStream):
+    response_list_name = "comments"
+
+    def __init__(self, **kwargs):
+        parent = Posts(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        post_id = stream_slice.get("parent").get("id")
+        return f"community/posts/{post_id}/comments"
+
+
+class AbstractVotes(SourceZendeskSupportFullRefreshStream, ABC):
+
+    response_list_name = "votes"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("votes")
+
+
+class PostVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = Posts(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        post_id = stream_slice.get("parent").get("id")
+        return f"community/posts/{post_id}/votes"
+
+
+class PostCommentVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = PostComments(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        post_id = stream_slice.get("parent").get("post_id")
+        comment_id = stream_slice.get("parent").get("id")
+        return f"community/posts/{post_id}/comments/{comment_id}/votes"

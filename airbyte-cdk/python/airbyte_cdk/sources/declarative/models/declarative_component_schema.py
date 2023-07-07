@@ -810,6 +810,12 @@ class DatetimeBasedCursor(BaseModel):
         examples=["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d", "%s"],
         title="Cursor Field Datetime Format",
     )
+    start_datetime: Union[str, MinMaxDatetime] = Field(
+        ...,
+        description="The datetime that determines the earliest record that should be synced.",
+        examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
+        title="Start Datetime",
+    )
     cursor_granularity: Optional[str] = Field(
         None,
         description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",
@@ -822,22 +828,15 @@ class DatetimeBasedCursor(BaseModel):
         examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )
-    start_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the earliest record that should be synced.",
-        examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
-        title="Start Datetime",
-    )
-    step: Optional[str] = Field(
-        None,
-        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
-        examples=["P1W", "{{ config['step_increment'] }}"],
-        title="Step",
-    )
     end_time_option: Optional[RequestOption] = Field(
         None,
         description="Optionally configures how the end datetime will be sent in requests to the source API.",
         title="Inject End Time Into Outgoing HTTP Request",
+    )
+    is_data_feed: Optional[bool] = Field(
+        None,
+        description="A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.",
+        title="Whether the target API is formatted as a data feed",
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -861,6 +860,12 @@ class DatetimeBasedCursor(BaseModel):
         None,
         description="Optionally configures how the start datetime will be sent in requests to the source API.",
         title="Inject Start Time Into Outgoing HTTP Request",
+    )
+    step: Optional[str] = Field(
+        None,
+        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
+        examples=["P1W", "{{ config['step_increment'] }}"],
+        title="Step",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -1046,7 +1051,7 @@ class HttpRequester(BaseModel):
     )
     request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
+        description="Specifies how to populate the body of the request with a non-JSON payload. Plain text will be sent as is, whereas objects will be converted to a urlencoded form.",
         examples=[
             '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_interval[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
         ],

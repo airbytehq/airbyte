@@ -71,7 +71,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
-        self._last_records = None
+        self._records_from_last_response = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -165,6 +165,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -358,7 +359,7 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._records_from_last_response = records
         return records
 
     @property
@@ -379,7 +380,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self.paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._records_from_last_response)
 
     def read_records(
         self,
@@ -408,23 +409,39 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        records_generator = self._read_pages(
-            self.parse_records,
-            stream_slice,
-            slice_state,
-        )
-        cursor_updated = False
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=record)
-                cursor_updated = True
-            yield record
-        if self.cursor and not cursor_updated:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=last_record)
-            yield from []
+        most_recent_record_from_slice = None
+        for stream_data in self._read_pages(self.parse_records, stream_slice, slice_state):
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
+            yield stream_data
+
+        if self.cursor:
+            self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
+        return
+
+    def _get_most_recent_record(
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+    ) -> Optional[Record]:
+        if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
+            if not current_most_recent:
+                return record
+            else:
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
+        else:
+            return None
+
+    @staticmethod
+    def _extract_record(stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+        """
+        As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
+        to data to streamline the rest of the process.
+        """
+        if isinstance(stream_data, Record):
+            # Record is not part of `StreamData` but is the most common implementation of `Mapping[str, Any]` which is part of `StreamData`
+            return stream_data
+        elif isinstance(stream_data, (dict, Mapping)):
+            return Record(dict(stream_data), stream_slice)
+        elif isinstance(stream_data, AirbyteMessage) and stream_data.record:
+            return Record(stream_data.record.data, stream_slice)
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -446,7 +463,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
+            self.cursor.set_initial_state(value)
 
     def parse_records(
         self,
