@@ -5,7 +5,7 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource

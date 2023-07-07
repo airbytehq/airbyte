@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timedelta
-from typing import Any, Mapping, List
+from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest

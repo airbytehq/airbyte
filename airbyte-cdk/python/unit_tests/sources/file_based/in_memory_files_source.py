@@ -6,7 +6,7 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Any, Dict, Iterable, List, Optional, Mapping
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy

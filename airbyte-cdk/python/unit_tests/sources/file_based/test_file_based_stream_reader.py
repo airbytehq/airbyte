@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Set, List
+
+from typing import List, Set
 
 import pytest
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader

@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Dict, Optional
+from typing import Any, Mapping, Optional
 
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
-from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas, SchemaType
+from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, SchemaType, conforms_to_schema, merge_schemas
 
 COMPLETE_CONFORMING_RECORD = {
     "null_field": None,
