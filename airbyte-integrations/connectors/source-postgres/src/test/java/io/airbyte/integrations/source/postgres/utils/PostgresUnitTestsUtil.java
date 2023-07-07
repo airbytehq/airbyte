@@ -69,6 +69,12 @@ public class PostgresUnitTestsUtil {
         .collect(Collectors.toList());
   }
 
+  public static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages, final String streamName) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE &&
+        r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
   public static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == Type.RECORD)
         .collect(Collectors.toList());

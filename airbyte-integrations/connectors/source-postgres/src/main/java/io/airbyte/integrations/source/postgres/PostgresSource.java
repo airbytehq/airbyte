@@ -75,6 +75,7 @@ import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
+import io.airbyte.integrations.source.postgres.standard.PostgresStandardStateManager;
 import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.StandardStreams;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.XminStreams;
@@ -540,7 +541,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(Collectors.toList());
 
     } else if (isIncrementalSyncMode(catalog) && ctidFeatureFlags.isCursorSyncEnabled()) {
-      final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(stateManager, catalog);
+      final PostgresStandardStateManager postgresStandardStateManager = new PostgresStandardStateManager(stateManager.getRawStateMessages(), catalog);
+      final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(postgresStandardStateManager, catalog);
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());
@@ -569,7 +571,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
 
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap =
-          getStandardSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, stateManager);
+          getStandardSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresStandardStateManager);
 
       final PostgresCtidHandler standardCtidHandler =
           new PostgresCtidHandler(sourceConfig,
@@ -589,8 +591,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           new ConfiguredAirbyteCatalog().withStreams(
               streamsCategorised.remainingStreams()
                   .streamsForStandardSync()),
-          tableNameToTable,
-          stateManager, emittedAt));
+          tableNameToTable, postgresStandardStateManager, emittedAt));
 
       return Stream
           .of(ctidIterators, standardIterators)

@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,7 +32,6 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags;
-import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -115,7 +113,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
         .put(CtidFeatureFlags.CURSOR_VIA_CTID, "true")
-        .put("sync_checkpoint_records", 1)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -317,7 +314,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     PSQL_DB.close();
   }
 
-  // @Test
+  @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
@@ -433,7 +430,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-  // @Test
+  @Test
   void incrementalTimeTzCheck() throws Exception {
     incrementalCursorCheck(COL_WAKEUP_AT,
         "11:09:11.123456-05:00",
@@ -442,7 +439,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-  // @Test
+  @Test
   void incrementalTimestampTzCheck() throws Exception {
     incrementalCursorCheck(COL_LAST_VISITED_AT,
         "2005-10-18T17:23:54.123456Z",
@@ -451,7 +448,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-  // @Test
+  @Test
   void incrementalTimestampCheck() throws Exception {
     incrementalCursorCheck(COL_LAST_COMMENT_AT,
         "2004-12-12T17:23:54.123456",
@@ -481,7 +478,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
                     COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
-    final DbStreamState state = new DbStreamState()
+    final DbStreamState state = new StandardStatus().withStateType(StateType.STANDARD).withVersion(2L)
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
         .withCursorField(ImmutableList.of(COL_ID))
@@ -490,49 +487,47 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }
-
   @Test
   void testReadMultipleTablesIncrementallyWithCtid() throws Exception {
-    final ObjectMapper mapper = new ObjectMapper();
     final String namespace = getDefaultNamespace();
+    final String streamOneName = streamName;
     // Create a second table
-    final String secondStreamName = TABLE_NAME + 2;
-
-    final String secondStreamFullyQualifiedName = getFullyQualifiedTableName(secondStreamName);
+    final String streamTwoName = TABLE_NAME + 2;
+    final String streamTwoFullyQualifiedName = getFullyQualifiedTableName(streamTwoName);
     // Insert records into second table
     database.execute(ctx -> {
       ctx.createStatement().execute(
-          createTableQuery(secondStreamFullyQualifiedName, COLUMN_CLAUSE_WITH_PK, ""));
+          createTableQuery(streamTwoFullyQualifiedName, COLUMN_CLAUSE_WITH_PK, ""));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
               + "VALUES (40,'Jean Luc','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              secondStreamFullyQualifiedName));
+              streamTwoFullyQualifiedName));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
               + "VALUES (41, 'Groot', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              secondStreamFullyQualifiedName));
+              streamTwoFullyQualifiedName));
       ctx.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
               + "VALUES (42, 'Thanos','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              secondStreamFullyQualifiedName));
+              streamTwoFullyQualifiedName));
     });
     // Create records list that we expect to see in the state message
-    final List<AirbyteMessage> expectedSecondStreamRecords = Arrays.asList(
-        createRecord(secondStreamName, namespace, map(
+    final List<AirbyteMessage> streamTwoExpectedRecords = Arrays.asList(
+        createRecord(streamTwoName, namespace, map(
             COL_ID, 40,
             COL_NAME, "Jean Luc",
             COL_UPDATED_AT, "2006-10-19",
             COL_WAKEUP_AT, "12:12:12.123456-05:00",
             COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
             COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")),
-        createRecord(secondStreamName, namespace, map(
+        createRecord(streamTwoName, namespace, map(
             COL_ID, 41,
             COL_NAME, "Groot",
             COL_UPDATED_AT, "2006-10-19",
             COL_WAKEUP_AT, "12:12:12.123456-05:00",
             COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
             COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")),
-        createRecord(secondStreamName, namespace, map(
+        createRecord(streamTwoName, namespace, map(
             COL_ID, 42,
             COL_NAME, "Thanos",
             COL_UPDATED_AT, "2006-10-19",
@@ -541,11 +536,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")));
 
     // Prep and create a configured catalog to perform sync
-    final AirbyteStream firstStream = getAirbyteStream(streamName, namespace);
-    final AirbyteStream secondStream = getAirbyteStream(secondStreamName, namespace);
+    final AirbyteStream streamOne = getAirbyteStream(streamName, namespace);
+    final AirbyteStream streamTwo = getAirbyteStream(streamTwoName, namespace);
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        new AirbyteCatalog().withStreams(List.of(firstStream, secondStream)));
+        new AirbyteCatalog().withStreams(List.of(streamOne, streamTwo)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of(COL_ID));
@@ -563,104 +558,132 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // All records in the 2 configured streams should be present
     assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(
         Stream.concat(getTestMessages().stream().parallel(),
-                      expectedSecondStreamRecords.stream().parallel()).collect(toList()));
+            streamTwoExpectedRecords.stream().parallel()).collect(toList()));
 
     final List<AirbyteStateMessage> actualFirstSyncState = extractStateMessage(messagesFromFirstSync);
-    // Since we are emitting a state message after each record, we should have 1 state for each record - 3 from stream1 and 3 from stream2
+    // Since we are emitting a state message after each record, we should have 1 state for each record -
+    // 3 from stream1 and 3 from stream2
     assertEquals(6, actualFirstSyncState.size());
+
     // The expected state type should be 2 ctid's and the last one being standard
-    final List<String> expectedStateTypes = List.of("ctid", "ctid", "standard");
-    final List<String> stateTypeFromStreamOneStates =
+    final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "standard");
+    final List<String> stateTypeOfStreamOneStatesFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamName, "state_type");
-    final List<String> stateTypeFromStreamTwoStates =
-        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, secondStreamName, "state_type");
+    final List<String> stateTypeOfStreamTwoStatesFromFirstSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamTwoName, "state_type");
     // It should be the same for stream1 and stream2
-    assertEquals(stateTypeFromStreamOneStates, expectedStateTypes);
-    assertEquals(stateTypeFromStreamTwoStates, expectedStateTypes);
+    assertEquals(stateTypeOfStreamOneStatesFromFirstSync, expectedStateTypesFromFirstSync);
+    assertEquals(stateTypeOfStreamTwoStatesFromFirstSync, expectedStateTypesFromFirstSync);
 
     // Create the expected ctids that we should see
-    final List<String> expectedCtids = List.of("(0,1)","(0,2)");
-    final List<String> ctidFromStreamOneStates =
+    final List<String> expectedCtidsFromFirstSync = List.of("(0,1)", "(0,2)");
+    final List<String> ctidFromStreamOneStatesFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamName, "ctid");
-    final List<String> ctidFromStreamTwoStates =
+    final List<String> ctidFromStreamTwoStatesFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamName, "ctid");
 
     // Verifying each element and its index to match.
-    // Only checking the first 2 elements as the last one is of standard state
-    assertEquals(ctidFromStreamOneStates.get(0), expectedCtids.get(0));
-    assertEquals(ctidFromStreamOneStates.get(1), expectedCtids.get(1));
-    assertEquals(ctidFromStreamTwoStates.get(0), expectedCtids.get(0));
-    assertEquals(ctidFromStreamTwoStates.get(1), expectedCtids.get(1));
+    // Only checking the first 2 elements since we have verified that the last state_type is "standard"
+    assertEquals(ctidFromStreamOneStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
+    assertEquals(ctidFromStreamOneStatesFromFirstSync.get(1), expectedCtidsFromFirstSync.get(1));
+    assertEquals(ctidFromStreamTwoStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
+    assertEquals(ctidFromStreamTwoStatesFromFirstSync.get(1), expectedCtidsFromFirstSync.get(1));
 
-    
-    System.out.println(mapper
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(actualFirstSyncState));
+    // Extract only state messages for each stream
+    final List<AirbyteStateMessage> streamOneStateMessagesFromFirstSync = extractStateMessage(messagesFromFirstSync, streamName);
+    final List<AirbyteStateMessage> streamTwoStateMessagesFromFirstSync = extractStateMessage(messagesFromFirstSync, streamTwoName);
+    // Extract the incremental states of each stream's first and second state message
+    final List<JsonNode> streamOneIncrementalStatesFromFirstSync =
+        List.of(streamOneStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
+            streamOneStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+    final JsonNode streamOneFinalStreamStateFromFirstSync = streamOneStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
-    final CtidStatus firstStreamCtidStatus = new CtidStatus()
-        .withStateType(StateType.CTID)
-        .withVersion(2L)
-        .withCtid("(0,0)")
-        .withRelationFilenode(456L);
+    final List<JsonNode> streamTwoIncrementalStatesFromFirstSync =
+        List.of(streamTwoStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
+            streamTwoStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+    final JsonNode streamTwoFinalStreamStateFromFirstSync = streamTwoStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
-    final DbStreamState secondStreamState =
-        new StandardStatus()
-            .withVersion(2L)
-            .withStateType(StateType.STANDARD)
-            .withStreamName(secondStreamName)
-            .withStreamNamespace(namespace)
-            .withCursorField(List.of(COL_ID))
-            .withCursor("40").withCursorRecordCount(1L);
+    // The incremental_state of each stream's first and second incremental states is expected
+    // to be identical to the stream_state of the final state message for each stream
+    assertEquals(streamOneIncrementalStatesFromFirstSync.get(0), streamOneFinalStreamStateFromFirstSync);
+    assertEquals(streamOneIncrementalStatesFromFirstSync.get(1), streamOneFinalStreamStateFromFirstSync);
+    assertEquals(streamTwoIncrementalStatesFromFirstSync.get(0), streamTwoFinalStreamStateFromFirstSync);
+    assertEquals(streamTwoIncrementalStatesFromFirstSync.get(1), streamTwoFinalStreamStateFromFirstSync);
 
-    final List<AirbyteStateMessage> streamStates = List.of(
-        new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withName(secondStreamName).withNamespace(namespace))
-                            .withStreamState(Jsons.jsonNode(secondStreamState))),
-        new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withName(firstStream.getName()).withNamespace(namespace))
-                            .withStreamState(Jsons.jsonNode(firstStreamCtidStatus))));
+    // Sync should work with a ctid state AND a standard cursor state from each stream
+    // Forcing a sync with
+    // - stream one state still being the first record read via CTID.
+    // - stream two state being the CTID state before the final emitted state before the cursor switch
+    final List<AirbyteMessage> messagesFromSecondSyncWithMixedStates = MoreIterators
+        .toList(source.read(config, configuredCatalog,
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
+                streamTwoStateMessagesFromFirstSync.get(1)))));
 
+    // Extract only state messages for each stream after second sync
+    final List<AirbyteStateMessage> streamOneStateMessagesFromSecondSync =
+        extractStateMessage(messagesFromSecondSyncWithMixedStates, streamOneName);
+    final List<String> stateTypeOfStreamOneStatesFromSecondSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamName, "state_type");
 
-    // new AirbyteCatalog().withStreams(List.of(
+    final List<AirbyteStateMessage> streamTwoStateMessagesFromSecondSync =
+        extractStateMessage(messagesFromSecondSyncWithMixedStates, streamTwoName);
+    final List<String> stateTypeOfStreamTwoStatesFromSecondSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, "state_type");
 
-    // // use the first stream created by getCatalog()
-    // getCatalog(namespace).getStreams().get(0))));
+    // Stream One states after the second sync are expected to have 2 stream states
+    // - 1 with Ctid state_type and 1 state that is of standard state type
+    assertEquals(2, streamOneStateMessagesFromSecondSync.size());
+    assertEquals(List.of("ctid", "standard"), stateTypeOfStreamOneStatesFromSecondSync);
 
-    // final String streamName2 = TABLE_NAME_COMPOSITE_PK;
-    // final String namespace = getDefaultNamespace();
-    // final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog(namespace,
-    // ImmutableList.of(streamName, streamName2));
-    // configuredCatalog.getStreams().forEach(airbyteStream -> {
-    // airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
-    // airbyteStream.setCursorField(List.of(COL_ID));
-    // airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
-    // });
-    //
-    // final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-    // .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
-    //
-    // final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
-    // .filter(r -> r.getType() == Type.STATE).findFirst();
-    // assertTrue(stateAfterFirstSyncOptional.isPresent());
-    //
-    // executeStatementReadIncrementallyTwice();
-    //
-    // final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
-    // .toList(source.read(config, configuredCatalog, extractState(stateAfterFirstSyncOptional.get())));
-    //
-    // assertEquals(2,
-    // (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
-    // final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
-    //
-    // setEmittedAtToNull(actualMessagesSecondSync);
-    //
-    // assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
-    // assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
-    // assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+    // Stream Two states after the second sync are expected to have 1 stream state
+    // - The state that is of standard state type
+    assertEquals(1, streamTwoStateMessagesFromSecondSync.size());
+    assertEquals(List.of("standard"), stateTypeOfStreamTwoStatesFromSecondSync);
+
+    // Add some data to each table and perform a third read.
+    // Expect to see all records be synced via standard method and not ctid
+
+    database.execute(ctx -> {
+      ctx.createStatement().execute(
+          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+              + "VALUES (4,'Hooper','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+              getFullyQualifiedTableName(streamOneName)));
+      ctx.createStatement().execute(
+          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+              + "VALUES (43, 'Iron Man', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+              streamTwoFullyQualifiedName));
+    });
+
+    final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
+        .toList(source.read(config, configuredCatalog,
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
+                streamTwoStateMessagesFromSecondSync.get(0)))));
+
+    // Extract only state messages, state type, and cursor for each stream after second sync
+    final List<AirbyteStateMessage> streamOneStateMessagesFromThirdSync =
+        extractStateMessage(messagesFromThirdSync, streamOneName);
+    final List<String> stateTypeOfStreamOneStatesFromThirdSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamName, "state_type");
+    final List<String> cursorOfStreamOneStatesFromThirdSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamName, "cursor");
+
+    final List<AirbyteStateMessage> streamTwoStateMessagesFromThirdSync =
+        extractStateMessage(messagesFromThirdSync, streamTwoName);
+    final List<String> stateTypeOfStreamTwoStatesFromThirdSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "state_type");
+    final List<String> cursorOfStreamTwoStatesFromThirdSync =
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "cursor");
+
+    // Both streams should now be synced via standard cursor and have updated max cursor values
+    // cursor: 4 for stream one
+    // cursor: 43 for stream two
+    assertEquals(1, streamOneStateMessagesFromThirdSync.size());
+    assertEquals(List.of("standard"), stateTypeOfStreamOneStatesFromThirdSync);
+    assertEquals(List.of("4"), cursorOfStreamOneStatesFromThirdSync);
+
+    assertEquals(1, streamTwoStateMessagesFromThirdSync.size());
+    assertEquals(List.of("standard"), stateTypeOfStreamTwoStatesFromThirdSync);
+    assertEquals(List.of("43"), cursorOfStreamTwoStatesFromThirdSync);
   }
 
   @Override
@@ -676,7 +699,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
    *
    * @throws Exception
    */
-  // @Test
+  @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
@@ -684,7 +707,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
-  // @Test
+  @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
@@ -692,7 +715,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
-  // @Test
+  @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus status = source.check(config);
@@ -700,7 +723,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
-  // @Test
+  @Test
   public void testCheckIncorrectPortFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     final AirbyteConnectionStatus status = source.check(config);
@@ -708,7 +731,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
-  // @Test
+  @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final AirbyteConnectionStatus status = source.check(config);
@@ -716,7 +739,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
-  // @Test
+  @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
     database.execute(connection -> connection.createStatement()
         .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
@@ -766,7 +789,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessages);
 
     final List<DbStreamState> expectedStreams = List.of(
-        new DbStreamState()
+        new StandardStatus().withStateType(StateType.STANDARD).withVersion(2L)
             .withStreamName(airbyteStream.getStream().getName())
             .withStreamNamespace(airbyteStream.getStream().getNamespace())
             .withCursorField(List.of(cursorField))
