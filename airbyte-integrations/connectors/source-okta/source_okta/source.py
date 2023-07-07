@@ -123,16 +123,34 @@ class GroupMembers(OktaStream):
     cursor_field = "id"
     primary_key = ["groupId", "id"]
     use_cache = True
+    reset_token = False
     min_id = "00u00000000000000000"
 
     def stream_slices(self, **kwargs):
         group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            self.reset_token = True
             yield {"group_id": group["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         group_id = stream_slice["group_id"]
         return f"groups/{group_id}/users"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.page_size}
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
+        if next_page_token:
+            latest_entry = next_page_token.get("after")
+        if self.reset_token:
+            latest_entry = self.min_id
+            self.reset_token = False
+        params["after"] = latest_entry
+        return params
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["groupId"] = stream_slice["group_id"]
