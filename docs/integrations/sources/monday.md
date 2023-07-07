@@ -39,6 +39,7 @@ The Monday supports full refresh syncs
 
 Several output streams are available from this source:
 
+* [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
 * [Items](https://developer.monday.com/api-reference/docs/items-queries)
 * [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
 * [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
