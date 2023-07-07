@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -136,6 +136,12 @@ class Requester(RequestOptionsProvider):
         Returns a mapping of keyword arguments to be used when creating the HTTP request.
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
+        """
+    
+    @abstractmethod
+    def send_request(self, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], List]:
+        """
+        Sends a request and returns the response
         """
 
     @property
