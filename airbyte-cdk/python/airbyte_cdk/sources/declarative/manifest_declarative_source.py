@@ -79,7 +79,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         check = self._source_config["check"]
         if "type" not in check:
             check["type"] = "CheckStream"
-        check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+        check_stream = self._constructor.create_component(
+            CheckStreamModel, check, dict(), emit_connector_builder_messages=self._emit_connector_builder_messages
+        )
         if isinstance(check_stream, ConnectionChecker):
             return check_stream
         else:
@@ -89,7 +91,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
 
         source_streams = [
-            self._constructor.create_component(DeclarativeStreamModel, stream_config, config)
+            self._constructor.create_component(
+                DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
+            )
             for stream_config in self._stream_configs(self._source_config)
         ]
 
