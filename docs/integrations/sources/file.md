@@ -5,9 +5,9 @@ This page contains the setup guide and reference information for the Files sourc
 ## Prerequisites
 
 - URL to access the file
-- Format
-- Reader options
-- Storage Providers
+- File Format
+- Storage Provider
+- Reader Options (optional)
 
 ## Setup guide
 
@@ -27,30 +27,32 @@ Setup through Airbyte Cloud will be exactly the same as the open-source setup, e
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
 <!-- /env:oss -->
 
-### Fields description
+### Set up the connector in Airbyte
 
-- For `Dataset Name` use the _name_ of the final table to replicate this file into (should include letters, numbers dash and underscores only).
-- For `File Format` use the _format_ of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs).
-- For `Reader Options` use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
-- For `URL` use the _URL_ path to access the file which should be replicated.
-- For `Storage Provider` use the _storage Provider_ or _Location_ of the file(s) which should be replicated.
-  - [Default] _Public Web_
-    - `User-Agent` set to active if you want to add User-Agent to requests
-  - _GCS: Google Cloud Storage_
-    - `Service Account JSON` In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href="https://cloud.google.com/iam/docs/service-accounts" target="_blank">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary.
-  - _S3: Amazon Web Services_
+1. From the Airbyte UI, click the **Sources** tab, then click **+ New source** and select **Files (CSV, JSON, Excel, Feather, Parquet)** from the list of available sources.
+2. Enter a **Source name** of your choosing.
+3. For **Dataset Name**: use the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+4. For **File Format**: use the _format_ of the file which should be replicated (Warning: some formats may be experimental, please refer to [this table of supported formats](#file-formats)).
+5. For **Storage Provider**: select the _Storage Provider_ or _Location_ of the file(s) which should be replicated from the dropdown menu, then configure the provider-specific fields as needed.
+
+#### Available providers and provider-specific configurations:
+  - **HTTPS: Public Web** [Default]
+    - `User-Agent`: Set to active if you want to add the User-Agent header to requests.
+  - **GCS: Google Cloud Storage**
+    - `Service Account JSON`: In order to access private Buckets stored on Google Cloud, this connector will need service account json credentials with the proper permissions as described <a href="https://cloud.google.com/iam/docs/service-accounts" target="_blank">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary and can be left blank.
+  - **S3: Amazon Web Services**
     - `AWS Access Key ID` In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
     - `AWS Secret Access Key`In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
-  - _AzBlob: Azure Blob Storage_
+  - **AzBlob: Azure Blob Storage**
     - `Storage Account` The globally unique name of the storage account that the desired blob sits within. See <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview" target="_blank">here</a> for more details.
     - `SAS Token` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a SAS (Shared Access Signature) token. If accessing publicly available data, this field is not necessary.
     - `Shared Key` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a storage account shared key (aka account key or access key). If accessing publicly available data, this field is not necessary.
-  - _SSH: Secure Shell_
+  - **SSH: Secure Shell**
     - `User` use _username_.
     - `Password` use _password_.
     - `Host` use a _host_.
     - `Port` use a _port_ for your host.
-  - _SCP: Secure copy protocol_
+  - **SCP: Secure copy protocol**
     - `User` use _username_.
     - `Password` use _password_.
     - `Host` use a _host_.
@@ -60,8 +62,14 @@ Setup through Airbyte Cloud will be exactly the same as the open-source setup, e
     - `Password` use _password_.
     - `Host` use a _host_.
     - `Port` use a _port_ for your host.
+  <!-- env:local -->
   - _Local Filesystem (limited)_
     - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
+  <!-- /env:local -->
+  
+6. For **URL**: use the _URL_ path to access the file which should be replicated.
+7. For **Reader Options**: use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
+8. Click **Set up source** and wait for the tests to complete.
 
 #### Provider Specific Information
 
@@ -94,9 +102,9 @@ For example, you can use the `{"orient" : "records"}` to change how orientation 
 
 If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
 
-    :::warning
-    This connector does not support syncing unstructured data files such as raw text, audio, or videos.
-    :::
+:::caution
+This connector does not support syncing unstructured data files such as raw text, audio, or videos.
+:::
 
 ## Supported sync modes
 
@@ -108,9 +116,9 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 | Replicate Folders (multiple Files)       | No         |
 | Replicate Glob Patterns (multiple Files) | No         |
 
-    :::info
-    This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
-    :::
+:::note
+This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
+:::
 
 ## File / Stream Compression
 
@@ -139,7 +147,7 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 | Format                | Supported? |
 | --------------------- | ---------- |
 | CSV                   | Yes        |
-| JSON                  | Yes        |
+| JSON/JSONL            | Yes        |
 | HTML                  | No         |
 | XML                   | No         |
 | Excel                 | Yes        |
