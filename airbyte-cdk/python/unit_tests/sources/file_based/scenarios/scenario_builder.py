@@ -34,11 +34,11 @@ class TestScenario:
             expected_catalog: Optional[Mapping[str, Any]],
             expected_logs: List[Mapping[str, Any]],
             expected_records: List[Mapping[str, Any]],
-            availability_strategy: AvailabilityStrategy,
-            discovery_policy: AbstractDiscoveryPolicy,
+            availability_strategy: Optional[AvailabilityStrategy],
+            discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
             parsers: Mapping[str, FileTypeParser],
-            stream_reader: AbstractFileBasedStreamReader,
+            stream_reader: Optional[AbstractFileBasedStreamReader],
             expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
@@ -163,7 +163,7 @@ class TestScenarioBuilder:
         self._discovery_policy = discovery_policy
         return self
 
-    def set_validation_policies(self, validation_policies: AbstractSchemaValidationPolicy) -> "TestScenarioBuilder":
+    def set_validation_policies(self, validation_policies: Mapping[str, AbstractSchemaValidationPolicy]) -> "TestScenarioBuilder":
         self._validation_policies = validation_policies
         return self
 
@@ -175,7 +175,7 @@ class TestScenarioBuilder:
         self._incremental_scenario_config = incremental_scenario_config
         return self
 
-    def set_expected_check_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
+    def set_expected_check_error(self, error: Optional[Type[Exception]], message: str) -> "TestScenarioBuilder":
         self._expected_check_error = error, message
         return self
 

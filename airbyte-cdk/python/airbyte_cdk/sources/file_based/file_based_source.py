@@ -31,8 +31,8 @@ class FileBasedSource(AbstractSource, ABC):
         catalog: Optional[ConfiguredAirbyteCatalog],
         availability_strategy: Optional[AvailabilityStrategy],
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Optional[Dict[str, FileTypeParser]] = None,
-        validation_policies: Dict[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
+        parsers: Optional[Mapping[str, FileTypeParser]] = None,
+        validation_policies: Mapping[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)

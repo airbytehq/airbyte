@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Optional, Mapping
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
+from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -22,13 +22,13 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 class InMemoryFilesSource(FileBasedSource):
     def __init__(
             self,
-            files,
-            file_type,
-            availability_strategy: AvailabilityStrategy,
-            discovery_policy: AbstractDiscoveryPolicy,
+            files: Mapping[str, Any],
+            file_type: str,
+            availability_strategy: Optional[AvailabilityStrategy],
+            discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
             parsers: Mapping[str, FileTypeParser],
-            stream_reader: AbstractFileBasedStreamReader,
+            stream_reader: Optional[AbstractFileBasedStreamReader],
             catalog: Optional[Mapping[str, Any]],
             file_write_options: Mapping[str, Any],
     ):
@@ -38,7 +38,7 @@ class InMemoryFilesSource(FileBasedSource):
             stream_reader,
             catalog=ConfiguredAirbyteCatalog(streams=catalog["streams"]) if catalog else None,
             availability_strategy=availability_strategy,
-            discovery_policy=discovery_policy,
+            discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
         )
@@ -49,7 +49,7 @@ class InMemoryFilesSource(FileBasedSource):
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
-    files: Mapping[str, dict]
+    files: Mapping[str, Mapping[str, Any]]
     file_type: str
     file_write_options: Optional[Mapping[str, Any]]
 
@@ -65,7 +65,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.StringIO(self._make_file_contents(file.uri))
 
-    def _make_file_contents(self, file_name: str):
+    def _make_file_contents(self, file_name: str) -> str:
         if self.file_type == "csv":
             return self._make_csv_file_contents(file_name)
         else:

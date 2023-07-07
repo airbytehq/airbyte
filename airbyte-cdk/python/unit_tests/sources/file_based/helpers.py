@@ -22,7 +22,7 @@ class EmptySchemaParser(CsvParser):
 
 class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
     @property
-    def max_n_files_for_schema_inference(self):
+    def max_n_files_for_schema_inference(self) -> int:
         return 1
 
 
