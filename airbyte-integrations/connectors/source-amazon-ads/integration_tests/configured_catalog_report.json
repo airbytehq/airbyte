@@ -12,6 +12,23 @@
           ["recordId"]
         ]
       },
+      "cursor_field": ["reportDate"],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+        "stream": {
+        "name": "sponsored_brands_v3_report_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [
+          ["profileId"],
+          ["recordType"],
+          ["reportDate"],
+          ["recordId"]
+        ]
+      },
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }

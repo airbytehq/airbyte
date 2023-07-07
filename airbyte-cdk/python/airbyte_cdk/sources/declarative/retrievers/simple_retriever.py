@@ -410,21 +410,38 @@ class SimpleRetriever(Retriever, HttpStream):
             slice_state = {}
 
         most_recent_record_from_slice = None
-        for record in self._read_pages(self.parse_records, stream_slice, slice_state):
-            if self.cursor:
-                if not most_recent_record_from_slice:
-                    most_recent_record_from_slice = record
-                else:
-                    most_recent_record_from_slice = (
-                        most_recent_record_from_slice
-                        if self.cursor.is_greater_than_or_equal(most_recent_record_from_slice, record)
-                        else record
-                    )
-            yield record
+        for stream_data in self._read_pages(self.parse_records, stream_slice, slice_state):
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
+            yield stream_data
 
         if self.cursor:
             self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
         return
+
+    def _get_most_recent_record(
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+    ) -> Optional[Record]:
+        if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
+            if not current_most_recent:
+                return record
+            else:
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
+        else:
+            return None
+
+    @staticmethod
+    def _extract_record(stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+        """
+        As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
+        to data to streamline the rest of the process.
+        """
+        if isinstance(stream_data, Record):
+            # Record is not part of `StreamData` but is the most common implementation of `Mapping[str, Any]` which is part of `StreamData`
+            return stream_data
+        elif isinstance(stream_data, (dict, Mapping)):
+            return Record(dict(stream_data), stream_slice)
+        elif isinstance(stream_data, AirbyteMessage) and stream_data.record:
+            return Record(stream_data.record.data, stream_slice)
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
