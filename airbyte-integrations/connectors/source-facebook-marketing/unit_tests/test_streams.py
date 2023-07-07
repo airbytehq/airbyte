@@ -76,15 +76,15 @@ def test_parse_call_rate_header():
         [AdsInsightsRegion, ["region"], ["action_type", "action_target_id", "action_destination"]],
     ],
 )
-def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns):
-    kwargs = {"source": None, "api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+def test_ads_insights_breakdowns(api, class_name, breakdowns, action_breakdowns):
+    kwargs = {"source": None, "api": api, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
     stream = class_name(**kwargs)
     assert stream.breakdowns == breakdowns
     assert stream.action_breakdowns == action_breakdowns
 
 
-def test_custom_ads_insights_breakdowns():
-    kwargs = {"source": None, "api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+def test_custom_ads_insights_breakdowns(api):
+    kwargs = {"source": None, "api": api, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
     stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)
     assert stream.breakdowns == ["mmm"]
     assert stream.action_breakdowns == ["action_destination"]
