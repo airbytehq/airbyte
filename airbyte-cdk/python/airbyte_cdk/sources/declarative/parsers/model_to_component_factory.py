@@ -103,7 +103,7 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRe
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
-from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository
@@ -477,6 +477,10 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
+        transformations = []
+        if model.transformations:
+            for transformation_model in model.transformations:
+                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         retriever = self._create_component_from_model(
             model=model.retriever,
             config=config,
@@ -484,8 +488,8 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
+            transformations=transformations,
         )
-
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
@@ -496,17 +500,12 @@ class ModelToComponentFactory:
                 options["name"] = model.name
             schema_loader = DefaultSchemaLoader(config=config, parameters=options)
 
-        transformations = []
-        if model.transformations:
-            for transformation_model in model.transformations:
-                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
             name=model.name,
             primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
-            transformations=transformations,
             config=config,
             parameters=model.parameters,
         )
@@ -769,11 +768,15 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
-    def create_record_selector(self, model: RecordSelectorModel, config: Config, **kwargs) -> RecordSelector:
+    def create_record_selector(
+        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs
+    ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
-        return RecordSelector(extractor=extractor, record_filter=record_filter, parameters=model.parameters)
+        return RecordSelector(
+            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters
+        )
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:
@@ -805,9 +808,10 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
+        transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config)
+        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
         cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None

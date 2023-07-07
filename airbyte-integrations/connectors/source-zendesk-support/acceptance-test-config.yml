@@ -31,6 +31,12 @@ acceptance_tests:
           # This stream is only available for enterprise accounts https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/
           - name: "audit_logs"
             bypass_reason: "no records"
+          - name: "post_comments"
+            bypass_reason: "not available in current subscription plan"
+          - name: "post_votes"
+            bypass_reason: "not available in current subscription plan"
+          - name: "post_comment_votes"
+            bypass_reason: "not available in current subscription plan"
   incremental:
     tests:
       - config_path: "secrets/config.json"
