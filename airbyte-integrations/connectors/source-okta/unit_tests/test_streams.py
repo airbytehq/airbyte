@@ -274,7 +274,7 @@ class TestStreamGroupMembers:
             "limit": 200,
             "after": "some_test_id",
         }
-        
+
     def test_group_members_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
     ):
