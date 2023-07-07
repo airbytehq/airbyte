@@ -49,6 +49,9 @@ acceptance_tests:
           updates:
             - name: assets/*/public_url
               bypass_reason: "Unstable data"
+          items_incremental:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -65,8 +68,18 @@ acceptance_tests:
           updates:
             - name: assets/*/public_url
               bypass_reason: "Unstable data"
+          items_incremental:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
   full_refresh:
     tests:
       - config_path: "secrets/config_api_token.json"
   incremental:
-    bypass_reason: "Incremental syncs are not supported on this connector."
+    tests:
+    - config_path: "secrets/config_api_token.json"
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        items_incremental: [ "updated_at" ]
+        activity_logs: [ "created_at_int" ]

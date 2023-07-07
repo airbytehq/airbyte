@@ -109,12 +109,15 @@ class MondayGraphqlRequester(HttpRequester):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        created_at = (object_arguments.get("stream_slice", dict()) or dict()).get("prior_state").get("created_at_int")
-        object_arguments.pop("stream_slice")
+        created_at = (object_arguments.get("stream_state", dict()) or dict()).get("created_at_int")
+        object_arguments.pop("stream_state")
 
         if created_at:
             created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+        # delete fields that will be created by extractor
+        for field in ["created_at_int", "pulse_id"]:
+            field_schema.pop(field)
         query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
@@ -139,8 +142,7 @@ class MondayGraphqlRequester(HttpRequester):
             query_builder = self._build_teams_query
         elif self.name == "activity_logs":
             page, sub_page = page if page else (None, None)
-            print(f"{stream_slice=} {stream_state=}")
-            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_slice=stream_slice)
+            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
         elif self.name == "items_incremental":
             page, sub_page = page if page else (None, None)
             if not stream_slice:

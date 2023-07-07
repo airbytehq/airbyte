@@ -6,9 +6,9 @@
         "name" : "items_incremental"
       },
       "stream_state" : {
-          "updated_at" : "2021-06-20T12:21:27Z",
+          "updated_at" : "2023-06-20T12:21:27Z",
           "activity_logs" : {
-            "created_at_int" : 1619041749
+            "created_at_int" : 1677263687
           }
       }
     }
@@ -20,7 +20,7 @@
         "name" : "activity_logs"
       },
       "stream_state" : {
-        "created_at_int" : 1619041749
+        "created_at_int" : 1677263687
       }
     }
   }
