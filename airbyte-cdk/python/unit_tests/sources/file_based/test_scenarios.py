@@ -143,13 +143,13 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
         assert_expected_logs_match_output(logs, expected_logs)
 
 
-def assert_expected_records_match_output(output: List[Dict[str, Any]], expected_output: List[Dict[str, Any]]) -> None:
+def assert_expected_records_match_output(output: List[Mapping[str, Any]], expected_output: List[Mapping[str, Any]]) -> None:
     for actual, expected in zip(output, expected_output):
         assert actual["record"]["data"] == expected["data"]
         assert actual["record"]["stream"] == expected["stream"]
 
 
-def assert_expected_logs_match_output(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]) -> None:
+def assert_expected_logs_match_output(logs: List[Mapping[str, Any]], expected_logs: List[Mapping[str, Any]]) -> None:
     for actual, expected in zip(logs, expected_logs):
         assert actual["log"]["level"] == expected["level"]
         assert actual["log"]["message"] == expected["message"]
@@ -190,7 +190,7 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapp
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
-        with pytest.raises(expected_exc):  # type: ignore
+        with pytest.raises(expected_exc):
             output = check(capsys, tmp_path, scenario)
             if expected_msg:
                 # expected_msg is a string. what's the expected value field?

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -27,22 +28,22 @@ class TestScenario:
             self,
             name: str,
             config: Mapping[str, Any],
-            files: Dict[str, Any],
+            files: Mapping[str, Any],
             file_type: str,
             expected_check_status: Optional[str],
-            expected_catalog: Optional[Dict[str, Any]],
-            expected_logs: List[Dict[str, Any]],
-            expected_records: List[Dict[str, Any]],
+            expected_catalog: Optional[Mapping[str, Any]],
+            expected_logs: List[Mapping[str, Any]],
+            expected_records: List[Mapping[str, Any]],
             availability_strategy: AvailabilityStrategy,
-            discovery_policy: Optional[AbstractDiscoveryPolicy],
-            validation_policies: Optional[Dict[str, AbstractSchemaValidationPolicy]],
-            parsers: Optional[Dict[str, FileTypeParser]],
-            stream_reader: Optional[AbstractFileBasedStreamReader],
-            expected_check_error: Tuple[Optional[Exception], Optional[str]],
+            discovery_policy: AbstractDiscoveryPolicy,
+            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
+            parsers: Mapping[str, FileTypeParser],
+            stream_reader: AbstractFileBasedStreamReader,
+            expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
-            file_write_options: Dict[str, Any]
+            file_write_options: Mapping[str, Any]
     ):
         self.name = name
         self.config = config
@@ -67,7 +68,7 @@ class TestScenario:
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
 
-    def validate(self):
+    def validate(self) -> None:
         assert self.name
         if not self.expected_catalog:
             return
@@ -77,8 +78,8 @@ class TestScenario:
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
         if not self.expected_catalog:
-            return
-        catalog = {"streams": []}
+            return None
+        catalog: Mapping[str, Any] = {"streams": []}
         for stream in self.expected_catalog["streams"]:
             catalog["streams"].append(
                 {
@@ -98,102 +99,106 @@ class TestScenario:
 
 
 class TestScenarioBuilder:
-    def __init__(self) -> "TestScenarioBuilder":
+    def __init__(self) -> None:
         self._name = ""
-        self._config = {}
-        self._files = {}
-        self._file_type = None
-        self._expected_check_status = None
-        self._expected_catalog = {}
-        self._expected_logs = {}
-        self._expected_records = {}
-        self._availability_strategy = None
-        self._discovery_policy = DefaultDiscoveryPolicy()
-        self._validation_policies = None
+        self._config: Mapping[str, Any] = {}
+        self._files: Mapping[str, Any] = {}
+        self._file_type: Optional[str] = None
+        self._expected_check_status: Optional[str] = None
+        self._expected_catalog: Mapping[str, Any] = {}
+        self._expected_logs: List[Mapping[str, Any]] = []
+        self._expected_records: List[Mapping[str, Any]] = []
+        self._availability_strategy: Optional[AvailabilityStrategy] = None
+        self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
+        self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
         self._parsers = default_parsers
-        self._stream_reader = None
-        self._expected_check_error = None, None
-        self._expected_discover_error = None, None
-        self._expected_read_error = None, None
-        self._incremental_scenario_config = None
-        self._file_write_options = {}
+        self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
+        self._expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
+        self._file_write_options: Mapping[str, Any] = {}
 
-    def set_name(self, name: str):
+    def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
         return self
 
-    def set_config(self, config: Mapping[str, Any]):
+    def set_config(self, config: Mapping[str, Any]) -> "TestScenarioBuilder":
         self._config = config
         return self
 
-    def set_files(self, files: Dict[str, Any]):
+    def set_files(self, files: Mapping[str, Any]) -> "TestScenarioBuilder":
         self._files = files
         return self
 
-    def set_file_type(self, file_type: str):
+    def set_file_type(self, file_type: str) -> "TestScenarioBuilder":
         self._file_type = file_type
         return self
 
-    def set_expected_check_status(self, expected_check_status: str):
+    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder":
         self._expected_check_status = expected_check_status
         return self
 
-    def set_expected_catalog(self, expected_catalog: Dict[str, Any]):
+    def set_expected_catalog(self, expected_catalog: Mapping[str, Any]) -> "TestScenarioBuilder":
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Dict[str, Any]):
+    def set_expected_logs(self, expected_logs: List[Mapping[str, Any]]) -> "TestScenarioBuilder":
         self._expected_logs = expected_logs
         return self
 
-    def set_expected_records(self, expected_records: List[Dict[str, Any]]):
+    def set_expected_records(self, expected_records: List[Mapping[str, Any]]) -> "TestScenarioBuilder":
         self._expected_records = expected_records
         return self
 
-    def set_parsers(self, parsers: AbstractDiscoveryPolicy):
+    def set_parsers(self, parsers: Mapping[str, FileTypeParser]) -> "TestScenarioBuilder":
         self._parsers = parsers
         return self
 
-    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy):
+    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy) -> "TestScenarioBuilder":
         self._availability_strategy = availability_strategy
         return self
 
-    def set_discovery_policy(self, discovery_policy: AbstractDiscoveryPolicy):
+    def set_discovery_policy(self, discovery_policy: AbstractDiscoveryPolicy) -> "TestScenarioBuilder":
         self._discovery_policy = discovery_policy
         return self
 
-    def set_validation_policies(self, validation_policies: AbstractSchemaValidationPolicy):
+    def set_validation_policies(self, validation_policies: AbstractSchemaValidationPolicy) -> "TestScenarioBuilder":
         self._validation_policies = validation_policies
         return self
 
-    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader):
+    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "TestScenarioBuilder":
         self._stream_reader = stream_reader
         return self
 
-    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig):
+    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
         self._incremental_scenario_config = incremental_scenario_config
         return self
 
-    def set_expected_check_error(self, error: Type[Exception], message: str):
+    def set_expected_check_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
         self._expected_check_error = error, message
         return self
 
-    def set_expected_discover_error(self, error: Type[Exception], message: str):
+    def set_expected_discover_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
         self._expected_discover_error = error, message
         return self
 
-    def set_expected_read_error(self, error: Type[Exception], message: str):
+    def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
         self._expected_read_error = error, message
         return self
 
-    def set_file_write_options(self, file_write_options: Dict[str, Any]):
+    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "TestScenarioBuilder":
         self._file_write_options = file_write_options
         return self
 
-    def copy(self):
+    def copy(self) -> "TestScenarioBuilder":
         return deepcopy(self)
 
-    def build(self):
+    def build(self) -> TestScenario:
+        if self._stream_reader is None:
+            raise ValueError("stream_reader is not set")
+        if self._file_type is None:
+            raise ValueError("file_type is not set")
         return TestScenario(
             self._name,
             self._config,
@@ -203,9 +208,9 @@ class TestScenarioBuilder:
             self._expected_catalog,
             self._expected_logs,
             self._expected_records,
-            self._availability_strategy,
+            self._availability_strategy or DefaultFileBasedAvailabilityStrategy(self._stream_reader),
             self._discovery_policy,
-            self._validation_policies,
+            self._validation_policies or {},
             self._parsers,
             self._stream_reader,
             self._expected_check_error,

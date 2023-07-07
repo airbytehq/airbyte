@@ -6,7 +6,7 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Mapping
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
@@ -26,11 +26,11 @@ class InMemoryFilesSource(FileBasedSource):
             file_type,
             availability_strategy: AvailabilityStrategy,
             discovery_policy: AbstractDiscoveryPolicy,
-            validation_policies: Dict[str, AbstractSchemaValidationPolicy],
-            parsers: Dict[str, FileTypeParser],
+            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
+            parsers: Mapping[str, FileTypeParser],
             stream_reader: AbstractFileBasedStreamReader,
-            catalog: Optional[Dict[str, Any]],
-            file_write_options: Dict[str, Any],
+            catalog: Optional[Mapping[str, Any]],
+            file_write_options: Mapping[str, Any],
     ):
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
         availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
@@ -49,9 +49,9 @@ class InMemoryFilesSource(FileBasedSource):
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
-    files: Dict[str, dict]
+    files: Mapping[str, dict]
     file_type: str
-    file_write_options: Optional[Dict[str, Any]]
+    file_write_options: Optional[Mapping[str, Any]]
 
     def get_matching_files(
         self,
