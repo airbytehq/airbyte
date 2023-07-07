@@ -20,7 +20,13 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 3600
         empty_streams:
+          - name: "application_fees"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: "application_fees_refunds"
+            bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "bank_accounts"
+            bypass_reason: "this stream can't be seeded in our sandbox account"
+          - name: "early_fraud_warnings"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_bank_accounts"
             bypass_reason: "This stream can't be seeded in our sandbox account"

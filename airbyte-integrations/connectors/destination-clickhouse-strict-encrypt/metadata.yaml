@@ -16,8 +16,10 @@ data:
   normalizationConfig:
     normalizationIntegrationType: clickhouse
     normalizationRepository: airbyte/normalization-clickhouse
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   supportsDbt: false
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

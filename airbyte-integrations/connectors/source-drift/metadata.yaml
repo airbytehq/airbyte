@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - driftapi.com
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
@@ -16,6 +11,13 @@ data:
   icon: drift.svg
   license: MIT
   name: Drift
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/drift
+  documentationUrl: https://docs.airbyte.com/integrations/sources/drift
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

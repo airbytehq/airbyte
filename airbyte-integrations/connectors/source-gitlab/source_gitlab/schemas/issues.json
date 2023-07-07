@@ -98,14 +98,30 @@
     "service_desk_reply_to": {
       "type": ["null", "string"]
     },
+    "author": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "author_id": {
       "type": ["null", "integer"]
+    },
+    "assignee": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "assignee_id": {
       "type": ["null", "integer"]
     },
+    "closed_by": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "closed_by_id": {
       "type": ["null", "integer"]
+    },
+    "milestone": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "milestone_id": {
       "type": ["null", "integer"]

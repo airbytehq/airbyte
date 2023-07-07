@@ -1,19 +1,21 @@
 data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d19ae824-e289-4b14-995a-0632eb46d246
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-google-directory
+  githubIssueLabel: source-google-directory
+  icon: googledirectory.svg
+  license: MIT
+  name: Google Directory
   registries:
     cloud:
       dockerImageTag: 0.1.3
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: api
-  connectorType: source
-  definitionId: d19ae824-e289-4b14-995a-0632eb46d246
-  dockerImageTag: 0.1.9
-  dockerRepository: airbyte/source-google-directory
-  githubIssueLabel: source-google-directory
-  icon: googledirectory.svg
-  license: MIT
-  name: Google Directory
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-directory
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-directory
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

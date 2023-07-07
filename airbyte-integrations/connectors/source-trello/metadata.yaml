@@ -2,20 +2,22 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-trello
   githubIssueLabel: source-trello
   icon: trello.svg
   license: MIT
   name: Trello
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/trello
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trello
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

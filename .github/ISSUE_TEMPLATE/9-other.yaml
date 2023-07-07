@@ -1,0 +1,16 @@
+name: 🤷 Others issues requests...
+description: Use this for whatever other issues you need to create an issue but don't have a specific category.
+labels: [needs-triage]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      description: Describe the topic with one or few words.
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant information
+      description: Please give any aditional information.

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
@@ -13,6 +8,14 @@ data:
   icon: postmark.svg
   license: MIT
   name: Postmark App
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -11,12 +11,14 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.0.17
   dockerRepository: airbyte/source-mssql-strict-encrypt
   githubIssueLabel: source-mssql
   icon: mssql.svg
   license: MIT
   name: Microsoft SQL Server (MSSQL)
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mssql
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

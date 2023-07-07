@@ -1,11 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerImageTag: 0.1.7
-      dockerRepository: airbyte/source-mongodb-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
@@ -15,6 +8,16 @@ data:
   icon: mongodb.svg
   license: MIT
   name: MongoDb
+  registries:
+    cloud:
+      dockerImageTag: 0.1.7
+      dockerRepository: airbyte/source-mongodb-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

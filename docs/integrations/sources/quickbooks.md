@@ -104,6 +104,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| `2.0.1` | 2023-05-28 | [26722](https://github.com/airbytehq/airbyte/pull/26722) | Change datatype for undisclosed amount field in payments |
 | `2.0.0` | 2023-04-11 | [25045](https://github.com/airbytehq/airbyte/pull/25045) | Fix datetime format, disable OAuth button in cloud       |
 | `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                      |
 | `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                |

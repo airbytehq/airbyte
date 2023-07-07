@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
@@ -13,6 +8,14 @@ data:
   icon: intruder.svg
   license: MIT
   name: Intruder
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/intruder
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

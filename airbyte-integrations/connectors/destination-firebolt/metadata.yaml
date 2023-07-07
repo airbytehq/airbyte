@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 18081484-02a5-4662-8dba-b270b582f321
@@ -13,7 +8,14 @@ data:
   icon: firebolt.svg
   license: MIT
   name: Firebolt
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/firebolt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/firebolt
   supportsDbt: true
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

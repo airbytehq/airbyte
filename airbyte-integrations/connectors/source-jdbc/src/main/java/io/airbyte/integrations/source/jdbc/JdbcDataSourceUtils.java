@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,6 +13,7 @@ import java.util.Objects;
 public class JdbcDataSourceUtils {
 
   public static String DEFAULT_JDBC_PARAMETERS_DELIMITER = "&";
+
   /**
    * Validates for duplication parameters
    *
@@ -17,7 +22,7 @@ public class JdbcDataSourceUtils {
    * @throws IllegalArgumentException
    */
   public static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                          final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -47,8 +52,9 @@ public class JdbcDataSourceUtils {
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of the default connection properties
    */
-  private static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  public static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     // NOTE that Postgres returns an empty map for some reason?
     return JdbcUtils.parseJdbcParameters(config, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER);
   };
+
 }

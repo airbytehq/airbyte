@@ -17,8 +17,10 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 ## Step 1: Set up Amazon Seller Partner
 
-[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
-[Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
+1. [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
+    - The application must be published as Amazon does not allow external parties such as Airbyte to access draft applications.
+    - If using the connector on Airbyte Cloud, the Redirect URL must be set to `https://cloud.airbyte.com/auth_flow`
+2. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
 
 ## Step 2: Set up the source connector in Airbyte
 
@@ -124,6 +126,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.2.0`  | 2023-05-23 | [\#22503](https://github.com/airbytehq/airbyte/pull/22503) | Enabled stream attribute customization from Source configuration                      |
 | `1.1.0`  | 2023-04-21 | [\#23605](https://github.com/airbytehq/airbyte/pull/23605) | Add FBA Reimbursement Report stream                                    |
 | `1.0.1`  | 2023-03-15 | [\#24098](https://github.com/airbytehq/airbyte/pull/24098) | Add Belgium Marketplace                                                                                                                                                             |
 | `1.0.0`  | 2023-03-13 | [\#23980](https://github.com/airbytehq/airbyte/pull/23980) | Make `app_id` required. Increase `end_date` gap up to 5 minutes from now for Finance streams. Fix connection check failure when trying to connect to Amazon Vendor Central accounts |

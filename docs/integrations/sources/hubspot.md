@@ -4,7 +4,11 @@ This page guides you through setting up the HubSpot source connector.
 
 ## Prerequisite
 
-You can use OAuth, API key, or Private App to authenticate your HubSpot account. If you choose to use OAuth or Private App, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+You can use OAuth or a Private App to authenticate your HubSpot account. 
+
+In Airbyte Cloud, we highly recommend you use OAuth and not Private App authentication as it significantly simplifies the setup process. 
+
+If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                                               |
 |:----------------------------|:-------------------------------------------------------------------------------------------------------------|
@@ -13,6 +17,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `contact_lists`             | `crm.objects.lists.read`                                                                                     |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
+| Custom CRM OBjects          | `crm.objects.custom.read`                                                                                    |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
@@ -22,6 +27,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `engagements_emails`        | `sales-email-read`                                                                                           |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
+| `goals`                     | `crm.objects.goals.read`                                                                              |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -38,12 +44,9 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
+6. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
-    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
-    :::note
-    Check the [performance considerations](#performance-considerations) before using an API key.
-    :::
+    - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).    
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -82,6 +85,7 @@ The HubSpot source connector supports the following streams:
 * [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 * [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
+* [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 * [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
@@ -92,6 +96,17 @@ The HubSpot source connector supports the following streams:
 * [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
 
+### Custom CRM Objects
+Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above. 
+
+If you setup your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+
+First you need to give the connector some additional permissions: 
+* **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects. 
+* **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your private app or oauth application and add the `crm.objects.custom.read` scope to your app's scopes. See Hubspot's instructions here. 
+
+Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing. 
+
 ### A note on the `engagements` stream
 
 Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
@@ -101,11 +116,6 @@ Objects in the `engagements` stream can have one of the following types: `note`,
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
-
-### New state strategy on Incremental streams
-
-Due to some data loss because an entity was updated during the synch, instead of updating the state by reading the latest record the state will be save with the initial synch time. With the proposed `state strategy`, it would capture all possible updated entities in incremental synch.
-
 
 ## Performance considerations
 
@@ -134,10 +144,15 @@ Now that you have set up the Hubspot source connector, check out the following H
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
 ## Changelog
-
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector  |
+| 0.8.4   | 2023-05-17 | [25667](https://github.com/airbytehq/airbyte/pull/26082) | Fixed bug with wrong parsing of boolean encoded like "false" parsed as True
+| 0.8.3   | 2023-05-31 | [26831](https://github.com/airbytehq/airbyte/pull/26831) | Remove authSpecification from connector specification in favour of advancedAuth                                                                            |
+| 0.8.2   | 2023-05-16 | [26418](https://github.com/airbytehq/airbyte/pull/26418) | Added custom availability strategy which catches permission errors from parent streams                                                                     |
+| 0.8.1   | 2023-05-29 | [26719](https://github.com/airbytehq/airbyte/pull/26719) | Handle issue when `state` value is literally `"" (empty str)`                                                                                              |
+| 0.8.0   | 2023-04-10 | [16032](https://github.com/airbytehq/airbyte/pull/16032) | Add new stream `Custom Object`                                                                                                                             |
+| 0.7.0   | 2023-04-10 | [24450](https://github.com/airbytehq/airbyte/pull/24450) | Add new stream `Goals`                                                                                                                                     |
+| 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector                                                                    |
 | 0.6.1   | 2023-04-10 | [21423](https://github.com/airbytehq/airbyte/pull/21423) | Update scope for `DealPipelines` stream to only `crm.objects.contacts.read`                                                                                |
 | 0.6.0   | 2023-04-07 | [24980](https://github.com/airbytehq/airbyte/pull/24980) | Add new stream `DealsArchived`                                                                                                                             |
 | 0.5.2   | 2023-04-07 | [24915](https://github.com/airbytehq/airbyte/pull/24915) | Fix field key parsing (replace whitespace with uderscore)                                                                                                  |

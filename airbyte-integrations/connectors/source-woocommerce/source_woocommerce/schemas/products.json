@@ -204,6 +204,83 @@
     },
     "meta_data": {
       "$ref": "meta_data.json"
+    },
+    "jetpack-related-posts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "url_meta": {
+            "type": ["null", "object"],
+            "properties": {
+              "origin": {
+                "type": ["null", "integer"]
+              },
+              "position": {
+                "type": ["null", "integer"]
+              }
+            }
+          },
+          "title": {
+           "type": ["null", "string"]
+          },
+          "author": {
+            "type": ["null", "string"]
+          },
+          "date": {
+            "type": ["null", "string"]
+          },
+          "format": {
+            "type": ["null", "boolean"]
+          },
+          "excerpt": {
+            "type": ["null", "string"]
+          },
+          "rel": {
+            "type": ["null", "string"]
+          },
+          "context": {
+            "type": ["null", "string"]
+          },
+          "block_context": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": ["null", "string"]
+              },
+              "link": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "img": {
+            "type": ["null", "object"],
+            "properties": {
+              "alt_text": {
+                "type": ["null", "string"]
+              },
+              "src": {
+                "type": ["null", "string"]
+              },
+              "width": {
+                "type": ["null", "integer"]
+              },
+              "height": {
+                "type": ["null", "integer"]
+              }
+            }
+          },
+          "classes": {
+            "type": ["null", "array"]
+          }
+        }
+      }
     }
   }
 }

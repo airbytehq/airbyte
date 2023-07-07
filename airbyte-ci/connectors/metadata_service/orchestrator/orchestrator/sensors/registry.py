@@ -1,6 +1,6 @@
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
 
-from orchestrator.utils.dagster_helpers import serialize_composite_etags_cursor
+from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
 def registry_updated_sensor(job, resources_def) -> SensorDefinition:
@@ -21,24 +21,23 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
         with build_resources(resources_def) as resources:
             context.log.info("Got resources for gcs_registry_updated_sensor")
 
-            etag_cursor = context.cursor or None
-            context.log.info(f"Old etag cursor: {etag_cursor}")
+            context.log.info(f"Old etag cursor: {context.cursor}")
 
-            # TODO (ben) stop using legacy resources when we remove the legacy registry
-            new_etag_cursor = serialize_composite_etags_cursor(
-                [resources.legacy_oss_registry_gcs_blob.etag, resources.legacy_cloud_registry_gcs_blob.etag]
+            new_etags_cursor = string_array_to_hash(
+                [resources.latest_oss_registry_gcs_blob.etag, resources.latest_cloud_registry_gcs_blob.etag]
             )
-            context.log.info(f"New etag cursor: {new_etag_cursor}")
+
+            context.log.info(f"New etag cursor: {new_etags_cursor}")
 
             # Note: ETAGs are GCS's way of providing a version number for a file
             # Another option would be to use the last modified date or MD5 hash
-            if etag_cursor == new_etag_cursor:
+            if context.cursor == new_etags_cursor:
                 context.log.info("No new registries in GCS bucket")
                 return SkipReason("No new registries in GCS bucket")
 
-            context.update_cursor(new_etag_cursor)
+            context.update_cursor(new_etags_cursor)
             context.log.info("New registries in GCS bucket")
-            run_key = f"updated_registries:{new_etag_cursor}"
+            run_key = f"updated_registries:{new_etags_cursor}"
             return RunRequest(run_key=run_key)
 
     return registry_updated_sensor_definition

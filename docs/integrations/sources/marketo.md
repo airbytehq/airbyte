@@ -83,6 +83,7 @@ This connector can be used to sync the following tables from Marketo:
 * **leads.** Contains info about your Marketo leads. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET).
 * **lists.** Contains info about your Marketo static lists. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET).
 * **programs.** Contains info about your Marketo programs. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET).
+* **segmentations.** Contains info about your Marketo programs. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET).
 
 ## Performance considerations
 
@@ -106,6 +107,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                       |
 |:---------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `1.1.0`  | 2023-04-18 | [23956](https://github.com/airbytehq/airbyte/pull/23956) | Add `Segmentations` Stream                                                                     |
 | `1.0.4`  | 2023-04-25 | [25481](https://github.com/airbytehq/airbyte/pull/25481) | Minor fix for bug caused  by `<=` producing additional API call when there is a single date slice                                                                     |
 | `1.0.3`  | 2023-02-13 | [22938](https://github.com/airbytehq/airbyte/pull/22938) | Specified date formatting in specification                                                                     |
 | `1.0.2`  | 2023-02-01 | [22203](https://github.com/airbytehq/airbyte/pull/22203) | Handle Null cursor values                                                                     |

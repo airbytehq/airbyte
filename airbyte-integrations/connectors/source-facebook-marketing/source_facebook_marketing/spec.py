@@ -102,6 +102,8 @@ class ConnectorConfig(BaseConfig):
             " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
+        pattern="^[0-9]+$",
+        pattern_descriptor="1234567890",
         examples=["111111111111111"],
     )
 

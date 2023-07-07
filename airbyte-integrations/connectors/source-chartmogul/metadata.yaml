@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.chartmogul.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
@@ -16,6 +11,14 @@ data:
   icon: chartmogul.svg
   license: MIT
   name: Chartmogul
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/chartmogul
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

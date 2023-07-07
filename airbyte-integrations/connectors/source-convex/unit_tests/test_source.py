@@ -40,6 +40,12 @@ def setup_responses():
         "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
         json=sample_shapes_resp,
     )
+    responses.add(
+        responses.GET,
+        "https://curious-giraffe-964.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
+        json={'code': "Error code", "message": "Error message"},
+        status=400
+    )
 
 
 @responses.activate
@@ -54,6 +60,20 @@ def test_check_connection(mocker):
             "access_key": "test_api_key",
         },
     ) == (True, None)
+
+
+@responses.activate
+def test_check_bad_connection(mocker):
+    setup_responses()
+    source = SourceConvex()
+    logger_mock = MagicMock()
+    assert source.check_connection(
+        logger_mock,
+        {
+            "deployment_url": "https://curious-giraffe-964.convex.cloud",
+            "access_key": "test_api_key",
+        },
+    ) == (False, "Connection to Convex via json_schemas endpoint failed: 400: Error code: Error message")
 
 
 @responses.activate

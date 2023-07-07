@@ -31,7 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class mimics the same functionality as {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
+ * This class mimics the same functionality as
+ * {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
  * placed into a commons package to be utilized across all ConsumerFactories
  */
 public class BigQueryStagingConsumerFactory {
@@ -39,13 +40,13 @@ public class BigQueryStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
   public AirbyteMessageConsumer create(final JsonNode config,
-                                      final ConfiguredAirbyteCatalog catalog,
-                                      final Consumer<AirbyteMessage> outputRecordCollector,
-                                      final BigQueryStagingOperations bigQueryGcsOperations,
-                                      final BufferCreateFunction onCreateBuffer,
-                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                      final Function<String, String> tmpTableNameTransformer,
-                                      final Function<String, String> targetTableNameTransformer) {
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final Consumer<AirbyteMessage> outputRecordCollector,
+                                       final BigQueryStagingOperations bigQueryGcsOperations,
+                                       final BufferCreateFunction onCreateBuffer,
+                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                       final Function<String, String> tmpTableNameTransformer,
+                                       final Function<String, String> targetTableNameTransformer) {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,
@@ -66,10 +67,10 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-      final Function<String, String> tmpTableNameTransformer,
-      final Function<String, String> targetTableNameTransformer) {
+                                                                                      final ConfiguredAirbyteCatalog catalog,
+                                                                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                                                      final Function<String, String> tmpTableNameTransformer,
+                                                                                      final Function<String, String> targetTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
@@ -105,11 +106,11 @@ public class BigQueryStagingConsumerFactory {
    * </p>
    *
    * @param bigQueryGcsOperations collection of Google Cloud Storage Operations
-   * @param writeConfigs          configuration settings used to describe how to write data and where it exists
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
   private OnStartFunction onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
@@ -131,16 +132,17 @@ public class BigQueryStagingConsumerFactory {
   }
 
   /**
-   * Flushes buffer data, writes to staging environment then proceeds to upload those same records to destination table
+   * Flushes buffer data, writes to staging environment then proceeds to upload those same records to
+   * destination table
    *
    * @param bigQueryGcsOperations collection of utility SQL operations
-   * @param writeConfigs          book keeping configurations for writing and storing state to write records
-   * @param catalog               configured Airbyte catalog
+   * @param writeConfigs book keeping configurations for writing and storing state to write records
+   * @param catalog configured Airbyte catalog
    */
   private FlushBufferFunction flushBufferFunction(
-      final BigQueryStagingOperations bigQueryGcsOperations,
-      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-      final ConfiguredAirbyteCatalog catalog) {
+                                                  final BigQueryStagingOperations bigQueryGcsOperations,
+                                                  final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                  final ConfiguredAirbyteCatalog catalog) {
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
@@ -173,7 +175,7 @@ public class BigQueryStagingConsumerFactory {
    * Tear down process, will attempt to clean out any staging area
    *
    * @param bigQueryGcsOperations collection of staging operations
-   * @param writeConfigs          configuration settings used to describe how to write data and where it exists
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,

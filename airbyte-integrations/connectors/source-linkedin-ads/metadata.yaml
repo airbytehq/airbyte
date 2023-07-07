@@ -2,20 +2,23 @@ data:
   allowedHosts:
     hosts:
       - api.linkedin.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 0.1.15
+  maxSecondsBetweenMessages: 21600
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-linkedin-ads
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
   license: MIT
   name: LinkedIn Ads
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

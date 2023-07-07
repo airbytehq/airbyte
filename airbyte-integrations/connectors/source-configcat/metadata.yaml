@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
@@ -13,6 +8,14 @@ data:
   icon: configcat.svg
   license: MIT
   name: ConfigCat
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/configcat
+  documentationUrl: https://docs.airbyte.com/integrations/sources/configcat
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

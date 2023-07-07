@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
@@ -12,6 +7,13 @@ data:
   githubIssueLabel: source-flexport
   license: MIT
   name: Flexport
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/flexport
+  documentationUrl: https://docs.airbyte.com/integrations/sources/flexport
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

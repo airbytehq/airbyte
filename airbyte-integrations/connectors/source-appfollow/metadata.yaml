@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
@@ -13,6 +8,13 @@ data:
   icon: appfollow.svg
   license: MIT
   name: Appfollow
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/appfollow
+  documentationUrl: https://docs.airbyte.com/integrations/sources/appfollow
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

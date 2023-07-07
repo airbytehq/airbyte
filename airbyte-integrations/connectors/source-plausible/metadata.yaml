@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
@@ -13,6 +8,14 @@ data:
   icon: plausible.svg
   license: MIT
   name: Plausible
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/plausible
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

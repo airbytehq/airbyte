@@ -59,7 +59,8 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
             .put("authorization", "login/password")
             .put(JdbcUtils.USERNAME_KEY, "user")
             .put(JdbcUtils.PASSWORD_KEY, "invalid_pass")
-            .build())), false);
+            .build())),
+        false);
   }
 
   @Override

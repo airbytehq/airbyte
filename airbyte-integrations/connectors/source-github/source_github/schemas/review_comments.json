@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "url": {
       "type": ["null", "string"]
@@ -45,11 +45,11 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "html_url": {
@@ -107,6 +107,12 @@
     },
     "side": {
       "type": ["null", "string"]
+    },
+    "subject_type": {
+      "type": ["null", "string"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
     }
   }
 }

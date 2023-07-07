@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2bf6c581-bec5-4e32-891d-de33036bd631
@@ -13,6 +8,14 @@ data:
   icon: oura.svg
   license: MIT
   name: Oura
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/oura
+  documentationUrl: https://docs.airbyte.com/integrations/sources/oura
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

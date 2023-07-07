@@ -38,7 +38,6 @@ class AbstractTestIncrementalFileStream(ABC):
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
         return {
-            FileStream.ab_additional_col: {"type": "object"},
             FileStream.ab_last_mod_col: {"type": "string", "format": "date-time"},
             FileStream.ab_file_name_col: {"type": "string"}
         }
@@ -149,12 +148,6 @@ class AbstractTestIncrementalFileStream(ABC):
 
             assert all([len(r.keys()) == total_num_columns for r in records])
             assert len(records) == num_records
-
-            # check additional properties included as expected if any exist
-            if (user_schema is not None) and (expected_columns != set(user_schema.keys())):
-                for additional_property in expected_columns.difference(set(user_schema.keys())):
-                    # since we can't be dynamically aware of which records should have which additional props, we just any() check here
-                    assert any([additional_property in r[FileStream.ab_additional_col].keys() for r in records])
 
             # returning state by simulating call to get_updated_state() with final record so we can test incremental
             return fs.get_updated_state(current_stream_state=current_state, latest_record=records[-1])

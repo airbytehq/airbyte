@@ -68,6 +68,11 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
   }
 
   @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
+  }
+
+  @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     // Populate global state
     final AirbyteGlobalState globalState = new AirbyteGlobalState();

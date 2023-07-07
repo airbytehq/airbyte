@@ -27,11 +27,13 @@ class GoogleSearchConsole(HttpStream, ABC):
         site_urls: list,
         start_date: str,
         end_date: str,
+        data_state: str = "final",
     ):
         super().__init__(authenticator=authenticator)
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
+        self._data_state = data_state
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:
@@ -139,6 +141,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                         "search_type": search_type,
                         "start_date": next_start.to_date_string(),
                         "end_date": next_end.to_date_string(),
+                        "data_state": self._data_state,
                     }
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
                     next_start = next_end + pendulum.Duration(days=1)
@@ -185,6 +188,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "aggregationType": "auto",
             "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
+            "dataState": stream_slice.get("data_state"),
         }
         return data
 

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
@@ -13,6 +8,14 @@ data:
   icon: coingeckocoins.svg
   license: MIT
   name: CoinGecko Coins
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

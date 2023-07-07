@@ -207,7 +207,7 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
-#### Step 3: Create replication slot​
+#### Step 2: Create replication slot​
 
 Airbyte currently supports pgoutput plugin only. To create a replication slot called `airbyte_slot` using pgoutput, run:
 
@@ -215,7 +215,7 @@ Airbyte currently supports pgoutput plugin only. To create a replication slot ca
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
-#### Step 4: Create publications and replication identities for tables​
+#### Step 3: Create publications and replication identities for tables​
 
 For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
 
@@ -248,7 +248,7 @@ Also, the publication should include all the tables and only the tables that nee
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 5: [Optional] Set up initial waiting time
+#### Step 4: [Optional] Set up initial waiting time
 
 :::warning
 This is an advanced feature. Use it if absolutely necessary.
@@ -263,7 +263,7 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
-#### Step 6: Set up the Postgres source connector
+#### Step 5: Set up the Postgres source connector
 
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
@@ -399,6 +399,11 @@ Some larger tables may encounter an error related to the temporary file size lim
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.33  | 2023-06-01 | [26873](https://github.com/airbytehq/airbyte/pull/26873) | Add prepareThreshold=0 to JDBC url to mitigate PGBouncer prepared statement [X] already exists.                                                                            |
+| 2.0.32  | 2023-05-31 | [26810](https://github.com/airbytehq/airbyte/pull/26810) | Remove incremental sync estimate from Postgres to increase performance.                                                                                                    |
+| 2.0.31  | 2023-05-25 | [26633](https://github.com/airbytehq/airbyte/pull/26633) | Collect and log information related to full vacuum operation in db                                                                                                         |
+| 2.0.30  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473) | CDC : Limit queue size                                                                                                                                                     |
+| 2.0.29  | 2023-05-18 | [25898](https://github.com/airbytehq/airbyte/pull/25898) | Translate Numeric values without decimal, e.g: NUMERIC(38,0), as BigInt instead of Double                                                                                  |
 | 2.0.28  | 2023-04-27 | [25401](https://github.com/airbytehq/airbyte/pull/25401) | CDC : Upgrade Debezium to version 2.2.0                                                                                                                                    |
 | 2.0.27  | 2023-04-26 | [24971](https://github.com/airbytehq/airbyte/pull/24971) | Emit stream status updates                                                                                                                                                 |
 | 2.0.26  | 2023-04-26 | [25560](https://github.com/airbytehq/airbyte/pull/25560) | Revert some logging changes                                                                                                                                                |

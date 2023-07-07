@@ -9,9 +9,12 @@ from typing import Any, Iterator, List, Mapping, MutableMapping
 
 import backoff
 import pendulum
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import ServerError, TooManyRequests
+from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
@@ -44,8 +47,16 @@ class GoogleAds:
         # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
         # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
         credentials["use_proto_plus"] = True
-        self.client = GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+        self.client = self.get_google_ads_client(credentials)
         self.ga_service = self.client.get_service("GoogleAdsService")
+
+    @staticmethod
+    def get_google_ads_client(credentials) -> GoogleAdsClient:
+        try:
+            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+        except exceptions.RefreshError as e:
+            message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
 
     @backoff.on_exception(
         backoff.expo,

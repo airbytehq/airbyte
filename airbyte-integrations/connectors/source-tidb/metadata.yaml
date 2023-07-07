@@ -3,11 +3,6 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
@@ -17,6 +12,14 @@ data:
   icon: tidb.svg
   license: MIT
   name: TiDB
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/tidb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

@@ -10,6 +10,7 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
@@ -22,6 +23,7 @@ from source_hubspot.streams import (
     EngagementsTasks,
     Forms,
     FormSubmissions,
+    Goals,
     LineItems,
     MarketingEmails,
     Owners,
@@ -94,6 +96,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Forms, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (FormSubmissions, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (MarketingEmails, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -112,7 +115,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
-                    } | cursor_value
+                    }
+                    | cursor_value
                 ],
             }
         }
@@ -227,21 +231,9 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
         {
             "json": {
                 stream.data_field: [
-                    {
-                        "id": "test_id_1",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": "2023-01-30T23:46:36.287Z"
-                    },
-                    {
-                        "id": "test_id_2",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": latest_cursor_value
-                    },
-                    {
-                        "id": "test_id_3",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": "2023-02-20T23:46:36.287Z"
-                    },
+                    {"id": "test_id_1", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-01-30T23:46:36.287Z"},
+                    {"id": "test_id_2", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": latest_cursor_value},
+                    {"id": "test_id_3", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-02-20T23:46:36.287Z"},
                 ],
             }
         }
@@ -249,10 +241,7 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
     properties_response = [
         {
             "json": [
-                {"name": property_name, "type": "string",
-                 "createdAt": "2023-01-30T23:46:24.355Z",
-                 "updatedAt": "2023-01-30T23:46:36.287Z"
-                 }
+                {"name": property_name, "type": "string", "createdAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
@@ -264,3 +253,116 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
 
     list(stream.read_records(SyncMode.incremental))
     assert stream.state == {stream.cursor_field: pendulum.parse(latest_cursor_value).to_rfc3339_string()}
+
+
+@pytest.mark.parametrize(
+    "state, record, expected",
+    [
+        ({"updatedAt": ""}, {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"}, (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
+        ({"updatedAt": "2023-01-30T23:46:36.287000+00:00"}, {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"}, (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
+    ],
+    ids=[
+        "Empty Sting in state + new record",
+        "State + old record",
+    ]
+)
+def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
+    stream = Forms(**common_params)
+    stream.state = state
+    # overcome the availability strartegy issues by mocking the responses
+    # A.K.A: not related to the test at all, but definetely required.
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "CreatedAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    requests_mock.register_uri("GET", stream.url, json=record)
+    requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
+    # end of mocking `availability strategy`
+
+    result = stream.filter_by_state(stream.state, record)
+    assert result == expected[0]
+    assert stream.state == expected[1]
+
+
+@pytest.fixture(name="custom_object_schema")
+def custom_object_schema_fixture():
+    return {
+        "labels": {"this": "that"},
+        "requiredProperties": ["name"],
+        "searchableProperties": ["name"],
+        "primaryDisplayProperty": "name",
+        "secondaryDisplayProperties": [],
+        "archived": False,
+        "restorable": True,
+        "metaType": "PORTAL_SPECIFIC",
+        "id": "7232155",
+        "fullyQualifiedName": "p19936848_Animal",
+        "createdAt": "2022-06-17T18:40:27.019Z",
+        "updatedAt": "2022-06-17T18:40:27.019Z",
+        "objectTypeId": "2-7232155",
+        "properties": [
+            {
+                "name": "name",
+                "label": "Animal name",
+                "type": "string",
+                "fieldType": "text",
+                "description": "The animal name.",
+                "groupName": "animal_information",
+                "options": [],
+                "displayOrder": -1,
+                "calculated": False,
+                "externalOptions": False,
+                "hasUniqueValue": False,
+                "hidden": False,
+                "hubspotDefined": False,
+                "modificationMetadata": {"archivable": True, "readOnlyDefinition": True, "readOnlyValue": False},
+                "formField": True,
+            }
+        ],
+        "associations": [],
+        "name": "animals",
+    }
+
+
+@pytest.fixture(name="expected_custom_object_json_schema")
+def expected_custom_object_json_schema():
+    return {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "additionalProperties": True,
+        "properties": {
+            "id": {"type": ["null", "string"]},
+            "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+            "archived": {"type": ["null", "boolean"]},
+            "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
+        },
+    }
+
+
+def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
+):
+    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
+
+    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
+    json_schema = stream.get_json_schema()
+
+    assert json_schema == expected_custom_object_json_schema
+    assert not adapter.called
+
+
+def test_custom_object_stream_calls_hubspot_to_get_json_schema(
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
+):
+    stream = CustomObject(entity="animals", schema=None, **common_params)
+
+    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
+    json_schema = stream.get_json_schema()
+    assert json_schema == expected_custom_object_json_schema
+    assert adapter.called

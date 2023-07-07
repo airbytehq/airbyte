@@ -13,11 +13,13 @@ from dagster._core.storage.file_manager import (
     check_file_like_obj,
 )
 
+from orchestrator.config import get_public_url_for_gcs_file
+
 
 class PublicGCSFileHandle(GCSFileHandle):
     @property
     def public_url(self):
-        return f"https://storage.googleapis.com/{self.gcs_bucket}/{self.gcs_key}"
+        return get_public_url_for_gcs_file(self.gcs_bucket, self.gcs_key)
 
 
 class ContentTypeAwareGCSFileManager(GCSFileManager):
@@ -49,7 +51,13 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
         bucket_obj = self._client.bucket(self._gcs_bucket)
         blob = bucket_obj.blob(gcs_key)
+
+        # Set Cache-Control header to no-cache to avoid caching issues
+        # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
+        # and the next time we try to download it, we will get the stale version
+        blob.cache_control = "no-cache"
         blob.content_type = self.get_content_type(ext)
+
         blob.upload_from_file(file_obj)
         return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 

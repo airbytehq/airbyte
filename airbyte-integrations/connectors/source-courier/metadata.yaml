@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
@@ -13,6 +8,14 @@ data:
   icon: courier.svg
   license: MIT
   name: Courier
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/courier
+  documentationUrl: https://docs.airbyte.com/integrations/sources/courier
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

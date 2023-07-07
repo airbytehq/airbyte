@@ -21,7 +21,7 @@ properties:
       - dockerRepository
       - dockerImageTag
       - license
-      - supportUrl
+      - documentationUrl
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
@@ -48,11 +48,21 @@ properties:
         type: boolean
       license:
         type: string
-      supportUrl:
+      documentationUrl:
         type: string
         format: uri
       githubIssueLabel:
         type: string
+      maxSecondsBetweenMessages:
+        description: Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached
+        type: integer
+      releaseDate:
+        description: The date when this connector was first released, in yyyy-mm-dd format.
+        type: string
+        format: date
+      protocolVersion:
+        type: string
+        description: the Airbyte Protocol version supported by the connector
       connectorSubtype:
         type: string
         enum:
@@ -69,7 +79,11 @@ properties:
           - beta
           - generally_available
           - source
-
+      tags:
+        type: array
+        description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
+        items:
+          type: string
       registries:
         anyOf:
           - type: object

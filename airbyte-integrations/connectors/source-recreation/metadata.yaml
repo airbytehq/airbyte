@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 25d7535d-91e0-466a-aa7f-af81578be277
@@ -13,6 +8,14 @@ data:
   icon: recreation.svg
   license: MIT
   name: Recreation
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/recreation
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

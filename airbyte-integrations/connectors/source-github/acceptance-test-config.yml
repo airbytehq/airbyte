@@ -4,6 +4,8 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_github/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.5.0"
   connection:
     tests:
     - config_path: "secrets/config.json"
@@ -15,7 +17,11 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.4.8"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.4.8"
   basic_read:
     tests:
     - config_path: "secrets/config.json"
@@ -28,6 +34,11 @@ acceptance_tests:
       - name: "events"
         bypass_reason: "Only events created within the past 90 days can be showed"
       ignored_fields:
+        workflows:
+        - name: created_at
+          bypass_reason: value may be returned in different time zones
+        - name: updated_at
+          bypass_reason: value may be returned in different time zones
         workflow_jobs:
         - name: steps/*/started_at
           bypass_reason: "depend on changing data"
@@ -67,7 +78,6 @@ acceptance_tests:
           bypass_reason: "fast changing data"
         - name: watchers
           bypass_reason: "fast changing data"
-      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"

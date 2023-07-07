@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
@@ -13,6 +8,13 @@ data:
   icon: coda.svg
   license: MIT
   name: Coda
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/coda
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coda
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

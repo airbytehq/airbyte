@@ -4,6 +4,7 @@
 import pathlib
 
 import pytest
+import json
 import yaml
 from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
@@ -11,74 +12,127 @@ from pydantic import ValidationError
 from metadata_service.constants import METADATA_FILE_NAME
 
 
+def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
+    return "exists" in image_name and "exists" in version
+
+
+def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
+    # Mock dockerhub
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
+
+    # Mock GCS
+    service_account_json = '{"type": "service_account"}'
+    mocker.patch.dict("os.environ", {"GCS_CREDENTIALS": service_account_json})
+    mock_credentials = mocker.Mock()
+    mock_storage_client = mocker.Mock()
+
+    latest_blob_exists = latest_blob_md5_hash is not None
+    version_blob_exists = version_blob_md5_hash is not None
+
+    mock_version_blob = mocker.Mock(exists=mocker.Mock(return_value=version_blob_exists), md5_hash=version_blob_md5_hash)
+    mock_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=latest_blob_exists), md5_hash=latest_blob_md5_hash)
+    mock_bucket = mock_storage_client.bucket.return_value
+    mock_bucket.blob.side_effect = [mock_version_blob, mock_latest_blob]
+
+    mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
+    mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
+
+    # Mock md5 hash
+    mocker.patch.object(gcs_upload, "compute_gcs_md5", mocker.Mock(return_value=local_file_md5_hash))
+
+    return {
+        "mock_credentials": mock_credentials,
+        "mock_storage_client": mock_storage_client,
+        "mock_bucket": mock_bucket,
+        "mock_version_blob": mock_version_blob,
+        "mock_latest_blob": mock_latest_blob,
+        "service_account_json": service_account_json,
+    }
+
+
 @pytest.mark.parametrize(
-    "version_blob_exists, version_blob_etag, latest_blob_etag",
+    "version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash",
     [
-        pytest.param(False, "same_etag", "different_etag", id="Version blob does not exists: Version and latest blob should be uploaded."),
+        pytest.param(None, "same_md5_hash", "same_md5_hash", id="Version blob does not exist: Version blob should be uploaded."),
+        pytest.param("same_md5_hash", None, "same_md5_hash", id="Latest blob does not exist: Latest blob should be uploaded."),
+        pytest.param(None, None, "same_md5_hash", id="Latest blob and Version blob does not exist: both should be uploaded."),
         pytest.param(
-            False,
-            "same_etag",
-            "same_etag",
-            id="Version blob does not exists but etags are equal: Version blob should be uploaded but latest should not.",
+            "different_md5_hash", "same_md5_hash", "same_md5_hash", id="Version blob does not match: Version blob should be uploaded."
         ),
-        pytest.param(True, "same_etag", "same_etag", id="Version exists and etags are equal: no upload should happen."),
         pytest.param(
-            True, "same_etag", "different_etag", id="Version exists but latest etag is different: latest blob should be uploaded."
+            "same_md5_hash",
+            "same_md5_hash",
+            "same_md5_hash",
+            id="Version blob and Latest blob match: no upload should happen.",
+        ),
+        pytest.param(
+            "same_md5_hash", "different_md5_hash", "same_md5_hash", id="Latest blob does not match: Latest blob should be uploaded."
+        ),
+        pytest.param(
+            "same_md5_hash",
+            "same_md5_hash",
+            "different_md5_hash",
+            id="Latest blob and Version blob does not match: both should be uploaded.",
         ),
     ],
 )
-def test_upload_metadata_to_gcs_valid_metadata(mocker, valid_metadata_yaml_files, version_blob_exists, version_blob_etag, latest_blob_etag):
+def test_upload_metadata_to_gcs_valid_metadata(
+    mocker, valid_metadata_yaml_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash
+):
+    mocks = setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash)
+
     metadata_file_path = pathlib.Path(valid_metadata_yaml_files[0])
     metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
     expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
     expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
 
-    mock_credentials = mocker.Mock()
-    mock_storage_client = mocker.Mock()
-
-    mock_version_blob = mocker.Mock(exists=mocker.Mock(return_value=version_blob_exists), etag=version_blob_etag)
-    mock_latest_blob = mocker.Mock(etag=latest_blob_etag)
-    mock_bucket = mock_storage_client.bucket.return_value
-    mock_bucket.blob.side_effect = [mock_version_blob, mock_latest_blob]
-
-    mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_file", mocker.Mock(return_value=mock_credentials))
-    mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
-    mocker.patch.object(gcs_upload, "validate_metadata_images_in_dockerhub", mocker.Mock(return_value=(True, None)))
+    latest_blob_exists = latest_blob_md5_hash is not None
+    version_blob_exists = version_blob_md5_hash is not None
 
     # Call function under tests
 
     uploaded, blob_id = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",
         metadata_file_path,
-        "my_service_account_path",
     )
 
     # Assertions
 
-    gcs_upload.service_account.Credentials.from_service_account_file.assert_called_with("my_service_account_path")
-    mock_storage_client.bucket.assert_called_with("my_bucket")
-    mock_bucket.blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
-    assert blob_id == mock_version_blob.id
+    gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
+    mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
+    mocks["mock_bucket"].blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
+    assert blob_id == mocks["mock_version_blob"].id
 
     if not version_blob_exists:
-        mock_version_blob.upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
-    else:
-        mock_version_blob.upload_from_filename.assert_not_called()
-        assert not uploaded
 
-    if version_blob_etag != latest_blob_etag:
-        mock_latest_blob.upload_from_filename.assert_called_with(str(metadata_file_path))
+    if not latest_blob_exists:
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
+        assert uploaded
+
+    if version_blob_md5_hash != local_file_md5_hash:
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
+        assert uploaded
+
+    if latest_blob_md5_hash != local_file_md5_hash:
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
+        assert uploaded
 
 
 def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
-    metadata_file_path = pathlib.Path(invalid_metadata_yaml_files[0])
-    with pytest.raises(ValidationError):
-        gcs_upload.upload_metadata_to_gcs(
-            "my_bucket",
-            metadata_file_path,
-            "my_service_account_path",
-        )
+    for invalid_metadata_file in invalid_metadata_yaml_files:
+        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        try:
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+            )
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}"
+        except (ValueError, StopIteration):
+            continue
+        except Exception as e:
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
@@ -87,5 +141,20 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            "my_service_account_path",
         )
+
+
+def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
+    setup_upload_mocks(mocker, None, None, "new_md5_hash")
+
+    # Test that all invalid metadata files throw a ValueError
+    for invalid_metadata_file in invalid_metadata_upload_files:
+        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        try:
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+            )
+            assert False, f"Expected ValueError for: {invalid_metadata_file}"
+        except (ValueError, StopIteration):
+            continue

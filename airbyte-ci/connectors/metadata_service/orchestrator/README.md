@@ -1,4 +1,4 @@
-# Connector Orchestrator (WIP)
+# Connector Orchestrator
 This is the Orchestrator for Airbyte metadata built on Dagster.
 
 
@@ -53,12 +53,13 @@ To create a development bucket:
     - Storage Object Admin
     - Storage Object Creator
     - Storage Object Viewer
-2. Create a GCS bucket
+2. Create a PUBLIC GCS bucket
 3. Add the service account as a member of the bucket with the following permissions:
     - Storage Admin
     - Storage Object Admin
     - Storage Object Creator
     - Storage Object Viewer
+
 4. Add the following environment variables to your `.env` file:
     - `METADATA_BUCKET`
     - `GCS_CREDENTIALS`
@@ -126,3 +127,32 @@ dagster-cloud config
 cd orchestrator
 DAGSTER_CLOUD_API_TOKEN=<YOU-DAGSTER-CLOUD-TOKEN> airbyte-ci metadata deploy orchestrator
 ```
+
+# Using the Orchestrator to create a Connector Registry for Development
+The orchestrator can be used to create a connector registry for development purposes.
+
+## Setup
+First you will need to setup the orchestrator as described above.
+
+Then you will want to do the following
+
+### 1. Mirror the production bucket
+Use the Google Cloud Console to mirror the production bucket (prod-airbyte-cloud-connector-metadata-service) to your development bucket.
+
+[Docs](https://cloud.google.com/storage-transfer/docs/cloud-storage-to-cloud-storage)
+
+### 2. Upload any local metadata files you want to test changes with
+```bash
+# assuming your terminal is in the same location as this readme
+cd ../lib
+export GCS_CREDENTIALS=`cat /path/to/gcs_credentials.json`
+poetry run metadata_service upload <PATH TO METADATA FILE> <NAME OF YOUR BUCKET>
+```
+
+### 3. Generate the registry
+```bash
+poetry run dagster dev
+open http://localhost:3000
+```
+
+And run the `generate_registry` job

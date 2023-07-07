@@ -6,6 +6,10 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
+:::info
+Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Google Cloud Storage pricing guide](https://cloud.google.com/storage/pricing).
+:::
+
 ### Sync overview
 
 #### Features
@@ -237,6 +241,8 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request                                                | Subject |
 |:--------| :--- |:------------------------------------------------------------| :--- |
+| 0.3.0   | 2023-04-28 | [#25570](https://github.com/airbytehq/airbyte/pull/25570)   | Fix: all integer schemas should be converted to Avro longs                                                                                           |
+| 0.2.17  | 2023-04-27 | [#25346](https://github.com/airbytehq/airbyte/pull/25346)   | Internal code cleanup                                                                                                                                |
 | 0.2.16  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)   | S3-Parquet: added handler to process null values in arrays                                                                                           |
 | 0.2.15  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)   | Changed S3 Avro type from Int to Long                                                                                                                |
 | 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682)  | Add support for buckets with Customer-Managed Encryption Key                                                               |

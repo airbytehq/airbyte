@@ -36,6 +36,7 @@ public interface ProcessFactory {
    * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
    * @param jobMetadata Job metadata that will be passed to the created process as environment
    *        variables.
+   * @param additionalEnvironmentVariables
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
    * @throws TestHarnessException
@@ -54,6 +55,7 @@ public interface ProcessFactory {
                  final Map<String, String> labels,
                  final Map<String, String> jobMetadata,
                  final Map<Integer, Integer> portMapping,
+                 final Map<String, String> additionalEnvironmentVariables,
                  final String... args)
       throws TestHarnessException;
 

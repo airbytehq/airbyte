@@ -27,6 +27,7 @@ jobs:
             build-connector
             publish-connector
             publish
+            legacy-publish
             publish-external
             gke-kube-test
             run-specific-test

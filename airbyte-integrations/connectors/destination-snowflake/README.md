@@ -24,17 +24,16 @@
 
 Put the contents of the following LastPass secrets into corresponding files under the `secrets` directory:
 
-| LastPass Secret | File |
-| --- | --- |
-| `destination snowflake - test creds (secrets/config.json)` | `secrets/config.json` |
-| `destination snowflake - insert test creds (secrets/insert_config.json)` | `secrets/insert_config.json` |
-| `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)` | `secrets/internal_staging_config.json` |
-| `destination snowflake - internal staging key pair (secrets/config_key_pair.json)` | `secrets/config_key_pair.json` |
+| LastPass Secret                                                                                        | File                                     |
+|--------------------------------------------------------------------------------------------------------|------------------------------------------|
+| `destination snowflake - test creds (secrets/config.json)`                                             | `secrets/config.json`                    |
+| `destination snowflake - insert test creds (secrets/insert_config.json)`                               | `secrets/insert_config.json`             |
+| `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)`           | `secrets/internal_staging_config.json`   |
+| `destination snowflake - internal staging key pair (secrets/config_key_pair.json)`                     | `secrets/config_key_pair.json`           |
 | `destination snowflake - internal staging key pair encrypted (secrets/config_key_pair_encrypted.json)` | `secrets/config_key_pair_encrypted.json` |
-| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)` | `secrets/copy_s3_config.json` |
-| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)` | `secrets/copy_s3_encrypted_config.json` |
-| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)` | `secrets/copy_gcs_config.json` |
-| `destination snowflake - azure blob staging test creds (secrets/copy_azure_blob_config.json)` | `secrets/copy_azure_blob_config.json` |
+| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)`                          | `secrets/copy_s3_config.json`            |
+| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)`      | `secrets/copy_s3_encrypted_config.json`  |
+| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)`                        | `secrets/copy_gcs_config.json`           |
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.
 
@@ -90,11 +89,3 @@ DROP USER IF EXISTS INTEGRATION_TEST_USER_DESTINATION;
 DROP ROLE IF EXISTS INTEGRATION_TESTER_DESTINATION;
 DROP WAREHOUSE IF EXISTS INTEGRATION_TEST_WAREHOUSE_DESTINATION;
 ```
-
-## Setting up the Azure Blob Storage test infra
-1. Follow the [Destination Azure Blob Storage](../destination-azure-blob-storage/README.md#infra-setup) setup guide, with these differences:
-  1. The container name is `snowflake-staging`
-  1. Instead of getting an access key, you need a `Shared access token`. This belongs to the container (NOT the storage account).
-    1. Give the key the appropriate permissions (which I believe is all of them)
-    1. And a distant-future expiry - there's no way to generate a non-expiring token.
-    1. The `Blob SAS token` is the `azure_blob_storage_sas_token` config field.

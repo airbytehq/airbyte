@@ -347,23 +347,32 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
-   * of file buffers and sets the minimum number to the default
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
+   * file buffers and sets the minimum number to the default
    *
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
-   * has not been thoroughly load tested across all instance sizes
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
+   * not been thoroughly load tested across all instance sizes
    *
    * @param config user configurations
    * @return number of file buffers if configured otherwise default
    */
   @VisibleForTesting
   public int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+    // This null check is probably redundant, but I don't want to gamble on that right now
+    if (config.hasNonNull(BigQueryConsts.LOADING_METHOD)) {
+      final JsonNode loadingMethodConfig = config.get(BigQueryConsts.LOADING_METHOD);
+      final int numOfFileBuffers;
+      if (loadingMethodConfig.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+        numOfFileBuffers = Math.min(loadingMethodConfig.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+      } else {
+        numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+      }
+      // Only allows for values 10 <= numOfFileBuffers <= 50
+      return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
     }
-    // Only allows for values 10 <= numOfFileBuffers <= 50
-    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+
+    // Return the default if we fail to parse the config
+    return FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
   }
 
   public static void main(final String[] args) throws Exception {

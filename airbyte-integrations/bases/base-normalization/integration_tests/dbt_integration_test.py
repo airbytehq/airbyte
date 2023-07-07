@@ -415,7 +415,7 @@ class DbtIntegrationTest(object):
                             line = input_data.readline()
                             if not line:
                                 break
-                            if not line.startswith(b"#"):
+                            if not line.startswith(b"//"):
                                 process.stdin.write(line)
                 process.stdin.close()
 
@@ -476,7 +476,7 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
-        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-clickhouse"):
+        if any([normalization_image.startswith(x) for x in ["airbyte/normalization-oracle", "airbyte/normalization-clickhouse"]]):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]

@@ -23,7 +23,7 @@ class AuthenticatorSquare(DeclarativeAuthenticator):
     oauth: DeclarativeOauth2Authenticator
 
     def __new__(cls, bearer, oauth, config, *args, **kwargs):
-        if config.get("api_key"):
+        if config.get("credentials", {}).get("api_key"):
             return bearer
         else:
             return oauth

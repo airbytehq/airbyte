@@ -87,7 +87,6 @@ Are requests authenticated using the Basic HTTP authentication method? You can s
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
-- "Base64"
 
 Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#introduction)
 
@@ -123,7 +122,7 @@ Example:
 - Yes: [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html)
 - No: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
 
-If the OAuth flow requires a single-use refresh token, use the [Python CDK](https://github.com/airbytehq/airbyte/issues/18035).
+If the OAuth flow requires a single-use refresh token, use the Python CDK.
 If the refresh request requires custom query parameters or request headers, use the Python CDK.
 If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token", such as an Authorization Code, or a PKCE, use the Python CDK. 
 If the authentication mechanism is OAuth flow 2.0 with refresh token and does not require refreshing the refresh token or custom query params, it is compatible with the Connector Builder.
@@ -147,7 +146,7 @@ If the data is not formatted as JSON, use the Python CDK.
 ## How are records paginated?
 Look up the pagination mechanism in the API documentation, and identify which type it is.
 
-Here are the standard pagination mechanisms:
+Here are the standard pagination mechanisms the connector builder supports:
 
 ### Page count
 Endpoints using page count pagination accept two pagination parameters
@@ -178,7 +177,7 @@ Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#pagination)
 The Connector Builder currently only supports key-value query params and request body parameters.
 This means endpoints requiring [GraphQL](https://graphql.org/) are not well supported at the moment.
 
-An example of an endpoint that would be tricky to implement with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
+An example of an endpoint that can't be implemented with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
 
 The endpoint requires a list of filters and metrics.
 

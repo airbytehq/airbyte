@@ -2,20 +2,22 @@ data:
   allowedHosts:
     hosts:
       - api.pinterest.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-pinterest
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: MIT
   name: Pinterest
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

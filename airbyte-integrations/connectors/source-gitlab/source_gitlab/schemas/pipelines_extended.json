@@ -83,6 +83,9 @@
     },
     "detailed_status": {
       "type": ["null", "object"]
+    },
+    "name": {
+      "type": ["null", "string"]
     }
   }
 }

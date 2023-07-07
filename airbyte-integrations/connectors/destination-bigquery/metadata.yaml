@@ -1,13 +1,8 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 1.2.19
+  dockerImageTag: 1.4.4
   dockerRepository: airbyte/destination-bigquery
   githubIssueLabel: destination-bigquery
   icon: bigquery.svg
@@ -16,7 +11,12 @@ data:
   normalizationConfig:
     normalizationIntegrationType: bigquery
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   resourceRequirements:
     jobSpecific:
@@ -24,6 +24,8 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  supportUrl: https://docs.airbyte.com/integrations/destinations/bigquery
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"
