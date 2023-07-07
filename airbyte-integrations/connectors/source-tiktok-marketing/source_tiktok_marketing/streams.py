@@ -458,6 +458,7 @@ class Campaigns(IncrementalTiktokStream):
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
 
+
 class AdGroups(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
@@ -516,7 +517,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
             {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
         ]
-    
+
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
