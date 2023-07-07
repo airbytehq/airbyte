@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import List, Mapping, Optional, Tuple, Union
 
 import dpath.util
@@ -28,6 +29,7 @@ class DocumentProcessor:
             chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
         )
         self.text_fields = config.text_fields
+        self.logger = logging.getLogger("airbyte.document_processor")
 
     def _stream_identifier(self, stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
         if isinstance(stream, AirbyteStream):
@@ -42,12 +44,17 @@ class DocumentProcessor:
         :return: Tuple of (List of document chunks, Natural id to delete if applicable)
         """
         doc = self._generate_document(record)
+        if doc is None:
+            self.logger.warning(f"Record {str(record.data)[:250]}... does not contain any text fields. Skipping.")
+            return [], None
         chunks = self._split_document(doc)
         id_to_delete = doc.metadata[METADATA_NATURAL_ID_FIELD] if METADATA_NATURAL_ID_FIELD in doc.metadata else None
         return chunks, id_to_delete
 
-    def _generate_document(self, record: AirbyteRecordMessage) -> Document:
+    def _generate_document(self, record: AirbyteRecordMessage) -> Optional[Document]:
         relevant_fields = self._extract_relevant_fields(record)
+        if len(relevant_fields) == 0:
+            return None
         metadata = self._extract_metadata(record)
         text = stringify_dict(relevant_fields)
         return Document(page_content=text, metadata=metadata)

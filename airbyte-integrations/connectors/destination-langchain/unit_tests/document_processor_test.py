@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import MagicMock
+
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from destination_langchain.config import ProcessingConfigModel
@@ -105,7 +107,7 @@ def test_complex_text_fields():
         emitted_at=1234,
     )
 
-    processor.text_fields = ["nested.texts.*.text", "text", "other_nested.non_text"]
+    processor.text_fields = ["nested.texts.*.text", "text", "other_nested.non_text", "non.*.existing"]
 
     chunks, _ = processor.process(record)
 
@@ -121,6 +123,29 @@ b: abc"""
         "non_text_2": 1,
         "_airbyte_stream": "namespace1_stream1"
     }
+
+
+def test_non_text_fields():
+    processor = initialize_processor()
+
+    record = AirbyteRecordMessage(
+        stream="stream1",
+        namespace="namespace1",
+        data={
+            "id": 1,
+            "text": "This is the regular text",
+        },
+        emitted_at=1234,
+    )
+
+    processor.text_fields = ["another_field"]
+    processor.logger = MagicMock()
+
+    chunks, id_to_delete = processor.process(record)
+
+    assert len(chunks) == 0
+    assert id_to_delete is None
+    assert processor.logger.warning.called
 
 
 def test_metadata_normalization():

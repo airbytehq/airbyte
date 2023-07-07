@@ -41,6 +41,17 @@ def test_pinecone_index_upsert_and_delete():
     )
 
 
+def test_pinecone_index_empty_batch():
+    indexer = create_pinecone_indexer()
+    indexer.index(
+        [
+        ],
+        [],
+    )
+    indexer.pinecone_index.delete.assert_not_called()
+    indexer.pinecone_index.upsert.assert_not_called()
+
+
 def test_pinecone_index_upsert_batching():
     indexer = create_pinecone_indexer()
     indexer.embed_fn = MagicMock(return_value=[[i, i, i] for i in range(50)])

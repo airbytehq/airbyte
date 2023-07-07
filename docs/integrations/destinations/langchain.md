@@ -67,7 +67,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 #### Pinecone vector store
 
-For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document.
+For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. Both OpenAI and Fake embeddings are produced with 1536 vector dimensions, make sure to configure the index accordingly.
 
 To initialize a langchain QA chain based on the indexed data, use the following code (set the open API key and pinecone key and environment as `OPENAI_API_KEY`, `PINECONE_KEY` and `PINECONE_ENV` env variables):
 
