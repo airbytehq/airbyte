@@ -31,6 +31,12 @@ acceptance_tests:
           sponsored_product_campaigns:
             - name: dailyBudget
               bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
+          sponsored_product_ad_group_suggested_keywords:
+            - name: suggestedKeywords
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
+          sponsored_product_ad_group_bid_recommendations:
+            - name: suggestedBid
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl
@@ -44,7 +50,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: 1.1.0
+          disable_for_version: 2.1.0
   full_refresh:
     tests:
       - config_path: secrets/config.json
