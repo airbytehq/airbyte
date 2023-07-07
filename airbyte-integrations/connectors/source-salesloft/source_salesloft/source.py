@@ -250,6 +250,7 @@ class CallSentiments(SalesloftStream):
 
 class Meetings(IncrementalSalesloftStream):
     created_at_field = "created_at"
+    cursor_field = "created_at"
 
     def path(self, **kwargs) -> str:
         return "meetings"
