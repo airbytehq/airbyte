@@ -32,6 +32,8 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     multi_stream_custom_format,
+    schemaless_csv_multi_stream_scenario,
+    schemaless_csv_scenario,
     single_csv_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
@@ -87,6 +89,8 @@ discover_scenarios = [
     csv_custom_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
+    schemaless_csv_scenario,
+    schemaless_csv_multi_stream_scenario,
 ]
 
 
