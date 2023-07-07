@@ -6,7 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -33,7 +33,7 @@ class TestScenario:
             expected_catalog: Optional[Dict[str, Any]],
             expected_logs: List[Dict[str, Any]],
             expected_records: List[Dict[str, Any]],
-            availability_strategy: Optional[AvailabilityStrategy],
+            availability_strategy: AvailabilityStrategy,
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Optional[Dict[str, AbstractSchemaValidationPolicy]],
             parsers: Optional[Dict[str, FileTypeParser]],
@@ -75,7 +75,7 @@ class TestScenario:
         expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
         assert expected_streams <= streams
 
-    def configured_catalog(self, sync_mode: SyncMode) -> Optional[Dict[str, Any]]:
+    def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
         if not self.expected_catalog:
             return
         catalog = {"streams": []}
@@ -90,7 +90,7 @@ class TestScenario:
 
         return catalog
 
-    def input_state(self) -> List[Dict[str, Any]]:
+    def input_state(self) -> List[Mapping[str, Any]]:
         if self.incremental_scenario_config:
             return self.incremental_scenario_config.input_state
         else:

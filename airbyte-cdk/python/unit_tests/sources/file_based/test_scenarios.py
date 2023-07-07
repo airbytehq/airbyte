@@ -4,7 +4,7 @@
 
 import json
 from pathlib import Path, PosixPath
-from typing import Any, Dict, List, Union, Mapping
+from typing import Any, Dict, List, Union, Mapping, Optional
 
 import pytest
 from _pytest.reports import ExceptionInfo
@@ -130,7 +130,7 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
     expected_records = scenario.expected_records
     expected_logs = scenario.expected_logs
     if expected_exc:
-        with pytest.raises(expected_exc) as exc:
+        with pytest.raises(expected_exc) as exc:  # noqa
             read(capsys, tmp_path, scenario)
         if expected_msg:
             assert expected_msg in get_error_message_from_exc(exc)
@@ -190,10 +190,11 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapp
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
-        with pytest.raises(expected_exc):
+        with pytest.raises(expected_exc):  # type: ignore
             output = check(capsys, tmp_path, scenario)
             if expected_msg:
-                assert expected_msg.value in output["message"]
+                # expected_msg is a string. what's the expected value field?
+                assert expected_msg.value in output["message"]  # type: ignore
                 assert output["status"] == scenario.expected_check_status
 
     else:
@@ -266,10 +267,10 @@ def read_with_state(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
     ]
 
 
-def make_file(path: Path, file_contents: Union[Dict, List]) -> str:
+def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:
     path.write_text(json.dumps(file_contents))
     return str(path)
 
 
-def get_error_message_from_exc(exc: ExceptionInfo) -> str:
+def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
     return exc.value.args[0]
