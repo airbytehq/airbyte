@@ -1,10 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import datetime
-import json
 
-from pyarrow import Scalar
+import json
 from typing import Any, Dict, Iterable, Mapping
 
 import pyarrow as pa
@@ -13,11 +11,12 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from pyarrow import Scalar
 
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(
-            self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
@@ -27,7 +26,7 @@ class ParquetParser(FileTypeParser):
         return schema
 
     def parse_records(
-            self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
         table = self._read_file(file, stream_reader)
         for batch in table.to_batches():
@@ -69,7 +68,7 @@ class ParquetParser(FileTypeParser):
 
         # Convert duration to seconds, then convert to the appropriate unit
         if pa.types.is_duration(parquet_value.type):
-            duration: datetime.timedelta = parquet_value.as_py()
+            duration = parquet_value.as_py()
             duration_seconds = duration.total_seconds()
             if parquet_value.type.unit == "s":
                 return duration_seconds
@@ -102,23 +101,25 @@ class ParquetParser(FileTypeParser):
             return {"type": "number"}
         elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
             return {"type": "object"}
-        elif (pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type)
-              or parquet_type == pa.month_day_nano_interval()):
+        elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type) or parquet_type == pa.month_day_nano_interval():
             return {"type": "array"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")
 
     @staticmethod
     def _is_binary(parquet_type: pa.DataType) -> bool:
-        return pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type)
+        return bool(pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type))
 
     @staticmethod
     def _is_integer(parquet_type: pa.DataType) -> bool:
-        return pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type)
+        return bool(pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type))
 
     @staticmethod
     def _is_string(parquet_type: pa.DataType) -> bool:
-        return (pa.types.is_time(parquet_type)
-                or pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type)
-                or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
-                or ParquetParser._is_binary(parquet_type))  # Best we can do is return as a string since we do not support binary
+        return bool(
+            pa.types.is_time(parquet_type)
+            or pa.types.is_string(parquet_type)
+            or pa.types.is_large_string(parquet_type)
+            or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
+            or ParquetParser._is_binary(parquet_type)
+        )  # Best we can do is return as a string since we do not support binary

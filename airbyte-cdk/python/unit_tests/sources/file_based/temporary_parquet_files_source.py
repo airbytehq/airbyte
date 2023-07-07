@@ -7,7 +7,6 @@ import tempfile
 from datetime import datetime
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Optional
-from memory_profiler import profile
 
 import pandas as pd
 import pyarrow as pa
