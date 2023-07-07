@@ -14,6 +14,7 @@ import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -26,9 +27,11 @@ import io.airbyte.workers.process.ProcessFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -74,6 +77,7 @@ public abstract class BaseTypingDedupingTest {
   private JsonNode config;
   private String streamNamespace;
   private String streamName;
+  private List<AirbyteStreamNameNamespacePair> streamsToTearDown;
 
   /**
    * @return the docker image to run, e.g. {@code "airbyte/destination-bigquery:dev"}.
@@ -124,10 +128,11 @@ public abstract class BaseTypingDedupingTest {
   /**
    * Delete any resources in the destination associated with this stream AND its namespace. We need
    * this because we write raw tables to a shared {@code airbyte} namespace, which we can't drop
-   * wholesale.
+   * wholesale. Must handle the case where the table/namespace doesn't exist (e.g. if the connector
+   * crashed without writing any data).
    * <p>
    * In general, this should resemble
-   * {@code DROP TABLE IF EXISTS airbyte.namespace_name; DROP SCHEMA IF EXISTS namespace}.
+   * {@code DROP TABLE IF EXISTS airbyte.<streamNamespace>_<streamName>; DROP SCHEMA IF EXISTS <streamNamespace>}.
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
@@ -150,12 +155,15 @@ public abstract class BaseTypingDedupingTest {
     config = generateConfig();
     streamNamespace = "typing_deduping_test" + getUniqueSuffix();
     streamName = "test_stream" + getUniqueSuffix();
+    streamsToTearDown = new ArrayList<>();
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 
   @AfterEach
   public void teardown() throws Exception {
-    teardownStreamAndNamespace(streamNamespace, streamName);
+    for (AirbyteStreamNameNamespacePair streamId : streamsToTearDown) {
+      teardownStreamAndNamespace(streamId.getNamespace(), streamId.getName());
+    }
   }
 
   /**
@@ -379,30 +387,63 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
   }
 
+  // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using two streams with the same
+  // name but different namespace
+  // TODO maybe we don't even need the single-stream versions...
+  /**
+   * Identical to {@link #incrementalDedup()}, except there are two streams with the same name and different namespace.
+   */
   @Test
-  @Disabled("Not yet implemented")
-  public void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
-    // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using two streams with the same
-    // name but different namespace:
+  public void incrementalDedupIdenticalName() throws Exception {
+    String namespace1 = streamNamespace + "_1";
+    String namespace2 = streamNamespace + "_2";
     ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace + "_1")
+                .withNamespace(namespace1)
                 .withName(streamName)
                 .withJsonSchema(SCHEMA)),
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace + "_2")
+                .withNamespace(namespace2)
                 .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withJsonSchema(SCHEMA))
+    ));
+
+    // First sync
+    // Read the same set of messages for both streams
+    List<AirbyteMessage> messages1 = Stream.concat(
+        readMessages("sync1_messages.jsonl", namespace1, streamName).stream(),
+        readMessages("sync1_messages.jsonl", namespace2, streamName).stream()
+    ).toList();
+
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_dedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace1, streamName);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace2, streamName);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = Stream.concat(
+        readMessages("sync2_messages.jsonl", namespace1, streamName).stream(),
+        readMessages("sync2_messages.jsonl", namespace2, streamName).stream()
+    ).toList();
+
+    runSync(catalog, messages2);
+
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace1, streamName);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace2, streamName);
   }
 
   @Test
@@ -498,6 +539,8 @@ public abstract class BaseTypingDedupingTest {
   }
 
   private void runSync(ConfiguredAirbyteCatalog catalog, List<AirbyteMessage> messages) throws Exception {
+    catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
+
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
