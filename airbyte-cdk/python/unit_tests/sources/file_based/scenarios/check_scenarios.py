@@ -174,7 +174,7 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_validation_policies(FailingSchemaValidationPolicy())
+    .set_validation_policies({"not_a_valid_key": FailingSchemaValidationPolicy()})
     .set_expected_check_error(ConfigValidationError, FileBasedSourceError.ERROR_VALIDATING_RECORD)
 ).build()
 

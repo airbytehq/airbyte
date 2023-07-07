@@ -195,8 +195,6 @@ class TestScenarioBuilder:
         return deepcopy(self)
 
     def build(self) -> TestScenario:
-        if self._stream_reader is None:
-            raise ValueError("stream_reader is not set")
         if self._file_type is None:
             raise ValueError("file_type is not set")
         return TestScenario(
@@ -208,7 +206,7 @@ class TestScenarioBuilder:
             self._expected_catalog,
             self._expected_logs,
             self._expected_records,
-            self._availability_strategy or DefaultFileBasedAvailabilityStrategy(self._stream_reader),
+            self._availability_strategy,
             self._discovery_policy,
             self._validation_policies or {},
             self._parsers,
