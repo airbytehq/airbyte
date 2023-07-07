@@ -29,26 +29,26 @@ This page contains the setup guide and reference information for the Files sourc
 For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
 
 #### HTTPS: Public Web [Default]
-- `User-Agent`: Set this to active if you want to add the User-Agent header to requests (inactive by default).
+- `User-Agent` (Optional)
+
+Set this to active if you want to add the User-Agent header to requests (inactive by default).
 
 #### GCS: Google Cloud Storage
-- `Service Account JSON`: To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy/paste its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data, this field is not required.**
+- `Service Account JSON` (Required for **private** buckets) 
+
+To access private buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy/paste its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data, this field is not required.**
 
 #### S3: Amazon Web Services
-To access **private** buckets stored on AWS S3, this connector requires the following valid credentials with the necessary permissions:
-- `AWS Access Key ID`
-- `AWS Secret Access Key`
+- `AWS Access Key ID` (Required for **private** buckets)
+- `AWS Secret Access Key` (Required for **private** buckets)
 
-To access these keys, refer to the 
+To access private buckets stored on AWS S3, this connector requires valid credentials with the necessary permissions. To access these keys, refer to the 
 [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html). 
 More information on setting permissions in AWS can be found 
-[here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data, this field is not required.**
+[here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data, these fields are not required.**
 
 #### AzBlob: Azure Blob Storage
-
-The following field is required:
-
-- `Storage Account`: The globally unique name of the storage account that the desired blob sits within. See the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for more details.
+- `Storage Account` (Required): The globally unique name of the storage account that the desired blob sits within. See the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for more details.
 
 If accessing **private** storage, you must also provide _one_ of the following:
 
@@ -56,26 +56,29 @@ If accessing **private** storage, you must also provide _one_ of the following:
   - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
   
 #### SSH: Secure Shell
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
-  - **SCP: Secure copy protocol**
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
-  - _SFTP: Secure File Transfer Protocol_
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
+  - `Host`(Required): use a _host_.
+  - `User`(Required): use _username_.
+  - `Password`(Optional): use _password_.
+  - `Port`(Optional): use a _port_ for your host.
+    
+#### SCP: Secure copy protocol
+  - `Host` use a _host_.
+  - `User`(Required): use _username_.
+  - `Password`(Optional): use _password_.
+  - `Port`(Optional) use a _port_ for your host.
+    
+#### SFTP: Secure File Transfer Protocol
+  - `User` use _username_.
+  - `Password` use _password_.
+  - `Host` use a _host_.
+  - `Port` use a _port_ for your host.
+  
   <!-- env:local -->
-  - _Local Filesystem (limited)_
-    - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
+#### Local Filesystem (limited)
+  - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
   <!-- /env:local -->
   
-### Step 3: Complete the connector setup  
+### Step 3: Complete the connector setup
 6. For **URL**: use the _URL_ path to access the file which should be replicated.
 7. For **Reader Options**: use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
 8. Click **Set up source** and wait for the tests to complete.
