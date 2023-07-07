@@ -88,7 +88,7 @@ class SourceMixpanel(AbstractSource):
 
         # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
         # temporary solution, testing access for all streams to avoid 402 error
-        reqs_per_hour_limit = os.environ.get("REQS_PER_HOUR_LIMIT", 0)
+        reqs_per_hour_limit = int(os.environ.get("REQS_PER_HOUR_LIMIT", 0))
         # We preserve sleeping between requests in case this is a running acceptance test.
         # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.
         stream_kwargs = {"authenticator": auth, "reqs_per_hour_limit": reqs_per_hour_limit, **config}
@@ -120,7 +120,7 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        reqs_per_hour_limit = os.environ.get("REQS_PER_HOUR_LIMIT", 0)
+        reqs_per_hour_limit = int(os.environ.get("REQS_PER_HOUR_LIMIT", 0))
         # set reqs_per_hour_limit = 0 to save time for discovery
         # We preserve sleeping between requests in case this is a running acceptance test.
         # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.

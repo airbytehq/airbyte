@@ -35,7 +35,7 @@ def adapt_validate_if_testing(func):
     @wraps(func)
     def wrapper(self, config):
         config = func(self, config)
-        available_testing_range_daye = os.environ.get("ALIGN_DATE_RANGE_TO_LAST_N_DAYS", 0)
+        available_testing_range_daye = int(os.environ.get("ALIGN_DATE_RANGE_TO_LAST_N_DAYS", 0))
         if available_testing_range_daye:
             logger = logging.getLogger("airbyte")
             logger.info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
