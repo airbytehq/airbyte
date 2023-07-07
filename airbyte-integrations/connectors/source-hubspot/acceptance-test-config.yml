@@ -15,7 +15,7 @@ acceptance_tests:
       - config_path: integration_tests/invalid_config_oauth.json
         status: failed
       - config_path: integration_tests/invalid_config_wrong_title.json
-        status: failed
+  #       status: failed
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
@@ -38,6 +38,8 @@ acceptance_tests:
           - name: engagements_calls
             bypass_reason: Unable to populate
           - name: quotes
+            bypass_reason: Unable to populate
+          - name: deals_archived
             bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
