@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
 ## 0.44.2
 Ensuring the state value format matches the cursor value from the record
 

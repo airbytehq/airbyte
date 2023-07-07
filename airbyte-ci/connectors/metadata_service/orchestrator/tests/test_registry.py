@@ -1,8 +1,21 @@
 import pytest
-from unittest.mock import Mock
-from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+import yaml
+from unittest import mock
 
-from orchestrator.assets.registry import metadata_to_registry_entry
+from uuid import UUID
+from pydantic import ValidationError
+from google.cloud import storage
+
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+
+from orchestrator.assets.registry_entry import (
+    metadata_to_registry_entry,
+    get_connector_type_from_registry_entry,
+    get_registry_status_lists,
+    safe_parse_metadata_definition,
+)
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -11,6 +24,112 @@ from orchestrator.assets.registry_report import (
     oss_sources_dataframe,
     cloud_sources_dataframe,
 )
+from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
+
+VALID_METADATA_DICT = {
+    "metadataSpecVersion": "1.0",
+    "data": {
+        "name": "Test",
+        "definitionId": str(UUID(int=1)),
+        "connectorType": "source",
+        "dockerRepository": "test_repo",
+        "dockerImageTag": "test_tag",
+        "license": "test_license",
+        "documentationUrl": "https://test_documentation_url.com",
+        "githubIssueLabel": "test_label",
+        "connectorSubtype": "api",
+        "releaseStage": "alpha",
+        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+    },
+}
+INVALID_METADATA_DICT = {"invalid": "metadata"}
+
+
+@pytest.mark.parametrize(
+    "blob_name, blob_content, expected_result, expected_exception",
+    [
+        ("1.2.3/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+        ("latest/metadata.yaml", yaml.dump(VALID_METADATA_DICT), MetadataDefinition.parse_obj(VALID_METADATA_DICT), None),
+        ("1.2.3/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, None),
+        ("latest/metadata.yaml", yaml.dump(INVALID_METADATA_DICT), None, ValidationError),
+    ],
+)
+def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result, expected_exception):
+    # Mock the Blob object
+    mock_blob = mock.create_autospec(storage.Blob, instance=True)
+    mock_blob.name = blob_name
+    mock_blob.download_as_string.return_value = blob_content.encode("utf-8")
+
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            safe_parse_metadata_definition(mock_blob)
+    else:
+        result = safe_parse_metadata_definition(mock_blob)
+        # assert the name is set correctly
+        assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "registries_data, expected_enabled, expected_disabled",
+    [
+        (
+            {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+            ["oss", "cloud"],
+            [],
+        ),
+        (
+            {"oss": {"enabled": False}, "cloud": {"enabled": True}},
+            ["cloud"],
+            ["oss"],
+        ),
+        (
+            {"oss": {"enabled": False}, "cloud": {"enabled": False}},
+            [],
+            ["oss", "cloud"],
+        ),
+    ],
+)
+def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
+    metadata_dict = {
+        "metadataSpecVersion": "1.0",
+        "data": {
+            "name": "Test",
+            "definitionId": str(UUID(int=1)),
+            "connectorType": "source",
+            "dockerRepository": "test_repo",
+            "dockerImageTag": "test_tag",
+            "license": "test_license",
+            "documentationUrl": "https://test_documentation_url.com",
+            "githubIssueLabel": "test_label",
+            "connectorSubtype": "api",
+            "releaseStage": "alpha",
+            "registries": registries_data,
+        },
+    }
+    metadata_definition = MetadataDefinition.parse_obj(metadata_dict)
+    registry_entry = LatestMetadataEntry(metadata_definition=metadata_definition)
+    enabled, disabled = get_registry_status_lists(registry_entry)
+    assert set(enabled) == set(expected_enabled)
+    assert set(disabled) == set(expected_disabled)
+
+
+@pytest.mark.parametrize(
+    "registry_entry, expected_type, expected_class",
+    [
+        ({"sourceDefinitionId": "abc"}, "source", ConnectorRegistrySourceDefinition),
+        ({"destinationDefinitionId": "abc"}, "destination", ConnectorRegistryDestinationDefinition),
+        ({}, None, None),
+    ],
+)
+def test_get_connector_type_from_registry_entry(registry_entry, expected_type, expected_class):
+    if expected_type and expected_class:
+        connector_type, connector_class = get_connector_type_from_registry_entry(registry_entry)
+        assert connector_type == expected_type
+        assert connector_class == expected_class
+    else:
+        with pytest.raises(Exception) as e_info:
+            get_connector_type_from_registry_entry(registry_entry)
+        assert str(e_info.value) == "Could not determine connector type from registry entry"
 
 
 def test_merged_registry_dataframes(oss_registry_dict, cloud_registry_dict):
@@ -70,11 +189,11 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     """
     metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registries": {registry_type: {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, connector_type, registry_type)
+    result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert "definitionId" not in result
     assert result[expected_id_field] == "test-id"
 
@@ -85,11 +204,11 @@ def test_tombstone_custom_public_set():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["tombstone"] is False
     assert result["custom"] is False
     assert result["public"] is True
@@ -101,11 +220,11 @@ def test_fields_deletion():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert "registries" not in result
     assert "connectorType" not in result
     assert "definitionId" not in result
@@ -132,11 +251,11 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", registry_type)
+    result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert result["dockerImageTag"] == expected_docker_image_tag
     assert result["additionalField"] == expected_additional_field
 
@@ -154,11 +273,11 @@ def test_source_type_extraction():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["sourceType"] == "database"
 
 
@@ -168,11 +287,11 @@ def test_release_stage_default():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["releaseStage"] == "alpha"
 
 
@@ -190,14 +309,14 @@ def test_migration_documentation_url_default():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
     expected_top_migration_documentation_url = "test-doc-url-migrations"
     expected_version_migration_documentation_url = "test-doc-url-migrations#1.0.0"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["releases"]["migrationDocumentationUrl"] == expected_top_migration_documentation_url
     assert result["releases"]["breakingChanges"]["1.0.0"]["migrationDocumentationUrl"] == expected_version_migration_documentation_url
 
@@ -219,11 +338,11 @@ def test_breaking_changes_migration_documentation_url():
         }
     }
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["releases"]["migrationDocumentationUrl"] == "test-migration-doc-url"
     assert result["releases"]["breakingChanges"]["1.0.0"]["migrationDocumentationUrl"] == "test-migration-doc-url-version"
 
@@ -234,9 +353,9 @@ def test_icon_url():
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
-    mock_metadata_entry = Mock()
+    mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["iconUrl"] == "test-icon-url"
