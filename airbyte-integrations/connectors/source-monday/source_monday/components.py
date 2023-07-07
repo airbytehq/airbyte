@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
