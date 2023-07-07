@@ -5,6 +5,7 @@ from .ConnectorMetadataDefinitionV0 import *
 from .ConnectorRegistryDestinationDefinition import *
 from .ConnectorRegistrySourceDefinition import *
 from .ConnectorRegistryV0 import *
+from .ConnectorReleases import *
 from .JobType import *
 from .NormalizationDestinationDefinitionConfig import *
 from .RegistryOverrides import *

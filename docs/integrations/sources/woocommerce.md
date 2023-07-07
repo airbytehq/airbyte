@@ -32,7 +32,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
 6. Choose start date you want to start sync from.
 7. (Optional) Fill in Conversion Window.
-
+<!-- env:oss -->
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -53,7 +53,7 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
-
+<!-- /env:oss -->
 ## Supported Streams
 
 - [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) \(Incremental\)

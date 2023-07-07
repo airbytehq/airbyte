@@ -8,7 +8,14 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 import facebook_business
 import pendulum
 import requests
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, FailureType, OAuth2Specification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -78,7 +85,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
+            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
             logger.info(f"Select account {api.account}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
@@ -101,7 +108,7 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
@@ -203,12 +210,33 @@ class SourceFacebookMarketing(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string",
+                                "path_in_connector_config": ["access_token"],
+                            }
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
+            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:

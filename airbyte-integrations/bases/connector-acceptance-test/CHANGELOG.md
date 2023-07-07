@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.11.1
+Test connector image labels and make sure they are set correctly and match metadata.yaml.
+
+## 0.11.0
+Add backward_compatibility.check_if_field_removed test to check if a field has been removed from the catalog.
+
+## 0.10.8
+Increase the connection timeout to Docker client to 2 minutes ([context](https://github.com/airbytehq/airbyte/issues/27401))
+
+## 0.10.7
+Fix on supporting arrays in the state (ensure string are parsed as string and not int)
+
+## 0.10.6
+Supporting arrays in the state by allowing ints in cursor_paths
+
 ## 0.10.5
 Skipping test_catalog_has_supported_data_types as it is failing on too many connectors. Will first address globally the type/format problems at scale and then re-enable it.
 

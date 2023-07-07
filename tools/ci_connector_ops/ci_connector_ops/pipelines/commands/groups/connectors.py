@@ -4,7 +4,6 @@
 
 """This module declares the CLI commands to run the connectors CI pipelines."""
 
-import logging
 import os
 import sys
 from pathlib import Path
@@ -12,22 +11,18 @@ from typing import Any, Dict, Tuple
 
 import anyio
 import click
+from ci_connector_ops.pipelines import main_logger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
+from ci_connector_ops.pipelines.format import run_connectors_format_pipelines
 from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
-from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-
-logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
-
-logger = logging.getLogger(__name__)
-
 
 # HELPERS
 
@@ -40,10 +35,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
-            "AWS_ACCESS_KEY_ID",
-            "AWS_SECRET_ACCESS_KEY",
-            "AWS_DEFAULT_REGION",
-            "TEST_REPORTS_BUCKET_NAME",
+            "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
         ]
         for required_env_var in required_env_vars_for_ci:
@@ -82,7 +74,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 @click.pass_context
 def connectors(
     ctx: click.Context,
-    use_remote_secrets: str,
+    use_remote_secrets: bool,
     names: Tuple[str],
     languages: Tuple[ConnectorLanguage],
     release_stages: Tuple[str],
@@ -104,8 +96,11 @@ def connectors(
 
     all_connectors = get_all_released_connectors()
 
+    # We get the modified connectors and downstream connector deps, and files
     modified_connectors_and_files = get_modified_connectors(ctx.obj["modified_files"])
+
     # We select all connectors by default
+    # and attach modified files to them
     selected_connectors_and_files = {connector: modified_connectors_and_files.get(connector, []) for connector in all_connectors}
 
     if names:
@@ -127,9 +122,7 @@ def connectors(
             if connector.release_stage in release_stages
         }
     if modified:
-        selected_connectors_and_files = {
-            connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
-        }
+        selected_connectors_and_files = modified_connectors_and_files
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
@@ -146,14 +139,14 @@ def test(
         ctx (click.Context): The click context.
     """
     if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
-        click.echo("Skipping connectors tests for draft pull request.")
+        main_logger.info("Skipping connectors tests for draft pull request.")
         sys.exit(0)
 
-    click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    main_logger.info(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}")
     if ctx.obj["selected_connectors_and_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
     else:
-        click.secho("No connector were selected for testing.", fg="yellow")
+        main_logger.warn("No connector were selected for testing.")
         update_global_commit_status_check_for_tests(ctx.obj, "success")
         return True
 
@@ -165,30 +158,39 @@ def test(
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            s3_report_key="python-poc/tests/history/",
+            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
     try:
         anyio.run(
             run_connectors_pipelines,
-            connectors_tests_contexts,
+            [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
+            ctx.obj["dagger_logs_path"],
             ctx.obj["execute_timeout"],
         )
     except Exception as e:
-        click.secho(str(e), err=True, fg="red")
+        main_logger.error("An error occurred while running the test pipeline", exc_info=e)
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
-    global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
-    update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+
+    @ctx.call_on_close
+    def send_commit_status_check() -> None:
+        if ctx.obj["is_ci"]:
+            global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
+            update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+
     # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
     return True
 
@@ -196,20 +198,23 @@ def test(
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
 @click.pass_context
 def build(ctx: click.Context) -> bool:
-    click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    main_logger.info(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.")
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name="Build connector {connector.technical_name}",
+            pipeline_name=f"Build connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            s3_report_key="python-poc/build/history/",
+            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -219,6 +224,7 @@ def build(ctx: click.Context) -> bool:
         run_connector_build_pipeline,
         "Build Pipeline",
         ctx.obj["concurrency"],
+        ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
 
@@ -299,6 +305,7 @@ def publish(
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
+
     validate_publish_options(pre_release, ctx.obj)
     if ctx.obj["is_local"]:
         click.confirm(
@@ -312,40 +319,47 @@ def publish(
         selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
         selected_connectors_names = ctx.obj["selected_connectors_names"]
 
-    click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
+    main_logger.info(f"Will publish the following connectors: {', '.join(selected_connectors_names)}")
+    publish_connector_contexts = reorder_contexts(
+        [
+            PublishConnectorContext(
+                connector=connector,
+                pre_release=pre_release,
+                modified_files=modified_files,
+                spec_cache_gcs_credentials=spec_cache_gcs_credentials,
+                spec_cache_bucket_name=spec_cache_bucket_name,
+                metadata_service_gcs_credentials=metadata_service_gcs_credentials,
+                metadata_bucket_name=metadata_service_bucket_name,
+                docker_hub_username=docker_hub_username,
+                docker_hub_password=docker_hub_password,
+                slack_webhook=slack_webhook,
+                reporting_slack_channel=slack_channel,
+                ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+                report_output_prefix=ctx.obj["report_output_prefix"],
+                is_local=ctx.obj["is_local"],
+                git_branch=ctx.obj["git_branch"],
+                git_revision=ctx.obj["git_revision"],
+                gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+                dagger_logs_url=ctx.obj.get("dagger_logs_url"),
+                pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+                ci_context=ctx.obj.get("ci_context"),
+                ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+                pull_request=ctx.obj.get("pull_request"),
+            )
+            for connector, modified_files in selected_connectors_and_files.items()
+        ]
+    )
 
-    publish_connector_contexts = reorder_contexts([
-        PublishConnectorContext(
-            connector,
-            pre_release,
-            modified_files,
-            spec_cache_gcs_credentials,
-            spec_cache_bucket_name,
-            metadata_service_gcs_credentials,
-            metadata_service_bucket_name,
-            docker_hub_username,
-            docker_hub_password,
-            slack_webhook,
-            slack_channel,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
-            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
-            ci_context=ctx.obj.get("ci_context"),
-            pull_request=ctx.obj.get("pull_request"),
-        )
-        for connector, modified_files in selected_connectors_and_files.items()
-    ])
-
-    click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
+    main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
+
     publish_connector_contexts = anyio.run(
         run_connectors_pipelines,
         publish_connector_contexts,
         run_connector_publish_pipeline,
-        "Publish pipeline",
+        "Publishing connectors",
         ctx.obj["concurrency"],
+        ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
     return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
@@ -388,4 +402,62 @@ def list(
         table.add_row(modified, connector_name, language, release_stage, version, folder)
 
     console.print(table)
+    return True
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
+@click.pass_context
+def format(ctx: click.Context) -> bool:
+
+    if ctx.obj["modified"]:
+        # We only want to format the connector that with modified files on the current branch.
+        connectors_and_files_to_format = [
+            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items() if modified_files
+        ]
+    else:
+        # We explicitly want to format specific connectors
+        connectors_and_files_to_format = [
+            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
+        ]
+
+    if connectors_and_files_to_format:
+        main_logger.info(
+            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}."
+        )
+    else:
+        main_logger.info("No connectors to format.")
+    connectors_contexts = [
+        ConnectorContext(
+            pipeline_name=f"Format connector {connector.technical_name}",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            report_output_prefix=ctx.obj["report_output_prefix"],
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
+            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            dagger_logs_url=ctx.obj.get("dagger_logs_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_git_user=ctx.obj["ci_git_user"],
+            ci_github_access_token=ctx.obj["ci_github_access_token"],
+            pull_request=ctx.obj.get("pull_request"),
+            should_save_report=False,
+        )
+        for connector, modified_files in connectors_and_files_to_format
+    ]
+
+    anyio.run(
+        run_connectors_format_pipelines,
+        connectors_contexts,
+        ctx.obj["ci_git_user"],
+        ctx.obj["ci_github_access_token"],
+        ctx.obj["git_branch"],
+        ctx.obj["is_local"],
+        ctx.obj["execute_timeout"],
+    )
+
     return True

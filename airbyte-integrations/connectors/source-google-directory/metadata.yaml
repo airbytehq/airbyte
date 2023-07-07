@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d19ae824-e289-4b14-995a-0632eb46d246
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-google-directory
   githubIssueLabel: source-google-directory
   icon: googledirectory.svg
@@ -10,7 +10,7 @@ data:
   name: Google Directory
   registries:
     cloud:
-      dockerImageTag: 0.1.3
+      dockerImageTag: 0.2.1
       enabled: true
     oss:
       enabled: true

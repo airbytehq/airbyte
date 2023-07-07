@@ -3,11 +3,12 @@
 #
 
 import platform
+from pathlib import Path
 
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
-
+LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
     "mccabe==0.6.1",
@@ -18,16 +19,19 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
     "pytest-custom_exit_code",
+    "licenseheaders==0.8.8",
 ]
 
-DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
-DOCKER_VERSION = "20.10.23"
-DOCKER_DIND_IMAGE = "docker:20-dind"
-DOCKER_CLI_IMAGE = "docker:20-cli"
+DOCKER_VERSION = "24.0.2"
+DOCKER_DIND_IMAGE = "docker:24-dind"
+DOCKER_CLI_IMAGE = "docker:24-cli"
 GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
+LOCAL_REPORTS_PATH_ROOT = "tools/ci_connector_ops/pipeline_reports/"
+GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
+Path(LOCAL_REPORTS_PATH_ROOT).mkdir(parents=True, exist_ok=True)

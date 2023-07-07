@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/click-up
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clickup-api
   tags:
     - language:low-code
     - language:python

@@ -14,5 +14,5 @@ COPY $CODE_PATH ./$CODE_PATH
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=1.1.0
+LABEL io.airbyte.version=1.1.1
 LABEL io.airbyte.name=airbyte/source-smartsheets

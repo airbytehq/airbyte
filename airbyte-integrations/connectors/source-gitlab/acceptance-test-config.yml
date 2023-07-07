@@ -21,7 +21,6 @@ acceptance_tests:
       timeout_seconds: 3600
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
       ignored_fields:
         jobs:
         - name: "user"
@@ -35,7 +34,6 @@ acceptance_tests:
         bypass_reason: "Group in this config does not have epics issues. This stream is tested in the above TC."
       expect_records:
         path: "integration_tests/expected_records_with_ids.jsonl"
-      fail_on_extra_columns: false
       ignored_fields:
         jobs:
         - name: "user"
@@ -44,7 +42,6 @@ acceptance_tests:
       timeout_seconds: 3600
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
       ignored_fields:
         jobs:
         - name: "user"
