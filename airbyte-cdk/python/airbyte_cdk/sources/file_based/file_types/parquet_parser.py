@@ -14,7 +14,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+            self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
@@ -24,7 +24,7 @@ class ParquetParser(FileTypeParser):
         return schema
 
     def parse_records(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+            self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
         table = self._read_file(file, stream_reader)
         for batch in table.to_batches():
@@ -40,31 +40,25 @@ class ParquetParser(FileTypeParser):
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
         # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
 
-        # Types we do not support
-        # - binary
-        # - month_day_nano_interval
-
+        # We do not support month_day_nano_interval type
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
-        elif pa.types.is_time(parquet_type):
+        elif pa.types.is_date(parquet_type):
+            return {"type": "string", "format": "date"}
+        elif (pa.types.is_time(parquet_type)
+              or pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type)
+              or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
+              or pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type)):  # Best we can do is return as a string since we do not support binary
             return {"type": "string"}
-        elif pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type):
-            return {"type": "string"}
-        elif pa.types.is_decimal(parquet_type):
-            return {"type": "string"}  # Return as a string to ensure no precision is lost
         elif pa.types.is_boolean(parquet_type):
             return {"type": "boolean"}
-        elif pa.types.is_integer(parquet_type):
+        elif pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type):
             return {"type": "integer"}
         elif pa.types.is_floating(parquet_type):
             return {"type": "number"}
-        elif pa.types.is_date(parquet_type):
-            return {"type": "string", "format": "date"}
         elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
             return {"type": "object"}
         elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type):
             return {"type": "array"}
-        elif pa.types.is_duration(parquet_type):
-            return {"type": "integer"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")

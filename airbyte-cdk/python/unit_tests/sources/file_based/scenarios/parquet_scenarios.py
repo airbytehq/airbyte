@@ -69,7 +69,8 @@ _parquet_file_with_various_types = {
 
              "col_struct",
              "col_list",
-             "col_duration"
+             "col_duration",
+             "col_binary",
              ),
             (True,
 
@@ -98,6 +99,7 @@ _parquet_file_with_various_types = {
              {"struct_key": "struct_value"},
              [1, 2, 3, 4],
              12345,
+             b"binary string. Hello world!",
              ),
         ],
         "schema": pa.schema([
@@ -129,6 +131,7 @@ _parquet_file_with_various_types = {
             pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
             pa.field("col_list", pa.list_(pa.int32())),
             pa.field("col_duration", pa.duration("s")),
+            pa.field("col_binary", pa.binary())
         ]),
         "last_modified": "2023-06-05T03:54:07.000Z",
     }
@@ -345,6 +348,9 @@ parquet_various_types_scenario = (
                             "col_duration": {
                                 "type": "integer",
                             },
+                            "col_binary": {
+                                "type": "string",
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
                             },
@@ -383,6 +389,7 @@ parquet_various_types_scenario = (
                       "col_struct": {"struct_key": "struct_value"},
                       "col_list": [1, 2, 3, 4],
                       "col_duration": 12345,
+                      "col_binary": "binary string. Hello world!",
                       "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"
              },
