@@ -62,14 +62,14 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcProperties;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcStateHandler;
-import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags;
-import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
@@ -88,14 +88,11 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -527,9 +524,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final XminStateManager xminStateManager = new XminStateManager(streamsCategorised.remainingStreams().statesFromXminSync());
       final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
 
-      final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
-          fileNodes, tableBlockSizes, ctidStateManager,
-          namespacePair -> Jsons.jsonNode(xminStatus));
+      final PostgresCtidHandler ctidHandler =
+          new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
+              fileNodes, tableBlockSizes, ctidStateManager,
+              namespacePair -> Jsons.jsonNode(xminStatus));
 
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>(ctidHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
