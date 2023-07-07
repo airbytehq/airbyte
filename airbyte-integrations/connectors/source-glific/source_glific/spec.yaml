@@ -1,0 +1,20 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Glific Spec
+  type: object
+  required:
+    - phone
+    - password
+  properties:
+    phone:
+      type: string
+      title: Username
+      description: Phone (12 digit) to authenticate into the your glific account
+      order: 0
+    password:
+      type: string
+      title: Password
+      description: Password to authenticate into the your glific account
+      airbyte_secret: true
+      order: 1
