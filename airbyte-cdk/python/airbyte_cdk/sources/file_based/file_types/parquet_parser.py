@@ -70,9 +70,9 @@ class ParquetParser(FileTypeParser):
             elif parquet_value.type.unit == "ms":
                 return duration_seconds * 1000
             elif parquet_value.type.unit == "us":
-                return duration_seconds * 1000000
+                return duration_seconds * 1_000_000
             elif parquet_value.type.unit == "ns":
-                return duration_seconds * 1000000000 + duration.nanoseconds
+                return duration_seconds * 1_000_000_000 + duration.nanoseconds
             else:
                 raise ValueError(f"Unknown duration unit: {parquet_value.type.unit}")
         else:
