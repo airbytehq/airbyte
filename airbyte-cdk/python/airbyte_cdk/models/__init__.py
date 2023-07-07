@@ -46,20 +46,3 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-
-from well_known_types import (
-    BinaryData,
-    Boolean,
-    Date,
-    Enum,
-    Integer,
-    IntegerEnum,
-    Model,
-    Number,
-    NumberEnum,
-    String,
-    TimestampWithoutTimezone,
-    TimestampWithTimezone,
-    TimeWithoutTimezone,
-    TimeWithTimezone,
-)
