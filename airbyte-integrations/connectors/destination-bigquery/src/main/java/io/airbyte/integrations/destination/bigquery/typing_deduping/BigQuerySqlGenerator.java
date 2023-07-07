@@ -229,7 +229,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
-      cdcDeletes = cdcDeletes(stream.id(), finalSuffix, stream.columns());
+      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -244,6 +244,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             DECLARE missing_pk_count INT64;
 
             BEGIN TRANSACTION;
+            
             ${validate_primary_keys}
 
             ${insert_new_records}
@@ -284,7 +285,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
             IF missing_pk_count > 0 THEN
               RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
-            END IF;""");
+            END IF
+            ;""");
   }
 
   @VisibleForTesting
@@ -308,8 +310,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
-    // Note that we intentionally excluded deleted records from this insert. See dedupRawRecords for an
-    // explanation of how CDC deletes work.
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
@@ -371,22 +371,24 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String cdcDeletes(final StreamId id,
+  String cdcDeletes(final StreamConfig stream,
       final String finalSuffix,
       final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    // TODO: This fails spotbugs and I don't know why
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+      return "";
+    }
+
     if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
       return "";
     }
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
-        "quoted_cdc_delete_column", CDC_DELETED_AT_COLUMN)).replace(
-        """
-           DELETE FROM ${final_table_id}
-           WHERE ${quoted_cdc_delete_column} IS NOT NULL
-           ;""");
+        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
+    ).replace(
+        "DELETE FROM ${final_table_id} WHERE ${quoted_cdc_delete_column} IS NOT NULL;"
+    );
   }
 
   @VisibleForTesting
