@@ -64,4 +64,3 @@ class ParquetParser(FileTypeParser):
             return {"type": "array"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")
-

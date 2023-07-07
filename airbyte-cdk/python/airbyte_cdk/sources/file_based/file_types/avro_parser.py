@@ -14,9 +14,9 @@ class AvroParser(FileTypeParser):
     async def infer_schema(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError()
 
     def parse_records(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
-        ...
+        raise NotImplementedError()

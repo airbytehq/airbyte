@@ -3,7 +3,7 @@
 #
 
 import csv
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Mapping
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 DIALECT_NAME = "_config_dialect"
 
-config_to_quoting: [QuotingBehavior, int] = {
+config_to_quoting: Mapping[QuotingBehavior, int] = {
     QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
     QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
     QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
@@ -38,13 +38,13 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
                 schema = {field.strip(): {"type": "string"} for field in next(reader)}
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)
+                reader = csv.DictReader(fp)  # type: ignore
                 return {field.strip(): {"type": "string"} for field in next(reader)}
 
     def parse_records(
@@ -66,9 +66,9 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
                 yield from reader
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)
+                reader = csv.DictReader(fp)  # type: ignore
                 yield from reader

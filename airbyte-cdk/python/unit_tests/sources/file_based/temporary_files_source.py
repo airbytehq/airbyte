@@ -19,7 +19,7 @@ import pyarrow.parquet as pq
 class TemporaryFilesStreamReader(AbstractFileBasedStreamReader):
     #FIXME: this is tightly coupled with parquet files.
     # Either rename or decouple
-    files: Dict[str, dict]
+    files: Dict[str, dict[str, Any]]
     file_type: str
     file_write_options: Optional[Dict[str, Any]]
 
@@ -35,7 +35,7 @@ class TemporaryFilesStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.BytesIO(self._make_file_contents(file.uri))
 
-    def _make_file_contents(self, file_name: str):
+    def _make_file_contents(self, file_name: str) -> bytes:
         contents = self.files[file_name]["contents"]
         schema = self.files[file_name].get("schema")
 

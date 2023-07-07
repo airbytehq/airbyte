@@ -5,7 +5,7 @@
 # are just wrappers on top of that stand-alone package which do some namespacing magic
 # to make the airbyte_protocol python classes available to the airbyte-cdk consumer as part
 # of airbyte-cdk rather than a standalone package.
-from airbyte_protocol.models import (
+from .airbyte_protocol import (
     AdvancedAuth,
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -45,4 +45,21 @@ from airbyte_protocol.models import (
     SyncMode,
     TraceType,
     Type,
+)
+
+from .well_known_types import (
+    BinaryData,
+    Boolean,
+    Date,
+    Enum,
+    Integer,
+    IntegerEnum,
+    Model,
+    Number,
+    NumberEnum,
+    String,
+    TimestampWithoutTimezone,
+    TimestampWithTimezone,
+    TimeWithoutTimezone,
+    TimeWithTimezone,
 )

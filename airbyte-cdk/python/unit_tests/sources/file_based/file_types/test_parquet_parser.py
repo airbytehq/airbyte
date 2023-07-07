@@ -1,3 +1,5 @@
+from typing import Mapping
+
 import pytest
 import pyarrow as pa
 import numpy as np
@@ -45,20 +47,9 @@ from airbyte_cdk.sources.file_based.file_types import ParquetParser
         pytest.param(pa.decimal256(2), {"type": "string"}, id="test_decimal256"),
     ]
 )
-def test_parquet_parser(parquet_type, expected_type):
+def test_parquet_parser(parquet_type: pa.DataType, expected_type: Mapping[str, str]) -> None:
     if expected_type is None:
         with pytest.raises(ValueError):
             ParquetParser.parquet_type_to_schema_type(parquet_type)
     else:
         assert ParquetParser.parquet_type_to_schema_type(parquet_type) == expected_type
-
-
-def test_parquet_stuff():
-    dates = ['2023-01-01', '2023-01-02', '2023-01-03']
-    # Convert dates to numpy.datetime64 objects
-    date_values = np.array(dates, dtype='datetime64[D]')
-    date_array = pa.array(date_values, type=pa.date32())
-    table = pa.Table.from_arrays([date_array], names=['date_column'])
-    for batch in table.to_batches():
-        for i in range(batch.num_rows):
-            row_dict = {column: batch.column(column)[i].as_py() for column in table.column_names}
