@@ -1,7 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
+import json
 
+from pyarrow import Scalar
 from typing import Any, Dict, Iterable, Mapping
 
 import pyarrow as pa
@@ -29,7 +32,7 @@ class ParquetParser(FileTypeParser):
         table = self._read_file(file, stream_reader)
         for batch in table.to_batches():
             for i in range(batch.num_rows):
-                row_dict = {column: batch.column(column)[i].as_py() for column in table.column_names}
+                row_dict = {column: ParquetParser.to_py_value(batch.column(column)[i]) for column in table.column_names}
                 yield row_dict
 
     @staticmethod
@@ -37,28 +40,85 @@ class ParquetParser(FileTypeParser):
         return pq.read_table(stream_reader.open_file(file))
 
     @staticmethod
+    def to_py_value(parquet_value: Scalar) -> Any:
+        # Convert date and datetime objects to isoformat strings
+        if pa.types.is_time(parquet_value.type):
+            return parquet_value.as_py().isoformat()
+        if pa.types.is_timestamp(parquet_value.type):
+            return parquet_value.as_py().isoformat()
+        if pa.types.is_date(parquet_value.type):
+            return parquet_value.as_py().isoformat()
+
+        # Convert month_day_nano_interval to array
+        if parquet_value.type == pa.month_day_nano_interval():
+            return json.loads(json.dumps(parquet_value.as_py()))
+
+        # Decode binary strings to utf-8
+        if ParquetParser._is_binary(parquet_value.type):
+            return parquet_value.as_py().decode("utf-8")
+        if pa.types.is_decimal(parquet_value.type):
+            return str(parquet_value.as_py())
+
+        # Dictionaries are stored as two columns: indices and values
+        # The indices column is an array of integers that maps to the values column
+        if pa.types.is_dictionary(parquet_value.type):
+            return {
+                "indices": parquet_value.indices.tolist(),
+                "values": parquet_value.dictionary.tolist(),
+            }
+
+        # Convert duration to seconds, then convert to the appropriate unit
+        if pa.types.is_duration(parquet_value.type):
+            duration: datetime.timedelta = parquet_value.as_py()
+            duration_seconds = duration.total_seconds()
+            if parquet_value.type.unit == "s":
+                return duration_seconds
+            elif parquet_value.type.unit == "ms":
+                return duration_seconds * 1000
+            elif parquet_value.type.unit == "us":
+                return duration_seconds * 1000000
+            elif parquet_value.type.unit == "ns":
+                return duration_seconds * 1000000000 + duration.nanoseconds
+            else:
+                raise ValueError(f"Unknown duration unit: {parquet_value.type.unit}")
+        else:
+            return parquet_value.as_py()
+
+    @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
         # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
 
-        # We do not support month_day_nano_interval type
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
         elif pa.types.is_date(parquet_type):
             return {"type": "string", "format": "date"}
-        elif (pa.types.is_time(parquet_type)
-              or pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type)
-              or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
-              or pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type)):  # Best we can do is return as a string since we do not support binary
+        elif ParquetParser._is_string(parquet_type):
             return {"type": "string"}
         elif pa.types.is_boolean(parquet_type):
             return {"type": "boolean"}
-        elif pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type):
+        elif ParquetParser._is_integer(parquet_type):
             return {"type": "integer"}
         elif pa.types.is_floating(parquet_type):
             return {"type": "number"}
         elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
             return {"type": "object"}
-        elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type):
+        elif (pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type)
+              or parquet_type == pa.month_day_nano_interval()):
             return {"type": "array"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")
+
+    @staticmethod
+    def _is_binary(parquet_type: pa.DataType) -> bool:
+        return pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type)
+
+    @staticmethod
+    def _is_integer(parquet_type: pa.DataType) -> bool:
+        return pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type)
+
+    @staticmethod
+    def _is_string(parquet_type: pa.DataType) -> bool:
+        return (pa.types.is_time(parquet_type)
+                or pa.types.is_string(parquet_type) or pa.types.is_large_string(parquet_type)
+                or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
+                or ParquetParser._is_binary(parquet_type))  # Best we can do is return as a string since we do not support binary
