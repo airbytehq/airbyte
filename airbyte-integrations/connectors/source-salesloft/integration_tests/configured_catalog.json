@@ -495,12 +495,7 @@
         "name": "meetings",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "created_at"
+          "full_refresh"
         ],
         "source_defined_primary_key": [
           [
