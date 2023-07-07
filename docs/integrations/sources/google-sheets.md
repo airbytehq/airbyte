@@ -76,7 +76,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 |---------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------|
-| 0.3.1   | 2023-07-06 |                                                          | Fixed several reported vulnerabilities (25 total), CVE-2022-37434, CVE-2022-42898  |
+| 0.3.1   | 2023-07-06 | [28033](https://github.com/airbytehq/airbyte/pull/28033) | Fixed several reported vulnerabilities (25 total), CVE-2022-37434, CVE-2022-42898  |
 | 0.3.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                               |
 | 0.2.39  | 2023-05-31 | [26833](https://github.com/airbytehq/airbyte/pull/26833) | Remove authSpecification in favour of advancedAuth in specification                |
 | 0.2.38  | 2023-05-16 | [26097](https://github.com/airbytehq/airbyte/pull/26097) | Refactor config error                                                              |
