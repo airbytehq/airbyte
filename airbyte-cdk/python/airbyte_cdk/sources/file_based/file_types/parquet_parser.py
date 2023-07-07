@@ -28,15 +28,11 @@ class ParquetParser(FileTypeParser):
     def parse_records(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
-        table = self._read_file(file, stream_reader)
+        table = pq.read_table(stream_reader.open_file(file))
         for batch in table.to_batches():
             for i in range(batch.num_rows):
                 row_dict = {column: ParquetParser._to_output_value(batch.column(column)[i]) for column in table.column_names}
                 yield row_dict
-
-    @staticmethod
-    def _read_file(file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> pa.Table:
-        return pq.read_table(stream_reader.open_file(file))
 
     @staticmethod
     def _to_output_value(parquet_value: Scalar) -> Any:
