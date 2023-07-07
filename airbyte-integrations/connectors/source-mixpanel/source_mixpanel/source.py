@@ -27,7 +27,7 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
-    STREAMS = [Export, Annotations, Engage, Cohorts, CohortMembers, Funnels, Revenue]
+    STREAMS = [Cohorts, CohortMembers, Funnels, Revenue, Export, Annotations, Engage]
 
     def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         credentials = config.get("credentials")
@@ -91,11 +91,8 @@ class SourceMixpanel(AbstractSource):
         reqs_per_hour_limit = os.environ.get("REQS_PER_HOUR_LIMIT", 0)
         # We preserve sleeping between requests in case this is a running acceptance test.
         # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.
-        stream_kwargs = {
-            "authenticator": auth,
-            "reqs_per_hour_limit": reqs_per_hour_limit,
-            **config
-        }
+        stream_kwargs = {"authenticator": auth, "reqs_per_hour_limit": reqs_per_hour_limit, **config}
+        reason = None
         for stream_class in self.STREAMS:
             try:
                 stream = stream_class(**stream_kwargs)
@@ -110,8 +107,8 @@ class SourceMixpanel(AbstractSource):
                     return False, reason
                 logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
             except Exception as e:
-                return False, e
-        return False, "All the streams are unavailable due to a 402 error -- payment is required."
+                return False, str(e)
+        return False, reason
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -127,11 +124,7 @@ class SourceMixpanel(AbstractSource):
         # set reqs_per_hour_limit = 0 to save time for discovery
         # We preserve sleeping between requests in case this is a running acceptance test.
         # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.
-        stream_kwargs = {
-            "authenticator": auth,
-            "reqs_per_hour_limit": reqs_per_hour_limit,
-            **config
-        }
+        stream_kwargs = {"authenticator": auth, "reqs_per_hour_limit": reqs_per_hour_limit, **config}
         streams = []
         for stream_cls in self.STREAMS:
             stream = stream_cls(**stream_kwargs)
