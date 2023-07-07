@@ -114,6 +114,11 @@ Parameter `data_state='all'` should not be used with Incremental Sync mode as it
 - [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
 ## Performance considerations
@@ -132,7 +137,8 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                  |
-| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+|:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------|
+| `1.2.0`  | 2023-06-29 | [27831](https://github.com/airbytehq/airbyte/pull/27831)                                                      | Add new streams                                                          |
 | `1.1.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738)                                                      | License Update: Elv2                                                     |
 | `1.0.2`  | 2023-06-13 | [27307](https://github.com/airbytehq/airbyte/pull/27307)                                                      | Fix `data_state` config typo                                             |
 | `1.0.1`  | 2023-05-30 | [26746](https://github.com/airbytehq/airbyte/pull/26746)                                                      | Remove `authSpecification` from connector spec in favour of advancedAuth |

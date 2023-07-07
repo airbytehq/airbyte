@@ -16,28 +16,1002 @@
 {"stream": "lead_status_change_activities", "data": {"user_name": "Airbyte Team", "contact_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "acti_udWvk5RJ6SFuO9Ra6d1pAJg200Q0Zyq43kEq0FpceIx", "new_status_id": "stat_nzPGZ5qJXdpP2GSFqzbPdyHgZWXkRfx6BjQih76ss0q", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-08-25T21:15:34.044000+00:00", "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "updated_by_name": "Airbyte Team", "old_status_id": "stat_y6v7svdpj3v1ZHd1GoiJFcKrUGrA0jl2Af53jfGbkN9", "_type": "LeadStatusChange", "created_by_name": "Airbyte Team", "new_status_label": "Interested", "date_updated": "2021-08-25T21:15:34.044000+00:00", "users": [], "old_status_label": "Qualified", "activity_at": "2021-08-25T21:15:34.044000+00:00", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg"}, "emitted_at": 1683623845343}
 {"stream": "sms_activities", "data": {"date_sent": null, "remote_phone": "+12025550186", "date_updated": "2021-08-11T18:14:32.750000+00:00", "status": "draft", "text": "Hi! This is a reminder that we have a call scheduled for 12pm PT today.", "local_country_iso": "US", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "_type": "SMS", "cost": null, "user_name": "Airbyte Team", "local_phone_formatted": "+1 415-444-5555", "direction": "outbound", "sequence_id": null, "sequence_subscription_id": null, "date_scheduled": null, "remote_phone_formatted": "+1 202-555-0186", "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "date_created": "2021-08-11T18:14:32.750000+00:00", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "error_message": null, "remote_country_iso": "US", "created_by_name": "Airbyte Team", "sequence_name": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "source": "Close.io", "updated_by_name": "Airbyte Team", "local_phone": "+14154445555", "id": "acti_GIVSys3F0wFeA519lDa5QKRfYOPgskyqKj2aXiCMSEO", "activity_at": "2021-08-11T18:14:32.750000+00:00", "attachments": [], "contact_id": "cont_fcD6Y7PO1v6Olb4gGs36mLtLhOjyRA9SjuXEpwBVyhI", "template_id": null}, "emitted_at": 1683623847086}
 {"stream": "sms_activities", "data": {"remote_phone": "+14156236785", "sequence_id": null, "source": "Close.io", "local_phone": "+14156251293", "template_id": "smstmpl_6zpaSGDsZyhBhrQH0jmZK9", "created_by_name": "Airbyte Team", "id": "acti_CXrlrlHc8QpP5MBXqCfcJKpctDqBREuG3Whj0JQODu4", "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j", "activity_at": "2022-11-09T14:02:18.756000+00:00", "cost": null, "direction": "outbound", "status": "draft", "remote_phone_formatted": "+1 415-623-6785", "remote_country_iso": "US", "attachments": [], "_type": "SMS", "local_phone_formatted": "+1 415-625-1293", "sequence_name": null, "sequence_subscription_id": null, "date_scheduled": null, "error_message": null, "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_sent": null, "date_updated": "2022-11-09T14:02:24.943000+00:00", "date_created": "2022-11-09T14:02:18.756000+00:00", "contact_id": "cont_OH7f9TYVgcDMqiSmL6Jawba9bxOIumKXD3NYtmClWAP", "user_name": "Airbyte Team", "text": "Hi!", "updated_by_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "local_country_iso": "US"}, "emitted_at": 1683623847532}
-{"stream": "sms_activities", "data": {"remote_phone": "+14156236785", "sequence_id": null, "source": "Close.io", "local_phone": "+14156251293", "template_id": "smstmpl_6zpaSGDsZyhBhrQH0jmZK9", "created_by_name": "Airbyte Team", "id": "acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP", "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j", "activity_at": "2022-11-09T12:54:44.404000+00:00", "cost": "3", "direction": "outbound", "status": "sent", "remote_phone_formatted": "+1 415-623-6785", "remote_country_iso": "US", "attachments": [{"media_id": "media_580CfGelcIvP5BzvIYTlhX", "url": "https://app.close.com/go/sms/acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP/media/media_580CfGelcIvP5BzvIYTlhX/", "thumbnail_url": "https://app.close.com/go/sms/acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP/media/media_580CfGelcIvP5BzvIYTlhX/thumbnail/", "content_type": "image/png", "size": 6132, "filename": "Airbyte_logo_75x75.png"}], "_type": "SMS", "local_phone_formatted": "+1 415-625-1293", "sequence_name": null, "sequence_subscription_id": null, "date_scheduled": null, "error_message": null, "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_sent": "2022-11-09T12:54:44.404000+00:00", "date_updated": "2022-11-09T12:54:44.405000+00:00", "date_created": "2022-11-09T12:54:15.456000+00:00", "contact_id": "cont_OH7f9TYVgcDMqiSmL6Jawba9bxOIumKXD3NYtmClWAP", "user_name": "Airbyte Team", "text": "Hi!", "updated_by_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "local_country_iso": "US"}, "emitted_at": 1683623847536}
-{"stream": "task_completed_activities", "data": {"activity_at": "2021-08-18T10:31:52.002000+00:00", "created_by_name": "Airbyte Team", "task_text": "Send Steli an email", "id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf", "updated_by_name": "Airbyte Team", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "users": [], "task_id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "task_assigned_to_name": "Airbyte Team", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "_type": "TaskCompleted", "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-08-18T10:31:52.002000+00:00", "user_name": "Airbyte Team", "date_updated": "2021-08-18T10:31:52.002000+00:00"}, "emitted_at": 1683623848975}
-{"stream": "task_completed_activities", "data": {"users": [], "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j", "updated_by_name": "Airbyte Team", "created_by_name": "Airbyte Team", "_type": "TaskCompleted", "task_id": "task_KAzmd4tqcQ1dYypqOjeZqmpKVlFZf3LWJfxCSoX29GY", "task_text": "Follow up", "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2022-11-09T12:44:26.185000+00:00", "user_name": "Airbyte Team", "date_updated": "2022-11-09T12:44:26.185000+00:00", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "activity_at": "2022-11-09T12:44:26.185000+00:00", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "acti_tEFyhPH4AKZ3YHaqqFEdm9Lot1oEI4yEyKzEf0ncbGE", "task_assigned_to_name": "Airbyte Team"}, "emitted_at": 1683623849512}
-{"stream": "task_completed_activities", "data": {"users": [], "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN", "updated_by_name": "Airbyte Team", "created_by_name": "Airbyte Team", "_type": "TaskCompleted", "task_id": "task_iHHSk7GuvunATuloc0hM2k2btiuJpasL12GkwHnIVjP", "task_text": "Follow up", "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2022-11-09T11:06:11.134000+00:00", "user_name": "Airbyte Team", "date_updated": "2022-11-09T11:06:11.134000+00:00", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "activity_at": "2022-11-09T11:06:11.134000+00:00", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "acti_DJOFYNqKoXSmPB4yJHVRafxAqhnvk5olHmmihw4cqND", "task_assigned_to_name": "Airbyte Team"}, "emitted_at": 1683623849515}
-{"stream": "leads", "data": {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "url": null, "display_name": "Alex", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "status_id": "stat_HrZ1aYkkxRORQSxdBcNPT31HkqxkK2w2uWGiK6yjkmK", "name": "Alex", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "html_url": "https://app.close.com/lead/lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY/", "tasks": [], "description": "", "updated_by_name": "Airbyte Team", "custom": {}, "date_created": "2022-07-05T21:01:25.608000+00:00", "addresses": [], "integration_links": [{"name": "Google Search", "url": "https://google.com/search?q=Alex"}], "contacts": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Cooper", "phones": [], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2022-07-05T21:01:25.612000+00:00", "title": "", "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Cooper"}], "name": "Cooper", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_Dsi7AGMRelIZ2I6DIKicaGJU7mwxPZElLIHy33xbjCM", "lead_id": "lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY", "date_updated": "2022-07-05T21:01:25.612000+00:00", "emails": []}], "status_label": "Potential", "id": "lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY", "opportunities": [], "date_updated": "2022-07-05T21:01:25.658000+00:00", "created_by_name": "Airbyte Team"}, "emitted_at": 1683623851437}
-{"stream": "leads", "data": {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "url": null, "display_name": "Bluth Company (Example\u00a0Lead)", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "status_id": "stat_nzPGZ5qJXdpP2GSFqzbPdyHgZWXkRfx6BjQih76ss0q", "name": "Bluth Company (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "html_url": "https://app.close.com/lead/lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2/", "tasks": [], "description": null, "updated_by_name": "Airbyte Team", "custom": {"Current Vendor/Software": "BiffCo", "Industry": "Real estate", "Lead Owner": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "Referral Source": "Google Search"}, "date_created": "2021-07-05T11:39:00.850000+00:00", "addresses": [{"zipcode": "90210", "country": "US", "city": "Los Angeles", "address_2": null, "label": "business", "state": "CA", "address_1": "100 Bluth Drive"}], "integration_links": [{"name": "Google Search", "url": "https://google.com/search?q=Bluth%20Company%20%28Example%C2%A0Lead%29"}], "contacts": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Gob Bluth", "phones": [{"country": "US", "phone_formatted": "+1 202-555-0186", "type": "office", "phone": "+12025550186"}], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:04.430000+00:00", "title": "Magician", "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Gob%20Bluth"}], "name": "Gob Bluth", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_fcD6Y7PO1v6Olb4gGs36mLtLhOjyRA9SjuXEpwBVyhI", "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "date_updated": "2021-07-13T11:39:04.430000+00:00", "emails": [{"email": "bluth@close.com", "type": "office"}], "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Gatekeeper"]}, {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Tobias F\u00fcnke", "phones": [], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:04.441000+00:00", "title": "Blue Man Group (Understudy)", "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Tobias%20F%C3%BCnke"}], "name": "Tobias F\u00fcnke", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_at5uglNbyasFp2KsoWQpjQmLp4lmmqX2p1nhvmPYytq", "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "date_updated": "2021-07-13T11:39:04.441000+00:00", "emails": [{"email": "tobiasfunke@close.com", "type": "office"}], "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Point of Contact"]}], "status_label": "Interested", "id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "opportunities": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "expected_value": 225000, "user_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "status_id": "stat_pI63Ohv8ByAaIFsguWoGCOP8FPV9vL9YJ8VbxTXgSe6", "lead_name": "Bluth Company (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "note": "Gob's ready to buy a $3,000 suit.", "value_currency": "USD", "value_formatted": "$3,000", "value_period": "one_time", "status_display_name": "Demo Completed", "value": 300000, "contact_name": null, "date_lost": null, "contact_id": null, "updated_by_name": "Airbyte Team", "date_created": "2021-07-13T11:39:04.817000+00:00", "status_label": "Demo Completed", "status_type": "active", "integration_links": [], "annualized_value": 300000, "annualized_expected_value": 225000, "id": "oppo_NkKuhUWfDoErNArh44hw7jkkx7sCl5bhlamtezmX7BE", "confidence": 75, "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "date_won": "2021-07-16", "date_updated": "2021-07-13T11:39:04.817000+00:00", "created_by_name": "Airbyte Team"}], "date_updated": "2022-11-08T16:28:54.174000+00:00", "created_by_name": "Airbyte Team", "custom.cf_1exVDDcGOEiIdhBhBv2VEGqnpIcJZZqiWkk4O7hbU3D": "BiffCo", "custom.cf_ZuP9X9UjiQzjptNHlT7DxzRATaFil2Ysoz0aGMq0Kim": "Real estate", "custom.cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "custom.cf_05o22yQYHMrFh4cCYCMSQJdSpODdabCbGQ8il5Do7X4": "Google Search"}, "emitted_at": 1683623851443}
-{"stream": "leads", "data": {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "url": "https://close.com", "display_name": "Close (Example\u00a0Lead)", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "status_id": "stat_nzPGZ5qJXdpP2GSFqzbPdyHgZWXkRfx6BjQih76ss0q", "name": "Close (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "html_url": "https://app.close.com/lead/lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz/", "tasks": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "text": "Call Steli", "date": "2021-07-18", "is_dateless": null, "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "object_type": "taskcompleted", "is_complete": true, "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "due_date": "2021-07-18", "lead_name": "Close (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "assigned_to_name": "Airbyte Team", "object_id": "acti_POPD3uA7lSfdf4xLO7PgsxKeoJS1dCRthzQRb13Xbyw", "contact_name": null, "contact_id": null, "updated_by_name": "Airbyte Team", "view": "archive", "date_created": "2021-07-13T11:39:03.520000+00:00", "id": "task_bboTdYSlGqTBSXF0FEwhBOywDCV6iKDyMWiEfNFi7sW", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "_type": "lead", "date_updated": "2022-11-08T12:21:15.730000+00:00", "created_by_name": "Airbyte Team"}, {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "text": "Send Steli an email", "date": "2021-07-16", "is_dateless": null, "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "object_type": "taskcompleted", "is_complete": true, "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "due_date": "2021-07-16", "lead_name": "Close (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "assigned_to_name": "Airbyte Team", "object_id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf", "contact_name": null, "contact_id": null, "updated_by_name": "Airbyte Team", "view": "archive", "date_created": "2021-07-13T11:39:03.463000+00:00", "id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "_type": "lead", "date_updated": "2021-08-18T10:31:52.081000+00:00", "created_by_name": "Airbyte Team"}], "description": "Visit our blog for high quality sales content, blog.close.com!", "updated_by_name": "Airbyte Team", "custom": {"Current Vendor/Software": "Stark Industries", "Industry": "Software", "Lead Owner": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "Referral Source": "Website"}, "date_created": "2021-07-13T11:39:03.315000+00:00", "addresses": [{"zipcode": "94120", "country": "US", "city": "San Francisco", "address_2": null, "label": "mailing", "state": "CA", "address_1": "PO Box 7775 #69574"}], "integration_links": [{"name": "Google Search", "url": "https://google.com/search?q=Close%20%28Example%C2%A0Lead%29"}], "contacts": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Steli Efti", "phones": [{"country": "US", "phone_formatted": "+1 650-517-6539", "type": "office", "phone": "+16505176539"}], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:03.354000+00:00", "title": "CEO & Co-Founder", "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Steli%20Efti"}], "name": "Steli Efti", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_updated": "2021-07-13T11:39:03.354000+00:00", "emails": [{"email": "sales@close.com", "type": "office"}], "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Decision Maker"]}, {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Nick Persico", "phones": [{"country": "US", "phone_formatted": "+1 833-462-5673", "type": "office", "phone": "+18334625673"}], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:03.366000+00:00", "title": "Director of Revenue", "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Nick%20Persico"}], "name": "Nick Persico", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_FY5ws8upMQQyD9vKg4jzwRb6V3MLctQeNTc2NaUmAyo", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_updated": "2021-07-13T11:39:03.366000+00:00", "emails": [{"email": "nick@close.com", "type": "office"}], "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Gatekeeper", "Point of Contact"]}, {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Customer Success Team", "phones": [{"country": "US", "phone_formatted": "+1 833-462-5673", "type": "office", "phone": "+18334625673"}], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:03.374000+00:00", "title": null, "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Customer%20Success%20Team"}], "name": "Customer Success Team", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_4cmimyQMTMi61kc72mLAV9XdHdddw6LR1LqzvoNdSuV", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_updated": "2021-07-13T11:39:03.374000+00:00", "emails": [{"email": "success@close.com", "type": "office"}]}, {"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "display_name": "Support", "phones": [], "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "urls": [], "date_created": "2021-07-13T11:39:03.380000+00:00", "title": null, "integration_links": [{"name": "LinkedIn Search", "url": "https://www.linkedin.com/search/results/people/?keywords=Support"}], "name": "Support", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "id": "cont_CI5c6Ekew0cyhSgoFIXeaz2PJVmmtigF2XNIGUDXKnu", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_updated": "2021-07-13T11:39:03.380000+00:00", "emails": [{"email": "support@close.com", "type": "office"}]}], "status_label": "Interested", "id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "opportunities": [{"updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "expected_value": 37500, "user_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "status_id": "stat_AWXzFJkvkHVyJQPFulY0wM7LrQRiMEtQChGumG035bH", "lead_name": "Close (Example\u00a0Lead)", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "note": "Use opportunities to track which stage of the pipeline your deals are in and the revenue associated with them.", "value_currency": "USD", "value_formatted": "$500", "value_period": "one_time", "status_display_name": "Proposal Sent", "value": 50000, "contact_name": "Steli Efti", "date_lost": null, "contact_id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI", "updated_by_name": "Airbyte Team", "date_created": "2021-07-13T11:39:04.284000+00:00", "status_label": "Proposal Sent", "status_type": "active", "integration_links": [], "annualized_value": 50000, "annualized_expected_value": 37500, "id": "oppo_1TfmaSLuECcdSQIBnjUOBj1gAXdyrp4SFaogvcEmtbk", "confidence": 75, "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_won": "2021-07-15", "date_updated": "2021-08-18T10:26:44.306000+00:00", "created_by_name": "Airbyte Team"}], "date_updated": "2022-11-09T02:40:26.489000+00:00", "created_by_name": "Airbyte Team", "custom.cf_1exVDDcGOEiIdhBhBv2VEGqnpIcJZZqiWkk4O7hbU3D": "Stark Industries", "custom.cf_ZuP9X9UjiQzjptNHlT7DxzRATaFil2Ysoz0aGMq0Kim": "Software", "custom.cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "custom.cf_05o22yQYHMrFh4cCYCMSQJdSpODdabCbGQ8il5Do7X4": "Website"}, "emitted_at": 1683623851449}
-{"stream": "lead_tasks", "data": {"contact_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "object_type": "taskcompleted", "_type": "lead", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "is_complete": true, "is_dateless": null, "due_date": "2021-07-16", "view": "archive", "created_by_name": "Airbyte Team", "assigned_to_name": "Airbyte Team", "date": "2021-07-16", "object_id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf", "lead_name": "Close (Example\u00a0Lead)", "id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_updated": "2021-08-18T10:31:52.081000+00:00", "date_created": "2021-07-13T11:39:03.463000+00:00", "text": "Send Steli an email", "updated_by_name": "Airbyte Team", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "contact_name": null}, "emitted_at": 1683623853073}
-{"stream": "lead_tasks", "data": {"contact_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "object_type": "taskcompleted", "_type": "lead", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "is_complete": true, "is_dateless": null, "due_date": "2021-07-18", "view": "archive", "created_by_name": "Airbyte Team", "assigned_to_name": "Airbyte Team", "date": "2021-07-18", "object_id": "acti_POPD3uA7lSfdf4xLO7PgsxKeoJS1dCRthzQRb13Xbyw", "lead_name": "Close (Example\u00a0Lead)", "id": "task_bboTdYSlGqTBSXF0FEwhBOywDCV6iKDyMWiEfNFi7sW", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_updated": "2022-11-08T12:21:15.730000+00:00", "date_created": "2021-07-13T11:39:03.520000+00:00", "text": "Call Steli", "updated_by_name": "Airbyte Team", "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "contact_name": null}, "emitted_at": 1683623853077}
-{"stream": "lead_tasks", "data": {"view": "inbox", "is_complete": false, "date": "2022-11-12", "assigned_to_name": "Airbyte Team", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "lead_name": "Wayne Enterprises (Example\u00a0Lead)", "object_type": null, "is_dateless": false, "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN", "_type": "lead", "date_updated": "2022-11-09T11:06:06.145000+00:00", "text": "Follow up", "due_date": "2022-11-12", "updated_by_name": "Airbyte Team", "contact_id": null, "contact_name": null, "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by_name": "Airbyte Team", "id": "task_Wgzt6t0ZGRlvZTnfhSfxHoFRWm6zXBMuuecKxRkfYmZ", "object_id": null, "date_created": "2022-11-08T15:10:57.220000+00:00"}, "emitted_at": 1683623853713}
-{"stream": "email_followup_tasks", "data": {"lead_name": "Wayne Enterprises (Example\u00a0Lead)", "is_complete": false, "date_created": "2022-11-08T15:44:05.221000+00:00", "object_id": "acti_wK6I4m4SqRMvvm0VHR8DhdUL35HRfjIlBkrMVCKWNaU", "contact_name": "Bruce Wayne", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by_name": "Airbyte Team", "date": "2022-11-15", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "view": "inbox", "body_preview": "Test", "date_updated": "2022-11-08T16:28:54.794000+00:00", "email_id": "acti_tDbd3J7HQmX2I5dBWJSXrlwCdKpZedpsTdAWLsYPzUs", "subject": "(no subject)", "id": "noti_3I4QaKqYel0nzGyKT8mpDKy4q2KKu4IuIZZ3Gb7gs4x", "object_type": "emailthread", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "updated_by_name": "Airbyte Team", "assigned_to_name": "Airbyte Team", "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN", "_type": "email_followup", "contact_id": "cont_ubIO1eBUVw3iFJ1Ot4LY12R7oADqn7bsLUF7NU2fJO6"}, "emitted_at": 1683623858573}
-{"stream": "email_followup_tasks", "data": {"lead_name": "Test Lead", "is_complete": false, "date_created": "2022-11-09T12:54:10.330000+00:00", "object_id": "acti_fFBPZHGPKt60kZG2SzI5ws5OMbysXqCAGJuGlKucDy5", "contact_name": "User2", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "created_by_name": "Airbyte Team", "date": "2022-11-16", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "view": "inbox", "body_preview": "Hi Iryna,  \n  \nI'm Jean with Airbyte. We help companies in the space [INSERT YOUR\nPRODUCT/SERVICE]. I wanted to learn how you handle this currently at Test Lead\nand show you what we're working on.  \n ", "date_updated": "2022-11-09T12:54:10.330000+00:00", "email_id": "acti_a3AsG3P38a8yDx0XgI8ZNZR4Ko8XRUBybauASuT8C2j", "subject": "Test Lead + Airbyte", "id": "noti_JU7vkNkhpywznaGu5P0WuBWxsMXtzZmkOSXaCxbxTsN", "object_type": "emailthread", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "updated_by_name": "Airbyte Team", "assigned_to_name": "Airbyte Team", "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j", "_type": "email_followup", "contact_id": "cont_OH7f9TYVgcDMqiSmL6Jawba9bxOIumKXD3NYtmClWAP"}, "emitted_at": 1683623858578}
-{"stream": "opportunity_due_tasks", "data": {"assigned_to_name": "Airbyte Team", "created_by_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "opportunity_value": 50000, "id": "noti_ELGehUlDZ1pmlIeibPlLbTyruBTKdACAQ1q1XLiWo6B", "date_created": "2021-07-13T11:39:04.316000+00:00", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "object_id": "oppo_1TfmaSLuECcdSQIBnjUOBj1gAXdyrp4SFaogvcEmtbk", "contact_name": "Steli Efti", "opportunity_value_period": "one_time", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "lead_name": "Close (Example\u00a0Lead)", "object_type": "opportunity", "contact_id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI", "view": "inbox", "updated_by_name": "Airbyte Team", "opportunity_note": "Use opportunities to track which stage of the pipeline your deals are in and the revenue associated with them.", "opportunity_value_formatted": "$500", "date": "2021-07-15", "_type": "opportunity_due", "is_complete": false, "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz", "date_updated": "2021-08-18T10:26:44.323000+00:00"}, "emitted_at": 1683623866914}
-{"stream": "opportunity_due_tasks", "data": {"assigned_to_name": "Airbyte Team", "created_by_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "opportunity_value": 300000, "id": "noti_wcbYMl0dpbdcypRygf9jYd9axfIzvSsj06gXHmPmE4k", "date_created": "2021-07-13T11:39:04.839000+00:00", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "object_id": "oppo_NkKuhUWfDoErNArh44hw7jkkx7sCl5bhlamtezmX7BE", "contact_name": null, "opportunity_value_period": "one_time", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "lead_name": "Bluth Company (Example\u00a0Lead)", "object_type": "opportunity", "contact_id": null, "view": "inbox", "updated_by_name": "Airbyte Team", "opportunity_note": "Gob's ready to buy a $3,000 suit.", "opportunity_value_formatted": "$3,000", "date": "2021-07-16", "_type": "opportunity_due", "is_complete": false, "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2", "date_updated": "2021-07-13T11:39:04.839000+00:00"}, "emitted_at": 1683623866919}
-{"stream": "opportunity_due_tasks", "data": {"assigned_to_name": "Airbyte Team", "created_by_name": "Airbyte Team", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "opportunity_value": 50000, "id": "noti_IPi8EZj1AtqSwbnSMg5OT2DpUqNHCl2RM7luvbx9zsp", "date_created": "2021-07-13T11:39:05.083000+00:00", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "object_id": "oppo_jXatpqaQ3HK50yBO9vMWg2wFyHoqbCJtgbRYAMuEGor", "contact_name": null, "opportunity_value_period": "one_time", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "lead_name": "Wayne Enterprises (Example\u00a0Lead)", "object_type": "opportunity", "contact_id": null, "view": "inbox", "updated_by_name": "Airbyte Team", "opportunity_note": "Bruce needs new software for the Bat Cave.", "opportunity_value_formatted": "$500", "date": "2021-07-15", "_type": "opportunity_due", "is_complete": false, "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN", "date_updated": "2021-07-13T11:39:05.083000+00:00"}, "emitted_at": 1683623866923}
-{"stream": "events", "data": {"action": "updated", "api_key_id": null, "changed_fields": ["date_updated", "next_billing_on"], "data": {"address_id": null, "bundle_id": null, "carrier": "twilio", "country": "US", "date_created": "2022-11-08T12:35:29.464000+00:00", "date_updated": "2023-06-07T10:01:33.154000+00:00", "forward_to": null, "forward_to_enabled": false, "forward_to_formatted": null, "id": "phon_jhMWlB6anhT8vcsGNEFukaVl806zfxCgbSAAkvtNBpN", "is_group_number": false, "is_verified": false, "label": null, "last_billed_price": "1.15", "mms_enabled": true, "next_billing_on": "2023-07-07", "number": "+14156251293", "number_formatted": "+1 415-625-1293", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "press_1_to_accept": true, "sms_enabled": true, "supports_mms_to_countries": ["CA", "US"], "supports_sms_to_countries": ["CA", "PR", "US"], "type": "internal", "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "voicemail_greeting_url": "https://closeio-voicemail-greetings.s3.amazonaws.com/14bzVblrIaekmXSGQEKM11/undefined.mp3"}, "date_created": "2023-06-07T10:01:33.158000", "date_updated": "2023-06-07T10:01:33.158000", "id": "ev_1iyemhdudI2Dqvy41Xounv", "lead_id": null, "meta": {}, "oauth_client_id": null, "oauth_scope": null, "object_id": "phon_jhMWlB6anhT8vcsGNEFukaVl806zfxCgbSAAkvtNBpN", "object_type": "phone_number", "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "previous_data": {"date_updated": "2023-05-07T10:01:09.836000+00:00", "next_billing_on": "2023-06-07"}, "request_id": null, "user_id": null}, "emitted_at": 1686261259775}
-{"stream": "lead_custom_fields", "data": {"date_created": "2021-07-13T11:39:01.352000+00:00", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "accepts_multiple_values": false, "description": null, "name": "Lead Owner", "is_shared": false, "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "back_reference_is_visible": null, "date_updated": "2021-07-13T11:39:01.352000+00:00", "referenced_custom_type_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "choices": null, "editable_with_roles": [], "id": "cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh", "type": "user"}, "emitted_at": 1683623873222}
-{"stream": "contact_custom_fields", "data": {"is_shared": false, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "referenced_custom_type_id": null, "date_updated": "2021-08-11T18:05:14.598000+00:00", "accepts_multiple_values": false, "choices": null, "editable_with_roles": [], "name": "Birthday", "description": null, "type": "date", "id": "cf_Qj3b4cWxvmvqTtZ0U5TaprRDah8g7jRsavfVh8NCPcu", "back_reference_is_visible": null, "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-08-11T18:05:14.598000+00:00"}, "emitted_at": 1683623874178}
-{"stream": "opportunity_custom_fields", "data": {"description": null, "is_shared": false, "accepts_multiple_values": false, "editable_with_roles": [], "date_updated": "2021-07-13T11:39:01.714000+00:00", "choices": null, "back_reference_is_visible": null, "type": "text", "id": "cf_pzwnr4IYZvEqq68ENLlWknEZdVsPk53rd3571eRcP56", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "name": "Contract Link (Example)", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-07-13T11:39:01.714000+00:00", "referenced_custom_type_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"}, "emitted_at": 1683623874993}
-{"stream": "opportunity_custom_fields", "data": {"description": null, "is_shared": false, "accepts_multiple_values": true, "editable_with_roles": [], "date_updated": "2021-07-13T11:39:01.447000+00:00", "choices": ["Widget A", "Widget B", "Widget C"], "back_reference_is_visible": null, "type": "choices", "id": "cf_aDbTIccjcJ9GQqM0xqA8uqgjYuEclhLMxnqfG3TAhsx", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "name": "Product (Example)", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-07-13T11:39:01.447000+00:00", "referenced_custom_type_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"}, "emitted_at": 1683623874996}
-{"stream": "opportunity_custom_fields", "data": {"description": null, "is_shared": false, "accepts_multiple_values": false, "editable_with_roles": [], "date_updated": "2021-07-13T11:39:01.676000+00:00", "choices": null, "back_reference_is_visible": null, "type": "date", "id": "cf_Z6Vyxe2J0lrRqFpWQQGLkPo8iwhmZ9hzWc69ll2oFox", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "name": "Renewal Date (Example)", "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "date_created": "2021-07-13T11:39:01.676000+00:00", "referenced_custom_type_id": null, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"}, "emitted_at": 1683623874998}
-{"stream": "activity_custom_fields", "data": {"id": "cf_UftGNTS2rq9XMG9hOHkALp5cgn4Xl8nZqN7gReax3lc", "referenced_custom_type_id": null, "date_created": "2021-07-13T11:39:02.212000+00:00", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "type": "contact", "date_updated": "2021-07-13T11:39:02.212000+00:00", "editable_with_roles": [], "name": "Contact", "is_shared": false, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "back_reference_is_visible": null, "description": null, "choices": null, "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "accepts_multiple_values": false, "custom_activity_type_id": "actitype_0J9YvrOw4opjiYI4aDY6wj", "required": false}, "emitted_at": 1683623875781}
+{
+  "stream": "sms_activities",
+  "data": {
+    "remote_phone": "+14156236785",
+    "sequence_id": null,
+    "source": "Close.io",
+    "local_phone": "+14156251293",
+    "template_id": "smstmpl_6zpaSGDsZyhBhrQH0jmZK9",
+    "created_by_name": "Airbyte Team",
+    "id": "acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP",
+    "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j",
+    "activity_at": "2022-11-09T12:54:44.404000+00:00",
+    "cost": "3",
+    "direction": "outbound",
+    "status": "sent",
+    "remote_phone_formatted": "+1 415-623-6785",
+    "remote_country_iso": "US",
+    "attachments": [
+      {
+        "media_id": "media_580CfGelcIvP5BzvIYTlhX",
+        "url": "https://app.close.com/go/sms/acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP/media/media_580CfGelcIvP5BzvIYTlhX/",
+        "thumbnail_url": "https://app.close.com/go/sms/acti_eQ2xwn1RN5sdEXkGpln8Vag8rwPsYfU1qbyeN7dBPsP/media/media_580CfGelcIvP5BzvIYTlhX/thumbnail/",
+        "content_type": "image/png",
+        "size": 6132,
+        "filename": "Airbyte_logo_75x75.png"
+      }
+    ],
+    "_type": "SMS",
+    "local_phone_formatted": "+1 415-625-1293",
+    "sequence_name": null,
+    "sequence_subscription_id": null,
+    "date_scheduled": null,
+    "error_message": null,
+    "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_sent": "2022-11-09T12:54:44.404000+00:00",
+    "date_updated": "2022-11-09T12:54:44.405000+00:00",
+    "date_created": "2022-11-09T12:54:15.456000+00:00",
+    "contact_id": "cont_OH7f9TYVgcDMqiSmL6Jawba9bxOIumKXD3NYtmClWAP",
+    "user_name": "Airbyte Team",
+    "text": "Hi!",
+    "updated_by_name": "Airbyte Team",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "local_country_iso": "US"
+  },
+  "emitted_at": 1683623847536
+}
+{
+  "stream": "task_completed_activities",
+  "data": {
+    "activity_at": "2021-08-18T10:31:52.002000+00:00",
+    "created_by_name": "Airbyte Team",
+    "task_text": "Send Steli an email",
+    "id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf",
+    "updated_by_name": "Airbyte Team",
+    "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+    "users": [],
+    "task_id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "task_assigned_to_name": "Airbyte Team",
+    "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "_type": "TaskCompleted",
+    "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2021-08-18T10:31:52.002000+00:00",
+    "user_name": "Airbyte Team",
+    "date_updated": "2021-08-18T10:31:52.002000+00:00"
+  },
+  "emitted_at": 1683623848975
+}
+{
+  "stream": "task_completed_activities",
+  "data": {
+    "users": [],
+    "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j",
+    "updated_by_name": "Airbyte Team",
+    "created_by_name": "Airbyte Team",
+    "_type": "TaskCompleted",
+    "task_id": "task_KAzmd4tqcQ1dYypqOjeZqmpKVlFZf3LWJfxCSoX29GY",
+    "task_text": "Follow up",
+    "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2022-11-09T12:44:26.185000+00:00",
+    "user_name": "Airbyte Team",
+    "date_updated": "2022-11-09T12:44:26.185000+00:00",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "activity_at": "2022-11-09T12:44:26.185000+00:00",
+    "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "id": "acti_tEFyhPH4AKZ3YHaqqFEdm9Lot1oEI4yEyKzEf0ncbGE",
+    "task_assigned_to_name": "Airbyte Team"
+  },
+  "emitted_at": 1683623849512
+}
+{
+  "stream": "task_completed_activities",
+  "data": {
+    "users": [],
+    "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN",
+    "updated_by_name": "Airbyte Team",
+    "created_by_name": "Airbyte Team",
+    "_type": "TaskCompleted",
+    "task_id": "task_iHHSk7GuvunATuloc0hM2k2btiuJpasL12GkwHnIVjP",
+    "task_text": "Follow up",
+    "task_assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2022-11-09T11:06:11.134000+00:00",
+    "user_name": "Airbyte Team",
+    "date_updated": "2022-11-09T11:06:11.134000+00:00",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "activity_at": "2022-11-09T11:06:11.134000+00:00",
+    "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "id": "acti_DJOFYNqKoXSmPB4yJHVRafxAqhnvk5olHmmihw4cqND",
+    "task_assigned_to_name": "Airbyte Team"
+  },
+  "emitted_at": 1683623849515
+}
+{
+  "stream": "leads",
+  "data": {
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "url": null,
+    "display_name": "Alex",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "status_id": "stat_HrZ1aYkkxRORQSxdBcNPT31HkqxkK2w2uWGiK6yjkmK",
+    "name": "Alex",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "html_url": "https://app.close.com/lead/lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY/",
+    "tasks": [],
+    "description": "",
+    "updated_by_name": "Airbyte Team",
+    "custom": {},
+    "date_created": "2022-07-05T21:01:25.608000+00:00",
+    "addresses": [],
+    "integration_links": [
+      {
+        "name": "Google Search",
+        "url": "https://google.com/search?q=Alex"
+      }
+    ],
+    "contacts": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Cooper",
+        "phones": [],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2022-07-05T21:01:25.612000+00:00",
+        "title": "",
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Cooper"
+          }
+        ],
+        "name": "Cooper",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_Dsi7AGMRelIZ2I6DIKicaGJU7mwxPZElLIHy33xbjCM",
+        "lead_id": "lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY",
+        "date_updated": "2022-07-05T21:01:25.612000+00:00",
+        "emails": []
+      }
+    ],
+    "status_label": "Potential",
+    "id": "lead_Eohw2Vf6WOKZHQ97nS1UTL3iV62pAJFX3ROgJ5WT4cY",
+    "opportunities": [],
+    "date_updated": "2022-07-05T21:01:25.658000+00:00",
+    "created_by_name": "Airbyte Team"
+  },
+  "emitted_at": 1683623851437
+}
+{
+  "stream": "leads",
+  "data": {
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "url": null,
+    "display_name": "Bluth Company (Example\u00a0Lead)",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "status_id": "stat_nzPGZ5qJXdpP2GSFqzbPdyHgZWXkRfx6BjQih76ss0q",
+    "name": "Bluth Company (Example\u00a0Lead)",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "html_url": "https://app.close.com/lead/lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2/",
+    "tasks": [],
+    "description": null,
+    "updated_by_name": "Airbyte Team",
+    "custom": {
+      "Current Vendor/Software": "BiffCo",
+      "Industry": "Real estate",
+      "Lead Owner": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+      "Referral Source": "Google Search"
+    },
+    "date_created": "2021-07-05T11:39:00.850000+00:00",
+    "addresses": [
+      {
+        "zipcode": "90210",
+        "country": "US",
+        "city": "Los Angeles",
+        "address_2": null,
+        "label": "business",
+        "state": "CA",
+        "address_1": "100 Bluth Drive"
+      }
+    ],
+    "integration_links": [
+      {
+        "name": "Google Search",
+        "url": "https://google.com/search?q=Bluth%20Company%20%28Example%C2%A0Lead%29"
+      }
+    ],
+    "contacts": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Gob Bluth",
+        "phones": [
+          {
+            "country": "US",
+            "phone_formatted": "+1 202-555-0186",
+            "type": "office",
+            "phone": "+12025550186"
+          }
+        ],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:04.430000+00:00",
+        "title": "Magician",
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Gob%20Bluth"
+          }
+        ],
+        "name": "Gob Bluth",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_fcD6Y7PO1v6Olb4gGs36mLtLhOjyRA9SjuXEpwBVyhI",
+        "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2",
+        "date_updated": "2021-07-13T11:39:04.430000+00:00",
+        "emails": [
+          {
+            "email": "bluth@close.com",
+            "type": "office"
+          }
+        ],
+        "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Gatekeeper"]
+      }, {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Tobias F\u00fcnke",
+        "phones": [],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:04.441000+00:00",
+        "title": "Blue Man Group (Understudy)",
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Tobias%20F%C3%BCnke"
+          }
+        ],
+        "name": "Tobias F\u00fcnke",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_at5uglNbyasFp2KsoWQpjQmLp4lmmqX2p1nhvmPYytq",
+        "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2",
+        "date_updated": "2021-07-13T11:39:04.441000+00:00",
+        "emails": [
+          {
+            "email": "tobiasfunke@close.com",
+            "type": "office"
+          }
+        ],
+        "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Point of Contact"]
+      }
+    ],
+    "status_label": "Interested",
+    "id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2",
+    "opportunities": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "expected_value": 225000,
+        "user_name": "Airbyte Team",
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "status_id": "stat_pI63Ohv8ByAaIFsguWoGCOP8FPV9vL9YJ8VbxTXgSe6",
+        "lead_name": "Bluth Company (Example\u00a0Lead)",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "note": "Gob's ready to buy a $3,000 suit.",
+        "value_currency": "USD",
+        "value_formatted": "$3,000",
+        "value_period": "one_time",
+        "status_display_name": "Demo Completed",
+        "value": 300000,
+        "contact_name": null,
+        "date_lost": null,
+        "contact_id": null,
+        "updated_by_name": "Airbyte Team",
+        "date_created": "2021-07-13T11:39:04.817000+00:00",
+        "status_label": "Demo Completed",
+        "status_type": "active",
+        "integration_links": [],
+        "annualized_value": 300000,
+        "annualized_expected_value": 225000,
+        "id": "oppo_NkKuhUWfDoErNArh44hw7jkkx7sCl5bhlamtezmX7BE",
+        "confidence": 75,
+        "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2",
+        "date_won": "2021-07-16",
+        "date_updated": "2021-07-13T11:39:04.817000+00:00",
+        "created_by_name": "Airbyte Team"
+      }
+    ],
+    "date_updated": "2022-11-08T16:28:54.174000+00:00",
+    "created_by_name": "Airbyte Team",
+    "custom.cf_1exVDDcGOEiIdhBhBv2VEGqnpIcJZZqiWkk4O7hbU3D": "BiffCo",
+    "custom.cf_ZuP9X9UjiQzjptNHlT7DxzRATaFil2Ysoz0aGMq0Kim": "Real estate",
+    "custom.cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "custom.cf_05o22yQYHMrFh4cCYCMSQJdSpODdabCbGQ8il5Do7X4": "Google Search"
+  },
+  "emitted_at": 1683623851443
+}
+{
+  "stream": "leads",
+  "data": {
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "url": "https://close.com",
+    "display_name": "Close (Example\u00a0Lead)",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "status_id": "stat_nzPGZ5qJXdpP2GSFqzbPdyHgZWXkRfx6BjQih76ss0q",
+    "name": "Close (Example\u00a0Lead)",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "html_url": "https://app.close.com/lead/lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz/",
+    "tasks": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "text": "Call Steli",
+        "date": "2021-07-18",
+        "is_dateless": null,
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "object_type": "taskcompleted",
+        "is_complete": true,
+        "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "due_date": "2021-07-18",
+        "lead_name": "Close (Example\u00a0Lead)",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "assigned_to_name": "Airbyte Team",
+        "object_id": "acti_POPD3uA7lSfdf4xLO7PgsxKeoJS1dCRthzQRb13Xbyw",
+        "contact_name": null,
+        "contact_id": null,
+        "updated_by_name": "Airbyte Team",
+        "view": "archive",
+        "date_created": "2021-07-13T11:39:03.520000+00:00",
+        "id": "task_bboTdYSlGqTBSXF0FEwhBOywDCV6iKDyMWiEfNFi7sW",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "_type": "lead",
+        "date_updated": "2022-11-08T12:21:15.730000+00:00",
+        "created_by_name": "Airbyte Team"
+      }, {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "text": "Send Steli an email",
+        "date": "2021-07-16",
+        "is_dateless": null,
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "object_type": "taskcompleted",
+        "is_complete": true,
+        "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "due_date": "2021-07-16",
+        "lead_name": "Close (Example\u00a0Lead)",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "assigned_to_name": "Airbyte Team",
+        "object_id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf",
+        "contact_name": null,
+        "contact_id": null,
+        "updated_by_name": "Airbyte Team",
+        "view": "archive",
+        "date_created": "2021-07-13T11:39:03.463000+00:00",
+        "id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "_type": "lead",
+        "date_updated": "2021-08-18T10:31:52.081000+00:00",
+        "created_by_name": "Airbyte Team"
+      }
+    ],
+    "description": "Visit our blog for high quality sales content, blog.close.com!",
+    "updated_by_name": "Airbyte Team",
+    "custom": {
+      "Current Vendor/Software": "Stark Industries",
+      "Industry": "Software",
+      "Lead Owner": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+      "Referral Source": "Website"
+    },
+    "date_created": "2021-07-13T11:39:03.315000+00:00",
+    "addresses": [
+      {
+        "zipcode": "94120",
+        "country": "US",
+        "city": "San Francisco",
+        "address_2": null,
+        "label": "mailing",
+        "state": "CA",
+        "address_1": "PO Box 7775 #69574"
+      }
+    ],
+    "integration_links": [
+      {
+        "name": "Google Search",
+        "url": "https://google.com/search?q=Close%20%28Example%C2%A0Lead%29"
+      }
+    ],
+    "contacts": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Steli Efti",
+        "phones": [
+          {
+            "country": "US",
+            "phone_formatted": "+1 650-517-6539",
+            "type": "office",
+            "phone": "+16505176539"
+          }
+        ],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:03.354000+00:00",
+        "title": "CEO & Co-Founder",
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Steli%20Efti"
+          }
+        ],
+        "name": "Steli Efti",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "date_updated": "2021-07-13T11:39:03.354000+00:00",
+        "emails": [
+          {
+            "email": "sales@close.com",
+            "type": "office"
+          }
+        ],
+        "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Decision Maker"]
+      }, {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Nick Persico",
+        "phones": [
+          {
+            "country": "US",
+            "phone_formatted": "+1 833-462-5673",
+            "type": "office",
+            "phone": "+18334625673"
+          }
+        ],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:03.366000+00:00",
+        "title": "Director of Revenue",
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Nick%20Persico"
+          }
+        ],
+        "name": "Nick Persico",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_FY5ws8upMQQyD9vKg4jzwRb6V3MLctQeNTc2NaUmAyo",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "date_updated": "2021-07-13T11:39:03.366000+00:00",
+        "emails": [
+          {
+            "email": "nick@close.com",
+            "type": "office"
+          }
+        ],
+        "custom.cf_oYaaZ3ikZjy6qc7htLdSWJxSxEZTova9HHLLLj67cyi": ["Gatekeeper", "Point of Contact"]
+      }, {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Customer Success Team",
+        "phones": [
+          {
+            "country": "US",
+            "phone_formatted": "+1 833-462-5673",
+            "type": "office",
+            "phone": "+18334625673"
+          }
+        ],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:03.374000+00:00",
+        "title": null,
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Customer%20Success%20Team"
+          }
+        ],
+        "name": "Customer Success Team",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_4cmimyQMTMi61kc72mLAV9XdHdddw6LR1LqzvoNdSuV",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "date_updated": "2021-07-13T11:39:03.374000+00:00",
+        "emails": [
+          {
+            "email": "success@close.com",
+            "type": "office"
+          }
+        ]
+      }, {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "display_name": "Support",
+        "phones": [],
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "urls": [],
+        "date_created": "2021-07-13T11:39:03.380000+00:00",
+        "title": null,
+        "integration_links": [
+          {
+            "name": "LinkedIn Search",
+            "url": "https://www.linkedin.com/search/results/people/?keywords=Support"
+          }
+        ],
+        "name": "Support",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "id": "cont_CI5c6Ekew0cyhSgoFIXeaz2PJVmmtigF2XNIGUDXKnu",
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "date_updated": "2021-07-13T11:39:03.380000+00:00",
+        "emails": [
+          {
+            "email": "support@close.com",
+            "type": "office"
+          }
+        ]
+      }
+    ],
+    "status_label": "Interested",
+    "id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+    "opportunities": [
+      {
+        "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "expected_value": 37500,
+        "user_name": "Airbyte Team",
+        "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+        "status_id": "stat_AWXzFJkvkHVyJQPFulY0wM7LrQRiMEtQChGumG035bH",
+        "lead_name": "Close (Example\u00a0Lead)",
+        "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+        "note": "Use opportunities to track which stage of the pipeline your deals are in and the revenue associated with them.",
+        "value_currency": "USD",
+        "value_formatted": "$500",
+        "value_period": "one_time",
+        "status_display_name": "Proposal Sent",
+        "value": 50000,
+        "contact_name": "Steli Efti",
+        "date_lost": null,
+        "contact_id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI",
+        "updated_by_name": "Airbyte Team",
+        "date_created": "2021-07-13T11:39:04.284000+00:00",
+        "status_label": "Proposal Sent",
+        "status_type": "active",
+        "integration_links": [],
+        "annualized_value": 50000,
+        "annualized_expected_value": 37500,
+        "id": "oppo_1TfmaSLuECcdSQIBnjUOBj1gAXdyrp4SFaogvcEmtbk",
+        "confidence": 75,
+        "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+        "date_won": "2021-07-15",
+        "date_updated": "2021-08-18T10:26:44.306000+00:00",
+        "created_by_name": "Airbyte Team"
+      }
+    ],
+    "date_updated": "2022-11-09T02:40:26.489000+00:00",
+    "created_by_name": "Airbyte Team",
+    "custom.cf_1exVDDcGOEiIdhBhBv2VEGqnpIcJZZqiWkk4O7hbU3D": "Stark Industries",
+    "custom.cf_ZuP9X9UjiQzjptNHlT7DxzRATaFil2Ysoz0aGMq0Kim": "Software",
+    "custom.cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "custom.cf_05o22yQYHMrFh4cCYCMSQJdSpODdabCbGQ8il5Do7X4": "Website"
+  },
+  "emitted_at": 1683623851449
+}
+{
+  "stream": "lead_tasks",
+  "data": {
+    "contact_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "object_type": "taskcompleted",
+    "_type": "lead",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "is_complete": true,
+    "is_dateless": null,
+    "due_date": "2021-07-16",
+    "view": "archive",
+    "created_by_name": "Airbyte Team",
+    "assigned_to_name": "Airbyte Team",
+    "date": "2021-07-16",
+    "object_id": "acti_gdh0Iw30XYfKhKctrqPuxAbNghsxlDBDFaN8k35ZAxf",
+    "lead_name": "Close (Example\u00a0Lead)",
+    "id": "task_7kpMfXIPms858l9GKZTo3BCtVflvcIsOYPXL8mZgzyp",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_updated": "2021-08-18T10:31:52.081000+00:00",
+    "date_created": "2021-07-13T11:39:03.463000+00:00",
+    "text": "Send Steli an email",
+    "updated_by_name": "Airbyte Team",
+    "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "contact_name": null
+  },
+  "emitted_at": 1683623853073
+}
+{
+  "stream": "lead_tasks",
+  "data": {
+    "contact_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "object_type": "taskcompleted",
+    "_type": "lead",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "is_complete": true,
+    "is_dateless": null,
+    "due_date": "2021-07-18",
+    "view": "archive",
+    "created_by_name": "Airbyte Team",
+    "assigned_to_name": "Airbyte Team",
+    "date": "2021-07-18",
+    "object_id": "acti_POPD3uA7lSfdf4xLO7PgsxKeoJS1dCRthzQRb13Xbyw",
+    "lead_name": "Close (Example\u00a0Lead)",
+    "id": "task_bboTdYSlGqTBSXF0FEwhBOywDCV6iKDyMWiEfNFi7sW",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_updated": "2022-11-08T12:21:15.730000+00:00",
+    "date_created": "2021-07-13T11:39:03.520000+00:00",
+    "text": "Call Steli",
+    "updated_by_name": "Airbyte Team",
+    "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "contact_name": null
+  },
+  "emitted_at": 1683623853077
+}
+{
+  "stream": "lead_tasks",
+  "data": {
+    "view": "inbox",
+    "is_complete": false,
+    "date": "2022-11-12",
+    "assigned_to_name": "Airbyte Team",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "lead_name": "Wayne Enterprises (Example\u00a0Lead)",
+    "object_type": null,
+    "is_dateless": false,
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN",
+    "_type": "lead",
+    "date_updated": "2022-11-09T11:06:06.145000+00:00",
+    "text": "Follow up",
+    "due_date": "2022-11-12",
+    "updated_by_name": "Airbyte Team",
+    "contact_id": null,
+    "contact_name": null,
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "created_by_name": "Airbyte Team",
+    "id": "task_Wgzt6t0ZGRlvZTnfhSfxHoFRWm6zXBMuuecKxRkfYmZ",
+    "object_id": null,
+    "date_created": "2022-11-08T15:10:57.220000+00:00"
+  },
+  "emitted_at": 1683623853713
+}
+{
+  "stream": "email_followup_tasks",
+  "data": {
+    "contact_name": "Bruce Wayne",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "subject": "(no subject)",
+    "is_complete": false,
+    "created_by_name": "Airbyte Team",
+    "body_preview": "Test",
+    "contact_id": "cont_ubIO1eBUVw3iFJ1Ot4LY12R7oADqn7bsLUF7NU2fJO6",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "view": "inbox",
+    "total_emails_count_in_thread": 4,
+    "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN",
+    "assigned_to_name": "Airbyte Team",
+    "_type": "email_followup",
+    "lead_name": "Wayne Enterprises (Example Lead)",
+    "object_id": "acti_wK6I4m4SqRMvvm0VHR8DhdUL35HRfjIlBkrMVCKWNaU",
+    "object_type": "emailthread",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_updated": "2022-11-08T16:28:54.794000+00:00",
+    "id": "noti_3I4QaKqYel0nzGyKT8mpDKy4q2KKu4IuIZZ3Gb7gs4x",
+    "date": "2022-11-15",
+    "date_created": "2022-11-08T15:44:05.221000+00:00",
+    "updated_by_name": "Airbyte Team",
+    "email_id": "acti_tDbd3J7HQmX2I5dBWJSXrlwCdKpZedpsTdAWLsYPzUs",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg"
+  },
+  "emitted_at": 1687890864028
+}
+{
+  "stream": "email_followup_tasks",
+  "data": {
+    "contact_name": "User2",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "subject": "Test Lead + Airbyte",
+    "is_complete": false,
+    "created_by_name": "Airbyte Team",
+    "body_preview": "Hi Iryna,  \n  \nI'm Jean with Airbyte. We help companies in the space [INSERT YOUR\nPRODUCT/SERVICE]. I wanted to learn how you handle this currently at Test Lead\nand show you what we're working on.  \n ",
+    "contact_id": "cont_OH7f9TYVgcDMqiSmL6Jawba9bxOIumKXD3NYtmClWAP",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "view": "inbox",
+    "total_emails_count_in_thread": 1,
+    "lead_id": "lead_aVZGHXTPH0GfOguQ9vMQBZI6PpISOEzmwp8GBMmWZ3j",
+    "assigned_to_name": "Airbyte Team",
+    "_type": "email_followup",
+    "lead_name": "Test Lead",
+    "object_id": "acti_fFBPZHGPKt60kZG2SzI5ws5OMbysXqCAGJuGlKucDy5",
+    "object_type": "emailthread",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_updated": "2022-11-09T12:54:10.330000+00:00",
+    "id": "noti_JU7vkNkhpywznaGu5P0WuBWxsMXtzZmkOSXaCxbxTsN",
+    "date": "2022-11-16",
+    "date_created": "2022-11-09T12:54:10.330000+00:00",
+    "updated_by_name": "Airbyte Team",
+    "email_id": "acti_a3AsG3P38a8yDx0XgI8ZNZR4Ko8XRUBybauASuT8C2j",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg"
+  },
+  "emitted_at": 1687890864031
+}
+{
+  "stream": "opportunity_due_tasks",
+  "data": {
+    "assigned_to_name": "Airbyte Team",
+    "created_by_name": "Airbyte Team",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "opportunity_value": 50000,
+    "id": "noti_ELGehUlDZ1pmlIeibPlLbTyruBTKdACAQ1q1XLiWo6B",
+    "date_created": "2021-07-13T11:39:04.316000+00:00",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "object_id": "oppo_1TfmaSLuECcdSQIBnjUOBj1gAXdyrp4SFaogvcEmtbk",
+    "contact_name": "Steli Efti",
+    "opportunity_value_period": "one_time",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "lead_name": "Close (Example\u00a0Lead)",
+    "object_type": "opportunity",
+    "contact_id": "cont_2ZhjI4qVESIBNDPJTeQF5avXJoMJ65TZoIelDXaswCI",
+    "view": "inbox",
+    "updated_by_name": "Airbyte Team",
+    "opportunity_note": "Use opportunities to track which stage of the pipeline your deals are in and the revenue associated with them.",
+    "opportunity_value_formatted": "$500",
+    "date": "2021-07-15",
+    "_type": "opportunity_due",
+    "is_complete": false,
+    "lead_id": "lead_87BPw5opGPqBjSpz70L28NzDyBmJZHHdc3bvVt6JRlz",
+    "date_updated": "2021-08-18T10:26:44.323000+00:00"
+  },
+  "emitted_at": 1683623866914
+}
+{
+  "stream": "opportunity_due_tasks",
+  "data": {
+    "assigned_to_name": "Airbyte Team",
+    "created_by_name": "Airbyte Team",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "opportunity_value": 300000,
+    "id": "noti_wcbYMl0dpbdcypRygf9jYd9axfIzvSsj06gXHmPmE4k",
+    "date_created": "2021-07-13T11:39:04.839000+00:00",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "object_id": "oppo_NkKuhUWfDoErNArh44hw7jkkx7sCl5bhlamtezmX7BE",
+    "contact_name": null,
+    "opportunity_value_period": "one_time",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "lead_name": "Bluth Company (Example\u00a0Lead)",
+    "object_type": "opportunity",
+    "contact_id": null,
+    "view": "inbox",
+    "updated_by_name": "Airbyte Team",
+    "opportunity_note": "Gob's ready to buy a $3,000 suit.",
+    "opportunity_value_formatted": "$3,000",
+    "date": "2021-07-16",
+    "_type": "opportunity_due",
+    "is_complete": false,
+    "lead_id": "lead_p7HyK4BZKAZJH2m8AAhFpcla2E0fDa6TACgU8KWv7o2",
+    "date_updated": "2021-07-13T11:39:04.839000+00:00"
+  },
+  "emitted_at": 1683623866919
+}
+{
+  "stream": "opportunity_due_tasks",
+  "data": {
+    "assigned_to_name": "Airbyte Team",
+    "created_by_name": "Airbyte Team",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "assigned_to": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "opportunity_value": 50000,
+    "id": "noti_IPi8EZj1AtqSwbnSMg5OT2DpUqNHCl2RM7luvbx9zsp",
+    "date_created": "2021-07-13T11:39:05.083000+00:00",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "object_id": "oppo_jXatpqaQ3HK50yBO9vMWg2wFyHoqbCJtgbRYAMuEGor",
+    "contact_name": null,
+    "opportunity_value_period": "one_time",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "lead_name": "Wayne Enterprises (Example\u00a0Lead)",
+    "object_type": "opportunity",
+    "contact_id": null,
+    "view": "inbox",
+    "updated_by_name": "Airbyte Team",
+    "opportunity_note": "Bruce needs new software for the Bat Cave.",
+    "opportunity_value_formatted": "$500",
+    "date": "2021-07-15",
+    "_type": "opportunity_due",
+    "is_complete": false,
+    "lead_id": "lead_MH9KHM5OqPHgTyGj5liiN3LTPIyuGBqzBS4uzkTtpeN",
+    "date_updated": "2021-07-13T11:39:05.083000+00:00"
+  },
+  "emitted_at": 1683623866923
+}
+{
+  "stream": "events",
+  "data": {
+    "action": "updated",
+    "api_key_id": null,
+    "changed_fields": ["date_updated", "next_billing_on"],
+    "data": {
+      "address_id": null,
+      "bundle_id": null,
+      "carrier": "twilio",
+      "country": "US",
+      "date_created": "2022-11-08T12:35:29.464000+00:00",
+      "date_updated": "2023-06-07T10:01:33.154000+00:00",
+      "forward_to": null,
+      "forward_to_enabled": false,
+      "forward_to_formatted": null,
+      "id": "phon_jhMWlB6anhT8vcsGNEFukaVl806zfxCgbSAAkvtNBpN",
+      "is_group_number": false,
+      "is_verified": false,
+      "label": null,
+      "last_billed_price": "1.15",
+      "mms_enabled": true,
+      "next_billing_on": "2023-07-07",
+      "number": "+14156251293",
+      "number_formatted": "+1 415-625-1293",
+      "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+      "press_1_to_accept": true,
+      "sms_enabled": true,
+      "supports_mms_to_countries": ["CA", "US"],
+      "supports_sms_to_countries": ["CA", "PR", "US"],
+      "type": "internal",
+      "user_id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+      "voicemail_greeting_url": "https://closeio-voicemail-greetings.s3.amazonaws.com/14bzVblrIaekmXSGQEKM11/undefined.mp3"
+    },
+    "date_created": "2023-06-07T10:01:33.158000",
+    "date_updated": "2023-06-07T10:01:33.158000",
+    "id": "ev_1iyemhdudI2Dqvy41Xounv",
+    "lead_id": null,
+    "meta": {},
+    "oauth_client_id": null,
+    "oauth_scope": null,
+    "object_id": "phon_jhMWlB6anhT8vcsGNEFukaVl806zfxCgbSAAkvtNBpN",
+    "object_type": "phone_number",
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "previous_data": {
+      "date_updated": "2023-05-07T10:01:09.836000+00:00",
+      "next_billing_on": "2023-06-07"
+    },
+    "request_id": null,
+    "user_id": null
+  },
+  "emitted_at": 1686261259775
+}
+{
+  "stream": "lead_custom_fields",
+  "data": {
+    "date_created": "2021-07-13T11:39:01.352000+00:00",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "accepts_multiple_values": false,
+    "description": null,
+    "name": "Lead Owner",
+    "is_shared": false,
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "back_reference_is_visible": null,
+    "date_updated": "2021-07-13T11:39:01.352000+00:00",
+    "referenced_custom_type_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "choices": null,
+    "editable_with_roles": [],
+    "id": "cf_mhBoQeiuwFRlz7zqyi4kJgzUreEoUp0hUsLwrnUTEgh",
+    "type": "user"
+  },
+  "emitted_at": 1683623873222
+}
+{
+  "stream": "contact_custom_fields",
+  "data": {
+    "is_shared": false,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "referenced_custom_type_id": null,
+    "date_updated": "2021-08-11T18:05:14.598000+00:00",
+    "accepts_multiple_values": false,
+    "choices": null,
+    "editable_with_roles": [],
+    "name": "Birthday",
+    "description": null,
+    "type": "date",
+    "id": "cf_Qj3b4cWxvmvqTtZ0U5TaprRDah8g7jRsavfVh8NCPcu",
+    "back_reference_is_visible": null,
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2021-08-11T18:05:14.598000+00:00"
+  },
+  "emitted_at": 1683623874178
+}
+{
+  "stream": "opportunity_custom_fields",
+  "data": {
+    "description": null,
+    "is_shared": false,
+    "accepts_multiple_values": false,
+    "editable_with_roles": [],
+    "date_updated": "2021-07-13T11:39:01.714000+00:00",
+    "choices": null,
+    "back_reference_is_visible": null,
+    "type": "text",
+    "id": "cf_pzwnr4IYZvEqq68ENLlWknEZdVsPk53rd3571eRcP56",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "name": "Contract Link (Example)",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2021-07-13T11:39:01.714000+00:00",
+    "referenced_custom_type_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"
+  },
+  "emitted_at": 1683623874993
+}
+{
+  "stream": "opportunity_custom_fields",
+  "data": {
+    "description": null,
+    "is_shared": false,
+    "accepts_multiple_values": true,
+    "editable_with_roles": [],
+    "date_updated": "2021-07-13T11:39:01.447000+00:00",
+    "choices": ["Widget A", "Widget B", "Widget C"],
+    "back_reference_is_visible": null,
+    "type": "choices",
+    "id": "cf_aDbTIccjcJ9GQqM0xqA8uqgjYuEclhLMxnqfG3TAhsx",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "name": "Product (Example)",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2021-07-13T11:39:01.447000+00:00",
+    "referenced_custom_type_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"
+  },
+  "emitted_at": 1683623874996
+}
+{
+  "stream": "opportunity_custom_fields",
+  "data": {
+    "description": null,
+    "is_shared": false,
+    "accepts_multiple_values": false,
+    "editable_with_roles": [],
+    "date_updated": "2021-07-13T11:39:01.676000+00:00",
+    "choices": null,
+    "back_reference_is_visible": null,
+    "type": "date",
+    "id": "cf_Z6Vyxe2J0lrRqFpWQQGLkPo8iwhmZ9hzWc69ll2oFox",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "name": "Renewal Date (Example)",
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "date_created": "2021-07-13T11:39:01.676000+00:00",
+    "referenced_custom_type_id": null,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"
+  },
+  "emitted_at": 1683623874998
+}
+{
+  "stream": "activity_custom_fields",
+  "data": {
+    "id": "cf_UftGNTS2rq9XMG9hOHkALp5cgn4Xl8nZqN7gReax3lc",
+    "referenced_custom_type_id": null,
+    "date_created": "2021-07-13T11:39:02.212000+00:00",
+    "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "type": "contact",
+    "date_updated": "2021-07-13T11:39:02.212000+00:00",
+    "editable_with_roles": [],
+    "name": "Contact",
+    "is_shared": false,
+    "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi",
+    "back_reference_is_visible": null,
+    "description": null,
+    "choices": null,
+    "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg",
+    "accepts_multiple_values": false,
+    "custom_activity_type_id": "actitype_0J9YvrOw4opjiYI4aDY6wj",
+    "required": false
+  },
+  "emitted_at": 1683623875781
+}
 {"stream": "activity_custom_fields", "data": {"id": "cf_3W4n175LyZ3QMfr665jUS19nt2QATHyM7QaxXQC4QqA", "referenced_custom_type_id": null, "date_created": "2021-07-13T11:39:02.744000+00:00", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "type": "text", "date_updated": "2021-07-13T11:39:02.744000+00:00", "editable_with_roles": [], "name": "Current Vendor: Other (if applicable)", "is_shared": false, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "back_reference_is_visible": null, "description": null, "choices": null, "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "accepts_multiple_values": false, "custom_activity_type_id": "actitype_0J9YvrOw4opjiYI4aDY6wj", "required": false}, "emitted_at": 1683623875784}
 {"stream": "activity_custom_fields", "data": {"id": "cf_bp93vNo2vxbmM2QhQ7JvdytgcozCCGmOklTG9E8rDYa", "referenced_custom_type_id": null, "date_created": "2021-07-13T11:39:02.478000+00:00", "created_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "type": "text", "date_updated": "2021-07-13T11:39:02.478000+00:00", "editable_with_roles": [], "name": "Industry: Other (if applicable)", "is_shared": false, "organization_id": "orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi", "back_reference_is_visible": null, "description": null, "choices": null, "updated_by": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "accepts_multiple_values": false, "custom_activity_type_id": "actitype_0J9YvrOw4opjiYI4aDY6wj", "required": false}, "emitted_at": 1683623875785}
 {"stream": "users", "data": {"date_created": "2021-07-13T11:36:04.905000+00:00", "email": "integration-test@airbyte.io", "email_verified_at": "2021-07-13T11:37:23.175000+00:00", "date_updated": "2023-01-30T16:10:36.593000+00:00", "image": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef", "last_name": "Team", "organizations": ["orga_ya3w9oMjeLtWe7zFGZr63Dz8ruBbjybG0EIUdUXaESi"], "id": "user_SOwJFVMqtgZCL6QrMDLujSXbQabQnNfOwjFX1mdOulg", "google_profile_image_url": null, "last_used_timezone": "Europe/Kiev", "first_name": "Airbyte"}, "emitted_at": 1683623876657}

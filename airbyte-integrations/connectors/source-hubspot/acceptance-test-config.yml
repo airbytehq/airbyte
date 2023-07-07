@@ -19,6 +19,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: 0.9.0
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -46,6 +48,8 @@ acceptance_tests:
           companies:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_was_imported
+              bypass_reason: attribute is not stable
           contacts:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
