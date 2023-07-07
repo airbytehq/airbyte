@@ -62,7 +62,7 @@ class SourceNetsuite(AbstractSource):
                 except requests.exceptions.HTTPError as e:
                     return False, e
         else:
-            raise ValueError("object_types must be provided in the config")
+            return False
             # if `object_types` are not provided, use `Contact` object
             # there should be at least 1 contact available in every NetSuite account by default.
             # url = base_url + RECORD_PATH + "contact"
@@ -155,7 +155,8 @@ class SourceNetsuite(AbstractSource):
 
         # retrieve all record types if `object_types` config field is not specified
         if not object_names:
-            raise ValueError("object_types must be provided in the config")
+            return False
+            # raise ValueError("object_types must be provided in the config")
             # objects_metadata = session.get(metadata_url).json().get("items")
             # object_names = [object["name"] for object in objects_metadata]
 
