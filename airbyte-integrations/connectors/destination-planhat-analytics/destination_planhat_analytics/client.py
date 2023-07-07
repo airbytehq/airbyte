@@ -25,5 +25,5 @@ class PlanHatClient:
     ) -> requests.Response:
         url = self._get_base_url()
         headers = self._get_auth_headers()
-        response = requests.request(method=http_method, url=url, headers=headers, data=json.dumps(data))
-        return response.status_code
+        response = requests.request(method=http_method, url=url, headers=headers, json=data)
+        return response
