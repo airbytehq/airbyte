@@ -6,6 +6,9 @@ service_account="destination-ci-secrets@${project}.iam.gserviceaccount.com"
 
 secrets=$(gcloud secrets list --format="value(name)" --project="${project}")
 
+# The service account needs to be able to list the secrets
+gcloud projects add-iam-policy-binding ${project} --member=serviceAccount:${service_account} --role=roles/secretmanager.viewer
+
 for secret in $secrets
 do
     if [[ $secret == $prefix* ]]
