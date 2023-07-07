@@ -1,7 +1,7 @@
 {
   "provider": "zendesk",
-  "authUrlTemplate": "https://www.zopim.com/oauth2/authorizations/new?response_type=code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&scope=read%20write%20chat&state={{#urlencode}}{{{ state }}}{{/urlencode}}&subdomain=estuarysupport",
-  "accessTokenUrlTemplate": "https://www.zopim.com/oauth2/token",
+  "authUrlTemplate": "https://estuarysupport.zendesk.com/oauth/authorizations/new?response_type=code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&scope=read%20write",
+  "accessTokenUrlTemplate": "https://estuarysupport.zendesk.com/oauth/tokens",
   "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
   "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
   "accessTokenResponseMap": {
