@@ -176,6 +176,18 @@ class HttpRequester(Requester):
         # FIXME: this should be declarative
         return False
 
+    disable_retries: bool = False
+    _DEFAULT_MAX_RETRY = 5
+    _DEFAULT_RETRY_FACTOR = 5
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        if self.disable_retries:
+            return 0
+        if hasattr(self.error_handler, "max_retries"):
+            return self.error_handler.max_retries
+        return self._DEFAULT_MAX_RETRY
+
     @property
     def logger(self):
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
@@ -237,7 +249,7 @@ class HttpRequester(Requester):
         """
 
         # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        requester_mapping = requester_method(stream_slice, next_page_token)
+        requester_mapping = requester_method(stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         auth_options_mapping = auth_options_method()
         auth_options_mapping_keys = set(auth_options_mapping.keys())
@@ -333,8 +345,9 @@ class HttpRequester(Requester):
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
-        if self.http_method.upper() in BODY_REQUEST_METHODS:
+        http_method = str(self.http_method.value)
+        args = {"method": http_method, "url": urljoin(self.get_url_base(), path), "headers": headers, "params": params}
+        if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
                     "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
@@ -349,6 +362,7 @@ class HttpRequester(Requester):
     # TODO - for usage in the simple retriever it's required to pass custom headers and params from the slicer and paginator in here
     def send_request(
         self,
+        path: Optional[str] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
@@ -358,7 +372,7 @@ class HttpRequester(Requester):
     ) -> requests.Response:
         request_headers = self._request_headers(stream_slice, next_page_token, request_headers)
         request = self._create_prepared_request(
-            path=self.get_path(stream_slice=stream_slice, next_page_token=next_page_token),
+            path=path if path is not None else self.get_path(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=self._request_params(stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_slice, next_page_token, request_body_json),
@@ -398,7 +412,7 @@ class HttpRequester(Requester):
             max_tries = max(0, max_tries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -431,13 +445,6 @@ class HttpRequester(Requester):
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
                 raise DefaultBackoffException(request=request, response=response)
-        elif self.raise_on_http_errors:
-            # Raise any HTTP exceptions that happened in case there were unexpected ones
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as exc:
-                self.logger.error(response.text)
-                raise exc
         return response
 
     def _validate_response(

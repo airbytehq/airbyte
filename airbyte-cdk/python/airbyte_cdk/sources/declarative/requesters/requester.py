@@ -141,6 +141,7 @@ class Requester(RequestOptionsProvider):
     @abstractmethod
     def send_request(
         self,
+        path: Optional[str] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
