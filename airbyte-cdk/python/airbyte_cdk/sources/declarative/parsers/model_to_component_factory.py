@@ -123,7 +123,7 @@ class ModelToComponentFactory:
         limit_slices_fetched: int = None,
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
-        message_repository: MessageRepository = None
+        message_repository: MessageRepository = None,
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
@@ -884,7 +884,11 @@ class ModelToComponentFactory:
             limit_slices_fetched=self._limit_slices_fetched,
             emit_connector_builder_messages=self._emit_connector_builder_messages,
             disable_retries=self._disable_retries,
-            message_repository=LogAppenderMessageRepositoryDecorator({"airbyte_cdk": {"stream": {"is_substream": True}}}, self._message_repository, self._evaluate_log_level(self._emit_connector_builder_messages)),
+            message_repository=LogAppenderMessageRepositoryDecorator(
+                {"airbyte_cdk": {"stream": {"is_substream": True}}},
+                self._message_repository,
+                self._evaluate_log_level(self._emit_connector_builder_messages),
+            ),
         )
         # noinspection PyProtectedMember
         return substream_factory._create_component_from_model(model=model, config=config)
