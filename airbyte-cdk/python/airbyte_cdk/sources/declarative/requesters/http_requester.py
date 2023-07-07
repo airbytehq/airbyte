@@ -223,6 +223,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]],
         requester_method,
         auth_options_method,
+        extra_options: Optional[Mapping[str, Any]] = None,
     ):
         """
         Get the request_option from the requester and from the paginator
@@ -240,15 +241,24 @@ class HttpRequester(Requester):
         requester_mapping_keys = set(requester_mapping.keys())
         auth_options_mapping = auth_options_method()
         auth_options_mapping_keys = set(auth_options_mapping.keys())
+        extra_options = extra_options or {}
+        extra_options_keys = set(extra_options.keys())
 
-        intersection = requester_mapping_keys & auth_options_mapping_keys
+        intersection = (
+            (requester_mapping_keys & auth_options_mapping_keys)
+            | (requester_mapping_keys & extra_options_keys)
+            | (extra_options_keys & auth_options_mapping_keys)
+        )
 
         if intersection:
             raise ValueError(f"Duplicate keys found: {intersection}")
-        return {**requester_mapping, **auth_options_mapping}
+        return {**requester_mapping, **auth_options_mapping, **extra_options}
 
     def _request_headers(
-        self, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        extra_headers: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
@@ -260,6 +270,7 @@ class HttpRequester(Requester):
             self.get_request_headers,
             # auth headers are handled separately by passing the authenticator to the HttpStream constructor
             lambda: {},
+            extra_headers,
         )
         return {str(k): str(v) for k, v in headers.items()}
 
@@ -267,6 +278,7 @@ class HttpRequester(Requester):
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
+        extra_params: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -274,16 +286,14 @@ class HttpRequester(Requester):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         return self._get_request_options(
-            stream_slice,
-            next_page_token,
-            self.get_request_params,
-            self.get_authenticator().get_request_params,
+            stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
         )
 
     def _request_body_data(
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
+        extra_body_data: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
@@ -296,16 +306,14 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         return self._get_request_options(
-            stream_slice,
-            next_page_token,
-            self.get_request_body_data,
-            self.get_authenticator().get_request_body_data,
+            stream_slice, next_page_token, self.get_request_body_data, self.get_authenticator().get_request_body_data, extra_body_data
         )
 
     def _request_body_json(
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
+        extra_body_json: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         """
         Specifies how to populate the body of the request with a JSON payload.
@@ -314,10 +322,7 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         return self._get_request_options(
-            stream_slice,
-            next_page_token,
-            self.get_request_body_json,
-            self.get_authenticator().get_request_body_json,
+            stream_slice, next_page_token, self.get_request_body_json, self.get_authenticator().get_request_body_json, extra_body_json
         )
 
     def _create_prepared_request(
@@ -342,19 +347,27 @@ class HttpRequester(Requester):
         return self._session.prepare_request(requests.Request(**args))
 
     # TODO - for usage in the simple retriever it's required to pass custom headers and params from the slicer and paginator in here
-    def send_request(self, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], List]:
-        request_headers = self._request_headers(stream_slice, next_page_token)
+    def send_request(
+        self,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+    ) -> requests.Response:
+        request_headers = self._request_headers(stream_slice, next_page_token, request_headers)
         request = self._create_prepared_request(
-            path=self.get_path(),
+            path=self.get_path(stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=self._request_params(stream_slice, next_page_token),
-            json=self._request_body_json(stream_slice, next_page_token),
-            data=self._request_body_data(stream_slice, next_page_token),
+            params=self._request_params(stream_slice, next_page_token, request_params),
+            json=self._request_body_json(stream_slice, next_page_token, request_body_json),
+            data=self._request_body_data(stream_slice, next_page_token, request_body_data),
         )
         request_kwargs = self.request_kwargs()
 
         response = self._send_with_retry(request, request_kwargs)
-        return self._parse_response(response)
+        return self._validate_response(response)
 
     def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
@@ -427,10 +440,10 @@ class HttpRequester(Requester):
                 raise exc
         return response
 
-    def _parse_response(
+    def _validate_response(
         self,
         response: requests.Response,
-    ) -> Union[Mapping[str, Any], List]:
+    ) -> requests.Response:
         # if fail -> raise exception
         # if ignore -> ignore response and return no records
         # else -> delegate to record selector
@@ -447,7 +460,7 @@ class HttpRequester(Requester):
                 f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
             )
 
-        return self.decoder.decode(response)
+        return response
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:

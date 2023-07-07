@@ -137,9 +137,17 @@ class Requester(RequestOptionsProvider):
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
-    
+
     @abstractmethod
-    def send_request(self, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], List]:
+    def send_request(
+        self,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+    ) -> requests.Response:
         """
         Sends a request and returns the response
         """
