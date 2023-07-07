@@ -3,10 +3,10 @@
 #
 
 import json
+import math
 from pathlib import Path, PosixPath
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-import math
 import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
@@ -53,7 +53,11 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
-from unit_tests.sources.file_based.scenarios.parquet_scenarios import multi_parquet_scenario, single_parquet_scenario, parquet_various_types_scenario
+from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
+    multi_parquet_scenario,
+    parquet_various_types_scenario,
+    single_parquet_scenario,
+)
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,

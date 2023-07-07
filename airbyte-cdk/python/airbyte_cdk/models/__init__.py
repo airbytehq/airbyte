@@ -46,7 +46,6 @@ from .airbyte_protocol import (
     TraceType,
     Type,
 )
-
 from .well_known_types import (
     BinaryData,
     Boolean,

@@ -1,7 +1,12 @@
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
-from unit_tests.sources.file_based.temporary_files_source import TemporaryFilesStreamReader
-import pyarrow as pa
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
+
+import pyarrow as pa
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.file_based.temporary_parquet_files_source import TemporaryParquetFilesStreamReader
 
 _single_parquet_file = {
     "a.parquet": {
@@ -47,7 +52,6 @@ _parquet_file_with_various_types = {
              "col_uint32",
              "col_uint64",
 
-             #"col_float16",
              "col_float32",
              "col_float64",
 
@@ -77,7 +81,6 @@ _parquet_file_with_various_types = {
              4,
              5,
 
-             #1.5,
              3.14,
              5.0,
 
@@ -107,7 +110,6 @@ _parquet_file_with_various_types = {
             pa.field("col_uint32", pa.uint32()),
             pa.field("col_uint64", pa.uint64()),
 
-            #pa.field("col_float16", pa.float16()),
             pa.field("col_float32", pa.float32()),
             pa.field("col_float64", pa.float64()),
 
@@ -144,9 +146,9 @@ single_parquet_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
     .set_file_type("parquet")
-     .set_expected_records(
+    .set_expected_records(
         [
             {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
@@ -201,7 +203,7 @@ multi_parquet_scenario = (
         }
     )
     .set_file_type("parquet")
-    .set_stream_reader(TemporaryFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
+    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
     .set_expected_catalog(
         {
             "streams": [
@@ -263,7 +265,7 @@ parquet_various_types_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
+    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
     .set_file_type("parquet")
     .set_expected_catalog(
         {
@@ -375,7 +377,8 @@ parquet_various_types_scenario = (
                       "col_struct": {"struct_key": "struct_value"},
                       "col_list": [1, 2, 3, 4],
                       "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"
+             },
         ]
     )
 ).build()

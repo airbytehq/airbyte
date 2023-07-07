@@ -1,9 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Mapping
 
-import pytest
 import pyarrow as pa
-import numpy as np
-
+import pytest
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 
 
