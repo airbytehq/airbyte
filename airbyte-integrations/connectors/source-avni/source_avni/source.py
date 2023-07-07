@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.sources.streams.core import StreamData
 
 import requests
@@ -17,7 +17,7 @@ class AvniStream(HttpStream, ABC):
     
     
     url_base = "https://app.avniproject.org/api/"
-    primary_key = "ID"
+    primary_key="ID"
     
     def __init__(self,lastModifiedDateTime:str,auth_token:str, **kwargs):
             super().__init__(**kwargs)
@@ -26,7 +26,7 @@ class AvniStream(HttpStream, ABC):
             self.lastModifiedDateTime=lastModifiedDateTime
             self.last_record=None
             self.auth_token=auth_token
-    
+            
     
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         
@@ -51,10 +51,11 @@ class AvniStream(HttpStream, ABC):
         
         if(self.last_record):
             updated_last_date = self.last_record["audit"]["Last modified at"]
-            self.state = {"Last modified at": updated_last_date}
+            self.state = {self.cursor_field[1]: updated_last_date}
             self.last_record=None
             
         return None
+        
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         
@@ -78,20 +79,20 @@ class IncrementalAvniStream(AvniStream,IncrementalMixin,ABC):
     state_checkpoint_interval = None
 
     @property
-    def cursor_field(self) -> str:
-        return "Last modified at"
+    def cursor_field(self) -> List[str]:
+        return ["audit","Last modified at"]
     
     @property
     def state(self) -> Mapping[str, Any]:
         
         if self.cursor_value:
-            return {self.cursor_field: self.cursor_value}
+            return {self.cursor_field[1]: self.cursor_value}
         else:   
-            return {self.cursor_field: self.lastModifiedDateTime}
+            return {self.cursor_field[1]: self.lastModifiedDateTime}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self.cursor_value = value[self.cursor_field]
+        self.cursor_value = value[self.cursor_field[1]]
         self._state = value
 
 
@@ -99,24 +100,6 @@ class Subjects(IncrementalAvniStream):
         
     def path(self,**kwargs) -> str:
         return "subjects"            
-    
-
-class Programs(IncrementalAvniStream):
-
-    def path(self,**kwargs) -> str:
-        return "programEnrolments"
-    
-
-class ProgramEncounters(IncrementalAvniStream):
-    
-    def path(self,**kwargs) -> str:
-        return "programEncounters"
-    
-    
-class SubjectEncounters(IncrementalAvniStream):
-    
-    def path(self,**kwargs) -> str:
-        return "encounters"
     
         
 class SourceAvni(AbstractSource):
@@ -192,4 +175,4 @@ class SourceAvni(AbstractSource):
         "lastModifiedDateTime":config["lastModifiedDateTime"]
         }
         
-        return [Subjects(**stream_kwargs),Programs(**stream_kwargs),ProgramEncounters(**stream_kwargs),SubjectEncounters(**stream_kwargs)]
+        return [Subjects(**stream_kwargs)]
