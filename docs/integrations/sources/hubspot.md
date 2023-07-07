@@ -4,19 +4,17 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 ## Prerequisites
 
-You can either use OAuth or set up a Private App to authenticate your HubSpot account.
-
-For Airbyte Cloud users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process. Conversely, for Airbyte Open Source users we recommend Private App authentication.
-
-More information on HubSpot authentication methods can be found 
-[here](https://developers.hubspot.com/docs/api/intro-to-auth).
+- If you are using **Airbyte Open Source**: A Private App and Access Token.
+- If you are using **Airbyte Cloud**: No additional pre-requisites are needed other than a Hubspot account.
 
 ## Setup guide
 
-:::note
-Airbyte Cloud users authenticating via OAuth can skip straight to 
-[setting up the connector in Airbyte](#step-3-set-up-the-hubspot-source-connector-in-airbyte).  All other users must manually set up authentication and configure scopes.
-:::
+**For Airbyte Cloud** users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+
+**For Airbyte Open Source** users we recommend Private App authentication.
+
+More information on HubSpot authentication methods can be found 
+[here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ### Step 1: Set up the authentication method
 
@@ -25,6 +23,7 @@ Airbyte Cloud users authenticating via OAuth can skip straight to
 If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the 
 [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 
+<!-- env:oss -->
 #### OAuth setup for Airbyte Open Source (Not recommended)
 
 If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
@@ -33,11 +32,12 @@ If you are using Oauth to authenticate on Airbyte Open Source, please refer to [
 - Client Secret
 - Refresh Token
 
+<!-- /env:oss -->
+
 ### Step 2: Configure the scopes for your streams
 
 Next, you need to configure the appropriate scopes for the following streams. Please refer to 
 [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
-
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -72,13 +72,17 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
 
+<!-- env:cloud -->
 #### For Airbyte Cloud users:
 - To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
 - To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+<!-- /env:cloud -->
    
+<!-- env:oss -->
 #### For Airbyte Open Source users:
 - To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 - To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+<!-- /env:oss -->
 
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
 `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
@@ -154,11 +158,13 @@ Then, go to the replication settings of your connection and click **refresh sour
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-2. The `engagements` stream uses two types of API:
-- **EngagementsRecent** if `start_date/last_sync_date` is less than 30 days and the API is able to return all records (<10k).
-- **EngagementsAll** which extracts all records, but supports connector-side filtering.
+2. The `engagements` stream uses two different APIs based on the length of time since the last sync and the number of records.
+- **EngagementsRecent** if the following two criteria are met:
+    - The last sync was performed within the last 30 days
+    - Fewer than 10,000 records are being synced
+- **EngagementsAll** if either of these criteria are not met.
 
-This means that in order to perform fast incremental sync, it should be scheduled no less than once every 30 days and should sync fewer than 10,000 new records. Otherwise, sync of all records is performed with connector-side filtering. 
+Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. We therefore recommend scheduling frequent syncs.
 
 ## Performance considerations
 
