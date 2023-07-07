@@ -142,13 +142,21 @@ class ListMembers(IncrementalMailChimpStream):
     cursor_field = "last_changed"
     data_field = "members"
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        lists_stream = Lists(authenticator=self.authenticator)      
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        lists_stream = Lists(authenticator=self.authenticator)
         for list_record in lists_stream.read_records(sync_mode=SyncMode.full_refresh):
             list_id = list_record["id"]
             yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"list_id": list_id})
 
-    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         list_id = stream_slice["list_id"]
         return f"lists/{list_id}/members"
 
@@ -241,11 +249,3 @@ class EmailActivity(IncrementalMailChimpStream):
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
-
-
-class Reports(IncrementalMailChimpStream):
-    cursor_field = "send_time"
-    data_field = "reports"
-
-    def path(self, **kwargs) -> str:
-        return "reports"
