@@ -49,7 +49,7 @@ def fb_account_response_fixture(account_id):
 
 @fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
+    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
