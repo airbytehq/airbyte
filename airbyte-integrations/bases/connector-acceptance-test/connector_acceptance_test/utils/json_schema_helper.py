@@ -248,8 +248,7 @@ def get_paths_in_connector_config(schema: dict) -> List[str]:
     :param properties: jsonschema containing values which may have path_in_connector_config attributes
     :returns list of path_in_connector_config paths
     """
-    paths = []
-    for value in schema.values():
-        if value["path_in_connector_config"]:
-            paths.append("/" + "/".join(value["path_in_connector_config"]))
-    return paths
+    return [
+        "/" + "/".join(value["path_in_connector_config"])
+        for value in schema.values()
+    ]
