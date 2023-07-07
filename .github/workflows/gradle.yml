@@ -201,7 +201,7 @@ jobs:
           files: airbyte-cdk/**/*.py
       - name: Run mypy on changed files
         if: steps.changed-py-files.outputs.any_changed == 'true'
-        run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --config-file airbyte-cdk/mypy.ini --install-types --non-interactive
+        run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --config-file airbyte-cdk/python/mypy.ini --install-types --non-interactive
 
       - name: Format
         uses: Wandalen/wretry.action@v1.0.42
