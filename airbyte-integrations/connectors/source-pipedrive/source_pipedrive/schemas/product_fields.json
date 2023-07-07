@@ -59,6 +59,9 @@
     "use_field": {
       "type": ["null", "string"]
     },
+    "display_field": {
+      "type": ["null", "string"]
+    },
     "active_flag": {
       "type": ["null", "boolean"]
     },
