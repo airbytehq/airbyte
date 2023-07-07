@@ -5,6 +5,7 @@
 import json
 import os
 import sys
+from typing import Generator
 
 import pytest
 
@@ -15,11 +16,11 @@ CONNECTION_SPECIFICATION = {
 
 
 @pytest.fixture
-def json_spec():
+def json_spec() -> Generator[None, None, None]:
     # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should
     # be written to (i.e. ~/airbyte/airbyte-cdk/python/unit-tests) because that is where they are read from during testing.
     module = sys.modules[__name__]
-    module_path = os.path.abspath(module.__file__)
+    module_path = os.path.abspath(str(module.__file__))
     test_path = os.path.dirname(module_path)
     spec_root = test_path.split("/sources/file_based")[0]
 

@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Mapping, Any, Optional, Type
 
 import pytest as pytest
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
@@ -21,7 +22,7 @@ from pydantic import ValidationError
         pytest.param("invalid", {"filetype": "invalid", "double_quote": False}, {}, ValidationError, id="test_config_format_file_type_mismatch"),
     ]
 )
-def test_csv_config(file_type, input_format, expected_format, expected_error):
+def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_format: Mapping[str, QuotingBehavior], expected_error: Type[Exception]) -> None:
     stream_config = {
         "name": "stream1",
         "file_type": file_type,
@@ -35,6 +36,9 @@ def test_csv_config(file_type, input_format, expected_format, expected_error):
             FileBasedStreamConfig(**stream_config)
     else:
         actual_config = FileBasedStreamConfig(**stream_config)
-        assert not hasattr(actual_config.format[file_type], "filetype")
-        for expected_format_field, expected_format_value in expected_format.items():
-            assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
+        if actual_config.format:
+            assert not hasattr(actual_config.format[file_type], "filetype")
+            for expected_format_field, expected_format_value in expected_format.items():
+                assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
+        else:
+            raise RuntimeError(f"Expected format to be set for {file_type}")
