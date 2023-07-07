@@ -14,10 +14,10 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation('org.apache.spark:spark-sql_2.13:3.3.0') {
+    implementation('org.apache.spark:spark-sql_2.13:3.3.1') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation('org.apache.spark:spark-hive_2.13:3.3.0') {
+    implementation('org.apache.spark:spark-hive_2.13:3.3.1') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
     implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.1.0'
