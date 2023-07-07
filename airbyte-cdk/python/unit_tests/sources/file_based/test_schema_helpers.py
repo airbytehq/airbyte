@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Dict, Optional
 
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
-from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas
+from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas, SchemaType
 
 COMPLETE_CONFORMING_RECORD = {
     "null_field": None,
@@ -203,11 +203,11 @@ def test_conforms_to_schema(
     record: Mapping[str, Any],
     schema: Mapping[str, Any],
     expected_result: bool
-):
+) -> None:
     assert conforms_to_schema(record, schema) == expected_result
 
 
-def test_comparable_types():
+def test_comparable_types() -> None:
     assert ComparableType.OBJECT > ComparableType.STRING
     assert ComparableType.STRING > ComparableType.NUMBER
     assert ComparableType.NUMBER > ComparableType.INTEGER
@@ -237,7 +237,7 @@ def test_comparable_types():
         pytest.param({"a": {"type": "invalid_type"}}, {"b": {"type": "integer"}}, None, id="invalid-type"),
     ]
 )
-def test_merge_schemas(schema1, schema2, expected_result):
+def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result: Optional[SchemaType]) -> None:
     if expected_result is not None:
         assert merge_schemas(schema1, schema2) == expected_result
     else:

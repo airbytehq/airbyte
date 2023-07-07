@@ -31,8 +31,8 @@ class TestScenario:
             file_type: str,
             expected_check_status: Optional[str],
             expected_catalog: Optional[Dict[str, Any]],
-            expected_logs: Optional[Dict[str, Any]],
-            expected_records: Optional[Dict[str, Any]],
+            expected_logs: List[Dict[str, Any]],
+            expected_records: List[Dict[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Optional[Dict[str, AbstractSchemaValidationPolicy]],
@@ -98,7 +98,7 @@ class TestScenario:
 
 
 class TestScenarioBuilder:
-    def __init__(self):
+    def __init__(self) -> "TestScenarioBuilder":
         self._name = ""
         self._config = {}
         self._files = {}
@@ -146,7 +146,7 @@ class TestScenarioBuilder:
         self._expected_logs = expected_logs
         return self
 
-    def set_expected_records(self, expected_records: Dict[str, Any]):
+    def set_expected_records(self, expected_records: List[Dict[str, Any]]):
         self._expected_records = expected_records
         return self
 

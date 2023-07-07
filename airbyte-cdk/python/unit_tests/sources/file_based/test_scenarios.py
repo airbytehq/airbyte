@@ -3,13 +3,14 @@
 #
 
 import json
-from pathlib import Path
-from typing import Any, Dict, List, Union
+from pathlib import Path, PosixPath
+from typing import Any, Dict, List, Union, Mapping
 
 import pytest
 from _pytest.reports import ExceptionInfo
+from _pytest.capture import CaptureFixture
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
@@ -51,6 +52,7 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
@@ -91,12 +93,13 @@ discover_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", discover_scenarios, ids=[s.name for s in discover_scenarios])
-def test_discover(capsys, tmp_path, json_spec, scenario):
+def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_discover_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:
             discover(capsys, tmp_path, scenario)
-        assert expected_msg in get_error_message_from_exc(exc)
+        if expected_msg:
+            assert expected_msg in get_error_message_from_exc(exc)
     else:
         assert discover(capsys, tmp_path, scenario) == scenario.expected_catalog
 
@@ -115,21 +118,22 @@ read_scenarios = discover_scenarios + [
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_read(capsys, tmp_path, json_spec, scenario):
+def test_read(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, tmp_path, scenario)
     else:
         run_test_read_full_refresh(capsys, tmp_path, scenario)
 
 
-def run_test_read_full_refresh(capsys, tmp_path, scenario):
+def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     expected_records = scenario.expected_records
     expected_logs = scenario.expected_logs
     if expected_exc:
         with pytest.raises(expected_exc) as exc:
             read(capsys, tmp_path, scenario)
-        assert expected_msg in get_error_message_from_exc(exc)
+        if expected_msg:
+            assert expected_msg in get_error_message_from_exc(exc)
     else:
         output = read(capsys, tmp_path, scenario)
         records, logs = output["records"], output["logs"]
@@ -139,19 +143,19 @@ def run_test_read_full_refresh(capsys, tmp_path, scenario):
         assert_expected_logs_match_output(logs, expected_logs)
 
 
-def assert_expected_records_match_output(output: List[Dict[str, Any]], expected_output: List[Dict[str, Any]]):
+def assert_expected_records_match_output(output: List[Dict[str, Any]], expected_output: List[Dict[str, Any]]) -> None:
     for actual, expected in zip(output, expected_output):
         assert actual["record"]["data"] == expected["data"]
         assert actual["record"]["stream"] == expected["stream"]
 
 
-def assert_expected_logs_match_output(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]):
+def assert_expected_logs_match_output(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]) -> None:
     for actual, expected in zip(logs, expected_logs):
         assert actual["log"]["level"] == expected["level"]
         assert actual["log"]["message"] == expected["message"]
 
 
-def run_test_read_incremental(capsys, tmp_path, scenario):
+def run_test_read_incremental(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc):
@@ -182,7 +186,7 @@ check_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", check_scenarios, ids=[c.name for c in check_scenarios])
-def test_check(capsys, tmp_path, json_spec, scenario):
+def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
@@ -197,7 +201,7 @@ def test_check(capsys, tmp_path, json_spec, scenario):
         assert output["status"] == scenario.expected_check_status
 
 
-def check(capsys, tmp_path, scenario) -> Dict[str, Any]:
+def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
     launch(
         scenario.source,
         ["check", "--config", make_file(tmp_path / "config.json", scenario.config)],
@@ -206,7 +210,7 @@ def check(capsys, tmp_path, scenario) -> Dict[str, Any]:
     return json.loads(captured.out.splitlines()[0])["connectionStatus"]
 
 
-def discover(capsys, tmp_path, scenario) -> Dict[str, Any]:
+def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
     launch(
         scenario.source,
         ["discover", "--config", make_file(tmp_path / "config.json", scenario.config)],
@@ -215,7 +219,7 @@ def discover(capsys, tmp_path, scenario) -> Dict[str, Any]:
     return json.loads(captured.out.splitlines()[0])["catalog"]
 
 
-def read(capsys, tmp_path, scenario):
+def read(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
     launch(
         scenario.source,
         [
@@ -241,7 +245,7 @@ def read(capsys, tmp_path, scenario):
     }
 
 
-def read_with_state(capsys, tmp_path, scenario):
+def read_with_state(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> List[Dict[str, Any]]:
     launch(
         scenario.source,
         [
