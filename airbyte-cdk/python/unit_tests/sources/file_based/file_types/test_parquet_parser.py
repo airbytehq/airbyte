@@ -107,7 +107,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
 )
 def test_value_transformation(pyarrow_type: pa.DataType, parquet_object: Scalar, expected_value: Any) -> None:
     pyarrow_value = pa.array([parquet_object], type=pyarrow_type)[0]
-    py_value = ParquetParser.to_py_value(pyarrow_value)
+    py_value = ParquetParser._to_output_value(pyarrow_value)
     if isinstance(py_value, float):
         assert math.isclose(py_value, expected_value, abs_tol=0.01)
     else:
@@ -120,5 +120,5 @@ def test_value_dictionary() -> None:
     indices = [0, 1, 2, 0, 1]
     indices_array = pa.array(indices, type=pa.int8())
     dictionary = pa.DictionaryArray.from_arrays(indices_array, dictionary_values)
-    py_value = ParquetParser.to_py_value(dictionary)
+    py_value = ParquetParser._to_output_value(dictionary)
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}

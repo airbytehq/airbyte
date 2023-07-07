@@ -31,7 +31,7 @@ class ParquetParser(FileTypeParser):
         table = self._read_file(file, stream_reader)
         for batch in table.to_batches():
             for i in range(batch.num_rows):
-                row_dict = {column: ParquetParser.to_py_value(batch.column(column)[i]) for column in table.column_names}
+                row_dict = {column: ParquetParser._to_output_value(batch.column(column)[i]) for column in table.column_names}
                 yield row_dict
 
     @staticmethod
@@ -39,7 +39,10 @@ class ParquetParser(FileTypeParser):
         return pq.read_table(stream_reader.open_file(file))
 
     @staticmethod
-    def to_py_value(parquet_value: Scalar) -> Any:
+    def _to_output_value(parquet_value: Scalar) -> Any:
+        """
+        Convert a pyarrow scalar to a value that can be output by the source.
+        """
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type):
             return parquet_value.as_py().isoformat()
@@ -85,6 +88,11 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
+        """
+        Convert a pyarrow data type to an Airbyte schema type.
+        :param parquet_type:
+        :return:
+        """
         # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
 
         if pa.types.is_timestamp(parquet_type):
