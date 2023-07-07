@@ -64,17 +64,9 @@
     "metrics.ctr": {
       "type": ["null", "number"]
     },
-    "segments.ad_network_type": {
-      "type": ["null", "string"],
-      "enum": ["CONTENT", "MIXED", "SEARCH", "SEARCH_PARTNERS", "UNKNOWN", "UNSPECIFIED", "YOUTUBE_SEARCH", "YOUTUBE_WATCH"]
-    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
-    },
-    "segments.device": {
-      "type": ["null", "string"],
-      "enum": ["CONNECTED_TV", "DESKTOP", "MOBILE", "OTHER", "TABLET", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
@@ -113,8 +105,7 @@
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "string"],
-      "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]
+      "type": ["null", "string"]
     },
     "metrics.view_through_conversions": {
       "type": ["null", "integer"]
