@@ -263,7 +263,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1   | 2023-07-10 | [27897](https://github.com/airbytehq/airbyte/pull/27897)   | Always show password field in the source setup page                                                                                             |
 | 2.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)   | License Update: Elv2                                                                                                                            |
 | 2.0.25  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)   | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                        |
 | 2.0.24  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)   | CDC : Limit queue size                                                                                                                          |
