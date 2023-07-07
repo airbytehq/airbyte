@@ -197,7 +197,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.parent_stream_name] = {self.parent_cursor_field: parent_cursor}
 
     def read_parent_stream(
-            self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
+        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
@@ -214,7 +214,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
                 all_ids = set()
 
                 for parent_record in self.parent_stream.read_records(
-                        sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
                 ):
                     # Skip non-records (eg AirbyteLogMessage)
                     if isinstance(parent_record, AirbyteMessage):

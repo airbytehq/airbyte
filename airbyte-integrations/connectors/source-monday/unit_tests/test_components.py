@@ -6,9 +6,9 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 from source_monday.components import IncrementalSingleSlice, IncrementalSubstreamSlicer
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 
 
 def test_slicer():
@@ -33,7 +33,6 @@ def test_slicer():
     ],
 )
 def test_sub_slicer(last_record, expected, records):
-    date_time = "2022-09-05T10:10:10.000000Z"
     parent_stream = Mock(spec=Stream)
     parent_stream.name = "parent_stream_name"
     parent_stream.cursor_field = "parent_cursor_field"
