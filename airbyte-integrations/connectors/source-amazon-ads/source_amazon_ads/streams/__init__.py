@@ -25,7 +25,9 @@ from .sponsored_display import (
     SponsoredDisplayTargetings,
 )
 from .sponsored_products import (
+    SponsoredProductAdGroupBidRecommendations,
     SponsoredProductAdGroups,
+    SponsoredProductAdGroupSuggestedKeywords,
     SponsoredProductAds,
     SponsoredProductCampaignNegativeKeywords,
     SponsoredProductCampaigns,
@@ -43,6 +45,8 @@ __all__ = [
     "SponsoredDisplayTargetings",
     "SponsoredDisplayBudgetRules",
     "SponsoredProductAdGroups",
+    "SponsoredProductAdGroupBidRecommendations",
+    "SponsoredProductAdGroupSuggestedKeywords",
     "SponsoredProductAds",
     "SponsoredProductCampaigns",
     "SponsoredProductKeywords",
