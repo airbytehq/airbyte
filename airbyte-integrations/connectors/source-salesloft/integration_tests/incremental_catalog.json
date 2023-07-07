@@ -263,70 +263,7 @@
     },
     {
       "stream": {
-        "name": "custom_fields",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "incremental"
-    },
-    {
-      "stream": {
         "name": "call_data_records",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "incremental"
-    },
-    {
-      "stream": {
-        "name": "call_dispositions",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "incremental"
-    },
-    {
-      "stream": {
-        "name": "call_sentiments",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
@@ -355,7 +292,7 @@
         ],
         "source_defined_cursor": true,
         "default_cursor_field": [
-          "updated_at"
+          "created_at"
         ],
         "source_defined_primary_key": [
           [

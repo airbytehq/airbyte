@@ -226,9 +226,7 @@ class Groups(SalesloftStream):
         return "groups"
 
 
-class CustomFields(IncrementalSalesloftStream):
-    created_at_field = "updated_at"
-
+class CustomFields(SalesloftStream):
     def path(self, **kwargs) -> str:
         return "custom_fields"
 
@@ -240,22 +238,18 @@ class CallDataRecords(IncrementalSalesloftStream):
         return "call_data_records"
 
 
-class CallDispositions(IncrementalSalesloftStream):
-    created_at_field = "updated_at"
-
+class CallDispositions(SalesloftStream):
     def path(self, **kwargs) -> str:
         return "call_dispositions"
 
 
-class CallSentiments(IncrementalSalesloftStream):
-    created_at_field = "updated_at"
-
+class CallSentiments(SalesloftStream):
     def path(self, **kwargs) -> str:
         return "call_sentiments"
 
 
 class Meetings(IncrementalSalesloftStream):
-    created_at_field = "updated_at"
+    created_at_field = "created_at"
 
     def path(self, **kwargs) -> str:
         return "meetings"
