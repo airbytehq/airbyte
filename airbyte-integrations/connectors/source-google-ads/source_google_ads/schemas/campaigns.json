@@ -303,8 +303,7 @@
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "string"],
-      "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]
+      "type": ["null", "string"]
     },
     "metrics.value_per_conversion": {
       "type": ["null", "number"]
@@ -320,8 +319,7 @@
       "type": ["null", "number"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"],
-      "enum": ["CONTENT", "MIXED", "SEARCH", "SEARCH_PARTNERS", "UNKNOWN", "UNSPECIFIED", "YOUTUBE_SEARCH", "YOUTUBE_WATCH"]
+      "type": ["null", "string"]
     }
   }
 }
