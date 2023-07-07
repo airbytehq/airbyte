@@ -208,7 +208,7 @@ def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenar
         ["check", "--config", make_file(tmp_path / "config.json", scenario.config)],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["connectionStatus"]
+    return json.loads(captured.out.splitlines()[0])["connectionStatus"]  # type: ignore
 
 
 def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
@@ -217,7 +217,7 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
         ["discover", "--config", make_file(tmp_path / "config.json", scenario.config)],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["catalog"]
+    return json.loads(captured.out.splitlines()[0])["catalog"]  # type: ignore
 
 
 def read(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
@@ -273,4 +273,4 @@ def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[
 
 
 def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
-    return exc.value.args[0]
+    return str(exc.value.args[0])
