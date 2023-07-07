@@ -1,4 +1,4 @@
-FROM python:3.10-slim@sha256:13b98a4ddf43c98e3f91bd5136844ff0b0c1d2a4c913b4a430d552a43d4c7b3b as base
+FROM python:3.10-slim@sha256:9fa0bd93ffda9d47ef8290d05c905077298032a06cf100101981ddf483150d92 as base
 
 # build and load all requirements
 FROM base as builder
