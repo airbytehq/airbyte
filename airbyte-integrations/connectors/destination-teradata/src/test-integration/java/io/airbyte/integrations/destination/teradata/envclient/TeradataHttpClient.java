@@ -1,10 +1,5 @@
 package io.airbyte.integrations.destination.teradata.envclient;
 
-import static io.airbyte.integrations.destination.teradata.envclient.Headers.APPLICATION_JSON;
-import static io.airbyte.integrations.destination.teradata.envclient.Headers.AUTHORIZATION;
-import static io.airbyte.integrations.destination.teradata.envclient.Headers.BEARER;
-import static io.airbyte.integrations.destination.teradata.envclient.Headers.CONTENT_TYPE;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -14,6 +9,7 @@ import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
 import io.airbyte.integrations.destination.teradata.envclient.exception.Error4xxException;
 import io.airbyte.integrations.destination.teradata.envclient.exception.Error5xxException;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -21,6 +17,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
+
+import static io.airbyte.integrations.destination.teradata.envclient.Headers.*;
 
 public class TeradataHttpClient {
 
@@ -57,7 +55,8 @@ public class TeradataHttpClient {
                 .build();
 
         return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
-                .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {}));
+                .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {
+                }));
     }
 
     // Avoids long connections and the risk of connection termination by intermediary
@@ -76,7 +75,8 @@ public class TeradataHttpClient {
 
         var httpResponse =
                 handleCheckedException(() -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()));
-        return handleHttpResponse(httpResponse, new TypeReference<>() {});
+        return handleHttpResponse(httpResponse, new TypeReference<>() {
+        });
     }
 
     // Deleting an environment is a blocking operation by default, and it takes ~1.5min to finish
@@ -89,7 +89,8 @@ public class TeradataHttpClient {
                 .build();
 
         return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
-                .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {}));
+                .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {
+                }));
     }
 
     public CompletableFuture<Void> startEnvironment(EnvironmentRequest environmentRequest, String token) {
@@ -111,13 +112,10 @@ public class TeradataHttpClient {
                         CONTENT_TYPE, APPLICATION_JSON)
                 .method("PATCH", publisher)
                 .build();
-
-
-
-
         var httpResponse =
                 handleCheckedException(() -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()));
-        return handleHttpResponse(httpResponse, new TypeReference<>() {});
+        return handleHttpResponse(httpResponse, new TypeReference<>() {
+        });
 
     }
 
