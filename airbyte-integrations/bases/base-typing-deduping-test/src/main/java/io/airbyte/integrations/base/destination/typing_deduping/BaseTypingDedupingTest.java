@@ -391,7 +391,8 @@ public abstract class BaseTypingDedupingTest {
   // name but different namespace
   // TODO maybe we don't even need the single-stream versions...
   /**
-   * Identical to {@link #incrementalDedup()}, except there are two streams with the same name and different namespace.
+   * Identical to {@link #incrementalDedup()}, except there are two streams with the same name and
+   * different namespace.
    */
   @Test
   public void incrementalDedupIdenticalName() throws Exception {
@@ -415,15 +416,13 @@ public abstract class BaseTypingDedupingTest {
             .withStream(new AirbyteStream()
                 .withNamespace(namespace2)
                 .withName(streamName)
-                .withJsonSchema(SCHEMA))
-    ));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     // Read the same set of messages for both streams
     List<AirbyteMessage> messages1 = Stream.concat(
         readMessages("sync1_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("sync1_messages.jsonl", namespace2, streamName).stream()
-    ).toList();
+        readMessages("sync1_messages.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages1);
 
@@ -435,8 +434,7 @@ public abstract class BaseTypingDedupingTest {
     // Second sync
     List<AirbyteMessage> messages2 = Stream.concat(
         readMessages("sync2_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("sync2_messages.jsonl", namespace2, streamName).stream()
-    ).toList();
+        readMessages("sync2_messages.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages2);
 
