@@ -16,6 +16,8 @@ class ParquetParser(FileTypeParser):
     async def infer_schema(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
+        # Pyarrow can detect the schema of a parquet file by reading only its metadata.
+        # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
         parquet_file = pq.ParquetFile(stream_reader.open_file(file))
         parquet_schema = parquet_file.schema_arrow
         schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type) for field in parquet_schema}
@@ -41,7 +43,6 @@ class ParquetParser(FileTypeParser):
         # Types we do not support
         # - binary
         # - month_day_nano_interval
-        # - duration
 
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
@@ -63,5 +64,7 @@ class ParquetParser(FileTypeParser):
             return {"type": "object"}
         elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type):
             return {"type": "array"}
+        elif pa.types.is_duration(parquet_type):
+            return {"type": "integer"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")

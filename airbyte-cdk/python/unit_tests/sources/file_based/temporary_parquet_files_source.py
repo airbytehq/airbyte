@@ -7,6 +7,7 @@ import tempfile
 from datetime import datetime
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Optional
+from memory_profiler import profile
 
 import pandas as pd
 import pyarrow as pa
@@ -47,3 +48,18 @@ class TemporaryParquetFilesStreamReader(AbstractFileBasedStreamReader):
 
             fp.seek(0)
             return fp.read()
+
+
+@profile(precision=4)
+def foo(file_name):
+    print("world")
+    file = pq.ParquetFile(file_name)
+    print(file.schema_arrow)
+
+if __name__ == "__main__":
+    print("hello")
+    #df = pd.DataFrame({"a": [i for i in range(1_000_000_000)], "b": [i for i in range(1_000_000_000)]})
+    #table = pa.Table.from_pandas(df)
+    #pq.write_table(table, "test_large.parquet")
+    #foo("test_large.parquet")
+    pa.Table().add_column(0, "a", pa.duration("s"))

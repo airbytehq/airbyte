@@ -69,6 +69,7 @@ _parquet_file_with_various_types = {
 
              "col_struct",
              "col_list",
+             "col_duration"
              ),
             (True,
 
@@ -96,6 +97,7 @@ _parquet_file_with_various_types = {
              datetime.time(1, 2, 3, 4),
              {"struct_key": "struct_value"},
              [1, 2, 3, 4],
+             12345,
              ),
         ],
         "schema": pa.schema([
@@ -126,6 +128,7 @@ _parquet_file_with_various_types = {
 
             pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
             pa.field("col_list", pa.list_(pa.int32())),
+            pa.field("col_duration", pa.duration("s")),
         ]),
         "last_modified": "2023-06-05T03:54:07.000Z",
     }
@@ -339,6 +342,9 @@ parquet_various_types_scenario = (
                             "col_list": {
                                 "type": "array",
                             },
+                            "col_duration": {
+                                "type": "integer",
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
                             },
@@ -376,6 +382,7 @@ parquet_various_types_scenario = (
                       "col_time64us": "01:02:03.000004",
                       "col_struct": {"struct_key": "struct_value"},
                       "col_list": [1, 2, 3, 4],
+                      "col_duration": 12345,
                       "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"
              },
