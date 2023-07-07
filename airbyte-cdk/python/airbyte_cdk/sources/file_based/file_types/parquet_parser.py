@@ -121,5 +121,5 @@ class ParquetParser(FileTypeParser):
             or pa.types.is_string(parquet_type)
             or pa.types.is_large_string(parquet_type)
             or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
-            or ParquetParser._is_binary(parquet_type)
-        )  # Best we can do is return as a string since we do not support binary
+            or ParquetParser._is_binary(parquet_type) # Best we can do is return as a string since we do not support binary
+        )
