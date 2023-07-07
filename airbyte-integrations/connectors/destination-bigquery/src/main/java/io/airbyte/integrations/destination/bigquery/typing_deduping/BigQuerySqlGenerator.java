@@ -375,13 +375,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       final String finalSuffix,
       final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
 
-    if (!streamColumns.containsValue(CDC_DELETED_AT_COLUMN)){
+    // TODO: This fails spotbugs and I don't know why
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
       return "";
     }
 
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
-        "quoted_cdc_delete_column", QUOTE + CDC_DELETED_AT_COLUMN + QUOTE)).replace(
+        "quoted_cdc_delete_column", CDC_DELETED_AT_COLUMN)).replace(
         """
            DELETE FROM ${final_table_id}
            WHERE ${quoted_cdc_delete_column} IS NOT NULL
