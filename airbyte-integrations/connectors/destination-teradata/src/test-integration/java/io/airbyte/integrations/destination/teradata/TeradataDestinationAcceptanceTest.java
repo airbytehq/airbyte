@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient;
 import io.airbyte.integrations.destination.teradata.envclient.dto.*;
+import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,7 +73,12 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
       var getRequest = new  GetEnvironmentRequest(configJson.get("env_name").asText());
       String token = configJson.get("env_token").asText();
-     var response = teradataHttpClient.getEnvironment(getRequest, token);
+      EnvironmentResponse response = null;
+     try {
+         response = teradataHttpClient.getEnvironment(getRequest, token);
+     } catch (BaseException be) {
+            LOGGER.error("Environemnt " + configJson.get("env_name").asText()  + " is not available. " + be.getMessage());
+     }
      if(response == null || response.ip() == null) {
          var request = new CreateEnvironmentRequest(
                  configJson.get("env_name").asText(),
