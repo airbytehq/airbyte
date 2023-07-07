@@ -152,7 +152,8 @@ public class CursorManagerTest {
         DbStreamState::getCursor,
         DbStreamState::getCursorField,
         CURSOR_RECORD_COUNT_FUNCTION,
-        s -> nameNamespacePair);
+        s -> nameNamespacePair,
+        false);
   }
 
 }

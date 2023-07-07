@@ -10,9 +10,11 @@ data:
   name: Cassandra
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/cassandra
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/cassandra
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

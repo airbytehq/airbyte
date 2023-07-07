@@ -1,0 +1,61 @@
+{
+    "streams": [
+        {
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "stream": {
+                "name": "Airbyte-connector Test",
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ],
+                "source_defined_cursor": false,
+                "source_defined_primary_key": [["race"]],
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "race": {
+                            "type": "string"
+                        },
+                        "height": {
+                            "type": "string"
+                        },
+                        "weight": {
+                            "type": "string"
+                        },
+                        "speed": {
+                            "type": "string"
+                        },
+                        "strength": {
+                            "type": "string"
+                        },
+                        "dexterity": {
+                            "type": "string"
+                        },
+                        "constitution": {
+                            "type": "string"
+                        },
+                        "intelligence": {
+                            "type": "string"
+                        },
+                        "wisdom": {
+                            "type": "string"
+                        },
+                        "charisma": {
+                            "type": "string"
+                        },
+                        "modifiedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "row_id": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    ]  
+}
+

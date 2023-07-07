@@ -105,7 +105,7 @@
       "type": ["null", "object"],
       "properties": {
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "start": {
           "type": ["null", "integer"]

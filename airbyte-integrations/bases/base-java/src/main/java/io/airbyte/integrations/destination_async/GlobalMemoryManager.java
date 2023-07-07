@@ -6,11 +6,12 @@ package io.airbyte.integrations.destination_async;
 
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Responsible for managing global memory across multiple queues in a thread-safe way.
  * <p>
- * This means memory allocation and deallocation for each queue can be dynamically adjusted
+ * This means memory allocation and de-allocation for each queue can be dynamically adjusted
  * according to the overall available memory. Memory blocks are managed in chunks of
  * {@link #BLOCK_SIZE_BYTES}, and the total amount of memory managed is configured at creation time.
  * <p>
@@ -68,6 +69,10 @@ public class GlobalMemoryManager {
     final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
+    log.debug("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
+        FileUtils.byteCountToDisplaySize(maxMemoryBytes),
+        FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
+        FileUtils.byteCountToDisplaySize(toAllocateBytes));
     return toAllocateBytes;
   }
 

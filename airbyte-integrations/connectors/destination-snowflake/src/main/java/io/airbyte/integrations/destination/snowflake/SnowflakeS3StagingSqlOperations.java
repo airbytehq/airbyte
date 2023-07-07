@@ -53,7 +53,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlStagingOperatio
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
+    return nameTransformer.applyDefaultCase(String.join(".",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }

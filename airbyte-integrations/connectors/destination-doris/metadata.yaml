@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/doris
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

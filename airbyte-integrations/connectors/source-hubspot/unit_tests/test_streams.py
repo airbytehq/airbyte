@@ -255,6 +255,40 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
     assert stream.state == {stream.cursor_field: pendulum.parse(latest_cursor_value).to_rfc3339_string()}
 
 
+@pytest.mark.parametrize(
+    "state, record, expected",
+    [
+        ({"updatedAt": ""}, {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"}, (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
+        ({"updatedAt": "2023-01-30T23:46:36.287000+00:00"}, {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"}, (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
+    ],
+    ids=[
+        "Empty Sting in state + new record",
+        "State + old record",
+    ]
+)
+def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
+    stream = Forms(**common_params)
+    stream.state = state
+    # overcome the availability strartegy issues by mocking the responses
+    # A.K.A: not related to the test at all, but definetely required.
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "CreatedAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    requests_mock.register_uri("GET", stream.url, json=record)
+    requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
+    # end of mocking `availability strategy`
+
+    result = stream.filter_by_state(stream.state, record)
+    assert result == expected[0]
+    assert stream.state == expected[1]
+
+
 @pytest.fixture(name="custom_object_schema")
 def custom_object_schema_fixture():
     return {
@@ -314,7 +348,7 @@ def expected_custom_object_json_schema():
 def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
 ):
-    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
+    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, fully_qualified_name="p123_animals", **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()
@@ -323,12 +357,9 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     assert not adapter.called
 
 
-def test_custom_object_stream_calls_hubspot_to_get_json_schema(
-    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
-):
-    stream = CustomObject(entity="animals", schema=None, **common_params)
-
-    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
-    json_schema = stream.get_json_schema()
-    assert json_schema == expected_custom_object_json_schema
-    assert adapter.called
+def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    for (entity, fully_qualified_name, schema) in api.get_custom_objects_metadata():
+        assert entity == "animals"
+        assert fully_qualified_name == "p19936848_Animal"
+        assert schema == expected_custom_object_json_schema

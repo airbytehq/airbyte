@@ -17,6 +17,12 @@
       "description": "If a scheduled downtime is canceled.",
       "readOnly": true
     },
+    "child_id": {
+      "type": ["integer", "null"]
+    },
+    "created": {
+      "type": ["integer", "null"]
+    },
     "creator_id": {
       "type": ["integer", "null"],
       "description": "User ID of the downtime creator.",
@@ -47,6 +53,9 @@
       "description": "A message to include with notifications for this downtime.",
       "readOnly": true
     },
+    "modified": {
+      "type": ["integer", "null"]
+    },
     "monitor_id": {
       "type": ["integer", "null"],
       "description": "A single monitor to which the downtime applies. If not provided, the downtime applies to all monitors.",
@@ -64,6 +73,21 @@
       "type": ["boolean", "null"],
       "description": "If the first recovery notification during a downtime should be muted.",
       "readOnly": true
+    },
+    "notify_end_states": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "notify_end_types": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "org_id": {
+      "type": ["integer", "null"]
     },
     "parent_id": {
       "type": ["integer", "null"],
@@ -88,6 +112,9 @@
       "description": "POSIX timestamp to start the downtime. If not provided, the downtime starts the moment it is created.",
       "readOnly": true
     },
+    "status": {
+      "type": ["string", "null"]
+    },
     "timezone": {
       "type": ["string", "null"],
       "description": "The timezone in which to display the downtime's start and end times in Datadog applications.",
@@ -97,6 +124,9 @@
       "type": ["integer", "null"],
       "description": "ID of the last user that updated the downtime.",
       "readOnly": true
+    },
+    "uuid": {
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": true

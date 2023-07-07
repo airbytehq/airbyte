@@ -5,7 +5,7 @@ import pathlib
 
 import click
 from metadata_service.gcs_upload import upload_metadata_to_gcs
-from metadata_service.validators.metadata_validator import validate_metadata_file
+from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, validate_and_load
 from metadata_service.constants import METADATA_FILE_NAME
 from pydantic import ValidationError
 
@@ -22,8 +22,8 @@ def validate(file_path: pathlib.Path):
 
     click.echo(f"Validating {file_path}...")
 
-    is_valid, error = validate_metadata_file(file_path)
-    if is_valid:
+    metadata, error = validate_and_load(file_path, PRE_UPLOAD_VALIDATORS)
+    if metadata:
         click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV0 YAML file.")
     else:
         click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
