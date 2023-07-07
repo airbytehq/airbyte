@@ -3,41 +3,42 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_pipedrive/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.14"
+      - spec_path: "source_pipedrive/spec.json"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/old_config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/old_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.13"
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.19
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      ignored_fields:
-        users:
-        - name: modified
-          bypass_reason: "constantly increasing date-time field"
-        - name: last_login
-          bypass_reason: "constantly increasing date-time field"
-      fail_on_extra_columns: false
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        ignored_fields:
+          users:
+            - name: modified
+              bypass_reason: "constantly increasing date-time field"
+            - name: last_login
+              bypass_reason: "constantly increasing date-time field"
+          deal_fields:
+            - name: show_in_pipelines
+              bypass_reason: "Unstable data"
+        fail_on_extra_columns: false
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
