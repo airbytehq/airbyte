@@ -46,9 +46,9 @@ public record EnvironmentResponse(
 
     }
 
-    enum State {
+    public enum State {
 
-        INITIALIZING, RUNNING, STOPPING, TERMINATING,
+        PROVISIONING, INITIALIZING, RUNNING, STARTING, STOPPING, STOPPED, TERMINATING, TERMINATED, REPAIRING
 
     }
 

@@ -10,10 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import io.airbyte.integrations.destination.teradata.envclient.dto.DeleteEnvironmentRequest;
-import io.airbyte.integrations.destination.teradata.envclient.dto.CreateEnvironmentRequest;
-import io.airbyte.integrations.destination.teradata.envclient.dto.EnvironmentResponse;
-import io.airbyte.integrations.destination.teradata.envclient.dto.GetEnvironmentRequest;
+import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
 import io.airbyte.integrations.destination.teradata.envclient.exception.Error4xxException;
 import io.airbyte.integrations.destination.teradata.envclient.exception.Error5xxException;
@@ -93,6 +90,35 @@ public class TeradataHttpClient {
 
         return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
                 .thenApply(httpResponse -> handleHttpResponse(httpResponse, new TypeReference<>() {}));
+    }
+
+    public CompletableFuture<Void> startEnvironment(EnvironmentRequest environmentRequest, String token) {
+        var requestBody = handleCheckedException(() -> objectMapper.writeValueAsString(environmentRequest.request()));
+        return getVoidCompletableFuture(environmentRequest.name(), token, requestBody);
+    }
+
+    public CompletableFuture<Void> stopEnvironment(EnvironmentRequest environmentRequest, String token) {
+        var requestBody = handleCheckedException(() -> objectMapper.writeValueAsString(environmentRequest.request()));
+        return getVoidCompletableFuture(environmentRequest.name(), token, requestBody);
+    }
+
+    private CompletableFuture<Void> getVoidCompletableFuture(String name, String token, String jsonPayLoadString) {
+        HttpRequest.BodyPublisher publisher = HttpRequest.BodyPublishers.ofString(jsonPayLoadString);
+        var httpRequest = HttpRequest.newBuilder(URI.create(baseUrl
+                        .concat("/environments/")
+                        .concat(name)))
+                .headers(AUTHORIZATION, BEARER + token,
+                        CONTENT_TYPE, APPLICATION_JSON)
+                .method("PATCH", publisher)
+                .build();
+
+
+
+
+        var httpResponse =
+                handleCheckedException(() -> httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()));
+        return handleHttpResponse(httpResponse, new TypeReference<>() {});
+
     }
 
 

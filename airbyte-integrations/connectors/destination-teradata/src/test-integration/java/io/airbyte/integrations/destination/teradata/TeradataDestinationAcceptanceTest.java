@@ -18,8 +18,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient;
-import io.airbyte.integrations.destination.teradata.envclient.dto.CreateEnvironmentRequest;
-import io.airbyte.integrations.destination.teradata.envclient.dto.DeleteEnvironmentRequest;
+import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -71,11 +70,19 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   void initEnvironment() throws Exception {
     this.configJson = Jsons.clone(getStaticConfig());
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
-    var request = new CreateEnvironmentRequest(
-            configJson.get("env_name").asText(),
-            configJson.get("env_region").asText(),
-            configJson.get("env_password").asText());
-    var response = teradataHttpClient.createEnvironment(request, configJson.get("env_token").asText()).get();
+      var getRequest = new  GetEnvironmentRequest(configJson.get("env_name").asText());
+      String token = configJson.get("env_token").asText();
+     var response = teradataHttpClient.getEnvironment(getRequest, token);
+     if(response == null || response.ip() == null) {
+         var request = new CreateEnvironmentRequest(
+                 configJson.get("env_name").asText(),
+                 configJson.get("env_region").asText(),
+                 configJson.get("env_password").asText());
+         response = teradataHttpClient.createEnvironment(request, token).get();
+     } else if(response.state() == EnvironmentResponse.State.STOPPED) {
+         var request = new EnvironmentRequest(configJson.get("env_name").asText(), new OperationRequest("start"));
+         teradataHttpClient.startEnvironment(request, token);
+     }
     ((ObjectNode) configJson).put("host", response.ip());
     if(configJson.get("password") == null) {
         ((ObjectNode) configJson).put("password", configJson.get("env_password").asText());
@@ -85,8 +92,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
    @AfterAll
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
-    var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
-    teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText()).get();
+    var request = new EnvironmentRequest(configJson.get("env_name").asText(), new OperationRequest("stop"));
+    teradataHttpClient.stopEnvironment(request, configJson.get("env_token").asText()).get();
   }
 
   public JsonNode getStaticConfig() throws Exception {
