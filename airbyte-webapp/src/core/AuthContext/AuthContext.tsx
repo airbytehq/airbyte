@@ -49,7 +49,7 @@ export const AuthContextProvider: React.FC = ({ children }) => {
 
   const setUser = (user: IAuthUser) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    setAuthenticatedUser(user, () => navigate(`/${RoutePaths.Connections}`));
+    setAuthenticatedUser(user, () => navigate(`/${user.workspaceId ? RoutePaths.Connections : RoutePaths.Payment}`));
   };
 
   const updateUserStatus = (status: number) => {

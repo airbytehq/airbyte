@@ -106,8 +106,10 @@ export const Routing: React.FC = () => {
       {user.token && (
         <Routes>
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-          <Route path="/*" element={<RoutingWithWorkspace />} />
-          <Route path="*" element={<AutoSelectFirstWorkspace />} />
+          {!user.workspaceId && <Route path={`${RoutePaths.Payment}/*`} element={<PaymentPage />} />}
+          {!user.workspaceId && <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />}
+          {user.workspaceId && <Route path="/*" element={<RoutingWithWorkspace />} />}
+          {user.workspaceId && <Route path="*" element={<AutoSelectFirstWorkspace />} />}
         </Routes>
       )}
       {!user.token && <AuthRoutes />}
