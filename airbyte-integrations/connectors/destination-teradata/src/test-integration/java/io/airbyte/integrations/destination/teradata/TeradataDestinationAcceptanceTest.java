@@ -154,7 +154,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
 
     @Override
-    protected void tearDown(TestDestinationEnv testEnv) {
+    protected void tearDown(TestDestinationEnv testEnv) throws Exception {
         final String deleteQuery = String.format(String.format(DELETE_DATABASE, SCHEMA_NAME));
         final String dropQuery = String.format(String.format(DROP_DATABASE, SCHEMA_NAME));
         try {
@@ -162,6 +162,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
             database.execute(dropQuery);
         } catch (Exception e) {
             AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " delete got failed.");
+        } finally {
+            DataSourceFactory.close(dataSource);
         }
     }
 
