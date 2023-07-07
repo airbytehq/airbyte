@@ -44,11 +44,7 @@ class ParquetParser(FileTypeParser):
         Convert a pyarrow scalar to a value that can be output by the source.
         """
         # Convert date and datetime objects to isoformat strings
-        if pa.types.is_time(parquet_value.type):
-            return parquet_value.as_py().isoformat()
-        if pa.types.is_timestamp(parquet_value.type):
-            return parquet_value.as_py().isoformat()
-        if pa.types.is_date(parquet_value.type):
+        if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
             return parquet_value.as_py().isoformat()
 
         # Convert month_day_nano_interval to array
@@ -107,9 +103,9 @@ class ParquetParser(FileTypeParser):
             return {"type": "integer"}
         elif pa.types.is_floating(parquet_type):
             return {"type": "number"}
-        elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
+        elif ParquetParser._is_object(parquet_type):
             return {"type": "object"}
-        elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type) or parquet_type == pa.month_day_nano_interval():
+        elif ParquetParser._is_list(parquet_type):
             return {"type": "array"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")
@@ -129,5 +125,13 @@ class ParquetParser(FileTypeParser):
             or pa.types.is_string(parquet_type)
             or pa.types.is_large_string(parquet_type)
             or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
-            or ParquetParser._is_binary(parquet_type) # Best we can do is return as a string since we do not support binary
+            or ParquetParser._is_binary(parquet_type)  # Best we can do is return as a string since we do not support binary
         )
+
+    @staticmethod
+    def _is_object(parquet_type: pa.DataType) -> bool:
+        return bool(pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type))
+
+    @staticmethod
+    def _is_list(parquet_type: pa.DataType) -> bool:
+        return bool(pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type) or parquet_type == pa.month_day_nano_interval())
