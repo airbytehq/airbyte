@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "username": "avni",
+  "password": "test",
+  "lastModifiedDateTime": "2000-06-27T04:18:36.914Z"
 }

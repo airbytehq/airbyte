@@ -2,37 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from airbyte_cdk.models import SyncMode
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream,IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from datetime import datetime
 import boto3
-
-class TokenHeadAuthenticator(AbstractHeaderAuthenticator):
-    
-
-    """
-    This is custom class for authentication
-    as airbyte does not provid method for authentication process of avni API's
-    """
-    @property
-    def auth_header(self) -> str:
-        return self._auth_header
-
-    @property
-    def token(self) -> str:
-        return self._token
-
-    def __init__(self, token: str, auth_header: str = "auth-token"):
-        self._auth_header = auth_header
-        self._token = token
 
 
 class AvniStream(HttpStream, ABC):
@@ -41,21 +19,25 @@ class AvniStream(HttpStream, ABC):
     url_base = "https://app.avniproject.org/api/"
     primary_key = "ID"
     
-    def __init__(self,lastModifiedDateTime:str, **kwargs):
+    def __init__(self,lastModifiedDateTime:str,auth_token:str, **kwargs):
             super().__init__(**kwargs)
             self.cursor_value = None
             self.current_page=0
             self.lastModifiedDateTime=lastModifiedDateTime
             self.last_record=None
+            self.auth_token=auth_token
     
     
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         
-        params = {"lastModifiedDateTime": self.state[self.cursor_field]}
+        params = {"lastModifiedDateTime": self.state["Last modified at"]}
         if next_page_token:
             params.update(next_page_token)
-        return params   
+        return params
     
+    def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        
+        return {"auth-token":self.auth_token}
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         
@@ -65,6 +47,14 @@ class AvniStream(HttpStream, ABC):
             
         yield from data
         
+    def update_state(self) -> None:
+        
+        if(self.last_record):
+            updated_last_date = self.last_record["audit"]["Last modified at"]
+            self.state = {"Last modified at": updated_last_date}
+            self.last_record=None
+            
+        return None
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         
@@ -76,12 +66,8 @@ class AvniStream(HttpStream, ABC):
             self.current_page = self.current_page + 1
             return {"page": self.current_page}
         
-        if(self.last_record):
-            
-            updated_last_date = self.last_record["audit"]["Last modified at"]
-            self.state = {"Last modified at": updated_last_date}
-            self.last_record=None
-            
+        self.update_state()
+
         self.current_page=0
         
         return None 
@@ -138,31 +124,39 @@ class SourceAvni(AbstractSource):
     def get_client_id(self):
         
         url_client="https://app.avniproject.org/idp-details"
-        client = requests.get(url_client).json()
+        response = requests.get(url_client)
+        response.raise_for_status() 
+        client = response.json()
         return client['cognito']['clientId']
-    
-      
+
     def get_token(self,username: str, password: str, app_client_id: str) -> str:
         
-        client = boto3.client('cognito-idp',region_name='ap-south-1')
-        response = client.initiate_auth(
-            ClientId=app_client_id,
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                "USERNAME": username,
-                "PASSWORD": password
-            }
-        )
+            client = boto3.client('cognito-idp',region_name='ap-south-1')
+            response = client.initiate_auth(
+                ClientId=app_client_id,
+                AuthFlow='USER_PASSWORD_AUTH',
+                AuthParameters={
+                    "USERNAME": username,
+                    "PASSWORD": password
+                }
+            )
+            return response['AuthenticationResult']['IdToken']
         
-        return response['AuthenticationResult']['IdToken']
-    
-    
+            
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         
         username=config["username"]
         password=config["password"]
-        client_id = self.get_client_id()
-        auth_token= self.get_token(username,password,client_id)
+        
+        try:
+            client_id = self.get_client_id()
+        except Exception as error:
+            return False, str(error)+": Please connect With Avni Team"
+        
+        try:
+            auth_token= self.get_token(username,password,client_id)
+        except Exception as error:
+            return False, error
         
         url = 'https://app.avniproject.org/api/subjects'
         params = {
@@ -173,6 +167,7 @@ class SourceAvni(AbstractSource):
              'auth-token': auth_token
              }
         response = requests.get(url, params=params, headers=headers)
+        
         if(response.status_code==200):
             return True, None
         else:
@@ -183,14 +178,18 @@ class SourceAvni(AbstractSource):
         
         username=config["username"]
         password=config["password"]
-        client_id=self.get_client_id()
+        
+        try:
+            client_id = self.get_client_id()
+        except Exception as error:
+            print(str(error)+": Please connect With Avni Team")
+            raise error
+        
         auth_token= self.get_token(username,password,client_id)
-        authenticator = TokenHeadAuthenticator(token = auth_token)
         
         stream_kwargs = {
-        "authenticator": authenticator,
+        "auth_token": auth_token,
         "lastModifiedDateTime":config["lastModifiedDateTime"]
         }
         
         return [Subjects(**stream_kwargs),Programs(**stream_kwargs),ProgramEncounters(**stream_kwargs),SubjectEncounters(**stream_kwargs)]
-    
