@@ -14,6 +14,7 @@ from source_facebook_marketing.streams.common import JobException
 def api_fixture(mocker):
     api = mocker.Mock()
     api.accounts = [mocker.Mock(), mocker.Mock()]
+    api.token_hash = "token_hash"
     api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(0, 0)
     api.api.new_batch.return_value = mocker.MagicMock(spec=FacebookAdsApiBatch)
     return api

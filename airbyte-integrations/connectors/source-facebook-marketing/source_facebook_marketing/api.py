@@ -172,7 +172,7 @@ class API:
 
     def __init__(self, account_ids: List[str], access_token: str, parallelism: int=1):
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.token_hash = sha256(access_token)
+        self.token_hash = str(sha256(access_token.encode('utf-8')))
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         adapter = requests.adapters.HTTPAdapter(pool_maxsize=parallelism, pool_block=True)
         MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
