@@ -56,6 +56,7 @@ class FBMarketingStream(Stream, ABC):
         super().__init__(**kwargs)
         self._source = source
         self._api = api
+        self._token_hash = api.token_hash
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
         self.max_batch_size = max_batch_size if max_batch_size is not None else 50
@@ -183,7 +184,8 @@ class FBMarketingStream(Stream, ABC):
                     yield value
                 job.value.clear()
             logger.info(self.generate_facebook_stream_log({
-                "source_name": self._source.name,
+                "source": self._source.name,
+                "token_hash": self._token_hash,
                 "stream": self.entity_prefix,
                 "accounts_count": len(self._api.accounts),
                 "count": count
