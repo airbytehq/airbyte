@@ -25,9 +25,9 @@ def test_slicer():
     "last_record, expected, records",
     [
         (
-                {"updated_at": "2022-09-06T10:10:10Z"},
-                {'parent_stream_name': {'parent_cursor_field': 1662451810}, 'updated_at': '2022-09-06T10:10:10Z'},
-                [{"updated_at": "2022-09-05T10:10:10Z"}],
+                {"first_stream_cursor": "2022-09-06T10:10:10Z"},
+                {'parent_stream_name': {'parent_cursor_field': 1662459010}, 'first_stream_cursor': '2022-09-06T10:10:10Z'},
+                [{"first_stream_cursor": "2022-09-05T10:10:10Z"}],
         ),
         (None, {}, []),
     ],
@@ -48,7 +48,7 @@ def test_sub_slicer(last_record, expected, records):
     )
 
     slicer = IncrementalSubstreamSlicer(
-        config={}, parameters={}, cursor_field="updated_at", parent_stream_configs=[parent_config]
+        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config]
     )
     stream_slice = next(slicer.stream_slices()) if records else {}
     slicer.close_slice(stream_slice, last_record)

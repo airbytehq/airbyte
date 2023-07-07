@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
@@ -20,7 +20,7 @@ RequestInput = Union[str, Mapping[str, str]]
 
 def is_valid_format(date_string: str) -> bool:
     try:
-        datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
+        datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S%z")
         return True
     except ValueError:
         return False
@@ -30,8 +30,8 @@ def compare_date_strings(str1: str, str2: str) -> bool:
     if not is_valid_format(str1) or not is_valid_format(str2):
         raise ValueError("Invalid date format")
 
-    dt1 = datetime.strptime(str1, "%Y-%m-%dT%H:%M:%SZ")
-    dt2 = datetime.strptime(str2, "%Y-%m-%dT%H:%M:%SZ")
+    dt1 = datetime.strptime(str1, "%Y-%m-%dT%H:%M:%S%z")
+    dt2 = datetime.strptime(str2, "%Y-%m-%dT%H:%M:%S%z")
     return dt1 > dt2
 
 
@@ -191,7 +191,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         if self.parent_stream:
             if self.parent_cursor_field not in most_recent_record:
                 date_str = most_recent_record[self.cursor_field.eval(self.config)]
-                parent_cursor = int(datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ").timestamp())
+                parent_cursor = int(datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S%z").timestamp())
             else:
                 parent_cursor = most_recent_record[self.parent_cursor_field]
             self._state[self.parent_stream_name] = {self.parent_cursor_field: parent_cursor}
