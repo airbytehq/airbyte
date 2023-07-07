@@ -68,7 +68,7 @@ setup(
     extras_require={
         "dev": [
             "freezegun",
-            "MyPy~=0.812",
+            "mypy==1.4.1",
             "pytest",
             "pytest-cov",
             "pytest-mock",
