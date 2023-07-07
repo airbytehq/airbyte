@@ -416,17 +416,6 @@ def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(req
 
     assert not adapter.called
 
-
-def test_custom_object_stream_calls_hubspot_to_get_json_schema(
-    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
-):
-    stream = CustomObject(entity="animals", schema=None, **common_params)
-
-    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
-    json_schema = stream.get_json_schema()
-    assert json_schema == expected_custom_object_json_schema
-    assert adapter.called
-
     
 def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})

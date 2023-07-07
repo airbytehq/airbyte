@@ -16,7 +16,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -1758,7 +1758,7 @@ class Contacts(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-class ContactsMergedAudit(IncrementalStream):
+class ContactsMergedAudit(Stream):
 
     url = "/contacts/v1/contact/vids/batch/"
     updated_at_field = "timestamp"
@@ -1778,7 +1778,8 @@ class ContactsMergedAudit(IncrementalStream):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any] | None]:
+    ) -> Iterable[Mapping[str, Any]]:
+        
         slices = []
 
         # we can query a max of 100 contacts at a time
@@ -1787,10 +1788,10 @@ class ContactsMergedAudit(IncrementalStream):
         contact_batch = []
 
         contacts = Contacts(**self.config)
-        contacts._sync_mode = SyncMode.incremental
+        contacts._sync_mode = SyncMode.full_refresh
         contacts.filter_old_records = False
 
-        for contact in contacts.read_records(sync_mode=sync_mode):
+        for contact in contacts.read_records(sync_mode=SyncMode.full_refresh):
             if contact["properties"].get("hs_merged_object_ids"):
                 contact_batch.append(contact["id"])
 
