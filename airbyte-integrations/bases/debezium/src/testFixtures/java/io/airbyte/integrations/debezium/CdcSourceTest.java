@@ -59,7 +59,7 @@ public abstract class CdcSourceTest {
 
   protected static final String MODELS_SCHEMA = "models_schema";
   protected static final String MODELS_STREAM_NAME = "models";
-  private static final Set<String> STREAM_NAMES = Sets
+  protected static final Set<String> STREAM_NAMES = Sets
       .newHashSet(MODELS_STREAM_NAME);
   protected static final String COL_ID = "id";
   protected static final String COL_MAKE_ID = "make_id";
@@ -321,8 +321,6 @@ public abstract class CdcSourceTest {
     });
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
-    assertEquals(1, stateMessages.size());
-    assertNotNull(stateMessages.get(0).getData());
     assertExpectedStateMessages(stateMessages);
   }
 
@@ -333,27 +331,27 @@ public abstract class CdcSourceTest {
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
-    assertEquals(1, stateMessages1.size());
-    assertNotNull(stateMessages1.get(0).getData());
     assertExpectedStateMessages(stateMessages1);
 
     executeQuery(String
         .format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
             11));
 
-    final JsonNode state = Jsons.jsonNode(stateMessages1);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
-    assertEquals(1, stateMessages2.size());
-    assertNotNull(stateMessages2.get(0).getData());
-    assertExpectedStateMessages(stateMessages2);
+    assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertCdcMetaData(recordMessages2.get(0).getData(), false);
+  }
+
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+    assertExpectedStateMessages(stateMessages);
   }
 
   @Test
@@ -364,24 +362,20 @@ public abstract class CdcSourceTest {
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
-    assertEquals(1, stateMessages1.size());
-    assertNotNull(stateMessages1.get(0).getData());
     assertExpectedStateMessages(stateMessages1);
 
     executeQuery(String
         .format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME,
             COL_MODEL, updatedModel, COL_ID, 11));
 
-    final JsonNode state = Jsons.jsonNode(stateMessages1);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
-    assertEquals(1, stateMessages2.size());
-    assertNotNull(stateMessages2.get(0).getData());
-    assertExpectedStateMessages(stateMessages2);
+    assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertEquals(updatedModel, recordMessages2.get(0).getData().get(COL_MODEL).asText());
@@ -408,9 +402,7 @@ public abstract class CdcSourceTest {
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    assertEquals(1, stateAfterFirstBatch.size());
-    assertNotNull(stateAfterFirstBatch.get(0).getData());
-    assertExpectedStateMessages(stateAfterFirstBatch);
+    assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateAfterFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
     assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
@@ -424,16 +416,14 @@ public abstract class CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
-    assertNotNull(stateAfterSecondBatch.get(0).getData());
-    assertExpectedStateMessages(stateAfterSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
 
     final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
         dataFromSecondBatch);
@@ -453,6 +443,10 @@ public abstract class CdcSourceTest {
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount,
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
             .size());
+  }
+
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+    assertExpectedStateMessages(stateAfterFirstBatch);
   }
 
   @Test
@@ -500,8 +494,6 @@ public abstract class CdcSourceTest {
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     final HashSet<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
-    assertEquals(1, stateMessages1.size());
-    assertNotNull(stateMessages1.get(0).getData());
     assertExpectedStateMessages(stateMessages1);
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
         .collect(Collectors.toSet()),
@@ -514,16 +506,14 @@ public abstract class CdcSourceTest {
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
     writeModelRecord(puntoRecord);
 
-    final JsonNode state = Jsons.jsonNode(extractStateMessages(actualRecords1));
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), configuredCatalog, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
-    assertEquals(1, stateMessages2.size());
-    assertNotNull(stateMessages2.get(0).getData());
-    assertExpectedStateMessages(stateMessages2);
+    assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
     assertExpectedRecords(
         Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
             .collect(Collectors.toSet()),
@@ -545,10 +535,11 @@ public abstract class CdcSourceTest {
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
-
     assertExpectedRecords(Collections.emptySet(), recordMessages);
-    assertEquals(1, stateMessages.size());
-    assertNotNull(stateMessages.get(0).getData());
+    assertExpectedStateMessagesForNoData(stateMessages);
+  }
+
+  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
     assertExpectedStateMessages(stateMessages);
   }
 
@@ -558,7 +549,8 @@ public abstract class CdcSourceTest {
     final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
-    final JsonNode state = Jsons.jsonNode(extractStateMessages(actualRecords1));
+    final List<AirbyteStateMessage> stateMessagesFromFirstSync = extractStateMessages(actualRecords1);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessagesFromFirstSync.get(stateMessagesFromFirstSync.size() - 1)));
 
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
@@ -568,9 +560,7 @@ public abstract class CdcSourceTest {
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
 
     assertExpectedRecords(Collections.emptySet(), recordMessages2);
-    assertEquals(1, stateMessages2.size());
-    assertNotNull(stateMessages2.get(0).getData());
-    assertExpectedStateMessages(stateMessages2);
+    assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
   }
 
   @Test
@@ -600,9 +590,9 @@ public abstract class CdcSourceTest {
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    assertEquals(1, stateAfterFirstBatch.size());
+    assertExpectedStateMessages(stateAfterFirstBatch);
 
-    final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(0);
+    final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
     assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInStateAfterFirstSyncCompletion = stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getStreamStates()
@@ -616,7 +606,7 @@ public abstract class CdcSourceTest {
     assertEquals((MODEL_RECORDS.size()), recordsFromFirstBatch.size());
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordsFromFirstBatch);
 
-    final JsonNode state = stateAfterFirstBatch.get(0).getData();
+    final JsonNode state = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1).getData();
 
     final ConfiguredAirbyteCatalog newTables = CatalogHelpers
         .toDefaultConfiguredCatalog(new AirbyteCatalog().withStreams(List.of(
@@ -655,36 +645,7 @@ public abstract class CdcSourceTest {
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(2, stateAfterSecondBatch.size());
-
-    final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateAfterSecondBatch.get(0);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSnapshotState = stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
-    assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
-    assertNotNull(stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData());
-
-    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateAfterSecondBatch.get(1);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
-    assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
-    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
+    assertStateMessagesForNewTableSnapshotTest(stateAfterSecondBatch, stateMessageEmittedAfterFirstSyncCompletion);
 
     final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
     assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
@@ -725,19 +686,19 @@ public abstract class CdcSourceTest {
       recordsWrittenInRandomTable.add(record2);
     }
 
-    final JsonNode state2 = stateAfterSecondBatch.get(1).getData();
+    final JsonNode state2 = stateAfterSecondBatch.get(stateAfterSecondBatch.size() - 1).getData();
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
         .read(getConfig(), updatedCatalog, state2);
     final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
         .toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
-    assertEquals(1, stateAfterThirdBatch.size());
+    assertTrue(stateAfterThirdBatch.size() >= 1);
 
-    final AirbyteStateMessage stateMessageEmittedAfterThirdSyncCompletion = stateAfterThirdBatch.get(0);
+    final AirbyteStateMessage stateMessageEmittedAfterThirdSyncCompletion = stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterThirdSyncCompletion.getType());
     assertNotEquals(stateMessageEmittedAfterThirdSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+        stateAfterSecondBatch.get(stateAfterSecondBatch.size() - 1).getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSyncCompletionStateAfterThirdSync = stateMessageEmittedAfterThirdSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -764,6 +725,39 @@ public abstract class CdcSourceTest {
         Sets
             .newHashSet(MODELS_STREAM_NAME + "_random"),
         randomTableSchema());
+  }
+
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+                                                            final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+    assertEquals(2, stateMessages.size());
+    final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateMessages.get(0);
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
+    final Set<StreamDescriptor> streamsInSnapshotState = stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getStreamStates()
+        .stream()
+        .map(AirbyteStreamState::getStreamDescriptor)
+        .collect(Collectors.toSet());
+    assertEquals(2, streamsInSnapshotState.size());
+    assertTrue(
+        streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertNotNull(stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData());
+
+    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(1);
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
+        .stream()
+        .map(AirbyteStreamState::getStreamDescriptor)
+        .collect(Collectors.toSet());
+    assertEquals(2, streamsInSnapshotState.size());
+    assertTrue(
+        streamsInSyncCompletionState.contains(
+            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
   protected AirbyteCatalog expectedCatalogForDiscover() {

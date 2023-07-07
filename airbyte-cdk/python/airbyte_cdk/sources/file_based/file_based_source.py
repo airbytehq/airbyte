@@ -5,8 +5,9 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
@@ -15,7 +16,7 @@ from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, Fil
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy, DefaultSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -23,23 +24,21 @@ from pydantic.error_wrappers import ValidationError
 
 
 class FileBasedSource(AbstractSource, ABC):
-    """
-    All file-based sources must provide a `stream_reader`.
-    """
-
     def __init__(
         self,
         stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AvailabilityStrategy,
+        catalog: Optional[ConfiguredAirbyteCatalog],
+        availability_strategy: Optional[AvailabilityStrategy],
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Dict[str, FileTypeParser] = None,
-        validation_policies: Type[AbstractSchemaValidationPolicy] = Type[DefaultSchemaValidationPolicy],
+        validation_policies: Dict[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         self.discovery_policy = discovery_policy
         self.parsers = parsers or default_parsers
         self.validation_policies = validation_policies
+        self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -82,16 +81,16 @@ class FileBasedSource(AbstractSource, ABC):
         try:
             streams = []
             for stream in config["streams"]:
-                stream_config = FileBasedStreamConfig(**stream)
+                stream_config = FileBasedStreamConfig(validation_policies=self.validation_policies, **stream)
                 streams.append(
                     DefaultFileBasedStream(
                         config=stream_config,
+                        catalog_schema=self.stream_schemas.get(stream_config.name),
                         stream_reader=self.stream_reader,
                         availability_strategy=self.availability_strategy,
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         cursor=DefaultFileBasedCursor(stream_config.max_history_size, stream_config.days_to_sync_if_history_is_full),
-                        validation_policies=self.validation_policies,
                     )
                 )
             return streams
