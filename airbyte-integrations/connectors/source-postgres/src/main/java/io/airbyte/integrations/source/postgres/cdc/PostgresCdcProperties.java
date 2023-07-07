@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
@@ -14,6 +14,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.integrations.source.postgres.PostgresSource;
+import io.airbyte.integrations.source.postgres.PostgresUtils;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,7 +28,7 @@ public class PostgresCdcProperties {
   private static final int HEARTBEAT_FREQUENCY_SEC = 10;
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
 
-  static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
+  public static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Properties props = commonProperties(database);
     props.setProperty("plugin.name", PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
@@ -93,7 +95,7 @@ public class PostgresCdcProperties {
     return props;
   }
 
-  static Properties getSnapshotProperties(final JdbcDatabase database) {
+  public static Properties getSnapshotProperties(final JdbcDatabase database) {
     final Properties props = commonProperties(database);
     props.setProperty("snapshot.mode", "initial_only");
     return props;
