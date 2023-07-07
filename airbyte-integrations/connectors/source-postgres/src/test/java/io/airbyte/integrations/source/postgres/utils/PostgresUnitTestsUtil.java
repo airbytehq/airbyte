@@ -14,7 +14,9 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PostgresUnitTestsUtil {
 
@@ -60,6 +62,24 @@ public class PostgresUnitTestsUtil {
                 .withName(streamName)
                 .withNamespace(namespace))
             .withStreamState(stateData));
+  }
+
+  public static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  public static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+  }
+
+  public static List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,
+                                                                      final String streamName,
+                                                                      final String field) {
+    return extractStateMessage(messages).stream()
+        .filter(s -> s.getStream().getStreamDescriptor().getName().equals(streamName))
+        .map(s -> s.getStream().getStreamState().get(field) != null ? s.getStream().getStreamState().get(field).asText() : "").toList();
   }
 
 }
