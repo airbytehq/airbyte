@@ -2,8 +2,8 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-mixpanel:dev
 custom_environment_variables:
-  SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS: true
-  ALIGN_DATE_RANGE_TO_LAST_N_DAYS: true
+  REQS_PER_HOUR_LIMIT: 60
+  AVAILABLE_TESTING_RANGE_DAYS: 10
 test_strictness_level: "high"
 acceptance_tests:
   spec:
@@ -26,7 +26,7 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config_old.json"
-      timeout_seconds: 135
+      timeout_seconds: 450
   basic_read:
     tests:
     - config_path: "secrets/config.json"

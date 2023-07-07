@@ -8,8 +8,6 @@ from functools import wraps
 
 from .streams import Funnels
 
-AVAILABLE_TESTING_RANGE_DAYS = 10
-
 
 def funnel_slices_patched(self: Funnels, sync_mode):
     """
@@ -37,12 +35,13 @@ def adapt_validate_if_testing(func):
     @wraps(func)
     def wrapper(self, config):
         config = func(self, config)
-        if os.environ.get("ALIGN_DATE_RANGE_TO_LAST_N_DAYS", False):
+        available_testing_range_daye = os.environ.get("ALIGN_DATE_RANGE_TO_LAST_N_DAYS", 0)
+        if available_testing_range_daye:
             logger = logging.getLogger("airbyte")
             logger.info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
             # Take time range in only 1 month
-            if (config["end_date"] - config["start_date"]).days > AVAILABLE_TESTING_RANGE_DAYS:
-                config["start_date"] = config["end_date"].subtract(days=AVAILABLE_TESTING_RANGE_DAYS)
+            if (config["end_date"] - config["start_date"]).days > available_testing_range_daye:
+                config["start_date"] = config["end_date"].subtract(days=available_testing_range_daye)
         return config
 
     return wrapper

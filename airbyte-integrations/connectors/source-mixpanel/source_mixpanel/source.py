@@ -27,6 +27,8 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
+    STREAMS = [Export, Annotations, Engage, Cohorts, CohortMembers, Funnels, Revenue]
+
     def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         credentials = config.get("credentials")
         if credentials:
@@ -84,27 +86,32 @@ class SourceMixpanel(AbstractSource):
         except Exception as e:
             return False, e
 
-        # https://github.com/airbytehq/airbyte/pull/27252
-        # https://github.com/airbytehq/oncall/issues/2363
-        # On one hand there's a number of APIs that is limited by the account plan, so we should probably try to connect to each stream.
-        # On the other hand, we have a timeout for this operation and connecting to each stream may take up to one minute.
-        # That's why we're validating connectivity by only reading from the stream we definitely know is available independent of a plan.
-
-        try:
-            stream_kwargs = {"authenticator": auth, **config}
-            if not os.environ.get("SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS", False):
-                # We preserve sleeping between requests in case this is a running acceptance test.
-                # Otherwise, we do not want to wait to not time out
-                stream_kwargs["reqs_per_hour_limit"] = 0
-            stream = Export(**stream_kwargs)
-            next(read_full_refresh(stream), None)
-        except Exception as e:
+        # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
+        # temporary solution, testing access for all streams to avoid 402 error
+        reqs_per_hour_limit = os.environ.get("REQS_PER_HOUR_LIMIT", 0)
+        # We preserve sleeping between requests in case this is a running acceptance test.
+        # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.
+        stream_kwargs = {
+            "authenticator": auth,
+            "reqs_per_hour_limit": reqs_per_hour_limit,
+            **config
+        }
+        for stream_class in self.STREAMS:
             try:
-                reason = e.response.json()["error"]
-                return False, reason
-            except json.decoder.JSONDecodeError:
+                stream = stream_class(**stream_kwargs)
+                next(read_full_refresh(stream), None)
+                return True, None
+            except requests.HTTPError as e:
+                try:
+                    reason = e.response.json()["error"]
+                except json.JSONDecoder:
+                    reason = e.response.content
+                if e.response.status_code != 402:
+                    return False, reason
+                logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
+            except Exception as e:
                 return False, e
-        return True, None
+        return False, "All the streams are unavailable due to a 402 error -- payment is required."
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -116,40 +123,26 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        streams = [
-            Export(authenticator=auth, **config),
-        ]
-
-        # we only make calls to one stream of each API type to save time, based on the assumption that
-        # if one stream of the API type is available, all others are available as well and vice versa
-
-        streams_by_api_types = [
-            [
-                Annotations,
-            ],
-            [Engage, Cohorts, CohortMembers, Funnels, Revenue],
-        ]
-        stream_kwargs = {"authenticator": auth, **config}
-        if not os.environ.get("SLEEP_BETWEEN_CHECK_AND_DISCOVER_REQUESTS", False):
-            # set reqs_per_hour_limit = 0 to save time for discovery
-            # We preserve sleeping between requests in case this is a running acceptance test.
-            # Otherwise, we do not want to wait to not time out
-            stream_kwargs["reqs_per_hour_limit"] = 0
-        for stream_set in streams_by_api_types:
-            current_stream_set = [stream(**stream_kwargs) for stream in stream_set]
-            test_stream, *_ = current_stream_set
+        reqs_per_hour_limit = os.environ.get("REQS_PER_HOUR_LIMIT", 0)
+        # set reqs_per_hour_limit = 0 to save time for discovery
+        # We preserve sleeping between requests in case this is a running acceptance test.
+        # Otherwise, we do not want to wait to not time out as each API call is followed by sleeping ~60 seconds.
+        stream_kwargs = {
+            "authenticator": auth,
+            "reqs_per_hour_limit": reqs_per_hour_limit,
+            **config
+        }
+        streams = []
+        for stream_cls in self.STREAMS:
+            stream = stream_cls(**stream_kwargs)
             try:
-                next(read_full_refresh(test_stream), None)
+                stream.get_json_schema()
+                next(read_full_refresh(stream), None)
             except requests.HTTPError as e:
                 if e.response.status_code != 402:
                     raise e
-                logger.warning(
-                    f"Streams {', '.join([stream.name for stream in current_stream_set])} are disabled, reason: 402 Payment Required"
-                )
+                logger.warning("Stream '%s' - is disabled, reason: 402 Payment Required", stream.name)
             else:
-                streams.extend(current_stream_set)
-
-        for stream in streams:
-            # roll back to default value
-            stream.reqs_per_hour_limit = stream.DEFAULT_REQS_PER_HOUR_LIMIT
+                stream.reqs_per_hour_limit = stream.DEFAULT_REQS_PER_HOUR_LIMIT
+                streams.append(stream)
         return streams
