@@ -3,6 +3,7 @@
 #
 
 import platform
+from pathlib import Path
 
 from dagger import Platform
 
@@ -21,7 +22,6 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "licenseheaders==0.8.8",
 ]
 
-DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
@@ -33,3 +33,5 @@ GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
 LOCAL_REPORTS_PATH_ROOT = "tools/ci_connector_ops/pipeline_reports/"
+GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
+Path(LOCAL_REPORTS_PATH_ROOT).mkdir(parents=True, exist_ok=True)

@@ -5,7 +5,7 @@
 import json
 from typing import Any, Callable, Iterable, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
@@ -94,7 +94,7 @@ class CursorFactory:
         return self._create_function()
 
 
-class PerPartitionCursor(StreamSlicer):
+class PerPartitionCursor(Cursor):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
 
@@ -126,42 +126,37 @@ class PerPartitionCursor(StreamSlicer):
         self._cursor_per_partition = {}
         self._partition_serializer = PerPartitionKeySerializer()
 
-    def stream_slices(self, sync_mode: SyncMode, _: StreamState) -> Iterable[PerPartitionStreamSlice]:
-        """
-        We knowingly avoid using stream_state as we want PerPartitionCursor to manage its own state.
-        """
-        slices = self._partition_router.stream_slices(sync_mode, self._NO_STATE)
+    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+        slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
                 self._cursor_per_partition[self._to_partition_key(partition)] = cursor
 
-            for cursor_slice in cursor.stream_slices(sync_mode, self._get_state_for_partition(partition)):
+            for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
 
-    def update_cursor(self, stream_slice: PerPartitionStreamSlice, last_record: Optional[Record] = None):
-        if not last_record:
-            # The `update_cursor` method is called without `last_record` in order to set the initial state. In that case, stream_slice is
-            # not a PerPartitionStreamSlice but is a dict representing the state
-            self._init_state(stream_slice)
-        else:
-            try:
-                self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_cursor(
-                    stream_slice.cursor_slice, last_record
-                )
-            except KeyError as exception:
-                raise KeyError(
-                    f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
-                    f"we should only update cursor for partition that where emitted during `stream_slices`"
-                )
-
-    def _init_state(self, stream_state: dict) -> None:
+    def set_initial_state(self, stream_state: StreamState) -> None:
         if not stream_state:
             return
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+        try:
+            cursor_most_recent_record = (
+                Record(most_recent_record.data, stream_slice.cursor_slice) if most_recent_record else most_recent_record
+            )
+            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
+                stream_slice.cursor_slice, cursor_most_recent_record
+            )
+        except KeyError as exception:
+            raise ValueError(
+                f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
+                f"we should only update state for partition that where emitted during `stream_slices`"
+            )
 
     def get_stream_state(self) -> StreamState:
         states = []
@@ -204,7 +199,7 @@ class PerPartitionCursor(StreamSlicer):
 
     def _create_cursor(self, cursor_state: Any) -> StreamSlicer:
         cursor = self._cursor_factory.create()
-        cursor.update_cursor(cursor_state)
+        cursor.set_initial_state(cursor_state)
         return cursor
 
     def get_request_params(
@@ -258,3 +253,27 @@ class PerPartitionCursor(StreamSlicer):
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
         )
+
+    def should_be_synced(self, record: Record) -> bool:
+        return self._get_cursor(record).should_be_synced(self._convert_record_to_cursor_record(record))
+
+    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
+        if first.associated_slice.partition != second.associated_slice.partition:
+            raise ValueError(
+                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
+            )
+
+        return self._get_cursor(first).is_greater_than_or_equal(
+            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second)
+        )
+
+    @staticmethod
+    def _convert_record_to_cursor_record(record: Record):
+        return Record(record.data, record.associated_slice.cursor_slice)
+
+    def _get_cursor(self, record: Record) -> Cursor:
+        partition_key = self._to_partition_key(record.associated_slice.partition)
+        if partition_key not in self._cursor_per_partition:
+            raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
+        cursor = self._cursor_per_partition[partition_key]
+        return cursor

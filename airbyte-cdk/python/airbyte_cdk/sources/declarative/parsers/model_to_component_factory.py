@@ -23,7 +23,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -89,7 +89,13 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
+    CursorPaginationStrategy,
+    CursorStopCondition,
+    OffsetIncrement,
+    PageIncrement,
+    StopConditionPaginationStrategyDecorator,
+)
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -97,7 +103,7 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRe
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
-from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository
@@ -417,6 +423,8 @@ class ModelToComponentFactory:
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
         end_datetime = None
+        if model.is_data_feed and model.end_datetime:
+            raise ValueError("Data feed does not support end_datetime")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
@@ -453,6 +461,7 @@ class ModelToComponentFactory:
             start_time_option=start_time_option,
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
+            message_repository=self._message_repository,
             config=config,
             parameters=model.parameters,
         )
@@ -465,10 +474,22 @@ class ModelToComponentFactory:
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
 
         primary_key = model.primary_key.__root__ if model.primary_key else None
-        retriever = self._create_component_from_model(
-            model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
+        stop_condition_on_cursor = (
+            model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
-
+        transformations = []
+        if model.transformations:
+            for transformation_model in model.transformations:
+                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
+        retriever = self._create_component_from_model(
+            model=model.retriever,
+            config=config,
+            name=model.name,
+            primary_key=primary_key,
+            stream_slicer=combined_slicers,
+            stop_condition_on_cursor=stop_condition_on_cursor,
+            transformations=transformations,
+        )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
@@ -479,17 +500,12 @@ class ModelToComponentFactory:
                 options["name"] = model.name
             schema_loader = DefaultSchemaLoader(config=config, parameters=options)
 
-        transformations = []
-        if model.transformations:
-            for transformation_model in model.transformations:
-                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
             name=model.name,
             primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
-            transformations=transformations,
             config=config,
             parameters=model.parameters,
         )
@@ -548,7 +564,9 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, *, url_base: str) -> DefaultPaginator:
+    def create_default_paginator(
+        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+    ) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -557,6 +575,10 @@ class ModelToComponentFactory:
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
         pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
+        if cursor_used_for_stop_condition:
+            pagination_strategy = StopConditionPaginationStrategyDecorator(
+                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
+            )
 
         paginator = DefaultPaginator(
             decoder=decoder,
@@ -746,11 +768,15 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
-    def create_record_selector(self, model: RecordSelectorModel, config: Config, **kwargs) -> RecordSelector:
+    def create_record_selector(
+        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs
+    ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
-        return RecordSelector(extractor=extractor, record_filter=record_filter, parameters=model.parameters)
+        return RecordSelector(
+            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters
+        )
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:
@@ -781,12 +807,20 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        stop_condition_on_cursor: bool = False,
+        transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config)
+        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
+
+        cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
-            self._create_component_from_model(model=model.paginator, config=config, url_base=url_base)
+            self._create_component_from_model(
+                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+            )
             if model.paginator
             else NoPagination(parameters={})
         )
@@ -798,7 +832,8 @@ class ModelToComponentFactory:
                 primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+                stream_slicer=stream_slicer,
+                cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -810,7 +845,8 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+            stream_slicer=stream_slicer,
+            cursor=cursor,
             config=config,
             parameters=model.parameters,
             disable_retries=self._disable_retries,

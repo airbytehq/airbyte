@@ -16,6 +16,9 @@
     "token": {
       "type": ["null", "string"]
     },
+    "form_id": {
+      "type": ["null", "string"]
+    },
     "metadata": {
       "type": ["null", "object"],
       "properties": {

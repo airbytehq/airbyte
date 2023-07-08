@@ -18,7 +18,7 @@ This submodule includes a tool for generating Python models from JSON Schema spe
 To generate the models, run the following command:
 
 ```bash
-poetry poe generate-models
+poetry run poe generate-models
 
 ```
 

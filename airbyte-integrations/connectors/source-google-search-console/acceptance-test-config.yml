@@ -26,6 +26,17 @@ acceptance_tests:
           exact_order: yes
           extra_records: no
         timeout_seconds: 1800
+        empty_streams:
+          - name: search_analytics_page_report
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_keyword_site_report_by_page
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_keyword_page_report
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_site_report_by_page
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_site_report_by_site
+            bypass_reason: "Fast changing data"
         ignored_fields:
           sitemaps:
             - name: lastDownloaded
