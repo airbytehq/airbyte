@@ -109,7 +109,7 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
     # replace any dockerImageTag references with the actual tag
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
-    metadata_dict = to_json_sanitized_dict(metadata)
+    metadata_dict = to_json_sanitized_dict(metadata, exclude_none=True)
     metadata_dict["data"]["dockerImageTag"] = prerelease_tag
     for registry in metadata_dict["data"]["registries"].values():
         if "dockerImageTag" in registry:
