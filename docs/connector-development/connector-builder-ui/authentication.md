@@ -102,7 +102,7 @@ Depending on how the refresh endpoint is implemented exactly, additional configu
 * **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
+If the API uses other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
@@ -136,6 +136,12 @@ curl -X GET \
   -H "Authorization: Bearer <access-token>" \
   https://connect.squareup.com/v2/<stream path>
 ```
+
+#### Update refresh token from authentication response
+
+In a lot of cases, OAuth refresh tokens are long-lived and can be used to create access tokens for every sync. In some cases however, a refresh token becomes invalid after it has been used to create an access token. In these situations, a new refresh token is returned along with the access token. One example of this behavior is the [Smartsheets API](https://smartsheet.redoc.ly/#section/OAuth-Walkthrough/Get-or-Refresh-an-Access-Token). In these cases, it's necessary to update the refresh token in the configuration every time an access token is generated, so the next sync will still succeed.
+
+This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated. If this option is used, it's necessary to specify an initial access token along with its expiry date in the "Testing values" menu.
 
 ### Custom authentication methods
 
