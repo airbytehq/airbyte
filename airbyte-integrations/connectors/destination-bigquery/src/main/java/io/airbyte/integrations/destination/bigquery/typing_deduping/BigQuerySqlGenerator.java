@@ -383,11 +383,26 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       return "";
     }
 
+    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "raw_table_id", stream.id().rawTableId(QUOTE),
         "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
     ).replace(
-        "DELETE FROM ${final_table_id} WHERE ${quoted_cdc_delete_column} IS NOT NULL;"
+        // TODO replace `id`, `$.id` with PK
+        // TODO replace `INT64` with PK's type
+        """
+        DELETE FROM ${final_table_id} 
+        WHERE 
+          `id` IN (
+            SELECT
+              SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id
+            FROM  ${raw_table_id}
+            WHERE
+              JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+          )
+        ;"""
     );
   }
 
@@ -406,6 +421,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               `_airbyte_raw_id` NOT IN (
                 SELECT `_airbyte_raw_id` FROM ${final_table_id}
               )
+              AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
             ;""");
   }
 

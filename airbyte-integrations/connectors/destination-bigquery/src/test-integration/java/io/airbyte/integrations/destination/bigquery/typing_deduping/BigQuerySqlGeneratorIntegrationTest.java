@@ -619,6 +619,32 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   @Test
+  public void testCdcBasics() throws InterruptedException {
+    createRawTable();
+    createFinalTableCdc();
+    bq.query(QueryJobConfiguration.newBuilder(
+            new StringSubstitutor(Map.of(
+                "dataset", testDataset)).replace(
+                """
+                INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
+                  (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z', NULL);
+                """))
+        .build());
+
+    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    logAndExecute(sql);
+
+    // TODO better asserts
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    assertEquals(0, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(1, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
+  @Test
   public void testCdcUpdate() throws InterruptedException {
     createRawTable();
     createFinalTableCdc();
@@ -652,18 +678,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
-    // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-    assertEquals(4, finalRows);
+    assertEquals(5, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    // Explanation:
-    // id=0 has two raw records (the old deletion record + zombie_returned)
-    // id=1 has one raw record (the new deletion record; the old raw record was deleted)
-    // id=2 has one raw record (the newer alice2 record)
-    // id=3 has one raw record
-    // id=4 has one raw record
-    // id=5 has one raw deletion record
-    assertEquals(7, rawRows);
+    assertEquals(6, rawRows); // we only keep the newest raw record for reach PK
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
@@ -708,7 +726,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(1, rawRows);
+    assertEquals(2, rawRows); // we keep the old and the new raw record in this out-of-order case
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
@@ -747,13 +765,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
                   (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
                 """))
         .build());
-    // Run the second round of typing and deduping. This should do nothing to the final table, because
-    // the delete is outdated.
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-    assertEquals(1, finalRows);
+    assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
