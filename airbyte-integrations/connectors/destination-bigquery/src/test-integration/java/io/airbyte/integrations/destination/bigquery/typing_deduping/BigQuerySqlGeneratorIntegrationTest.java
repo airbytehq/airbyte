@@ -765,11 +765,14 @@ public class BigQuerySqlGeneratorIntegrationTest {
                   (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
                 """))
         .build());
+    // Run the second round of typing and deduping. This should do nothing to the final table, because
+    // the delete is outdated.
+    // TODO this test doesn't work right
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-    assertEquals(0, finalRows);
+    assertEquals(1, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
