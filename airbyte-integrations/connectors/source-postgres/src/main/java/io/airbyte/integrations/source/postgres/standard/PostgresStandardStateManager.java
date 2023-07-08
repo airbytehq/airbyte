@@ -26,6 +26,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This state manager extends the StreamStateManager to enable writing the state_type and version
+ * keys to the stream state when they're going through the iterator Once we have verified that
+ * expanding StreamStateManager itself to include this functionality, this class will be removed
+ */
 public class PostgresStandardStateManager extends StreamStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
@@ -101,9 +106,9 @@ public class PostgresStandardStateManager extends StreamStateManager {
     return new DbState()
         .withCdc(false)
         .withStreams(pairToCursorInfoMap.entrySet().stream()
-                         .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-                         .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
-                         .collect(Collectors.toList()));
+            .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
+            .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
+            .collect(Collectors.toList()));
   }
 
 }
