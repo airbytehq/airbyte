@@ -34,7 +34,7 @@ def validate(file_path: pathlib.Path):
 @metadata_service.command(help="Upload a metadata YAML file to a GCS bucket.")
 @click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path))
 @click.argument("bucket-name", type=click.STRING)
-@click.argument("prerelease", type=click.STRING)
+@click.option("--prerelease", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector.")
 def upload(metadata_file_path: pathlib.Path, bucket_name: str, prerelease: str):
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
     try:

@@ -15,7 +15,8 @@ from google.oauth2 import service_account
 
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
-from metadata_service.models import ConnectorMetadataDefinitionV0
+from metadata_service.utils import to_json_sanitized_dict
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
@@ -107,18 +108,22 @@ def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.buck
 def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, prerelease_tag: str) -> Tuple[bool, str]:
     # replace any dockerImageTag references with the actual tag
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
-    metadata.data.dockerImageTag = prerelease_tag
-    for registry in metadata.data.registries:
-        registry.dockerImageTag = prerelease_tag
+    # where registries is a dictionary of registry name to registry object
+    metadata_dict = to_json_sanitized_dict(metadata)
+    metadata_dict["data"]["dockerImageTag"] = prerelease_tag
+    for registry in metadata_dict["data"]["registries"].values():
+        if "dockerImageTag" in registry:
+            registry["dockerImageTag"] = prerelease_tag
 
     # write metadata to yaml file in system tmp folder
     tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / prerelease_tag / METADATA_FILE_NAME
     tmp_metadata_file_path.parent.mkdir(parents=True, exist_ok=True)
+    import pdb; pdb.set_trace()
     with open(tmp_metadata_file_path, "w") as f:
-        yaml.dump(metadata.dict(), f)
+        yaml.dump(metadata_dict, f)
 
     prerelease_remote_path = get_metadata_remote_file_path(metadata.data.dockerRepository, prerelease_tag)
-    return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path)
+    return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path, disable_cache=True)
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: str) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
