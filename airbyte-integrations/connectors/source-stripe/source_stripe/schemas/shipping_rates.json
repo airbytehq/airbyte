@@ -16,7 +16,9 @@
     "created": {
       "type": ["null", "integer"]
     },
-    "delivery_estimate": {},
+    "delivery_estimate": {
+      "type": ["null", "string"]
+    },
     "display_name": {
       "type": ["null", "string"]
     },
