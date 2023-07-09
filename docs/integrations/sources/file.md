@@ -72,7 +72,7 @@ Enter the _username_ associated with your account on the remote server.
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
 
 <!-- env:local -->
-#### Local Filesystem (limited)
+#### Local Filesystem (Airbyte Open Source only)
 - `Storage`
 
 :::caution 
