@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.xmin;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -45,7 +46,7 @@ public class PostgresXminHandler {
   private final JdbcCompatibleSourceOperations sourceOperations;
   private final JdbcDatabase database;
   private final String quoteString;
-  private final XminStatus xminStatus;
+  private final XminStatus currentXminStatus;
   private final XminStateManager xminStateManager;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresXminHandler.class);
@@ -58,7 +59,7 @@ public class PostgresXminHandler {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
-    this.xminStatus = xminStatus;
+    this.currentXminStatus = xminStatus;
     this.xminStateManager = xminStateManager;
   }
 
@@ -138,25 +139,62 @@ public class PostgresXminHandler {
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+
+      // Get the xmin status associated with the previous run
+      final XminStatus previousRunXminStatus = xminStateManager.getXminStatus(airbyteStream);
+      final PreparedStatement xminPreparedStatement =
+          getXminPreparedStatement(connection, wrappedColumnNames, fullTableName, previousRunXminStatus, currentXminStatus);
+      LOGGER.info("Executing query for table {}: {}", tableName, xminPreparedStatement);
+      return xminPreparedStatement;
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getXminPreparedStatement(final Connection connection,
+                                                     final String wrappedColumnNames,
+                                                     final String fullTableName,
+                                                     final XminStatus prevRunXminStatus,
+                                                     final XminStatus currentXminStatus)
+      throws SQLException {
+
+    if (prevRunXminStatus == null) {
+      throw new RuntimeException("XminStatus not found for table " + fullTableName + ", should have triggered a full sync via ctid path");
+    } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss
-      // data associated with the current transaction, we have to issue an >=
+      // don't miss data associated with the current transaction, we have to issue an >=. Because of the
+      // wraparound, the changes prior to the
+      // end xmin xid value must also be captured.
+      LOGGER.info("Detect a single wraparound for {}", fullTableName);
+      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ? OR xmin::text::bigint < ?",
+          wrappedColumnNames, fullTableName);
+      final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
+      preparedStatement.setLong(2, currentXminStatus.getXminXidValue());
+
+      return preparedStatement;
+    } else {
+      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
+      // don't miss data associated with the current transaction, we have to issue an >=
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
           wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+      preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
 
-      final XminStatus currentStreamXminStatus = xminStateManager.getXminStatus(airbyteStream);
-      if (currentStreamXminStatus != null) {
-        preparedStatement.setLong(1, currentStreamXminStatus.getXminXidValue());
-      } else {
-        preparedStatement.setLong(1, 0L);
-      }
-      LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
       return preparedStatement;
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
     }
+  }
+
+  @VisibleForTesting
+  static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+    // Detect whether the source Postgres DB has undergone a single wraparound event.
+    return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
+  }
+
+  static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {
+    // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
+    return streamState.has("num_wraparound") && (currentXminStatus.getNumWraparound() - streamState.get("num_wraparound").asLong() >= 2);
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -196,7 +234,7 @@ public class PostgresXminHandler {
         autoCloseableIterator -> new XminStateIterator(
             autoCloseableIterator,
             pair,
-            xminStatus),
+            currentXminStatus),
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
   }

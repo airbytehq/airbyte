@@ -11,6 +11,7 @@ import requests
 
 from .utils import API_LIMIT_PER_HOUR
 
+
 class GoogleAnalyticsApiQuotaBase:
     # Airbyte Logger
     logger = logging.getLogger("airbyte")
@@ -41,7 +42,7 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
-            "error_message": API_LIMIT_PER_HOUR
+            "error_message": API_LIMIT_PER_HOUR,
         },
         "potentiallyThresholdedRequestsPerHour": {
             "error_pattern": "Exhausted potentially thresholded requests quota.",
@@ -49,7 +50,7 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
-            "error_message": API_LIMIT_PER_HOUR
+            "error_message": API_LIMIT_PER_HOUR,
         },
         # TODO: The next scenarios are commented out for now.
         # When we face with one of these at least 1 time,
@@ -129,7 +130,7 @@ class GoogleAnalyticsApiQuotaBase:
                 self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
                 return None
-            else:
+            elif self.error_message:
                 self.logger.warning(self.error_message)
 
     def _check_for_errors(self, response: requests.Response) -> None:

@@ -14,6 +14,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
+    AccountAttributes,
+    AttributeDefinitions,
     AuditLogs,
     Brands,
     CustomRoles,
@@ -21,7 +23,12 @@ from .streams import (
     Groups,
     Macros,
     OrganizationFields,
+    OrganizationMemberships,
     Organizations,
+    PostComments,
+    PostCommentVotes,
+    Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -33,6 +40,7 @@ from .streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    TicketSkips,
     Users,
     UserSettingsStream,
 )
@@ -119,6 +127,11 @@ class SourceZendeskSupport(AbstractSource):
             Macros(**args),
             Organizations(**args),
             OrganizationFields(**args),
+            OrganizationMemberships(**args),
+            Posts(**args),
+            PostComments(**args),
+            PostCommentVotes(**args),
+            PostVotes(**args),
             SatisfactionRatings(**args),
             SlaPolicies(**args),
             Tags(**args),
@@ -127,6 +140,7 @@ class SourceZendeskSupport(AbstractSource):
             TicketFields(**args),
             TicketMetrics(**args),
             TicketMetricEvents(**args),
+            TicketSkips(**args),
             Tickets(**args),
             Users(**args),
             Brands(**args),
@@ -134,13 +148,16 @@ class SourceZendeskSupport(AbstractSource):
             Schedules(**args),
         ]
         ticket_forms_stream = TicketForms(**args)
-        # TicketForms stream is only available for Enterprise Plan users but Zendesk API does not provide
-        # a public API to get user's subscription plan. That's why we try to read at least one record and expose this stream
-        # in case of success or skip it otherwise
+        account_attributes = AccountAttributes(**args)
+        attribute_definitions = AttributeDefinitions(**args)
+        # TicketForms, AccountAttributes and AttributeDefinitions streams are only available for Enterprise Plan users,
+        # but Zendesk API does not provide a public API to get user's subscription plan.
+        # That's why we try to read at least one record from one of these streams and expose all of them in case of success
+        # or skip them otherwise
         try:
             for stream_slice in ticket_forms_stream.stream_slices(sync_mode=SyncMode.full_refresh):
                 for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                    streams.append(ticket_forms_stream)
+                    streams.extend([ticket_forms_stream, account_attributes, attribute_definitions])
                     break
         except Exception as e:
             logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
