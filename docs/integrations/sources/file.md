@@ -55,29 +55,17 @@ If accessing **private** storage, you must also provide _one_ of the following:
   - `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
   - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
   
-#### SSH: Secure Shell
-  - `Host`(Required): use a _host_.
-  - `User`(Required): use _username_.
-  - `Password`(Optional): use _password_.
-  - `Port`(Optional): use a _port_ for your host.
-    
-#### SCP: Secure copy protocol
-  - `Host` use a _host_.
-  - `User`(Required): use _username_.
-  - `Password`(Optional): use _password_.
-  - `Port`(Optional) use a _port_ for your host.
-    
-#### SFTP: Secure File Transfer Protocol
-  - `User` use _username_.
-  - `Password` use _password_.
-  - `Host` use a _host_.
-  - `Port` use a _port_ for your host.
-  
+#### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
+  - `Host`(Required): Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
+  - `User`(Required): Enter the _username_ associated with your account on the remote server.
+  - `Password`(Optional): If required by the remote server, enter the _password_ associated with your user account. Otherwise, leave this field blank.
+  - `Port`(Optional): Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
+
   <!-- env:local -->
 #### Local Filesystem (limited)
   - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
   <!-- /env:local -->
-  
+
 ### Step 3: Complete the connector setup
 6. For **URL**: use the _URL_ path to access the file which should be replicated.
 7. For **Reader Options**: use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
