@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 0.1.34
+  dockerImageTag: 0.1.35
   dockerRepository: airbyte/source-mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg

@@ -14,22 +14,20 @@ from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorDist
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.gradle import GradleTask
-from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
 
 
-class UnitTests(GradleTask):
-    title = "Unit tests"
-    gradle_task_name = "test"
-
-
-class IntegrationTestJava(GradleTask):
+class IntegrationTest(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    title = "Integration tests"
-    gradle_task_name = "integrationTestJava"
+    gradle_task_name = "integrationTest"
+    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
+
+    @property
+    def title(self) -> str:
+        return f"./gradlew :airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -68,7 +66,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the tests steps.
     """
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)
@@ -80,11 +78,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     )
     step_results.append(build_connector_image_results)
     if build_connector_image_results.status is StepStatus.FAILURE:
-        return step_results
-
-    unit_tests_results = await UnitTests(context).run()
-    step_results.append(unit_tests_results)
-    if unit_tests_results.status is StepStatus.FAILURE:
         return step_results
 
     if context.connector.supports_normalization:
@@ -101,10 +94,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
-    return await run_steps(
-        [
-            (IntegrationTestJava(context), (connector_image_tar_file, normalization_tar_file)),
-            (AcceptanceTests(context), (connector_image_tar_file)),
-        ],
-        results=step_results,
-    )
+    integration_tests_results = await IntegrationTest(context).run(connector_image_tar_file, normalization_tar_file)
+    step_results.append(integration_tests_results)
+
+    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
+    step_results.append(acceptance_tests_results)
+    return step_results

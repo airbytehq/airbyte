@@ -124,7 +124,7 @@ jobs:
           ORG_GRADLE_PROJECT_connectorAcceptanceTestVersion: ${{github.event.inputs.connector-acceptance-test-version}}
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.local_cdk }}
           attempt_limit: 3

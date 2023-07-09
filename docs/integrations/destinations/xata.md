@@ -32,4 +32,5 @@ In order to connect, you need:
 
 | Version | Date       | Pull Request                                                  | Subject                 |
 |:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.1.1   | 2023-06-21 | [#27542](https://github.com/airbytehq/airbyte/pull/27542)     | Mark api_key as Airbyte Secret |
 | 0.1.0   | 2023-06-14 | [#24192](https://github.com/airbytehq/airbyte/pull/24192)     | New Destination Connector Xata |

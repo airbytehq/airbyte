@@ -1,0 +1,114 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "subject": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "group": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "nullable": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "repeatable": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "operators": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "terminal": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "values": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "enabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
