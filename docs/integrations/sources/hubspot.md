@@ -4,8 +4,8 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 ## Prerequisites
 
-- If you are using **Airbyte Open Source**: A Private App and Access Token.
-- If you are using **Airbyte Cloud**: No additional pre-requisites are needed other than a Hubspot account.
+- HubSpot Account
+- **For Airbyte Open Source**: Private App with Access Token
 
 ## Setup guide
 
@@ -74,14 +74,15 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 
 <!-- env:cloud -->
 #### For Airbyte Cloud users:
-- To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+- **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+- **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 <!-- /env:cloud -->
    
 <!-- env:oss -->
 #### For Airbyte Open Source users:
-- To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
-- To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+- **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+- **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+
 <!-- /env:oss -->
 
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
@@ -158,7 +159,7 @@ Then, go to the replication settings of your connection and click **refresh sour
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-2. The `engagements` stream uses two different APIs based on the length of time since the last sync and the number of records.
+2. The `engagements` stream uses two different APIs based on the length of time since the last sync and the number of records which Airbyte hasn't yet synced.
 - **EngagementsRecent** if the following two criteria are met:
     - The last sync was performed within the last 30 days
     - Fewer than 10,000 records are being synced
