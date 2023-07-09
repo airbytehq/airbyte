@@ -12,6 +12,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultList;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
@@ -112,7 +113,7 @@ public class PostgresCdcCtidInitializer {
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
       if (!ctidStreams.streamsForCtidSync().isEmpty()) {
         streamsUnderVacuum.addAll(streamsUnderVacuum(database,
-            ctidStreams.streamsForCtidSync(), quoteString));
+            ctidStreams.streamsForCtidSync(), quoteString).result());
 
         final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
             streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
@@ -120,10 +121,10 @@ public class PostgresCdcCtidInitializer {
                     .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
+        final ResultList<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
-        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes, stateToBeUsed, catalog);
+        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes.result(), stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
                 emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
@@ -135,7 +136,7 @@ public class PostgresCdcCtidInitializer {
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
             ctidPostgresSourceOperations,
             quoteString,
-            fileNodes,
+            fileNodes.result(),
             tableBlockSizes,
             ctidStateManager,
             namespacePair -> Jsons.emptyObject());

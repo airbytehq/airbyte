@@ -20,7 +20,11 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class mainly categorises the streams based on the state type into two categories :
@@ -30,7 +34,7 @@ import java.util.Set;
  * These are streams that have completed their initial sync and are not syncing data incrementally.
  */
 public class StandardCtidUtils {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(StandardCtidUtils.class);
   public static StreamsCategorised<StandardStreams> categoriseStreams(final StateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
@@ -82,4 +86,40 @@ public class StandardCtidUtils {
                                 List<AirbyteStateMessage> statesFromStandardSync) {
   }
 
+  /**
+   * Reclassifies previously categorised ctid stream into standard category.
+   * Used in case we identify ctid is not possible such as a View
+   * @param categorisedStreams categorised streams
+   * @param streamPair stream to reclassify
+   */
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<StandardStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+    final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
+        .ctidStreams()
+        .streamsForCtidSync().stream().filter(c -> Objects.equals(
+            streamPair,
+            new AirbyteStreamNameNamespacePair(c.getStream().getName(), c.getStream().getNamespace())))
+        .findFirst();
+    foundStream.ifPresent(c -> {
+      categorisedStreams.remainingStreams().streamsForStandardSync().add(c);
+      categorisedStreams.ctidStreams().streamsForCtidSync().remove(c);
+      LOGGER.info("Reclassified {}.{} as standard stream", c.getStream().getNamespace(), c.getStream().getName());
+    });
+
+    // Should there ever be a matching ctid state when ctid is not possible?
+    final Optional<AirbyteStateMessage> foundStateMessage = categorisedStreams
+        .ctidStreams()
+        .statesFromCtidSync().stream().filter(m -> Objects.equals(streamPair,
+            new AirbyteStreamNameNamespacePair(
+                m.getStream().getStreamDescriptor().getName(),
+                m.getStream().getStreamDescriptor().getNamespace())))
+        .findFirst();
+    foundStateMessage.ifPresent(m -> {
+      categorisedStreams.remainingStreams().statesFromStandardSync().add(m);
+      categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
+    });
+  }
+
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<StandardStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+    streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
+  }
 }
