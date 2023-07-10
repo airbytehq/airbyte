@@ -105,7 +105,10 @@
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.view_through_conversions": {
       "type": ["null", "integer"]
