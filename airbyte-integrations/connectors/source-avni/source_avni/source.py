@@ -99,7 +99,7 @@ class IncrementalAvniStream(AvniStream,IncrementalMixin,ABC):
 class Subjects(IncrementalAvniStream):
         
     def path(self,**kwargs) -> str:
-        return "subjects"            
+        return "subjects"
     
         
 class SourceAvni(AbstractSource):
@@ -175,4 +175,4 @@ class SourceAvni(AbstractSource):
         "lastModifiedDateTime":config["lastModifiedDateTime"]
         }
         
-        return [Subjects(**stream_kwargs)]
+        return [Subjects(**stream_kwargs),ProgramEnrolments(**stream_kwargs),ProgramEncounters(**stream_kwargs),Encounters(**stream_kwargs)]
