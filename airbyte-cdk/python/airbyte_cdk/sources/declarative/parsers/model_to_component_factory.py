@@ -76,6 +76,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    SessionTokenRequestApiKeyAuthenticator,
+    SessionTokenRequestBearerAuthenticator,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
@@ -111,6 +115,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository
+from isodate import parse_duration
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -161,6 +166,7 @@ class ModelToComponentFactory:
             DefaultPaginatorModel: self.create_default_paginator,
             DpathExtractorModel: self.create_dpath_extractor,
             ExponentialBackoffStrategyModel: self.create_exponential_backoff_strategy,
+            GenericSessionTokenAuthenticatorModel: self.create_generic_session_token_authenticator,
             HttpRequesterModel: self.create_http_requester,
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
@@ -257,25 +263,29 @@ class ModelToComponentFactory:
     def create_generic_session_token_authenticator(
         self, model: GenericSessionTokenAuthenticatorModel, config: Config, **kwargs
     ) -> ApiKeyAuthenticator:
-        if model.request_authentication.type == "Bearer":
-            data_request_authenticator = self.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token="{{ config." + SESSION_TOKEN_CONFIG_KEY + "}}"), config
-            )
-        else:
-            inject_into = self.create_request_option(model=model.request_authentication.inject_into, config=config)
-            data_request_authenticator = ModelToComponentFactory.create_api_key_authenticator(
-                ApiKeyAuthenticatorModel(
-                    type="ApiKeyAuthenticator", api_token="{{ config." + SESSION_TOKEN_CONFIG_KEY + "}}", inject_into=inject_into
-                ),
-                config=config,
-            )
-        login_requester = self._create_component_from_model(model=model.login_requester, config=config)
+        data_request_authenticator = self.create_session_token_data_request_authenticator(model.request_authentication, config)
+        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name="login_requester")
         return GenericSessionTokenAuthenticator(
-            config=config,
             data_request_authenticator=data_request_authenticator,
             login_requester=login_requester,
+            session_token_path=model.session_token_path,
+            expiration_time=parse_duration(model.expiration_time),
             parameters=model.parameters,
         )
+
+    def create_session_token_data_request_authenticator(
+        self, model: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator], config: Config
+    ):
+        token_jinja_expression = "{{ config." + SESSION_TOKEN_CONFIG_KEY + " }}"
+        if model.type == "Bearer":
+            return self.create_bearer_authenticator(
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=token_jinja_expression), config
+            )
+        else:
+            return ModelToComponentFactory.create_api_key_authenticator(
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token=token_jinja_expression, inject_into=model.inject_into),
+                config=config,
+            )
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:

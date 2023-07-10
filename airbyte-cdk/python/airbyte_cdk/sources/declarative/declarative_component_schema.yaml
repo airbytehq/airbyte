@@ -1015,7 +1015,7 @@ definitions:
     required:
       - type
       - login_requester
-      - session_token
+      - session_token_path
       - request_authentication
     properties:
       type:

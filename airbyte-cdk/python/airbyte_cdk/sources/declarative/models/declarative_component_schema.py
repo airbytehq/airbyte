@@ -1085,8 +1085,8 @@ class GenericSessionTokenAuthenticator(BaseModel):
         ],
         title="Login Requester",
     )
-    session_token_path: Optional[List[str]] = Field(
-        None,
+    session_token_path: List[str] = Field(
+        ...,
         description="The path in the response body returned from the login requester to the session token.",
         examples=[["access_token"], ["result", "token"]],
         title="Session Token Path",
