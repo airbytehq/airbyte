@@ -132,6 +132,9 @@ class FieldId(MedalliaStream):
         return {'query': str(op)}
 
 
+
+
+
 class Feedback(MedalliaStream, IncrementalMixin):
     limit = 250
     entity = 'feedback'
