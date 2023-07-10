@@ -310,11 +310,22 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
+    String cdcConditionalOrIncludeStatement = "";
+    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+      cdcConditionalOrIncludeStatement = """
+      OR (
+        _airbyte_loaded_at IS NOT NULL
+        AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+      )
+      """;
+    }
+
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
+        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
         "column_list", columnList)).replace(
             """
                 INSERT INTO ${final_table_id}
@@ -335,10 +346,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   FROM ${raw_table_id}
                   WHERE
                     _airbyte_loaded_at IS NULL
-                    OR (
-                      _airbyte_loaded_at IS NOT NULL
-                      AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                    )
+                    ${cdcConditionalOrIncludeStatement}
                 )
                 SELECT
                 ${column_list}
