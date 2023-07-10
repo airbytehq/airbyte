@@ -488,7 +488,8 @@ public class AirbyteTypeTest {
         new Struct(new LinkedHashMap<>()),
         new Struct(new LinkedHashMap<>())));
 
-    assertThrows(IllegalArgumentException.class, o::asColumns);
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a warning for now.
+    assertEquals(new LinkedHashMap<>(), o.asColumns());
   }
 
   @Test
@@ -501,7 +502,8 @@ public class AirbyteTypeTest {
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
         new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
-    assertThrows(IllegalArgumentException.class, o::asColumns);
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a warning for now.
+    assertEquals(new LinkedHashMap<>(), o.asColumns());
   }
 
 }
