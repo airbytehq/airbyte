@@ -456,32 +456,37 @@ public class AirbyteTypeTest {
   public void testAsColumns() {
     OneOf o = new OneOf(List.of(
         AirbyteProtocolType.STRING,
-        new Struct(new LinkedHashMap<>() {{
-          put("foo", AirbyteProtocolType.STRING);
-        }}),
+        new Struct(new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        }),
         new Array(AirbyteProtocolType.STRING),
         // This is bad behavior, but it matches current behavior so we'll test it.
         // Ideally, we would recognize that the sub-oneOfs are also objects.
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
-        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))
-    ));
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
     LinkedHashMap<String, AirbyteType> columns = o.asColumns();
 
     assertEquals(
-        new LinkedHashMap<>() {{
-          put("foo", AirbyteProtocolType.STRING);
-        }},
-        columns
-    );
+        new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        },
+        columns);
   }
 
   @Test
   public void testAsColumnsMultipleObjects() {
     OneOf o = new OneOf(List.of(
         new Struct(new LinkedHashMap<>()),
-        new Struct(new LinkedHashMap<>())
-    ));
+        new Struct(new LinkedHashMap<>())));
 
     assertThrows(IllegalArgumentException.class, o::asColumns);
   }
@@ -494,9 +499,9 @@ public class AirbyteTypeTest {
         new UnsupportedOneOf(new ArrayList<>()),
         // Similar to testAsColumns(), this is bad behavior.
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
-        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))
-    ));
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
     assertThrows(IllegalArgumentException.class, o::asColumns);
   }
+
 }
