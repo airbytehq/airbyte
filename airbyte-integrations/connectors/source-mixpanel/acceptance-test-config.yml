@@ -34,6 +34,13 @@ acceptance_tests:
           bypass_reason: "Data expired too often"
         - name: annotations
           bypass_reason: "Data expired too often"
+      ignored_fields:
+        funnels:
+          - name: date
+            bypass_reason: "Data changes too often"
+        revenue:
+          - name: date
+            bypass_reason: "Data changes too often"
   full_refresh:
     tests:
     - config_path: "secrets/config_old.json"
