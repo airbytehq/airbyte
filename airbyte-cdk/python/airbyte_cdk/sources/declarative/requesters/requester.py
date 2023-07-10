@@ -148,9 +148,9 @@ class Requester(RequestOptionsProvider):
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Mapping[str, Any]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
-    ) -> requests.Response:
+    ) -> Optional[requests.Response]:
         """
-        Sends a request and returns the response
+        Sends a request and returns the response. Might return no response if the error handler chooses to ignore the response or throw an exception in case of an error.
         """
 
     @property

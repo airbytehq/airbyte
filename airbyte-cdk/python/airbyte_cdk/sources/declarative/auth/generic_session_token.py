@@ -8,6 +8,7 @@ import datetime
 import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 
 import dpath.util
 import pendulum
@@ -66,6 +67,8 @@ class GenericSessionTokenAuthenticator(DeclarativeAuthenticator):
 
     def _refresh(self):
         response = self.login_requester.send_request()
+        if response is None:
+            raise ReadException("Failed to get session token, response got ignored by requester")
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
         self._next_expiration_time = pendulum.now() + self.expiration_time
         self.data_request_authenticator.config[SESSION_TOKEN_CONFIG_KEY] = session_token

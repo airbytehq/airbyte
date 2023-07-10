@@ -8,6 +8,7 @@ from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
@@ -352,7 +353,6 @@ class HttpRequester(Requester):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    # TODO - for usage in the simple retriever it's required to pass custom headers and params from the slicer and paginator in here
     def send_request(
         self,
         path: Optional[str] = None,
@@ -371,12 +371,11 @@ class HttpRequester(Requester):
             json=self._request_body_json(stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_slice, next_page_token, request_body_data),
         )
-        request_kwargs = self.request_kwargs()
 
-        response = self._send_with_retry(request, request_kwargs)
+        response = self._send_with_retry(request)
         return self._validate_response(response)
 
-    def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send_with_retry(self, request: requests.PreparedRequest) -> requests.Response:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -406,9 +405,9 @@ class HttpRequester(Requester):
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)
+        return backoff_handler(user_backoff_handler)(request)
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send(self, request: requests.PreparedRequest) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
@@ -430,7 +429,7 @@ class HttpRequester(Requester):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        response: requests.Response = self._session.send(request, **request_kwargs)
+        response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
@@ -443,18 +442,17 @@ class HttpRequester(Requester):
     def _validate_response(
         self,
         response: requests.Response,
-    ) -> requests.Response:
+    ) -> Optional[requests.Response]:
         # if fail -> raise exception
-        # if ignore -> ignore response and return no records
-        # else -> delegate to record selector
+        # if ignore -> ignore response and return None
+        # else -> delegate to caller
         response_status = self.interpret_response_status(response)
         if response_status.action == ResponseAction.FAIL:
             error_message = (
                 response_status.error_message
                 or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpRequester.parse_response_error_message(response)}"
             )
-            # TODO what kind of exception is this?
-            raise Exception(error_message)
+            raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(
                 f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
