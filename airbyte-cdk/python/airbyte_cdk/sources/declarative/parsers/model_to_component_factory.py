@@ -130,7 +130,9 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
-        self._message_repository = message_repository or InMemoryMessageRepository(self._evaluate_log_level(emit_connector_builder_messages))
+        self._message_repository = message_repository or InMemoryMessageRepository(
+            self._evaluate_log_level(emit_connector_builder_messages)
+        )
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
