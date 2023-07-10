@@ -49,6 +49,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 - [Tables](https://coda.io/developers/apis/v1#tag/Tables/operation/listTables)
 - [Formulas](https://coda.io/developers/apis/v1#tag/Formulas/operation/listFormulas)
 - [Controls](https://coda.io/developers/apis/v1#tag/Controls/operation/listControls)
+- [Rows](https://coda.io/developers/apis/v1#tag/Rows/operation/listRows)
 
 ## Data type map
 
@@ -63,5 +64,6 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------- |
+| 1.1.0   | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                |
 | 1.0.0   | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas |
 | 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk] |
