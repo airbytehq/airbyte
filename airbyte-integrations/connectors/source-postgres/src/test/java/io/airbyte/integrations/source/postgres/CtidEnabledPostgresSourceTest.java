@@ -21,8 +21,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -167,7 +167,8 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "ctid");
 
     // Verifying each element and its index to match.
-    // Only checking the first 2 elements since we have verified that the last state_type is "cursorBased"
+    // Only checking the first 2 elements since we have verified that the last state_type is
+    // "cursorBased"
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(1), expectedCtidsFromFirstSync.get(1));
     assertEquals(ctidFromStreamTwoStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));

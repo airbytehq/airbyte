@@ -25,17 +25,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class mainly categorises the streams based on the state type into two categories :
- * 1. Streams that need to be synced via ctid iterator: These are streams that are either newly added or did
- * not complete their initial sync.
- * 2. Streams that need to be synced via cursorBased cursor-based iterator:
- * These are streams that have completed their initial sync and are not syncing data incrementally.
+ * The class mainly categorises the streams based on the state type into two categories : 1. Streams
+ * that need to be synced via ctid iterator: These are streams that are either newly added or did
+ * not complete their initial sync. 2. Streams that need to be synced via cursor-based
+ * iterator: These are streams that have completed their initial sync and are not syncing data
+ * incrementally.
  */
 public class CursorBasedCtidUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CursorBasedCtidUtils.class);
+
   public static StreamsCategorised<CursorBasedStreams> categoriseStreams(final StateManager stateManager,
-                                                                      final ConfiguredAirbyteCatalog fullCatalog) {
+                                                                         final ConfiguredAirbyteCatalog fullCatalog) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
     final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
     final Set<AirbyteStreamNameNamespacePair> alreadySeenStreamPairs = new HashSet<>();
@@ -53,7 +54,7 @@ public class CursorBasedCtidUtils {
         }
 
         final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-                                                                                       streamDescriptor.getNamespace());
+            streamDescriptor.getNamespace());
 
         if (streamState.has("state_type")) {
           if (streamState.get("state_type").asText().equalsIgnoreCase(StateType.CTID.value())) {
@@ -85,7 +86,6 @@ public class CursorBasedCtidUtils {
   }
 
   public record CursorBasedStreams(List<ConfiguredAirbyteStream> streamsForCursorBasedSync,
-                                   List<AirbyteStateMessage> statesFromCursorBasedSync) {
-  }
+                                   List<AirbyteStateMessage> statesFromCursorBasedSync) {}
 
 }

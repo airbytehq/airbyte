@@ -46,7 +46,7 @@ public class CursorBasedCtidUtilsTest {
   }
 
   @Test
-  public void correctOneCtidOneStandardTest() {
+  public void correctOneCtidOneCursorBasedTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
     final JsonNode stream1CtidStatus = Jsons.jsonNode(new CtidStatus()
         .withStateType(StateType.CTID)
