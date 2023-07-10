@@ -236,7 +236,7 @@
               "method": {
                 "type": "string",
                 "const": "Xmin",
-                "order": 8
+                "order": 0
               }
             }
           },
@@ -310,7 +310,7 @@
               "method": {
                 "type": "string",
                 "const": "Standard",
-                "order": 0
+                "order": 8
               }
             }
           }
