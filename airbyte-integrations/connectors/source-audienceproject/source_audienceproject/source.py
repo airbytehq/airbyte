@@ -10,11 +10,7 @@ from airbyte_cdk.sources.streams import Stream
 
 from .auth import AudienceProjectAuthenticator
 from .streams import AudienceprojectStream
-from .streams_campaigns import Campaigns
-from .streams_devices import Devices
-from .streams_profile import Profile
-from .streams_reach import Reach
-from .streams_report import Report
+from .streams import Campaigns, Devices, Profile, Reach, Report
 
 
 class SourceAudienceproject(AbstractSource):
@@ -24,7 +20,7 @@ class SourceAudienceproject(AbstractSource):
         auth_header = auth.get_auth_header()
         url_base = AudienceprojectStream.url_base + "campaigns"
         try:
-            response = requests.get(url=url_base, headers=auth_header)
+            response = requests.get(url=url_base, headers=auth_header, params={"start": "0", "maxResults": "1", })
             response.raise_for_status()
             return True, None
         except Exception as e:
