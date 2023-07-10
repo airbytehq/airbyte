@@ -17,7 +17,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Unsu
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class AirbyteTypeTest {
@@ -344,42 +343,44 @@ public class AirbyteTypeTest {
   @Test
   public void testOneOfComplex() {
     JsonNode schema = Jsons.deserialize("""
-        {
-          "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
-          "properties": {
-            "foo": {"type": "string"}
-          },
-          "items": {"type": "string"}
-        }
-        """);
+                                        {
+                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
+                                          "properties": {
+                                            "foo": {"type": "string"}
+                                          },
+                                          "items": {"type": "string"}
+                                        }
+                                        """);
 
     AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
 
     AirbyteType expected = new OneOf(List.of(
         AirbyteProtocolType.STRING,
-        new Struct(new LinkedHashMap<>() {{
-          put("foo", AirbyteProtocolType.STRING);
-        }}),
-        new Array(AirbyteProtocolType.STRING)
-    ));
+        new Struct(new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        }),
+        new Array(AirbyteProtocolType.STRING)));
     assertEquals(expected, parsed);
   }
 
   @Test
   public void testOneOfUnderspecifiedNonPrimitives() {
     JsonNode schema = Jsons.deserialize("""
-        {
-          "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
-        }
-        """);
+                                        {
+                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
+                                        }
+                                        """);
 
     AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
 
     AirbyteType expected = new OneOf(List.of(
         AirbyteProtocolType.STRING,
         new Struct(new LinkedHashMap<>()),
-        new Array(AirbyteProtocolType.UNKNOWN)
-    ));
+        new Array(AirbyteProtocolType.UNKNOWN)));
     assertEquals(expected, parsed);
   }
 
