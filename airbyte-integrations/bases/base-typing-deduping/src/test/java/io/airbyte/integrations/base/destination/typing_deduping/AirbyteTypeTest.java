@@ -345,7 +345,7 @@ public class AirbyteTypeTest {
   public void testOneOfComplex() {
     JsonNode schema = Jsons.deserialize("""
         {
-          "type": ["string", "object", "array"],
+          "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
           "properties": {
             "foo": {"type": "string"}
           },
@@ -369,7 +369,7 @@ public class AirbyteTypeTest {
   public void testOneOfUnderspecifiedNonPrimitives() {
     JsonNode schema = Jsons.deserialize("""
         {
-          "type": ["string", "object", "array"]
+          "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
         }
         """);
 

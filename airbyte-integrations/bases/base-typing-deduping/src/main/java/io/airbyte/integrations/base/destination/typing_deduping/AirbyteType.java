@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static java.util.stream.Collectors.toSet;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
@@ -17,6 +20,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +49,9 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
         } else if (topLevelType.isArray()) {
           final List<String> typeOptions = new ArrayList<>();
           topLevelType.elements().forEachRemaining(element -> {
-            // ignore "null" type
-            if (!element.asText("").equals("null")) {
+            // ignore "null" type and remove duplicates
+            String type = element.asText("");
+            if (!"null".equals(type) && !typeOptions.contains(type)) {
               typeOptions.add(element.asText());
             }
           });
