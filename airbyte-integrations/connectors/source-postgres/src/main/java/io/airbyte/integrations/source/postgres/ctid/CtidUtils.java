@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
  * that need to be synced via ctid iterator: - These are streams that are either newly added or did
  * not complete their initial sync. 2. Streams that need to be synced via xmin iterator: - These are
  * streams that have the xmin state_type that have completed their initial sync and are not syncing
- * data incrementally. 3. Streams that need to be synced via standard cursor-based iterator: - These
- * are streams that have the standard state_type that have completed their initial sync and are not
+ * data incrementally. 3. Streams that need to be synced via cursor-based iterator: - These are
+ * streams that have the cursorBased state_type that have completed their initial sync and are not
  * syncing data incrementally.
  */
 public class CtidUtils {

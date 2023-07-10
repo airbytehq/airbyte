@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -150,7 +150,7 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     assertEquals(6, actualFirstSyncState.size());
 
     // The expected state type should be 2 ctid's and the last one being standard
-    final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "standard");
+    final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "cursorBased");
     final List<String> stateTypeOfStreamOneStatesFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "state_type");
     final List<String> stateTypeOfStreamTwoStatesFromFirstSync =
@@ -167,7 +167,7 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "ctid");
 
     // Verifying each element and its index to match.
-    // Only checking the first 2 elements since we have verified that the last state_type is "standard"
+    // Only checking the first 2 elements since we have verified that the last state_type is "cursorBased"
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(1), expectedCtidsFromFirstSync.get(1));
     assertEquals(ctidFromStreamTwoStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
@@ -194,7 +194,7 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     assertEquals(streamTwoIncrementalStatesFromFirstSync.get(0), streamTwoFinalStreamStateFromFirstSync);
     assertEquals(streamTwoIncrementalStatesFromFirstSync.get(1), streamTwoFinalStreamStateFromFirstSync);
 
-    // Sync should work with a ctid state AND a standard cursor state from each stream
+    // Sync should work with a ctid state AND a cursor-based state from each stream
     // Forcing a sync with
     // - stream one state still being the first record read via CTID.
     // - stream two state being the CTID state before the final emitted state before the cursor switch
@@ -215,17 +215,17 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
         extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, "state_type");
 
     // Stream One states after the second sync are expected to have 2 stream states
-    // - 1 with Ctid state_type and 1 state that is of standard state type
+    // - 1 with Ctid state_type and 1 state that is of cursorBased state type
     assertEquals(2, streamOneStateMessagesFromSecondSync.size());
-    assertEquals(List.of("ctid", "standard"), stateTypeOfStreamOneStatesFromSecondSync);
+    assertEquals(List.of("ctid", "cursorBased"), stateTypeOfStreamOneStatesFromSecondSync);
 
     // Stream Two states after the second sync are expected to have 1 stream state
-    // - The state that is of standard state type
+    // - The state that is of cursorBased state type
     assertEquals(1, streamTwoStateMessagesFromSecondSync.size());
-    assertEquals(List.of("standard"), stateTypeOfStreamTwoStatesFromSecondSync);
+    assertEquals(List.of("cursorBased"), stateTypeOfStreamTwoStatesFromSecondSync);
 
     // Add some data to each table and perform a third read.
-    // Expect to see all records be synced via standard method and not ctid
+    // Expect to see all records be synced via cursorBased method and not ctid
 
     database.execute(ctx -> {
       ctx.createStatement().execute(
@@ -262,11 +262,11 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     // cursor: 4 for stream one
     // cursor: 43 for stream two
     assertEquals(1, streamOneStateMessagesFromThirdSync.size());
-    assertEquals(List.of("standard"), stateTypeOfStreamOneStatesFromThirdSync);
+    assertEquals(List.of("cursorBased"), stateTypeOfStreamOneStatesFromThirdSync);
     assertEquals(List.of("4"), cursorOfStreamOneStatesFromThirdSync);
 
     assertEquals(1, streamTwoStateMessagesFromThirdSync.size());
-    assertEquals(List.of("standard"), stateTypeOfStreamTwoStatesFromThirdSync);
+    assertEquals(List.of("cursorBased"), stateTypeOfStreamTwoStatesFromThirdSync);
     assertEquals(List.of("43"), cursorOfStreamTwoStatesFromThirdSync);
   }
 
@@ -274,7 +274,7 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
   protected DbStreamState buildStreamState(final ConfiguredAirbyteStream configuredAirbyteStream,
                                            final String cursorField,
                                            final String cursorValue) {
-    return new StandardStatus().withStateType(StateType.STANDARD).withVersion(2L)
+    return new CursorBasedStatus().withStateType(StateType.CURSOR_BASED).withVersion(2L)
         .withStreamName(configuredAirbyteStream.getStream().getName())
         .withStreamNamespace(configuredAirbyteStream.getStream().getNamespace())
         .withCursorField(List.of(cursorField))
@@ -303,8 +303,8 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
                     COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
-    final DbStreamState state = new StandardStatus()
-        .withStateType(StateType.STANDARD)
+    final DbStreamState state = new CursorBasedStatus()
+        .withStateType(StateType.CURSOR_BASED)
         .withVersion(2L)
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
