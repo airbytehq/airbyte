@@ -6,6 +6,8 @@ Google is phasing out Universal Analytics in favor of Google Analytics 4 (GA4). 
 
 Due to this deprecation, we will not be accepting new contributions for this source.
 
+This connector will be depreciated in July 2024. 
+
 For more information, see ["Universal Analytics is going away"](https://support.google.com/analytics/answer/11583528).
 
 :::
