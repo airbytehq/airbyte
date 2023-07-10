@@ -286,6 +286,9 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
 
+      - name: Install mypy
+        run: pip install mypy pydantic==1.9.2
+
       - name: Install automake
         run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
