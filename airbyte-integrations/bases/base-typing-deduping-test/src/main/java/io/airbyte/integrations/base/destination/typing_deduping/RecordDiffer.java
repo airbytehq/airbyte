@@ -257,12 +257,18 @@ public class RecordDiffer {
   }
 
   private static boolean areJsonNodesEquivalent(JsonNode expectedValue, JsonNode actualValue) {
-    // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
-    return Objects.equals(expectedValue, actualValue)
-        // Objects.equals expects the two values to be the same class.
-        // We need to handle comparisons between e.g. LongNode and IntNode.
-        || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
-        || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
+    if (expectedValue == null || actualValue == null) {
+      // If one of the values is null, then we expect both of them to be null.
+      return expectedValue == null && actualValue == null;
+    } else {
+      // Otherwise, we need to compare the actual values.
+      // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
+      return expectedValue.equals(actualValue)
+          // equals() expects the two values to be the same class.
+          // We need to handle comparisons between e.g. LongNode and IntNode.
+          || (expectedValue.isIntegralNumber() && actualValue.isIntegralNumber() && expectedValue.asLong() == actualValue.asLong())
+          || (expectedValue.isNumber() && actualValue.isNumber() && expectedValue.asDouble() == actualValue.asDouble());
+    }
   }
 
   /**
