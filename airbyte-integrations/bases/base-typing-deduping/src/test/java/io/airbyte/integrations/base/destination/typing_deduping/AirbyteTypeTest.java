@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
@@ -16,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Unsu
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class AirbyteTypeTest {
@@ -337,6 +339,48 @@ public class AirbyteTypeTest {
 
     final OneOf oneOf = new OneOf(options);
     assertEquals(oneOf, AirbyteType.fromJsonSchema(Jsons.deserialize(oneOfSchema)));
+  }
+
+  @Test
+  public void testOneOfComplex() {
+    JsonNode schema = Jsons.deserialize("""
+        {
+          "type": ["string", "object", "array"],
+          "properties": {
+            "foo": {"type": "string"}
+          },
+          "items": {"type": "string"}
+        }
+        """);
+
+    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+
+    AirbyteType expected = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Struct(new LinkedHashMap<>() {{
+          put("foo", AirbyteProtocolType.STRING);
+        }}),
+        new Array(AirbyteProtocolType.STRING)
+    ));
+    assertEquals(expected, parsed);
+  }
+
+  @Test
+  public void testOneOfUnderspecifiedNonPrimitives() {
+    JsonNode schema = Jsons.deserialize("""
+        {
+          "type": ["string", "object", "array"]
+        }
+        """);
+
+    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+
+    AirbyteType expected = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Struct(new LinkedHashMap<>()),
+        new Array(AirbyteProtocolType.UNKNOWN)
+    ));
+    assertEquals(expected, parsed);
   }
 
   @Test

@@ -5,11 +5,15 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,27 +42,33 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
             return getArray(schema);
           }
         } else if (topLevelType.isArray()) {
-          final List<JsonNode> elements = new ArrayList<>();
+          final List<String> typeOptions = new ArrayList<>();
           topLevelType.elements().forEachRemaining(element -> {
             // ignore "null" type
             if (!element.asText("").equals("null")) {
-              elements.add(element);
+              typeOptions.add(element.asText());
             }
           });
 
           // we encounter an array of types that actually represents a single type rather than a OneOf
-          if (elements.size() == 1) {
-            if (elements.get(0).asText("").equals("object")) {
+          if (typeOptions.size() == 1) {
+            if (typeOptions.get(0).equals("object")) {
               return getStruct(schema);
-            } else if (elements.get(0).asText("").equals("array")) {
+            } else if (typeOptions.get(0).equals("array")) {
               return getArray(schema);
             } else {
               return AirbyteTypeUtils.getAirbyteProtocolType(schema);
             }
           }
 
-          final List<AirbyteType> typeOptions = elements.stream().map(AirbyteType::fromJsonSchema).toList();
-          return new OneOf(typeOptions);
+          final List<AirbyteType> options = typeOptions.stream().map(typeOption -> {
+            // Recurse into a schema that forces a specific one of each option
+            JsonNode schemaClone = schema.deepCopy();
+            // schema is guaranteed to be an object here, because we know it has a `type` key
+            ((ObjectNode) schemaClone).put("type", typeOption);
+            return fromJsonSchema(schemaClone);
+          }).toList();
+          return new OneOf(options);
         }
       } else if (schema.hasNonNull("oneOf")) {
         final List<AirbyteType> options = new ArrayList<>();
