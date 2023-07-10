@@ -117,10 +117,10 @@ class TestLogAppenderMessageRepositoryDecorator:
             }
         }
 
-    def test_given_value_clash_when_log_message_then_raise_error(self, decorated):
+    def test_given_value_clash_when_log_message_then_overwrite_value(self, decorated):
         repo = LogAppenderMessageRepositoryDecorator({"clash": "appended value"}, decorated, Level.DEBUG)
-        with pytest.raises(ValueError):
-            repo.log_message(Level.INFO, lambda: {"clash": "original value"})
+        repo.log_message(Level.INFO, lambda: {"clash": "original value"})
+        assert decorated.log_message.call_args_list[0].args[1]() == {"clash": "appended value"}
 
     def test_given_log_level_is_severe_enough_when_log_message_then_allow_message_to_be_consumed(self, decorated):
         repo = LogAppenderMessageRepositoryDecorator(self._DICT_TO_APPEND, decorated, Level.DEBUG)

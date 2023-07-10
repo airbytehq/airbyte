@@ -3,12 +3,14 @@
 #
 
 import json
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
+_LOGGER = logging.getLogger("MessageRepository")
 _SUPPORTED_MESSAGE_TYPES = {Type.CONTROL, Type.LOG}
 JsonType = Union[dict[str, "JsonType"], list["JsonType"], str, int, float, bool, None]
 LogMessage = dict[str, JsonType]
@@ -107,10 +109,10 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
             if key in first:
                 if isinstance(first[key], dict) and isinstance(second[key], dict):
                     self._append_second_to_first(first[key], second[key], path + [str(key)])
-                elif first[key] == second[key]:
-                    pass
                 else:
-                    raise ValueError("Conflict at %s" % ".".join(path + [str(key)]))
+                    if first[key] != second[key]:
+                        _LOGGER.warning("Conflict at %s" % ".".join(path + [str(key)]))
+                    first[key] = second[key]
             else:
                 first[key] = second[key]
         return first
