@@ -47,6 +47,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+      - name: fetch master
+        run: git fetch origin master
       - uses: dorny/paths-filter@v2
         id: filter
         with:
