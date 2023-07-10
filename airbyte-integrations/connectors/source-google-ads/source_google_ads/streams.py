@@ -276,6 +276,15 @@ class Campaigns(IncrementalGoogleAdsStream):
     primary_key = ["campaign.id", "segments.date", "segments.hour"]
 
 
+class CampaignBudget(IncrementalGoogleAdsStream):
+    """
+    Campaigns stream: https://developers.google.com/google-ads/api/fields/v13/campaign_budget
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["campaign_budget.id", "segments.date"]
+
+
 class CampaignLabels(GoogleAdsStream):
     """
     Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label
