@@ -164,6 +164,10 @@ jobs:
     name: "Airbyte CDK: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
