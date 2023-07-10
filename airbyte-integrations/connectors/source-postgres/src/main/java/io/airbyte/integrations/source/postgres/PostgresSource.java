@@ -63,7 +63,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultList;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcProperties;
@@ -192,7 +192,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
-    LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
+    LOGGER.debug("jdbc url: {}", jdbcUrl);
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
@@ -211,14 +211,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             .stream()
             .map((entry) -> {
               try {
-                final String result = switch (entry.getKey()) {
+                return switch (entry.getKey()) {
                   case JdbcSSLConnectionUtils.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
                   case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
                   case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
                   case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
                   default -> "";
                 };
-                return result;
               } catch (final URISyntaxException e) {
                 throw new IllegalArgumentException("unable to convert to URI", e);
               }
@@ -384,13 +383,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       });
 
-      checkOperations.add(database -> {
-        PostgresUtils.checkFirstRecordWaitTime(config);
-      });
+      checkOperations.add(database -> PostgresUtils.checkFirstRecordWaitTime(config));
 
-      checkOperations.add(database -> {
-        PostgresUtils.checkQueueSize(config);
-      });
+      checkOperations.add(database -> PostgresUtils.checkQueueSize(config));
 
       // Verify that a CDC connection can be created
       checkOperations.add(database -> {
@@ -414,7 +409,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    LOGGER.info("*** getIncrementalIterators()");
     final JsonNode sourceConfig = database.getSourceConfig();
     final CtidFeatureFlags ctidFeatureFlags = new CtidFeatureFlags(sourceConfig);
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
@@ -496,18 +490,18 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     if (isIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
       final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
-      final ResultList<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+      final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());
       final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
-      final ResultList<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
+      final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
           PostgresQueryUtils.fileNodeForStreams(database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
       final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes.result());
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-          PostgresQueryUtils.getTableBlockSizeForStream(
+          PostgresQueryUtils.getTableBlockSizeForStreams(
               database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
@@ -543,7 +537,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     } else if (isIncrementalSyncMode(catalog) && ctidFeatureFlags.isCursorSyncEnabled()) {
       final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(stateManager, catalog);
-      final ResultList<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+      final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());
 
@@ -551,19 +545,22 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // are reclassified as standard since we cannot guarantee that ctid will be possible.
       reclassifyCategorisedCtidStream(streamsCategorised, streamsUnderVacuum.failed());
 
-      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
-
-      final ResultList<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
+      final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
           PostgresQueryUtils.fileNodeForStreams(database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
       // Streams we failed to query for fileNode - such as in the case of Views are reclassified as standard
-      reclassifyCategorisedCtidStream(streamsCategorised, fileNodes.failed());
+      if (!fileNodes.failed().isEmpty()) {
+        reclassifyCategorisedCtidStream(streamsCategorised, fileNodes.failed());
+        finalListOfStreamsToBeSyncedViaCtid =
+            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
+      }
       final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes.result());
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-          PostgresQueryUtils.getTableBlockSizeForStream(
+          PostgresQueryUtils.getTableBlockSizeForStreams(
               database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());

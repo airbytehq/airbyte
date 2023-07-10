@@ -12,7 +12,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
-import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultList;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
@@ -121,7 +121,7 @@ public class PostgresCdcCtidInitializer {
                     .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-        final ResultList<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
+        final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
         final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes.result(), stateToBeUsed, catalog);
@@ -129,7 +129,7 @@ public class PostgresCdcCtidInitializer {
             Optional.of(new CdcMetadataInjector(
                 emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-            PostgresQueryUtils.getTableBlockSizeForStream(
+            PostgresQueryUtils.getTableBlockSizeForStreams(
                 database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 quoteString);
