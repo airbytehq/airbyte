@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.helpers import (
     FailingSchemaValidationPolicy,
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
@@ -174,8 +174,8 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_validation_policies(FailingSchemaValidationPolicy)
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.ERROR_VALIDATING_RECORD)
+    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL:  FailingSchemaValidationPolicy()})
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD)
 ).build()
 
 
