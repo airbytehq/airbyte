@@ -44,7 +44,7 @@ SCOPES_MAPPING = {
     "read_locations": ["Locations", "MetafieldLocations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
-    "read_shopify_payments_payouts": ["BalanceTransactions"],
+    "read_shopify_payments_payouts": ["BalanceTransactions", "Disputes"],
     "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
 }
 
