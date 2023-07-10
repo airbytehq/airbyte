@@ -103,7 +103,7 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
             func = sleep_before_executing(sleep_time)(func)
 
         if isinstance(self.executor, ProcessPoolExecutor):
-            self.logger.warning("ProcessPoolExecutor is used to perform IO related tasks for unknown reason!")
+            logger.warning("ProcessPoolExecutor is used to perform IO related tasks for unknown reason!")
             # verify function can be pickled
             try:
                 dumps(func)
