@@ -114,7 +114,6 @@ class Tables(CodaStreamDoc):
         return f"docs/{doc_id}/tables"
 
 
-
 class Rows(CodaStreamDoc):
 
     primary_key = "id"
@@ -186,5 +185,5 @@ class SourceCoda(AbstractSource):
             Tables(**stream_args),
             Formulas(**stream_args),
             Controls(**stream_args),
-            Rows(**stream_args)
+            Rows(**stream_args),
         ]
