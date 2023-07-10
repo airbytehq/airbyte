@@ -180,7 +180,7 @@ class MessageGrouper:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
-            and (message.log.message.startswith("slice:") or MessageGrouper._is_page_http_request(json_message))
+            and (MessageGrouper._is_page_http_request(json_message) or message.log.message.startswith("slice:"))
         )
 
     @staticmethod
@@ -193,6 +193,12 @@ class MessageGrouper:
 
     @staticmethod
     def _is_global_request(message: Optional[dict]) -> bool:
+        """
+        A global request is a request that is performed and will not directly lead to record for the specific stream it is being queried. A
+        couple of examples are:
+        * OAuth authentication
+        * Substream slice generation
+        """
         if not message:
             return False
 
