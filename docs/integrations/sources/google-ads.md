@@ -108,6 +108,7 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 ### Report Tables
 
 - [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
+- [campaign budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
@@ -161,7 +162,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `0.6.0`  | 2023-07-10 | [28049](https://github.com/airbytehq/airbyte/pull/28049) | Add `metrics` to `Keyword Report` schema                                                                                             |
+| `0.6.0`  | 2023-07-10 | [28078](https://github.com/airbytehq/airbyte/pull/28078) | Add new stream `Campaign Budget`                                                                                                     |
 | `0.5.0`  | 2023-07-07 | [28042](https://github.com/airbytehq/airbyte/pull/28042) | Add metrics & segment to `Campaigns` stream                                                                                          |
 | `0.4.3`  | 2023-07-05 | [27959](https://github.com/airbytehq/airbyte/pull/27959) | Add `audience` and `user_interest` streams                                                                                           |
 | `0.3.3`  | 2023-07-03 | [27913](https://github.com/airbytehq/airbyte/pull/27913) | Improve Google Ads exception handling (wrong customer ID)                                                                            |
