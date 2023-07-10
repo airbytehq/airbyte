@@ -101,9 +101,9 @@ public class RecordDiffer {
    * Build a Comparator to detect equality between two records. It first compares all the identifying
    * columns in order, and breaks ties using extracted_at.
    *
-   * @param dataExtractor A function that extracts the data from a record. For raw records, this should
-   *                      return the _airbyte_data field; for final records, this should return the
-   *                      record itself.
+   * @param dataExtractor A function that extracts the data from a record. For raw records, this
+   *        should return the _airbyte_data field; for final records, this should return the record
+   *        itself.
    */
   private Comparator<JsonNode> buildIdentityComparator(Function<JsonNode, JsonNode> dataExtractor, Pair<String, AirbyteType>[] identifyingColumns) {
     // Start with a noop comparator for convenience
@@ -118,7 +118,8 @@ public class RecordDiffer {
   /**
    * See {@link #buildIdentityComparator(Function, Pair[])} for an explanation of dataExtractor.
    */
-  private Function<JsonNode, String> buildIdentityExtractor(Function<JsonNode, JsonNode> dataExtractor, Pair<String, AirbyteType>[] identifyingColumns) {
+  private Function<JsonNode, String> buildIdentityExtractor(Function<JsonNode, JsonNode> dataExtractor,
+                                                            Pair<String, AirbyteType>[] identifyingColumns) {
     return record -> Arrays.stream(identifyingColumns)
         .map(column -> getPrintableFieldIfPresent(dataExtractor.apply(record), column.getKey()))
         .collect(Collectors.joining(", "))
