@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.actions import secrets
 from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
 from github import PullRequest
@@ -41,7 +41,7 @@ class PipelineContext:
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
     DEFAULT_EXCLUDED_FILES = (
-        [".git"]
+        [".git", "tools/ci_connector_ops/pipeline_reports/*", "tools/ci_connector_ops/ci_connector_ops/pipelines/*"]
         + glob("**/build", recursive=True)
         + glob("**/.venv", recursive=True)
         + glob("**/secrets", recursive=True)
@@ -62,6 +62,7 @@ class PipelineContext:
         git_branch: str,
         git_revision: str,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         is_ci_optional: bool = False,
@@ -81,6 +82,7 @@ class PipelineContext:
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             is_ci_optional (bool, optional): Whether the CI is optional. Defaults to False.
@@ -93,6 +95,7 @@ class PipelineContext:
         self.git_branch = git_branch
         self.git_revision = git_revision
         self.gha_workflow_run_url = gha_workflow_run_url
+        self.dagger_logs_url = dagger_logs_url
         self.pipeline_start_timestamp = pipeline_start_timestamp
         self.created_at = datetime.utcnow()
         self.ci_context = ci_context
@@ -187,6 +190,7 @@ class PipelineContext:
         else:
             exclude += self.DEFAULT_EXCLUDED_FILES
             exclude = list(set(exclude))
+        exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
         if subdir != ".":
             subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
             exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
@@ -292,6 +296,7 @@ class ConnectorContext(PipelineContext):
         ci_github_access_token: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
@@ -311,6 +316,7 @@ class ConnectorContext(PipelineContext):
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
@@ -335,6 +341,7 @@ class ConnectorContext(PipelineContext):
             git_branch=git_branch,
             git_revision=git_revision,
             gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
@@ -466,6 +473,7 @@ class PublishConnectorContext(ConnectorContext):
         git_branch: bool,
         git_revision: bool,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
@@ -492,6 +500,7 @@ class PublishConnectorContext(ConnectorContext):
             git_branch=git_branch,
             git_revision=git_revision,
             gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
@@ -544,7 +553,7 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
-            message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
+            message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!channel>"
+            message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message

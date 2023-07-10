@@ -3,7 +3,7 @@
 #
 
 from typing import Mapping
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
     _prepared_request_to_airbyte_message,
     _response_to_airbyte_message,
 )
+from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
@@ -106,10 +107,10 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.stream_slices() == stream_slices
 
     assert retriever._last_response is None
-    assert retriever._last_records is None
+    assert retriever._records_from_last_response is None
     assert retriever.parse_response(response, stream_state={}) == records
     assert retriever._last_response == response
-    assert retriever._last_records == records
+    assert retriever._records_from_last_response == records
 
     assert retriever.http_method == "GET"
     assert not retriever.raise_on_http_errors
@@ -190,10 +191,10 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     )
 
     assert retriever._last_response is None
-    assert retriever._last_records is None
+    assert retriever._records_from_last_response is None
     assert retriever.parse_response(response, stream_state={}) == request_response_logs
     assert retriever._last_response == response
-    assert retriever._last_records == request_response_logs
+    assert retriever._records_from_last_response == request_response_logs
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
@@ -574,7 +575,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}"}',
                 ),
             ),
         ),
@@ -590,7 +591,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {"Content-Type": "application/json", "h1": "v1", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {"Content-Type": "application/json", "h1": "v1", "Content-Length": "24"}, "body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}"}',
                 ),
             ),
         ),
@@ -598,7 +599,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             "test_get_request_with_request_body_data",
             HttpMethod.GET,
             "https://airbyte.io",
-            {"Content-Type": "application/json"},
+            {"Content-Type": "application/x-www-form-urlencoded"},
             {},
             {},
             {"b1": "v1", "b2": "v2"},
@@ -606,7 +607,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "11"}, "body": {"b1": "v1", "b2": "v2"}}',
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/x-www-form-urlencoded", "Content-Length": "11"}, "body": "b1=v1&b2=v2"}',
                 ),
             ),
         ),
@@ -726,36 +727,67 @@ def test_limit_stream_slices():
 
 
 @pytest.mark.parametrize(
-    "test_name, last_records, records, expected_stream_slicer_update_count",
+    "test_name, first_greater_than_second",
     [
-        ("test_two_records", [{"id": -1}], records, 2),
-        ("test_no_records", [{"id": -1}], [], 1),
-        ("test_no_records_no_previous_records", [], [], 0)
-    ]
+        ("test_first_greater_than_second", True),
+        ("test_second_greater_than_first", False),
+    ],
 )
-def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_records, records, expected_stream_slicer_update_count):
-    with patch.object(HttpStream, "_read_pages", return_value=iter(records)):
-        requester = MagicMock()
-        paginator = MagicMock()
-        record_selector = MagicMock()
-        cursor = MagicMock(spec=Cursor)
+def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name, first_greater_than_second):
+    first_record = Record({"first": 1}, {})
+    second_record = Record({"second": 2}, {})
+    records = [first_record, second_record]
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = records
+    cursor = MagicMock(spec=Cursor)
+    cursor.is_greater_than_or_equal.return_value = first_greater_than_second
 
-        retriever = SimpleRetriever(
-            name="stream_name",
-            primary_key=primary_key,
-            requester=requester,
-            paginator=paginator,
-            record_selector=record_selector,
-            stream_slicer=cursor,
-            cursor=cursor,
-            parameters={},
-            config={},
-        )
-        retriever._last_records = last_records
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=MagicMock(),
+        paginator=Mock(),
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+    stream_slice = {"repository": "airbyte"}
 
-        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+    with patch.object(HttpStream, "_read_pages", return_value=iter([first_record, second_record]), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
 
-        assert cursor.update_state.call_count == expected_stream_slicer_update_count
+
+def test_given_stream_data_is_not_record_when_read_records_then_update_slice_with_optional_record():
+    stream_data = [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="a log message"))]
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = []
+    cursor = MagicMock(spec=Cursor)
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=MagicMock(),
+        paginator=Mock(),
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+    stream_slice = {"repository": "airbyte"}
+
+    with patch.object(HttpStream, "_read_pages", return_value=iter(stream_data), side_effect=lambda _, __, ___: retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        cursor.close_slice.assert_called_once_with(stream_slice, None)
+
+
+def parse_two_pages_and_return_records(retriever, stream_slice, records):
+    list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
+    list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
+    return records
 
 
 def _generate_slices(number_of_slices):
