@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.standard;
+package io.airbyte.integrations.source.postgres.cursor_based;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
@@ -31,12 +31,12 @@ import org.slf4j.LoggerFactory;
  * keys to the stream state when they're going through the iterator Once we have verified that
  * expanding StreamStateManager itself to include this functionality, this class will be removed
  */
-public class PostgresStandardStateManager extends StreamStateManager {
+public class PostgresCursorBasedStateManager extends StreamStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
 
 
-  public PostgresStandardStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
+  public PostgresCursorBasedStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
     super(airbyteStateMessages, catalog);
   }
 
@@ -78,10 +78,10 @@ public class PostgresStandardStateManager extends StreamStateManager {
         .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
   }
 
-  private StandardStatus generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+  private CursorBasedStatus generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
                                                final CursorInfo cursorInfo) {
-    final StandardStatus state = new StandardStatus();
-    state.setStateType(StateType.STANDARD);
+    final CursorBasedStatus state = new CursorBasedStatus();
+    state.setStateType(StateType.CURSOR_BASED);
     state.setVersion(2L);
     state.setStreamName(airbyteStreamNameNamespacePair.getName());
     state.setStreamNamespace(airbyteStreamNameNamespacePair.getNamespace());

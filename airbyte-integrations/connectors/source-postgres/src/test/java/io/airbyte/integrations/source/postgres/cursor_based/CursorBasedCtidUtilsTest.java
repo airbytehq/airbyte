@@ -2,10 +2,10 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.standard;
+package io.airbyte.integrations.source.postgres.cursor_based;
 
-import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.categoriseStreams;
-import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.reclassifyCategorisedCtidStreams;
+import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
+import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.generateStateMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,10 +16,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
+import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.CursorBasedStreams;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
-import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.StandardStreams;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -35,55 +35,55 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class StandardCtidUtilsTest {
+public class CursorBasedCtidUtilsTest {
 
   @Test
   public void emptyStateTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
-    final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
+    final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
     assertEquals(2, streamsCategorised.ctidStreams().streamsForCtidSync().size());
-    assertEquals(0, streamsCategorised.remainingStreams().streamsForStandardSync().size());
-    assertTrue(streamsCategorised.remainingStreams().streamsForStandardSync().isEmpty());
+    assertEquals(0, streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
+    assertTrue(streamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty());
     assertThat(streamsCategorised.ctidStreams().streamsForCtidSync()).containsExactlyInAnyOrder(STREAM_1, STREAM_2);
   }
 
   @Test
-  public void correctOneCtidOneStandardTest() {
+  public void correctOneCtidOneCursorBasedTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
     final JsonNode stream1CtidStatus = Jsons.jsonNode(new CtidStatus()
         .withStateType(StateType.CTID)
         .withCtid("(0,0)")
         .withRelationFilenode(456L));
 
-    final JsonNode stream2StandardStatus = Jsons.jsonNode(new StandardStatus()
-        .withStateType(StateType.STANDARD)
+    final JsonNode stream2CursorBased = Jsons.jsonNode(new CursorBasedStatus()
+        .withStateType(StateType.CURSOR_BASED)
         .withStreamName(STREAM_2.getStream().getName())
         .withStreamNamespace(STREAM_2.getStream().getNamespace())
         .withCursorField(List.of("COL_ID"))
         .withCursor("1")
         .withCursorRecordCount(1L));
 
-    final JsonNode stream2StandardStatusJson = Jsons.jsonNode(stream2StandardStatus);
+    final JsonNode stream2CursorBasedJson = Jsons.jsonNode(stream2CursorBased);
     final AirbyteStateMessage stream1CtidState = generateStateMessage(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace(),
         stream1CtidStatus);
     final AirbyteStateMessage stream2StandardState = generateStateMessage(STREAM_2.getStream().getName(), STREAM_2.getStream().getNamespace(),
-        stream2StandardStatusJson);
+        stream2CursorBasedJson);
     final StreamStateManager streamStateManager = new StreamStateManager(List.of(stream1CtidState, stream2StandardState), configuredCatalog);
-    final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
+    final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
     assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().size(), 1);
-    assertEquals(streamsCategorised.remainingStreams().streamsForStandardSync().size(), 1);
+    assertEquals(streamsCategorised.remainingStreams().streamsForCursorBasedSync().size(), 1);
     assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().stream().findFirst().get(), STREAM_1);
-    assertEquals(streamsCategorised.remainingStreams().streamsForStandardSync().stream().findFirst().get(), STREAM_2);
+    assertEquals(streamsCategorised.remainingStreams().streamsForCursorBasedSync().stream().findFirst().get(), STREAM_2);
   }
 
   @Test
   public void correctEmptyCtidTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
-    final JsonNode standardStatus = Jsons.jsonNode(new StandardStatus()
-                                                          .withStateType(StateType.STANDARD)
+    final JsonNode standardStatus = Jsons.jsonNode(new CursorBasedStatus()
+                                                          .withStateType(StateType.CURSOR_BASED)
                                                           .withStreamName(STREAM_2.getStream().getName())
                                                           .withStreamNamespace(STREAM_2.getStream().getNamespace())
                                                           .withCursorField(List.of("COL_ID"))
@@ -95,11 +95,11 @@ public class StandardCtidUtilsTest {
     final AirbyteStateMessage stream2StandardState = generateStateMessage(STREAM_2.getStream().getName(), STREAM_2.getStream().getNamespace(),
                                                                           standardStatus);
     final StreamStateManager streamStateManager = new StreamStateManager(List.of(stream1CtidState, stream2StandardState), configuredCatalog);
-    final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
+    final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
     assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().size(), 0);
-    assertEquals(streamsCategorised.remainingStreams().streamsForStandardSync().size(), 2);
-    assertThat(streamsCategorised.remainingStreams().streamsForStandardSync()).containsExactlyInAnyOrder(STREAM_1, STREAM_2);
+    assertEquals(streamsCategorised.remainingStreams().streamsForCursorBasedSync().size(), 2);
+    assertThat(streamsCategorised.remainingStreams().streamsForCursorBasedSync()).containsExactlyInAnyOrder(STREAM_1, STREAM_2);
 
   }
 
@@ -107,15 +107,15 @@ public class StandardCtidUtilsTest {
   public void reclassifyCategorisedCtidStreamTest() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
-    final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
+    final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
     List<AirbyteStreamNameNamespacePair> reclassify = Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
     reclassifyCategorisedCtidStreams(streamsCategorised, reclassify);
     assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
-    assertEquals(1, streamsCategorised.remainingStreams().streamsForStandardSync().size());
-    assertFalse(streamsCategorised.remainingStreams().streamsForStandardSync().isEmpty());
+    assertEquals(1, streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
+    assertFalse(streamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty());
     assertThat(streamsCategorised.ctidStreams().streamsForCtidSync()).containsExactlyInAnyOrder(STREAM_2);
-    assertThat(streamsCategorised.remainingStreams().streamsForStandardSync()).containsExactlyInAnyOrder(STREAM_1);
+    assertThat(streamsCategorised.remainingStreams().streamsForCursorBasedSync()).containsExactlyInAnyOrder(STREAM_1);
   }
 
   private static final ConfiguredAirbyteStream STREAM_1 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(

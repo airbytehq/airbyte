@@ -21,11 +21,12 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterStreamsUnderVacuumForCtidSync;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getStandardSyncStatusForStreams;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
-import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.categoriseStreams;
+import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
+import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
@@ -74,11 +75,11 @@ import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
-import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
+import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils;
+import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.CursorBasedStreams;
+import io.airbyte.integrations.source.postgres.cursor_based.PostgresCursorBasedStateManager;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
-import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils;
-import io.airbyte.integrations.source.postgres.standard.PostgresStandardStateManager;
-import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.StandardStreams;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.XminStreams;
 import io.airbyte.integrations.source.postgres.xmin.XminStateManager;
@@ -537,15 +538,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(Collectors.toList());
 
     } else if (isIncrementalSyncMode(catalog) && ctidFeatureFlags.isCursorSyncEnabled()) {
-      final PostgresStandardStateManager postgresStandardStateManager = new PostgresStandardStateManager(stateManager.getRawStateMessages(), catalog);
-      final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(postgresStandardStateManager, catalog);
+      final PostgresCursorBasedStateManager postgresCursorBasedStateManager =
+          new PostgresCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+      final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
       final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());
 
       // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
       // are reclassified as standard since we cannot guarantee that ctid will be possible.
-      StandardCtidUtils.reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
+      reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
 
       List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
@@ -556,7 +558,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       // Streams we failed to query for fileNode - such as in the case of Views are reclassified as standard
       if (!fileNodes.failed().isEmpty()) {
-        StandardCtidUtils.reclassifyCategorisedCtidStreams(streamsCategorised, fileNodes.failed());
+        reclassifyCategorisedCtidStreams(streamsCategorised, fileNodes.failed());
         finalListOfStreamsToBeSyncedViaCtid =
             filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
       }
@@ -572,16 +574,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
       }
 
-      if (!streamsCategorised.remainingStreams().streamsForStandardSync().isEmpty()) {
-        LOGGER.info("Streams to be synced via standard cursor : {}", streamsCategorised.remainingStreams().streamsForStandardSync().size());
+      if (!streamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty()) {
+        LOGGER.info("Streams to be synced via cursor : {}", streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
       } else {
-        LOGGER.info("No streams to be synced via standard cursor");
+        LOGGER.info("No streams to be synced via cursor");
       }
 
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap =
-          getStandardSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresStandardStateManager);
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap =
+          getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager);
 
-      final PostgresCtidHandler standardCtidHandler =
+      final PostgresCtidHandler cursorBasedCtidHandler =
           new PostgresCtidHandler(sourceConfig,
               database,
               new CtidPostgresSourceOperations(Optional.empty()),
@@ -589,20 +591,21 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               fileNodes.result(),
               tableBlockSizes,
               ctidStateManager,
-              namespacePair -> Jsons.jsonNode(standardStatusMap.get(namespacePair)));
+              namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
 
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>(
-          standardCtidHandler.getIncrementalIterators(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
+          cursorBasedCtidHandler.getIncrementalIterators(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
               emittedAt));
-      final List<AutoCloseableIterator<AirbyteMessage>> standardIterators = new ArrayList<>(super.getIncrementalIterators(database,
+      final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
               streamsCategorised.remainingStreams()
-                  .streamsForStandardSync()),
-          tableNameToTable, postgresStandardStateManager, emittedAt));
+                  .streamsForCursorBasedSync()),
+          tableNameToTable,
+          postgresCursorBasedStateManager, emittedAt));
 
       return Stream
-          .of(ctidIterators, standardIterators)
+          .of(ctidIterators, cursorBasedIterators)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }

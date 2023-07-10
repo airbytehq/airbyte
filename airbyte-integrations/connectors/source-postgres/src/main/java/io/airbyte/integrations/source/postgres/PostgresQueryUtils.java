@@ -13,8 +13,8 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -128,18 +128,18 @@ public class PostgresQueryUtils {
   /**
    * Iterates through each stream and find the max cursor value and the record count which has that
    * value based on each cursor field provided by the customer per stream This information is saved in
-   * a Hashmap with the mapping being the AirbyteStreamNameNamespacepair -> StandardStatus
+   * a Hashmap with the mapping being the AirbyteStreamNameNamespacepair -> CursorBasedStatus
    *
    * @param database the source db
    * @param streams streams to be synced
    * @param stateManager stream stateManager
    * @return
    */
-  public static Map<AirbyteStreamNameNamespacePair, StandardStatus> getStandardSyncStatusForStreams(final JdbcDatabase database,
-                                                                                                    final List<ConfiguredAirbyteStream> streams,
-                                                                                                    final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+  public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
+                                                                                                          final List<ConfiguredAirbyteStream> streams,
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
 
-    final Map<AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
         final String name = stream.getStream().getName();
@@ -151,32 +151,32 @@ public class PostgresQueryUtils {
         }
 
         final String cursorField = cursorInfoOptional.get().getCursorField();
-        final String standardSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
+        final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
             name,
             cursorField,
             cursorField,
             name);
-        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(standardSyncStatusQuery).executeQuery(),
+        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final JsonNode result = jsonNodes.get(0);
-        final StandardStatus standardStatus = new StandardStatus();
+        final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
 
-        standardStatus.setStateType(StateType.STANDARD);
-        standardStatus.setVersion(2L);
-        standardStatus.setCursorField(ImmutableList.of(cursorField));
-        standardStatus.setCursor(result.get(cursorField).asText());
-        standardStatus.setCursorRecordCount((long) jsonNodes.size());
-        standardStatus.setStreamName(name);
-        standardStatus.setStreamNamespace(namespace);
+        cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+        cursorBasedStatus.setVersion(2L);
+        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
+        cursorBasedStatus.setCursor(result.get(cursorField).asText());
+        cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
+        cursorBasedStatus.setStreamName(name);
+        cursorBasedStatus.setStreamNamespace(namespace);
 
-        standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), standardStatus);
+        cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
     });
 
-    return standardStatusMap;
+    return cursorBasedStatusMap;
   }
 
   public static ResultWithFailed<Map<AirbyteStreamNameNamespacePair, Long>> fileNodeForStreams(final JdbcDatabase database,

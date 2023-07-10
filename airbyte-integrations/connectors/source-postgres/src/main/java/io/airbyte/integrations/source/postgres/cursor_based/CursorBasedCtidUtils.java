@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.standard;
+package io.airbyte.integrations.source.postgres.cursor_based;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.getStreamsFromStreamPairs;
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.identifyNewlyAddedStreams;
@@ -27,23 +27,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class mainly categorises the streams based on the state type into two categories :
- * 1. Streams that need to be synced via ctid iterator: These are streams that are either newly added or did
- * not complete their initial sync.
- * 2. Streams that need to be synced via standard cursor-based iterator:
- * These are streams that have completed their initial sync and are not syncing data incrementally.
+ * The class mainly categorises the streams based on the state type into two categories : 1. Streams
+ * that need to be synced via ctid iterator: These are streams that are either newly added or did
+ * not complete their initial sync. 2. Streams that need to be synced via cursor-based
+ * iterator: These are streams that have completed their initial sync and are not syncing data
+ * incrementally.
  */
-public class StandardCtidUtils {
-  private static final Logger LOGGER = LoggerFactory.getLogger(StandardCtidUtils.class);
-  public static StreamsCategorised<StandardStreams> categoriseStreams(final StateManager stateManager,
-                                                                      final ConfiguredAirbyteCatalog fullCatalog) {
+public class CursorBasedCtidUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CursorBasedCtidUtils.class);
+
+  public static StreamsCategorised<CursorBasedStreams> categoriseStreams(final StateManager stateManager,
+                                                                         final ConfiguredAirbyteCatalog fullCatalog) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
     final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
     final Set<AirbyteStreamNameNamespacePair> alreadySeenStreamPairs = new HashSet<>();
     final Set<AirbyteStreamNameNamespacePair> stillInCtidStreamPairs = new HashSet<>();
 
-    final List<AirbyteStateMessage> statesFromStandardSync = new ArrayList<>();
-    final Set<AirbyteStreamNameNamespacePair> standardSyncStreamPairs = new HashSet<>();
+    final List<AirbyteStateMessage> statesFromCursorBasedSync = new ArrayList<>();
+    final Set<AirbyteStreamNameNamespacePair> cursorBasedSyncStreamPairs = new HashSet<>();
 
     if (rawStateMessages != null) {
       rawStateMessages.forEach(stateMessage -> {
@@ -54,22 +56,22 @@ public class StandardCtidUtils {
         }
 
         final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-                                                                                       streamDescriptor.getNamespace());
+            streamDescriptor.getNamespace());
 
         if (streamState.has("state_type")) {
           if (streamState.get("state_type").asText().equalsIgnoreCase(StateType.CTID.value())) {
             statesFromCtidSync.add(stateMessage);
             stillInCtidStreamPairs.add(pair);
-          } else if (streamState.get("state_type").asText().equalsIgnoreCase(StateType.STANDARD.value())) {
-            standardSyncStreamPairs.add(pair);
-            statesFromStandardSync.add(stateMessage);
+          } else if (streamState.get("state_type").asText().equalsIgnoreCase(StateType.CURSOR_BASED.value())) {
+            cursorBasedSyncStreamPairs.add(pair);
+            statesFromCursorBasedSync.add(stateMessage);
           } else {
             throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
           }
         } else {
-          LOGGER.info("State type not present, syncing stream {} via standard method", streamDescriptor.getName());
-          standardSyncStreamPairs.add(pair);
-          statesFromStandardSync.add(stateMessage);
+          LOGGER.info("State type not present, syncing stream {} via cursor", streamDescriptor.getName());
+          cursorBasedSyncStreamPairs.add(pair);
+          statesFromCursorBasedSync.add(stateMessage);
         }
         alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
@@ -79,15 +81,14 @@ public class StandardCtidUtils {
     final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);
     streamsForCtidSync.addAll(newlyAddedStreams);
 
-    final List<ConfiguredAirbyteStream> streamsForStandardSync = getStreamsFromStreamPairs(fullCatalog, standardSyncStreamPairs);
+    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs);
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),
-        new StandardStreams(streamsForStandardSync, statesFromStandardSync));
+        new CursorBasedStreams(streamsForCursorBasedSync, statesFromCursorBasedSync));
   }
 
-  public record StandardStreams(List<ConfiguredAirbyteStream> streamsForStandardSync,
-                                List<AirbyteStateMessage> statesFromStandardSync) {
-  }
+  public record CursorBasedStreams(List<ConfiguredAirbyteStream> streamsForCursorBasedSync,
+                                   List<AirbyteStateMessage> statesFromCursorBasedSync) {}
 
   /**
    * Reclassifies previously categorised ctid stream into standard category.
@@ -95,7 +96,7 @@ public class StandardCtidUtils {
    * @param categorisedStreams categorised streams
    * @param streamPair stream to reclassify
    */
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<StandardStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -103,7 +104,7 @@ public class StandardCtidUtils {
             new AirbyteStreamNameNamespacePair(c.getStream().getName(), c.getStream().getNamespace())))
         .findFirst();
     foundStream.ifPresent(c -> {
-      categorisedStreams.remainingStreams().streamsForStandardSync().add(c);
+      categorisedStreams.remainingStreams().streamsForCursorBasedSync().add(c);
       categorisedStreams.ctidStreams().streamsForCtidSync().remove(c);
       LOGGER.info("Reclassified {}.{} as standard stream", c.getStream().getNamespace(), c.getStream().getName());
     });
@@ -117,12 +118,12 @@ public class StandardCtidUtils {
                 m.getStream().getStreamDescriptor().getNamespace())))
         .findFirst();
     foundStateMessage.ifPresent(m -> {
-      categorisedStreams.remainingStreams().statesFromStandardSync().add(m);
+      categorisedStreams.remainingStreams().statesFromCursorBasedSync().add(m);
       categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
     });
   }
 
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<StandardStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 }
