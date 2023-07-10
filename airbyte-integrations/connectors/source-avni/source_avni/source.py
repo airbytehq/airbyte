@@ -100,7 +100,21 @@ class Subjects(IncrementalAvniStream):
         
     def path(self,**kwargs) -> str:
         return "subjects"
-    
+
+class ProgramEnrolments(IncrementalAvniStream):
+        
+    def path(self,**kwargs) -> str:
+        return "programEnrolments"
+
+class ProgramEncounters(IncrementalAvniStream):
+        
+    def path(self,**kwargs) -> str:
+        return "programEncounters"
+
+class Encounters(IncrementalAvniStream):
+        
+    def path(self,**kwargs) -> str:
+        return "encounters"
         
 class SourceAvni(AbstractSource):
     
