@@ -722,11 +722,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
-    // TODO better asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(2, rawRows); // we keep the old and the new raw record in this out-of-order case
+    assertEquals(1, rawRows); // we keep the old and the new raw record in this out-of-order case
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
@@ -767,14 +766,13 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
     // Run the second round of typing and deduping. This should do nothing to the final table, because
     // the delete is outdated.
-    // TODO this test doesn't work right
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(1, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(2, rawRows);
+    assertEquals(1, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
