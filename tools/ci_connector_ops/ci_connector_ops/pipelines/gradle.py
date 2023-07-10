@@ -97,11 +97,11 @@ class GradleTask(Step, ABC):
             .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+            .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
+            .with_exec(self._get_gradle_command())
         )
-        connector_under_test_with_secrets = environments.with_mounted_connector_secrets(
-            self.context, connector_under_test, f"{self.context.connector.code_directory}/secrets"
-        )
-        results = await self.get_step_result(connector_under_test_with_secrets.with_exec(self._get_gradle_command()))
+
+        results = await self.get_step_result(connector_under_test)
 
         await self._export_gradle_dependency_cache(connector_under_test)
         return results

@@ -40,9 +40,8 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         try:
             files = self._check_list_files(stream)
             self._check_parse_record(stream, files[0])
-        except CheckAvailabilityError as exc:
-            tb = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
-            return False, "".join(tb)
+        except CheckAvailabilityError:
+            return False, "".join(traceback.format_exc())
 
         return True, None
 
@@ -64,7 +63,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         parser = stream.get_parser(stream.config.file_type)
 
         try:
-            record = next(iter(parser.parse_records(file, self.stream_reader)))
+            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader)))
         except StopIteration:
             # The file is empty. We've verified that we can open it, so will
             # consider the connection check successful even though it means

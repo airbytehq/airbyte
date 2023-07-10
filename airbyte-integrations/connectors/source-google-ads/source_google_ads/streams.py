@@ -276,6 +276,15 @@ class Campaigns(IncrementalGoogleAdsStream):
     primary_key = ["campaign.id", "segments.date", "segments.hour"]
 
 
+class CampaignBudget(IncrementalGoogleAdsStream):
+    """
+    Campaigns stream: https://developers.google.com/google-ads/api/fields/v13/campaign_budget
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["campaign_budget.id", "segments.date"]
+
+
 class CampaignLabels(GoogleAdsStream):
     """
     Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label
@@ -381,3 +390,19 @@ class ClickView(IncrementalGoogleAdsStream):
     primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
     range_days = 1
+
+
+class UserInterest(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
+    """
+
+    primary_key = ["user_interest.user_interest_id"]
+
+
+class Audience(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
+    """
+
+    primary_key = ["audience.id"]
