@@ -55,7 +55,6 @@ public class BigQueryUploaderFactory {
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
     final String dataset;
     if (TypingAndDedupingFlag.isDestinationV2()) {
       dataset = uploaderConfig.getParsedStream().id().rawNamespace();
@@ -101,8 +100,7 @@ public class BigQueryUploaderFactory {
             uploaderConfig.getBigQuery(),
             syncMode,
             datasetLocation,
-            recordFormatter,
-            use1s1t));
+            recordFormatter));
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
@@ -158,10 +156,9 @@ public class BigQueryUploaderFactory {
                                                                   final BigQuery bigQuery,
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter,
-                                                                  final boolean use1s1t) {
+                                                                  final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final TableId tableToWriteRawData = use1s1t ? targetTable : tmpTable;
+    final TableId tableToWriteRawData = TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
     LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tableToWriteRawData)
@@ -201,8 +198,7 @@ public class BigQueryUploaderFactory {
         new BigQueryTableWriter(writer),
         syncMode,
         bigQuery,
-        formatter,
-        use1s1t);
+        formatter);
   }
 
 }
