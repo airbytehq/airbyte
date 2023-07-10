@@ -9,12 +9,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
-    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
-    Level,
     Status,
     Type,
 )

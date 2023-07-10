@@ -1,7 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import unittest
 from unittest.mock import MagicMock
-from typing import Callable, List, Any
+
 from destination_langchain.batcher import Batcher
+
 
 class BatcherTestCase(unittest.TestCase):
     def test_add_single_item(self):

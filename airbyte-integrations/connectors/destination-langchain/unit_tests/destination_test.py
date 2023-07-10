@@ -3,11 +3,10 @@
 #
 
 from unittest.mock import MagicMock, patch
-from destination_langchain.destination import BATCH_SIZE
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, Type
 from destination_langchain.config import ConfigModel
-from destination_langchain.destination import DestinationLangchain, embedder_map, indexer_map
+from destination_langchain.destination import BATCH_SIZE, DestinationLangchain, embedder_map, indexer_map
 
 
 def _generate_record_message(index: int):
