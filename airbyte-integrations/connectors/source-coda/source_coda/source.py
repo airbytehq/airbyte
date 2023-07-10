@@ -151,6 +151,8 @@ class SourceCoda(AbstractSource):
             r = requests.get(f"{BASE_URL}whoami", headers=headers)
             if r.status_code == 200:
                 return True, None
+            else:
+                r.raise_for_status()
         except Exception as e:
             return False, e
 
