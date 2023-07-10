@@ -43,29 +43,16 @@ public class RecordDiffer {
    * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
    *        include extracted_at; it is handled automatically.
    */
-  public RecordDiffer(Pair<String, AirbyteType>... identifyingColumns) {
-    // Start with a noop comparator for convenience
-    // The raw and final stuff are almost identical, except the raw version has to extract _airbyte_data
-    // first.
-    Comparator<JsonNode> rawIdComp = Comparator.comparing(record -> 0);
-    Comparator<JsonNode> finalIdComp = Comparator.comparing(record -> 0);
-    for (Pair<String, AirbyteType> column : identifyingColumns) {
-      rawIdComp = rawIdComp.thenComparing(record -> extract(record.get("_airbyte_data"), column.getKey(), column.getValue()));
-      finalIdComp = finalIdComp.thenComparing(record -> extract(record, column.getKey(), column.getValue()));
-    }
-    this.rawRecordIdentityComparator = rawIdComp.thenComparing(record -> asTimestampWithTimezone(record.get("_airbyte_extracted_at")));
+  @SafeVarargs
+  public RecordDiffer(final Pair<String, AirbyteType>... identifyingColumns) {
+    this.rawRecordIdentityComparator = buildIdentityComparator(record -> record.get("_airbyte_data"), identifyingColumns);
+    this.finalRecordIdentityComparator = buildIdentityComparator(record -> record, identifyingColumns);
+
     this.rawRecordSortComparator = rawRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-    this.finalRecordIdentityComparator = finalIdComp.thenComparing(record -> asTimestampWithTimezone(record.get("_airbyte_extracted_at")));
     this.finalRecordSortComparator = finalRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
 
-    rawRecordIdentityExtractor = record -> Arrays.stream(identifyingColumns)
-        .map(column -> getPrintableFieldIfPresent(record.get("_airbyte_data"), column.getKey()))
-        .collect(Collectors.joining(", "))
-        + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
-    finalRecordIdentityExtractor = record -> Arrays.stream(identifyingColumns)
-        .map(column -> getPrintableFieldIfPresent(record, column.getKey()))
-        .collect(Collectors.joining(", "))
-        + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
+    this.rawRecordIdentityExtractor = buildIdentityExtractor(record -> record.get("_airbyte_data"), identifyingColumns);
+    this.finalRecordIdentityExtractor = buildIdentityExtractor(record -> record, identifyingColumns);
   }
 
   /**
@@ -108,6 +95,34 @@ public class RecordDiffer {
     if (!diff.isEmpty()) {
       fail("Final table was incorrect.\n" + diff);
     }
+  }
+
+  /**
+   * Build a Comparator to detect equality between two records. It first compares all the identifying
+   * columns in order, and breaks ties using extracted_at.
+   *
+   * @param dataExtractor A function that extracts the data from a record. For raw records, this should
+   *                      return the _airbyte_data field; for final records, this should return the
+   *                      record itself.
+   */
+  private Comparator<JsonNode> buildIdentityComparator(Function<JsonNode, JsonNode> dataExtractor, Pair<String, AirbyteType>[] identifyingColumns) {
+    // Start with a noop comparator for convenience
+    Comparator<JsonNode> comp = Comparator.comparing(record -> 0);
+    for (Pair<String, AirbyteType> column : identifyingColumns) {
+      comp = comp.thenComparing(record -> extract(dataExtractor.apply(record), column.getKey(), column.getValue()));
+    }
+    comp = comp.thenComparing(record -> asTimestampWithTimezone(record.get("_airbyte_extracted_at")));
+    return comp;
+  }
+
+  /**
+   * See {@link #buildIdentityComparator(Function, Pair[])} for an explanation of dataExtractor.
+   */
+  private Function<JsonNode, String> buildIdentityExtractor(Function<JsonNode, JsonNode> dataExtractor, Pair<String, AirbyteType>[] identifyingColumns) {
+    return record -> Arrays.stream(identifyingColumns)
+        .map(column -> getPrintableFieldIfPresent(dataExtractor.apply(record), column.getKey()))
+        .collect(Collectors.joining(", "))
+        + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
   }
 
   private static String getPrintableFieldIfPresent(JsonNode record, String field) {
