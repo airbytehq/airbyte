@@ -39,13 +39,13 @@ class CsvParser(FileTypeParser):
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
                 reader = csv.DictReader(fp, dialect=dialect_name)
-                schema = {field.strip(): {"type": ["null", "string"]} for field in next(reader)}
+                schema = {field.strip(): {"type": "string"} for field in next(reader)}
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
             with stream_reader.open_file(file) as fp:
                 reader = csv.DictReader(fp)
-                return {field.strip(): {"type": ["null", "string"]} for field in next(reader)}
+                return {field.strip(): {"type": "string"} for field in next(reader)}
 
     def parse_records(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader

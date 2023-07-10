@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
@@ -75,14 +76,14 @@ public class BigQueryStagingConsumerFactory {
         targetTableNameTransformer);
 
     final var overwriteStreamsWithTmpTable = createFinalTables(use1s1t, parsedCatalog, destinationHandler, sqlGenerator);
-    ThrowingConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(
+    CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
         use1s1t,
         overwriteStreamsWithTmpTable);
 
-    ThrowingConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer =
+    CheckedConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer =
         getReplaceFinalTableConsumer(
             use1s1t,
             sqlGenerator,
@@ -103,14 +104,7 @@ public class BigQueryStagingConsumerFactory {
         defaultNamespace);
   }
 
-  @FunctionalInterface
-  public interface ThrowingConsumer<T, E extends Exception> {
-
-    void accept(T t) throws E;
-
-  }
-
-  private ThrowingConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typingAndDedupingStreamConsumer(final BigQuerySqlGenerator sqlGenerator,
+  private CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typingAndDedupingStreamConsumer(final BigQuerySqlGenerator sqlGenerator,
                                                                                                                  final BigQueryDestinationHandler destinationHandler,
                                                                                                                  final ParsedCatalog parsedCatalog,
                                                                                                                  final boolean use1s1t,
@@ -252,7 +246,7 @@ public class BigQueryStagingConsumerFactory {
                                                   final BigQueryStagingOperations bigQueryGcsOperations,
                                                   final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                   final ConfiguredAirbyteCatalog catalog,
-                                                  final ThrowingConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typerDeduper) {
+                                                  final CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typerDeduper) {
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
@@ -291,7 +285,7 @@ public class BigQueryStagingConsumerFactory {
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                          final ThrowingConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer) {
+                                          final CheckedConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
@@ -309,7 +303,7 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private ThrowingConsumer<BigQueryWriteConfig, InterruptedException> getReplaceFinalTableConsumer(boolean use1s1t,
+  private CheckedConsumer<BigQueryWriteConfig, InterruptedException> getReplaceFinalTableConsumer(boolean use1s1t,
                                                                                                    final BigQuerySqlGenerator sqlGenerator,
                                                                                                    final BigQueryDestinationHandler destinationHandler,
                                                                                                    final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable,

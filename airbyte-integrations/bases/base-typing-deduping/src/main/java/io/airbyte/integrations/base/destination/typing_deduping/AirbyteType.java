@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
@@ -38,27 +39,34 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
             return getArray(schema);
           }
         } else if (topLevelType.isArray()) {
-          final List<JsonNode> elements = new ArrayList<>();
+          final List<String> typeOptions = new ArrayList<>();
           topLevelType.elements().forEachRemaining(element -> {
-            // ignore "null" type
-            if (!element.asText("").equals("null")) {
-              elements.add(element);
+            // ignore "null" type and remove duplicates
+            String type = element.asText("");
+            if (!"null".equals(type) && !typeOptions.contains(type)) {
+              typeOptions.add(element.asText());
             }
           });
 
           // we encounter an array of types that actually represents a single type rather than a OneOf
-          if (elements.size() == 1) {
-            if (elements.get(0).asText("").equals("object")) {
+          if (typeOptions.size() == 1) {
+            if (typeOptions.get(0).equals("object")) {
               return getStruct(schema);
-            } else if (elements.get(0).asText("").equals("array")) {
+            } else if (typeOptions.get(0).equals("array")) {
               return getArray(schema);
             } else {
               return AirbyteTypeUtils.getAirbyteProtocolType(schema);
             }
           }
 
-          final List<AirbyteType> typeOptions = elements.stream().map(AirbyteType::fromJsonSchema).toList();
-          return new OneOf(typeOptions);
+          final List<AirbyteType> options = typeOptions.stream().map(typeOption -> {
+            // Recurse into a schema that forces a specific one of each option
+            JsonNode schemaClone = schema.deepCopy();
+            // schema is guaranteed to be an object here, because we know it has a `type` key
+            ((ObjectNode) schemaClone).put("type", typeOption);
+            return fromJsonSchema(schemaClone);
+          }).toList();
+          return new OneOf(options);
         }
       } else if (schema.hasNonNull("oneOf")) {
         final List<AirbyteType> options = new ArrayList<>();
@@ -72,7 +80,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       }
       return AirbyteTypeUtils.getAirbyteProtocolType(schema);
     } catch (final Exception e) {
-      LOGGER.warn("Exception parsing JSON schema {}: {}", schema, e);
+      LOGGER.error("Exception parsing JSON schema {}: {}; returning UNKNOWN.", schema, e);
       return AirbyteProtocolType.UNKNOWN;
     }
   }
@@ -168,12 +176,16 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     public LinkedHashMap<String, AirbyteType> asColumns() {
       final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
       if (numObjectOptions > 1) {
-        throw new IllegalArgumentException("Can't extract columns from a schema with multiple object options");
+        LOGGER.error("Can't extract columns from a schema with multiple object options");
+        return new LinkedHashMap<>();
       }
 
       return (options.stream().filter(o -> o instanceof Struct).findFirst())
           .map(o -> ((Struct) o).properties())
-          .orElseThrow(() -> new IllegalArgumentException("Can't extract columns from a schema with no object options"));
+          .orElseGet(() -> {
+            LOGGER.error("Can't extract columns from a schema with no object options");
+            return new LinkedHashMap<>();
+          });
     }
 
   }
