@@ -44,7 +44,7 @@ public class StreamStatusUtils {
       private boolean firstRead = true;
 
       @Override
-      public void accept(AirbyteMessage airbyteMessage) {
+      public void accept(final AirbyteMessage airbyteMessage) {
         try {
           delegateRecordCollector.accept(airbyteMessage);
         } finally {
