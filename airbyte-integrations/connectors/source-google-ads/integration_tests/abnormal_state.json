@@ -89,5 +89,12 @@
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" }},
       "stream_descriptor": { "name": "display_keyword_performance_report" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" }},
+      "stream_descriptor": { "name": "campaign_budget" }
+    }
   }
 ]

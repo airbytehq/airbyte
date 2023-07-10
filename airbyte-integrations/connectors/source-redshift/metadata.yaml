@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
-  dockerImageTag: 0.3.17
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-redshift
   githubIssueLabel: source-redshift
   icon: redshift.svg
-  license: MIT
+  license: ELv2
   name: Redshift
   registries:
     cloud:

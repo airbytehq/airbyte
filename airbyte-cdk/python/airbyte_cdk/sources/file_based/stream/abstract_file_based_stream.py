@@ -6,13 +6,13 @@ from abc import abstractmethod
 from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import UndefinedParserError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -37,6 +37,7 @@ class AbstractFileBasedStream(Stream):
     def __init__(
         self,
         config: FileBasedStreamConfig,
+        catalog_schema: Optional[ConfiguredAirbyteCatalog],
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
@@ -44,7 +45,7 @@ class AbstractFileBasedStream(Stream):
     ):
         super().__init__()
         self.config = config
-        self._catalog_schema = {}  # TODO: wire through configured catalog
+        self._catalog_schema = catalog_schema
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
@@ -53,6 +54,13 @@ class AbstractFileBasedStream(Stream):
     @property
     @abstractmethod
     def primary_key(self) -> PrimaryKeyType:
+        ...
+
+    @abstractmethod
+    def list_files(self) -> List[RemoteFile]:
+        """
+        List all files that belong to the stream.
+        """
         ...
 
     def read_records(
@@ -111,7 +119,10 @@ class AbstractFileBasedStream(Stream):
         try:
             return self._parsers[file_type]
         except KeyError:
-            raise UndefinedParserError(f"No parser is defined for file type {file_type}.")
+            raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
+
+    def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
+        return self.config.validation_policy.record_passes_validation_policy(record, self._catalog_schema)
 
     @cached_property
     def availability_strategy(self):

@@ -31,11 +31,13 @@ from source_zendesk_support.streams import (
     Macros,
     OrganizationMemberships,
     Organizations,
+    PostCommentVotes,
     Posts,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
+    SourceZendeskSupportStream,
     Tags,
     TicketAudits,
     TicketComments,
@@ -141,12 +143,12 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 24, []),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 27, []),
         (
-            {"error": "Not sufficient permissions"},
-            403,
-            21,
-            ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
+                {"error": "Not sufficient permissions"},
+                403,
+                24,
+                ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
         ),
     ],
     ids=["forms_accessible", "forms_inaccessible"],
@@ -262,6 +264,14 @@ def test_parse_response(requests_mock):
     # check, if we have all transformations correctly
     for entity in TicketComments.list_entities_from_event:
         assert True if entity in parsed_output else False
+
+
+def test_retry(mocker):
+    backoff_time_mock = mocker.Mock()
+    with mocker.patch.object(SourceZendeskSupportStream, "backoff_time", return_value=backoff_time_mock):
+        stream = SourceZendeskSupportStream(**STREAM_ARGS)
+        stream._retry(request=mocker.Mock(), retries=0)
+        assert not backoff_time_mock.called, "backoff_time should not have been called"
 
 
 class TestAllStreams:
@@ -494,9 +504,11 @@ class TestSourceZendeskSupportStream:
             "TicketFields",
         ],
     )
-    def test_next_page_token(self, stream_cls, expected):
+    def test_next_page_token(self, stream_cls, expected, mocker):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.next_page_token()
+        posts_response = mocker.Mock()
+        posts_response.json.return_value = {"next_page": None}
+        result = stream.next_page_token(response=posts_response)
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -978,3 +990,26 @@ def test_read_tickets_stream(requests_mock):
             ]
         },
     ]
+
+
+def test_read_post_comment_votes_stream(requests_mock):
+    post_response = {
+        "posts": [
+            {"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
+
+    post_comments_response = {
+        "comments": [
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments", json=post_comments_response)
+
+    votes = [{"id": 35467, "user_id": 888887, "value": -1}]
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments/35467/votes",
+                      json={"votes": votes})
+    stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == votes

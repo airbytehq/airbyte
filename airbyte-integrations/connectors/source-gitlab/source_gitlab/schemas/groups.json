@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "projects": {
@@ -121,6 +121,9 @@
       "type": ["null", "boolean"]
     },
     "ip_restriction_ranges": {
+      "type": ["null", "string"]
+    },
+    "shared_runners_setting": {
       "type": ["null", "string"]
     }
   }
