@@ -7,9 +7,11 @@ from .attribution_report import (
     AttributionReportPerformanceCreative,
     AttributionReportProducts,
 )
+from .portfolios import Portfolios
 from .profiles import Profiles
 from .report_streams import (
     SponsoredBrandsReportStream,
+    SponsoredBrandsV3ReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayReportStream,
     SponsoredProductsReportStream,
@@ -23,7 +25,9 @@ from .sponsored_display import (
     SponsoredDisplayTargetings,
 )
 from .sponsored_products import (
+    SponsoredProductAdGroupBidRecommendations,
     SponsoredProductAdGroups,
+    SponsoredProductAdGroupSuggestedKeywords,
     SponsoredProductAds,
     SponsoredProductCampaignNegativeKeywords,
     SponsoredProductCampaigns,
@@ -33,6 +37,7 @@ from .sponsored_products import (
 )
 
 __all__ = [
+    "Portfolios",
     "Profiles",
     "SponsoredDisplayAdGroups",
     "SponsoredDisplayCampaigns",
@@ -40,6 +45,8 @@ __all__ = [
     "SponsoredDisplayTargetings",
     "SponsoredDisplayBudgetRules",
     "SponsoredProductAdGroups",
+    "SponsoredProductAdGroupBidRecommendations",
+    "SponsoredProductAdGroupSuggestedKeywords",
     "SponsoredProductAds",
     "SponsoredProductCampaigns",
     "SponsoredProductKeywords",
@@ -52,6 +59,7 @@ __all__ = [
     "SponsoredDisplayReportStream",
     "SponsoredProductsReportStream",
     "SponsoredBrandsReportStream",
+    "SponsoredBrandsV3ReportStream",
     "SponsoredBrandsVideoReportStream",
     "AttributionReportPerformanceAdgroup",
     "AttributionReportPerformanceCampaign",

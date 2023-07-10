@@ -9,7 +9,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns, Videos
+from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -157,6 +157,43 @@ class TestBackoff:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
             assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+
+    def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        error = {
+            "json": {
+                "error": {
+                    "message": "An unknown error occurred",
+                    "code": 1,
+                }
+            },
+            "status_code": 500,
+        }
+        success = {
+            "json": {
+                'data': [],
+                "paging": {
+                    "cursors": {
+                        "after": "test",
+                    },
+                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test"
+                }
+            },
+            "status_code": 200,
+        }
+
+        res = requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
+            [error, success, error, success],
+        )
+
+        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ['100', '50', '100', '50']
 
     def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
