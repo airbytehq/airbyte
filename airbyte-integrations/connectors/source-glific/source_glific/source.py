@@ -4,12 +4,15 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 import requests
+import json
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.auth import AuthBase
 from sgqlc.endpoint.http import HTTPEndpoint
 
 """
@@ -55,8 +58,20 @@ class GlificStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    def __init__(self, stream_name: str, url_base: str, credentials: Mapping[str: str], **kwargs):
+        super().__init__(**kwargs)
+
+        self.stream_name = stream_name
+        self.url_base = url_base
+        self.credentials = credentials
+
+    @property
+    def url_base(self) -> str:
+        return self.url_base
+    
+    @property
+    def name(self) -> str:
+        return self.stream_name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -74,6 +89,10 @@ class GlificStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         return None
+    
+    def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        """Add the authorization token in the headers"""
+        return {'authorization': self.credentials['access_token'], 'Content-Type': 'application/json'}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -82,6 +101,10 @@ class GlificStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
+        return {}
+    
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping | None:
+        
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -238,19 +261,30 @@ class SourceGlific(AbstractSource):
         try:
             response = requests.post(endpoint, json=auth_payload, timeout=30)
             response.raise_for_status()
+            credentials = response['data']
         except requests.exceptions.HTTPError:
             # return empty zero streams since authentication failed
             return []
         
-        # fetch the export config for streams
-        endpoint = "{self.API_URL}"
-        headers = {'Authorization': 'bearer TOKEN'}
+        # fetch the export config for organization/client/user
+        endpoint = f"{self.API_URL}"
+        headers = {'authorization': credentials['access_token']}
 
-        query = 'query { ... }'
-        variables = {'varName': 'value'}
+        try:
+            query = 'query organizationExportConfig { organizationExportConfig { data errors { key message } } }'
+            variables = {}
 
-        endpoint = HTTPEndpoint(endpoint, headers)
-        data = endpoint(query, variables)
+            endpoint = HTTPEndpoint(endpoint, headers)
+            data = endpoint(query, variables)
+        except requests.exceptions.HTTPError:
+            # return empty zero streams since config could not be fetched
+            return []
 
+        # construct streams
+        config = json.loads(data['data']['organizationExportConfig']['data'])
+        streams = []
+        for table in config['tables']:
+            stream_obj = GlificStream(table, self.API_URL, credentials)
+            streams.append(stream_obj)
 
-        return []
+        return streams
