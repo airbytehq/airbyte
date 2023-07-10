@@ -755,8 +755,7 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
-        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
+        params = {"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size}
         if next_page_token:
             params.pop("start_time", None)
             params.update(next_page_token)
@@ -812,7 +811,7 @@ class AccountAttributes(SourceZendeskSupportFullRefreshStream):
     response_list_name = "attributes"
 
     def path(self, *args, **kwargs) -> str:
-        return "routing/attributes.json"
+        return "routing/attributes"
 
     def request_params(
         self,
