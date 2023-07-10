@@ -11,7 +11,7 @@ from destination_langchain.indexer import DocArrayHnswSearchIndexer
 from langchain.document_loaders.base import Document
 
 
-class BaseIntegrationTest(unittest.TestCase):
+class DocArrayIndexerTest(unittest.TestCase):
     def setUp(self):
         self.config = DocArrayHnswSearchIndexingModel(mode="DocArrayHnswSearch", destination_path="/tmp/made_up")
         self.embedder = MagicMock()

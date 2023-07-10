@@ -61,23 +61,13 @@ class DestinationLangchain(Destination):
         batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
         self.indexer.pre_sync(configured_catalog)
         for message in input_messages:
-            if batcher.processed_count % 100 == 0 and batcher.processed_count > 0:
-                yield AirbyteMessage(
-                    type=Type.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.INFO,
-                        message=f"Processed {batcher.processed_count} records",
-                    ),
-                )
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
                 # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
                 batcher.flush()
                 yield message
-            if message.type == Type.RECORD:
+            elif message.type == Type.RECORD:
                 batcher.add(message.record)
-            else:
-                continue
         batcher.flush()
         self.indexer.post_sync()
 
