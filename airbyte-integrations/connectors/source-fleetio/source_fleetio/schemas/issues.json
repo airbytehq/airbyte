@@ -1,0 +1,159 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "asset": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "asset_type": {
+        "type": "string"
+      },
+      "closed_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "closed_by": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "closed_note": {
+        "type": "string"
+      },
+      "comments_count": {
+        "type": "number"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "creation_type": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "due_date": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "due_meter_value": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "due_secondary_meter_value": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "fault": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "number"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "is_overdue": {
+        "type": "boolean"
+      },
+      "is_watched": {
+        "type": "boolean"
+      },
+      "number": {
+        "type": "number"
+      },
+      "reported_at": {
+        "type": "string"
+      },
+      "reported_by": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "resolvable": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "resolvable_type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "resolved_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "resolved_note": {
+        "type": "string"
+      },
+      "state": {
+        "type": "string"
+      },
+      "submitted_inspection_form": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "watchers_count": {
+        "type": "number"
+      }
+    },
+    "type": "object"
+  }
