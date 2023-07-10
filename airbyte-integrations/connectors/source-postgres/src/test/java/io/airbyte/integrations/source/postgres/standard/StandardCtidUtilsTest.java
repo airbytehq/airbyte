@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.postgres.standard;
 
 import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.categoriseStreams;
+import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.generateStateMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,10 +24,12 @@ import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -97,6 +101,21 @@ public class StandardCtidUtilsTest {
     assertEquals(streamsCategorised.remainingStreams().streamsForStandardSync().size(), 2);
     assertThat(streamsCategorised.remainingStreams().streamsForStandardSync()).containsExactlyInAnyOrder(STREAM_1, STREAM_2);
 
+  }
+
+  @Test
+  public void reclassifyCategorisedCtidStreamTest() {
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(STREAM_1, STREAM_2));
+    final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
+    final StreamsCategorised<StandardStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
+
+    List<AirbyteStreamNameNamespacePair> reclassify = Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
+    reclassifyCategorisedCtidStreams(streamsCategorised, reclassify);
+    assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
+    assertEquals(1, streamsCategorised.remainingStreams().streamsForStandardSync().size());
+    assertFalse(streamsCategorised.remainingStreams().streamsForStandardSync().isEmpty());
+    assertThat(streamsCategorised.ctidStreams().streamsForCtidSync()).containsExactlyInAnyOrder(STREAM_2);
+    assertThat(streamsCategorised.remainingStreams().streamsForStandardSync()).containsExactlyInAnyOrder(STREAM_1);
   }
 
   private static final ConfiguredAirbyteStream STREAM_1 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(

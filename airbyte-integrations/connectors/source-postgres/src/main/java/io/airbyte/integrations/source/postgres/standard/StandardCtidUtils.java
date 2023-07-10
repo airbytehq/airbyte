@@ -119,7 +119,7 @@ public class StandardCtidUtils {
     });
   }
 
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<StandardStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<StandardStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 }

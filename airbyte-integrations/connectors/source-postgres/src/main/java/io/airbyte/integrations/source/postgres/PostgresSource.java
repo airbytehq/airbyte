@@ -26,7 +26,6 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streams
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.categoriseStreams;
-import static io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.reclassifyCategorisedCtidStream;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
@@ -77,6 +76,7 @@ import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
+import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils;
 import io.airbyte.integrations.source.postgres.standard.StandardCtidUtils.StandardStreams;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.XminStreams;
@@ -543,7 +543,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
       // are reclassified as standard since we cannot guarantee that ctid will be possible.
-      reclassifyCategorisedCtidStream(streamsCategorised, streamsUnderVacuum.failed());
+      StandardCtidUtils.reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
 
       List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
@@ -554,7 +554,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       // Streams we failed to query for fileNode - such as in the case of Views are reclassified as standard
       if (!fileNodes.failed().isEmpty()) {
-        reclassifyCategorisedCtidStream(streamsCategorised, fileNodes.failed());
+        StandardCtidUtils.reclassifyCategorisedCtidStreams(streamsCategorised, fileNodes.failed());
         finalListOfStreamsToBeSyncedViaCtid =
             filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
       }
