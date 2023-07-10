@@ -35,6 +35,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_stream_custom_format,
     single_csv_scenario,
 )
+from unit_tests.sources.file_based.scenarios.http_source_scenarios import test_source_base_scenario
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
@@ -182,6 +183,7 @@ check_scenarios = [
     success_extensionless_scenario,
     success_multi_stream_scenario,
     success_user_provided_schema_scenario,
+    test_source_base_scenario,
 ]
 
 

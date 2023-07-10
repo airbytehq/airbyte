@@ -1,12 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, TypeVar, Generic
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -27,22 +28,15 @@ class TestScenario:
             self,
             name: str,
             config: Mapping[str, Any],
-            files: Mapping[str, Any],
-            file_type: str,
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
             expected_logs: List[Mapping[str, Any]],
             expected_records: List[Mapping[str, Any]],
-            availability_strategy: Optional[AvailabilityStrategy],
-            discovery_policy: Optional[AbstractDiscoveryPolicy],
-            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
-            parsers: Mapping[str, FileTypeParser],
-            stream_reader: Optional[AbstractFileBasedStreamReader],
             expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
-            file_write_options: Mapping[str, Any]
+            source: Source,
     ):
         self.name = name
         self.config = config
@@ -53,17 +47,7 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
-        self.source = InMemoryFilesSource(
-            files,
-            file_type,
-            availability_strategy,
-            discovery_policy,
-            validation_policies,
-            parsers,
-            stream_reader,
-            self.configured_catalog(SyncMode.incremental if incremental_scenario_config else SyncMode.full_refresh),
-            file_write_options,
-        )
+        self.source = source
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
 
@@ -96,27 +80,95 @@ class TestScenario:
         else:
             return []
 
+SourceType = TypeVar('SourceType', bound=Source)
 
-class TestScenarioBuilder:
-    def __init__(self) -> None:
-        self._name = ""
-        self._config: Mapping[str, Any] = {}
+class SourceBuilder(Generic[SourceType]):
+    @abstractmethod
+    def build(self, configured_catalog) -> SourceType:
+        ...
+
+SourceBuilderType = TypeVar('SourceBuilderType', bound=SourceBuilder)
+class SourceProvider(Generic[SourceType]):
+    def __init__(self, source: SourceType):
+        self._source = source
+    def build(self, configured_catalog) -> SourceType:
+        return self._source
+
+
+class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
+    def __init__(self, owner):
+        self._file_write_options: Mapping[str, Any] = {}
+        self._parsers = default_parsers
         self._files: Mapping[str, Any] = {}
         self._file_type: Optional[str] = None
+        self._availability_strategy: Optional[AvailabilityStrategy] = None
+        self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
+        self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
+        self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
+        self._owner = owner
+
+    def set_files(self, files: Mapping[str, Any]) -> "FileBasedSourceBuilder":
+        self._files = files
+        return self._owner
+
+    def set_file_type(self, file_type: str) -> "FileBasedSourceBuilder":
+        self._file_type = file_type
+        return self._owner
+
+    def set_parsers(self, parsers: Mapping[str, FileTypeParser]) -> "FileBasedSourceBuilder":
+        self._parsers = parsers
+        return self._owner
+
+    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy) -> "FileBasedSourceBuilder":
+        self._availability_strategy = availability_strategy
+        return self._owner
+
+    def set_discovery_policy(self, discovery_policy: AbstractDiscoveryPolicy) -> "FileBasedSourceBuilder":
+        self._discovery_policy = discovery_policy
+        return self._owner
+
+    def set_validation_policies(self, validation_policies: Mapping[str, AbstractSchemaValidationPolicy]) -> "FileBasedSourceBuilder":
+        self._validation_policies = validation_policies
+        return self._owner
+
+    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "FileBasedSourceBuilder":
+        self._stream_reader = stream_reader
+        return self._owner
+
+    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "FileBasedSourceBuilder":
+        self._file_write_options = file_write_options
+        return self._owner
+
+    def build(self, configured_catalog) -> Source:
+        if self._file_type is None:
+            raise ValueError("file_type is not set")
+        return InMemoryFilesSource(
+            self._files,
+            self._file_type,
+            self._availability_strategy,
+            self._discovery_policy,
+            self._validation_policies or {},
+            self._parsers,
+            self._stream_reader,
+            configured_catalog,
+            self._file_write_options,
+            )
+
+
+
+class TestScenarioBuilder(Generic[SourceBuilderType, SourceType]):
+    def __init__(self, builder_factory = lambda scenario_builder: FileBasedSourceBuilder(scenario_builder)) -> None:
+        self._name = ""
+        self._config: Mapping[str, Any] = {}
         self._expected_check_status: Optional[str] = None
         self._expected_catalog: Mapping[str, Any] = {}
         self._expected_logs: List[Mapping[str, Any]] = []
         self._expected_records: List[Mapping[str, Any]] = []
-        self._availability_strategy: Optional[AvailabilityStrategy] = None
-        self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
-        self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
-        self._parsers = default_parsers
-        self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
         self._expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
-        self._file_write_options: Mapping[str, Any] = {}
+        self.source_builder = builder_factory(self)
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
@@ -126,13 +178,6 @@ class TestScenarioBuilder:
         self._config = config
         return self
 
-    def set_files(self, files: Mapping[str, Any]) -> "TestScenarioBuilder":
-        self._files = files
-        return self
-
-    def set_file_type(self, file_type: str) -> "TestScenarioBuilder":
-        self._file_type = file_type
-        return self
 
     def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder":
         self._expected_check_status = expected_check_status
@@ -150,25 +195,6 @@ class TestScenarioBuilder:
         self._expected_records = expected_records
         return self
 
-    def set_parsers(self, parsers: Mapping[str, FileTypeParser]) -> "TestScenarioBuilder":
-        self._parsers = parsers
-        return self
-
-    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy) -> "TestScenarioBuilder":
-        self._availability_strategy = availability_strategy
-        return self
-
-    def set_discovery_policy(self, discovery_policy: AbstractDiscoveryPolicy) -> "TestScenarioBuilder":
-        self._discovery_policy = discovery_policy
-        return self
-
-    def set_validation_policies(self, validation_policies: Mapping[str, AbstractSchemaValidationPolicy]) -> "TestScenarioBuilder":
-        self._validation_policies = validation_policies
-        return self
-
-    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "TestScenarioBuilder":
-        self._stream_reader = stream_reader
-        return self
 
     def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
         self._incremental_scenario_config = incremental_scenario_config
@@ -186,33 +212,37 @@ class TestScenarioBuilder:
         self._expected_read_error = error, message
         return self
 
-    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "TestScenarioBuilder":
-        self._file_write_options = file_write_options
-        return self
-
     def copy(self) -> "TestScenarioBuilder":
         return deepcopy(self)
 
     def build(self) -> TestScenario:
-        if self._file_type is None:
-            raise ValueError("file_type is not set")
         return TestScenario(
             self._name,
             self._config,
-            self._files,
-            self._file_type,
             self._expected_check_status,
             self._expected_catalog,
             self._expected_logs,
             self._expected_records,
-            self._availability_strategy,
-            self._discovery_policy,
-            self._validation_policies or {},
-            self._parsers,
-            self._stream_reader,
             self._expected_check_error,
             self._expected_discover_error,
             self._expected_read_error,
             self._incremental_scenario_config,
-            self._file_write_options,
+            self.source_builder.build(self.configured_catalog(self._expected_catalog, SyncMode.incremental if self._incremental_scenario_config else SyncMode.full_refresh)),
         )
+
+    def configured_catalog(self, catalog, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
+
+        if not self._expected_catalog:
+            return None
+        configured: Mapping[str, Any] = {"streams": []}
+        for stream in self._expected_catalog["streams"]:
+            configured["streams"].append(
+                {
+                    "stream": stream,
+                    "sync_mode": sync_mode.value,
+                    "destination_sync_mode": "append",
+                }
+            )
+
+        return configured
+

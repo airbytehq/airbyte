@@ -21,7 +21,7 @@ single_csv_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -33,7 +33,7 @@ single_csv_scenario = (
             }
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -88,7 +88,7 @@ multi_csv_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -108,7 +108,7 @@ multi_csv_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -170,7 +170,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -190,7 +190,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -231,7 +231,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                       "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
         ]
     )
-    .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
+    .source_builder.set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 
 invalid_csv_scenario = (
@@ -249,7 +249,7 @@ invalid_csv_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -261,7 +261,7 @@ invalid_csv_scenario = (
             }
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -317,7 +317,7 @@ csv_single_stream_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -336,7 +336,7 @@ csv_single_stream_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -397,7 +397,7 @@ csv_multi_stream_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -417,7 +417,7 @@ csv_multi_stream_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -512,7 +512,7 @@ csv_custom_format_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -525,7 +525,7 @@ csv_custom_format_scenario = (
             }
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -568,7 +568,7 @@ csv_custom_format_scenario = (
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
-    .set_file_write_options(
+    .source_builder.set_file_write_options(
         {
             "delimiter": "#",
             "quotechar": "|",
@@ -613,7 +613,7 @@ multi_stream_custom_format = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -633,7 +633,7 @@ multi_stream_custom_format = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -702,7 +702,7 @@ multi_stream_custom_format = (
              "stream": "stream2"},
         ]
     )
-    .set_file_write_options(
+    .source_builder.set_file_write_options(
         {
             "delimiter": "#",
         }
@@ -725,7 +725,7 @@ empty_schema_inference_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -737,7 +737,7 @@ empty_schema_inference_scenario = (
             }
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -767,7 +767,7 @@ empty_schema_inference_scenario = (
             ]
         }
     )
-    .set_parsers({'csv': EmptySchemaParser()})
+    .source_builder.set_parsers({'csv': EmptySchemaParser()})
     .set_expected_discover_error(InvalidSchemaError, FileBasedSourceError.INVALID_SCHEMA_ERROR.value)
     .set_expected_records(
         [
