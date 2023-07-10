@@ -80,7 +80,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       }
       return AirbyteTypeUtils.getAirbyteProtocolType(schema);
     } catch (final Exception e) {
-      LOGGER.warn("Exception parsing JSON schema {}: {}", schema, e);
+      LOGGER.error("Exception parsing JSON schema {}: {}; returning UNKNOWN.", schema, e);
       return AirbyteProtocolType.UNKNOWN;
     }
   }
@@ -176,14 +176,14 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     public LinkedHashMap<String, AirbyteType> asColumns() {
       final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
       if (numObjectOptions > 1) {
-        LOGGER.warn("Can't extract columns from a schema with multiple object options");
+        LOGGER.error("Can't extract columns from a schema with multiple object options");
         return new LinkedHashMap<>();
       }
 
       return (options.stream().filter(o -> o instanceof Struct).findFirst())
           .map(o -> ((Struct) o).properties())
           .orElseGet(() -> {
-            LOGGER.warn("Can't extract columns from a schema with no object options");
+            LOGGER.error("Can't extract columns from a schema with no object options");
             return new LinkedHashMap<>();
           });
     }
