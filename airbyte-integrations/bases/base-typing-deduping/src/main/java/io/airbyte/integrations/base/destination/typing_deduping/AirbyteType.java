@@ -176,7 +176,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     public LinkedHashMap<String, AirbyteType> asColumns() {
       final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
       if (numObjectOptions > 1) {
-        LOGGER.warn("Found multiple object options in a oneOf schema. This is not supported.");
+        LOGGER.warn("Can't extract columns from a schema with multiple object options");
         return new LinkedHashMap<>();
       }
 
