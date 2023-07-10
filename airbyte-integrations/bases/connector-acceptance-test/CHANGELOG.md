@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.1
+Test connector image labels and make sure they are set correctly and match metadata.yaml.
+
 ## 0.11.0
 Add backward_compatibility.check_if_field_removed test to check if a field has been removed from the catalog.
 
