@@ -201,7 +201,10 @@ public class RecordDiffer {
     return message;
   }
 
-  private static String diffSingleRecord(Function<JsonNode, String> recordIdExtractor, boolean extractRawData, JsonNode expectedRecord, JsonNode actualRecord) {
+  private static String diffSingleRecord(Function<JsonNode, String> recordIdExtractor,
+                                         boolean extractRawData,
+                                         JsonNode expectedRecord,
+                                         JsonNode actualRecord) {
     boolean foundMismatch = false;
     String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
     // Iterate through each column in the expected record and compare it to the actual record's value.
