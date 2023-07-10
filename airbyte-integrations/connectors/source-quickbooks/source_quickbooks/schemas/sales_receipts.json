@@ -8,7 +8,7 @@
     "Balance": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "CustomerRef": {
@@ -78,7 +78,7 @@
         "TotalTax": {
           "type": [
             "null",
-            "integer"
+            "number"
           ]
         }
       }
@@ -237,7 +237,7 @@
               "DiscountPercent": {
                 "type": [
                   "null",
-                  "integer"
+                  "number"
                 ]
               },
               "DiscountAccountRef": {
@@ -315,7 +315,7 @@
               "UnitPrice": {
                 "type": [
                   "null",
-                  "integer"
+                  "number"
                 ]
               },
               "TaxCodeRef": {

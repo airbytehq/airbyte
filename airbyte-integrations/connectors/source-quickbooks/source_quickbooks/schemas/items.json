@@ -135,13 +135,13 @@
     "QtyOnHand": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "UnitPrice": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "SyncToken": {

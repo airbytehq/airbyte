@@ -54,7 +54,7 @@
     "Balance": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "CustomerMemo": {
@@ -149,7 +149,7 @@
               "UnitPrice": {
                 "type": [
                   "null",
-                  "integer"
+                  "number"
                 ]
               },
               "TaxCodeRef": {
@@ -169,7 +169,7 @@
               "Qty": {
                 "type": [
                   "null",
-                  "integer"
+                  "number"
                 ]
               }
             },
@@ -294,7 +294,7 @@
         "TotalTax": {
           "type": [
             "null",
-            "integer"
+            "number"
           ]
         }
       },
@@ -421,7 +421,7 @@
     "RemainingCredit": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "ExchangeRate": {

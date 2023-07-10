@@ -143,7 +143,7 @@
               "UnitPrice": {
                 "type": [
                   "null",
-                  "integer"
+                  "number"
                 ]
               }
             },
@@ -186,7 +186,7 @@
     "Balance": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "TxnTaxDetail": {
@@ -194,7 +194,7 @@
         "TotalTax": {
           "type": [
             "null",
-            "integer"
+            "number"
           ]
         }
       },
