@@ -13,6 +13,48 @@
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["audit","Last modified at"],
       "primary_key": [["ID"]]
+    },
+    {
+      "stream": {
+        "name": "program_enrolments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"],
+        "source_defined_primary_key": [["ID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": ["audit","Last modified at"],
+      "primary_key": [["ID"]]
+    },
+    {
+      "stream": {
+        "name": "program_encounters",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"],
+        "source_defined_primary_key": [["ID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": ["audit","Last modified at"],
+      "primary_key": [["ID"]]
+    },
+    {
+      "stream": {
+        "name": "encounters",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Last modified at"],
+        "source_defined_primary_key": [["ID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": ["audit","Last modified at"],
+      "primary_key": [["ID"]]
     }
   ]
 }

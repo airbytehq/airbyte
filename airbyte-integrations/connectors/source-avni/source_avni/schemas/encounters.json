@@ -1,0 +1,91 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "ID": {
+        "type": "string"
+      },
+      "External ID": {
+        "type": ["string", "null"]
+      },
+      "Voided": {
+        "type": "boolean"
+      },
+      "Encounter type": {
+        "type": ["string", "null"]
+      },
+      "Subject ID": {
+        "type": "string"
+      },
+      "Subject type": {
+        "type": "string"
+      },
+      "Subject external ID": {
+        "type": ["string", "null"]
+      },
+      "Encounter date time": {
+        "type": ["string", "null"]
+      },
+      "Encounter location": {
+        "type": ["object", "null"],
+        "properties": {
+          "X": {
+            "type": ["number", "null"]
+          },
+          "Y": {
+            "type": ["number", "null"],
+            "example": 74.7364501
+          }
+        }
+      },
+      "Earliest scheduled date": {
+        "type": ["string", "null"]
+      },
+      "Max scheduled date": {
+        "type": ["string", "null"]
+      },
+      "observations": {
+        "type": ["object", "null"]
+      },
+      "Cancel location": {
+        "type": ["object", "null"],
+        "properties": {
+          "X": {
+            "type": ["number", "null"]
+          },
+          "Y": {
+            "type": ["number", "null"],
+            "example": 74.7364501
+          }
+        }
+      },
+      "Cancel date time": {
+        "type": ["string", "null"]
+      },
+      "cancelObservations": {
+        "type": ["object", "null"]
+      },
+      "audit": {
+        "type": ["object", "null"],
+        "properties": {
+          "Created at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2016-07-21T17:32:28Z"
+          },
+          "Last modified at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2018-07-21T17:32:28Z"
+          },
+          "Created by": {
+            "type": "string"
+          },
+          "Last modified by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+  

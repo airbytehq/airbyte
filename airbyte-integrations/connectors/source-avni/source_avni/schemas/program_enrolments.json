@@ -1,0 +1,91 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "ID": {
+        "type": "string"
+      },
+      "External ID": {
+        "type": ["string", "null"]
+      },
+      "Voided": {
+        "type": "boolean"
+      },
+      "Subject ID": {
+        "type": "string"
+      },
+      "Subject type": {
+        "type": "string"
+      },
+      "Subject external ID": {
+        "type": ["string", "null"]
+      },
+      "Program": {
+        "type": ["string", "null"]
+      },
+      "Enrolment datetime": {
+        "type": ["string", "null"]
+      },
+      "Enrolment location": {
+        "type": ["object", "null"],
+        "properties": {
+          "X": {
+            "type": ["number", "null"]
+          },
+          "Y": {
+            "type": ["number", "null"],
+            "example": 74.7364501
+          }
+        }
+      },
+      "Exit datetime": {
+        "type": ["string", "null"]
+      },
+      "Exit location": {
+        "type": ["object", "null"],
+        "properties": {
+          "X": {
+            "type": ["number", "null"]
+          },
+          "Y": {
+            "type": ["number", "null"],
+            "example": 74.7364501
+          }
+        }
+      },
+      "observations": {
+        "type": ["object", "null"]
+      },
+      "exitObservations": {
+        "type": ["object", "null"]
+      },
+      "encounters": {
+        "type": ["array", "null"],
+        "items": {
+          "type": "string"
+        }
+      },
+      "audit": {
+        "type": ["object", "null"],
+        "properties": {
+          "Created at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2016-07-21T17:32:28Z"
+          },
+          "Last modified at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2018-07-21T17:32:28Z"
+          },
+          "Created by": {
+            "type": "string"
+          },
+          "Last modified by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+  
