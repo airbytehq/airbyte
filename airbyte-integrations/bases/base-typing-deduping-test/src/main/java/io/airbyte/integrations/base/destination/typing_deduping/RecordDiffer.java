@@ -184,7 +184,7 @@ public class RecordDiffer {
             for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
               JsonNode expectedValue = expectedRawData.get(field);
               JsonNode actualValue = actualRawData.get(field);
-              if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
+              if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
                 mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
                 foundMismatch = true;
               }
@@ -201,7 +201,7 @@ public class RecordDiffer {
             // For all other columns, we can just compare their values directly.
             JsonNode expectedValue = expectedRecord.get(column);
             JsonNode actualValue = actualRecord.get(column);
-            if (jsonNodesNotEquivalent(expectedValue, actualValue)) {
+            if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
               mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
               foundMismatch = true;
             }
@@ -246,7 +246,7 @@ public class RecordDiffer {
     return message;
   }
 
-  private static boolean jsonNodesNotEquivalent(JsonNode expectedValue, JsonNode actualValue) {
+  private static boolean areJsonNodesEquivalent(JsonNode expectedValue, JsonNode actualValue) {
     // This is kind of sketchy, but seems to work fine for the data we have in our test cases.
     return !Objects.equals(expectedValue, actualValue)
         // Objects.equals expects the two values to be the same class.
