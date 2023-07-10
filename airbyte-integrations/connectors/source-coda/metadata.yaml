@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-coda
   githubIssueLabel: source-coda
   icon: coda.svg
