@@ -406,8 +406,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "pk_extracts", pkCasts,
         "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
     ).replace(
-        // TODO replace `id`, `$.id` with PK
-        // TODO replace `INT64` with PK's type
         """
         DELETE FROM ${final_table_id}
         WHERE
