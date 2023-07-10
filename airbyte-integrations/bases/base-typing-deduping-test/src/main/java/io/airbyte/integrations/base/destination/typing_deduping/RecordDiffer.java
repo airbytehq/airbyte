@@ -171,55 +171,9 @@ public class RecordDiffer {
       JsonNode actualRecord = actualRecords.get(actualRecordIndex);
       int compare = identityComparator.compare(expectedRecord, actualRecord);
       if (compare == 0) {
-        // These records should be the same. Find the specific fields that are different.
-        boolean foundMismatch = false;
-        String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
-        // Iterate through each column in the expected record and compare it to the actual record's value.
-        for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
-          if (extractRawData && "_airbyte_data".equals(column)) {
-            // For the raw data in particular, we should also diff the fields inside _airbyte_data.
-            JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
-            JsonNode actualRawData = actualRecord.get("_airbyte_data");
-            // Iterate through all the subfields of the expected raw data and check that they match the actual
-            // record...
-            for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
-              JsonNode expectedValue = expectedRawData.get(field);
-              JsonNode actualValue = actualRawData.get(field);
-              if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
-                mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
-                foundMismatch = true;
-              }
-            }
-            // ... and then check the actual raw data for any subfields that we weren't expecting.
-            LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRawData, actualRawData);
-            if (extraColumns.size() > 0) {
-              for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
-                mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
-                foundMismatch = true;
-              }
-            }
-          } else {
-            // For all other columns, we can just compare their values directly.
-            JsonNode expectedValue = expectedRecord.get(column);
-            JsonNode actualValue = actualRecord.get(column);
-            if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
-              mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
-              foundMismatch = true;
-            }
-          }
-        }
-        // Then check the entire actual record for any columns that we weren't expecting.
-        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord);
-        if (extraColumns.size() > 0) {
-          for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
-            mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
-            foundMismatch = true;
-          }
-        }
-        if (foundMismatch) {
-          message += mismatchedRecordMessage;
-        }
-
+        // These records should be the same. Find the specific fields that are different and move on
+        // to the next records in both lists.
+        message += diffSingleRecord(recordIdExtractor, extractRawData, expectedRecord, actualRecord);
         expectedRecordIndex++;
         actualRecordIndex++;
       } else if (compare < 0) {
@@ -245,6 +199,58 @@ public class RecordDiffer {
     }
 
     return message;
+  }
+
+  private static String diffSingleRecord(Function<JsonNode, String> recordIdExtractor, boolean extractRawData, JsonNode expectedRecord, JsonNode actualRecord) {
+    boolean foundMismatch = false;
+    String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
+    // Iterate through each column in the expected record and compare it to the actual record's value.
+    for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
+      if (extractRawData && "_airbyte_data".equals(column)) {
+        // For the raw data in particular, we should also diff the fields inside _airbyte_data.
+        JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
+        JsonNode actualRawData = actualRecord.get("_airbyte_data");
+        // Iterate through all the subfields of the expected raw data and check that they match the actual
+        // record...
+        for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
+          JsonNode expectedValue = expectedRawData.get(field);
+          JsonNode actualValue = actualRawData.get(field);
+          if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
+            mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
+            foundMismatch = true;
+          }
+        }
+        // ... and then check the actual raw data for any subfields that we weren't expecting.
+        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRawData, actualRawData);
+        if (extraColumns.size() > 0) {
+          for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
+            mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
+            foundMismatch = true;
+          }
+        }
+      } else {
+        // For all other columns, we can just compare their values directly.
+        JsonNode expectedValue = expectedRecord.get(column);
+        JsonNode actualValue = actualRecord.get(column);
+        if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
+          mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
+          foundMismatch = true;
+        }
+      }
+    }
+    // Then check the entire actual record for any columns that we weren't expecting.
+    LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord);
+    if (extraColumns.size() > 0) {
+      for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
+        mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
+        foundMismatch = true;
+      }
+    }
+    if (foundMismatch) {
+      return mismatchedRecordMessage;
+    } else {
+      return "";
+    }
   }
 
   private static boolean areJsonNodesEquivalent(JsonNode expectedValue, JsonNode actualValue) {
