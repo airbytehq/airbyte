@@ -26,6 +26,8 @@ from .utils import read_full_refresh
 _schema = medallia_schema
 _schema_root = _schema.medallia_schema
 
+METADATA_PREFIX_COLUMN = tuple(['a_', 'u_', 'e_', 'k_'])
+QUESTION_PREFIX_COLUMN = tuple(['q_'])
 
 class MedalliaStream(HttpStream, ABC):
     limit = 100
@@ -231,12 +233,10 @@ class SourceMedallia(AbstractSource):
         for node in data:
             nodes[node["id"]] = node
 
-        metadata_columns = list(filter(lambda x: x.startswith(tuple(['a_', 'u_', 'e_', 'k_'])), nodes))
-        question_columns = list(filter(lambda x: x.startswith('q_'), nodes))
+        metadata_columns = list(filter(lambda x: x.startswith(METADATA_PREFIX_COLUMN), nodes))
+        question_columns = list(filter(lambda x: x.startswith(QUESTION_PREFIX_COLUMN), nodes))
 
-        fields = {}
-        fields['metadata_columns'] = metadata_columns
-        fields['question_columns'] = question_columns
+        fields = {'metadata_columns': metadata_columns, 'question_columns': question_columns}
 
         return fields
 
