@@ -35,11 +35,9 @@ public class PostgresStandardStateManager extends StreamStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
 
-  private final List<AirbyteStateMessage> rawAirbyteStateMessages;
 
   public PostgresStandardStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
     super(airbyteStateMessages, catalog);
-    this.rawAirbyteStateMessages = airbyteStateMessages;
   }
 
   @Override
