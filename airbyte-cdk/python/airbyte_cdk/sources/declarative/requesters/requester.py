@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator

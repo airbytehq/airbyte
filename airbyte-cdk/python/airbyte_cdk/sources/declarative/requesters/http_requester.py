@@ -6,33 +6,26 @@ import logging
 import os
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
-from airbyte_cdk.sources.streams.http.rate_limiting import user_defined_backoff_handler
-
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
-from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from requests.auth import AuthBase
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from requests.auth import AuthBase
 
 
 @dataclass

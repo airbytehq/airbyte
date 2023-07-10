@@ -11,6 +11,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.generic_session_token import SESSION_TOKEN_CONFIG_KEY, GenericSessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -52,6 +53,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     ExponentialBackoffStrategy as ExponentialBackoffStrategyModel,
+)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    GenericSessionTokenAuthenticator as GenericSessionTokenAuthenticatorModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
@@ -249,6 +253,29 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(api_token=model.api_token, request_option=request_option, config=config, parameters=model.parameters)
+
+    def create_generic_session_token_authenticator(
+        self, model: GenericSessionTokenAuthenticatorModel, config: Config, **kwargs
+    ) -> ApiKeyAuthenticator:
+        if model.request_authentication.type == "Bearer":
+            data_request_authenticator = self.create_bearer_authenticator(
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token="{{ config." + SESSION_TOKEN_CONFIG_KEY + "}}"), config
+            )
+        else:
+            inject_into = self.create_request_option(model=model.request_authentication.inject_into, config=config)
+            data_request_authenticator = ModelToComponentFactory.create_api_key_authenticator(
+                ApiKeyAuthenticatorModel(
+                    type="ApiKeyAuthenticator", api_token="{{ config." + SESSION_TOKEN_CONFIG_KEY + "}}", inject_into=inject_into
+                ),
+                config=config,
+            )
+        login_requester = self._create_component_from_model(model=model.login_requester, config=config)
+        return GenericSessionTokenAuthenticator(
+            config=config,
+            data_request_authenticator=data_request_authenticator,
+            login_requester=login_requester,
+            parameters=model.parameters,
+        )
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:
