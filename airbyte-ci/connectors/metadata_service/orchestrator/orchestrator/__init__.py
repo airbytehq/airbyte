@@ -127,7 +127,15 @@ SENSORS = [
         resources_def=RESOURCES,
         partitions_def=registry_entry.metadata_partitions_def,
         gcs_blobs_resource_key="all_metadata_file_blobs",
-        interval=30,
+        interval=(10 * 60 * 60),
+
+    ),
+    new_gcs_blobs_partition_sensor(
+        job=generate_registry_entry,
+        resources_def=RESOURCES,
+        partitions_def=registry_entry.metadata_partitions_def,
+        gcs_blobs_resource_key="latest_metadata_file_blobs",
+        interval=60,
     ),
 ]
 
