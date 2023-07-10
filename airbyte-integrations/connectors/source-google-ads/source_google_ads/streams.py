@@ -381,3 +381,19 @@ class ClickView(IncrementalGoogleAdsStream):
     primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
     range_days = 1
+
+
+class UserInterest(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
+    """
+
+    primary_key = ["user_interest.user_interest_id"]
+
+
+class Audience(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
+    """
+
+    primary_key = ["audience.id"]

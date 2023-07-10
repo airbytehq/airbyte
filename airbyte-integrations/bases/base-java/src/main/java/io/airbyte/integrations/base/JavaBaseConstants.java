@@ -20,11 +20,4 @@ public final class JavaBaseConstants {
   public static final String COLUMN_NAME_EMITTED_AT = "_airbyte_emitted_at";
   public static final String COLUMN_NAME_DATA = "_airbyte_data";
 
-  // destination v2
-  public static final String COLUMN_NAME_AB_RAW_ID = "_airbyte_raw_id";
-  public static final String COLUMN_NAME_AB_LOADED_AT = "_airbyte_loaded_at";
-  public static final String COLUMN_NAME_AB_EXTRACTED_AT = "_airbyte_extracted_at";
-
-  public static final String AIRBYTE_NAMESPACE_SCHEMA = "airbyte";
-
 }
