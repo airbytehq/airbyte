@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class mainly categorises the streams based on the state type into two categories :
@@ -31,6 +33,7 @@ import java.util.Set;
  */
 public class StandardCtidUtils {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(StandardCtidUtils.class);
   public static StreamsCategorised<StandardStreams> categoriseStreams(final StateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
@@ -49,9 +52,10 @@ public class StandardCtidUtils {
           return;
         }
 
+        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
+                                                                                       streamDescriptor.getNamespace());
+
         if (streamState.has("state_type")) {
-          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-              streamDescriptor.getNamespace());
           if (streamState.get("state_type").asText().equalsIgnoreCase(StateType.CTID.value())) {
             statesFromCtidSync.add(stateMessage);
             stillInCtidStreamPairs.add(pair);
@@ -62,7 +66,9 @@ public class StandardCtidUtils {
             throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
           }
         } else {
-          throw new RuntimeException("State type not present");
+          LOGGER.info("State type not present, syncing stream {} via standard method", streamDescriptor.getName());
+          standardSyncStreamPairs.add(pair);
+          statesFromStandardSync.add(stateMessage);
         }
         alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
