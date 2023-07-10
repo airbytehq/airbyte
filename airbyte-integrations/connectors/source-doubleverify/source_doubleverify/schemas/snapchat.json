@@ -5,6 +5,7 @@
     "date": {
       "id": 56819777,
       "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "snap_ad_format": {
