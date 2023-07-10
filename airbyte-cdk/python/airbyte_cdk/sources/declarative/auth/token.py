@@ -6,6 +6,7 @@ import base64
 import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Union
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -29,20 +30,19 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
     `"Authorization": "Bearer hello"`
 
     Attributes:
-        header (Union[InterpolatedString, str]): Header key to set on the HTTP requests
-        api_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests
+        request_option (RequestOption): request option how to inject the token into the request
+        token_provider (TokenProvider): Provider of the token
         config (Config): The user-provided configuration as specified by the source's spec
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     request_option: RequestOption
-    api_token: Union[InterpolatedString, str]
+    token_provider: TokenProvider
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._field_name = InterpolatedString.create(self.request_option.field_name, parameters=parameters)
-        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
 
     @property
     def auth_header(self) -> str:
@@ -51,7 +51,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
 
     @property
     def token(self) -> str:
-        return self._token.eval(self.config)
+        return self.token_provider.get_token()
 
     def _get_request_options(self, option_type: RequestOptionType):
         options = {}
@@ -78,17 +78,14 @@ class BearerAuthenticator(DeclarativeAuthenticator):
     `"Authorization": "Bearer <token>"`
 
     Attributes:
-        api_token (Union[InterpolatedString, str]): The bearer token
+        token_provider (TokenProvider): Provider of the token
         config (Config): The user-provided configuration as specified by the source's spec
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    api_token: Union[InterpolatedString, str]
+    token_provider: TokenProvider
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
 
     @property
     def auth_header(self) -> str:
@@ -96,7 +93,7 @@ class BearerAuthenticator(DeclarativeAuthenticator):
 
     @property
     def token(self) -> str:
-        return f"Bearer {self._token.eval(self.config)}"
+        return f"Bearer {self.token_provider.get_token()}"
 
 
 @dataclass

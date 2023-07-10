@@ -3,6 +3,7 @@
 #
 
 
+from abc import abstractmethod
 import base64
 import datetime
 import logging
@@ -28,38 +29,25 @@ from pendulum import DateTime
 
 SESSION_TOKEN_CONFIG_KEY = "__session_token"
 
+class TokenProvider:
+    @abstractmethod
+    def get_token(self) -> str:
+        pass
 
 @dataclass
-class GenericSessionTokenAuthenticator(DeclarativeAuthenticator):
+class SessionTokenProvider(TokenProvider):
     login_requester: Requester
     session_token_path: List[str]
-    data_request_authenticator: Union[BearerAuthenticator, ApiKeyAuthenticator]
     expiration_time: Union[datetime.timedelta, Duration]
     parameters: InitVar[Mapping[str, Any]]
 
     _decoder: Decoder = JsonDecoder(parameters={})
     _next_expiration_time: Optional[DateTime] = None
+    _token: Optional[str] = None
 
-    @property
-    def auth_header(self) -> str:
-        return self.data_request_authenticator.auth_header
-
-    @property
-    def token(self) -> str:
+    def get_token(self) -> str:
         self._refresh_if_necessary()
-        return self.data_request_authenticator.token
-
-    def get_request_params(self) -> Optional[Mapping[str, Any]]:
-        self._refresh_if_necessary()
-        return self.data_request_authenticator.get_request_params()
-
-    def get_request_body_data(self) -> Optional[Union[Mapping[str, Any], str]]:
-        self._refresh_if_necessary()
-        return self.data_request_authenticator.get_request_body_data()
-
-    def get_request_body_json(self) -> Optional[Mapping[str, Any]]:
-        self._refresh_if_necessary()
-        return self.data_request_authenticator.get_request_body_json()
+        return self._token
 
     def _refresh_if_necessary(self):
         if self._next_expiration_time is None or self._next_expiration_time < pendulum.now():
@@ -71,4 +59,15 @@ class GenericSessionTokenAuthenticator(DeclarativeAuthenticator):
             raise ReadException("Failed to get session token, response got ignored by requester")
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
         self._next_expiration_time = pendulum.now() + self.expiration_time
-        self.data_request_authenticator.config[SESSION_TOKEN_CONFIG_KEY] = session_token
+        self._token = session_token
+
+@dataclass
+class InterpolatedStringTokenProvider(TokenProvider):
+    config: Config
+    api_token: Union[InterpolatedString, str]
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
+    
+    def get_token(self) -> str:
+        return self._token.eval(self.config)
