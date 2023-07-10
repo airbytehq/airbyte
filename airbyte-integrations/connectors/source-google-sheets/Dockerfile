@@ -33,11 +33,6 @@ RUN apk --no-cache add bash && \
 COPY main.py ./
 COPY source_google_sheets ./source_google_sheets
 
-RUN pip uninstall setuptools -y && \
-    pip uninstall pip -y
-
-
-
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
