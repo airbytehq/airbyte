@@ -89,6 +89,18 @@ export class AuthService extends AirbyteRequestService {
     });
   }
 
+  public async reAuthenticateUser(authToken: string): Promise<IAuthUser> {
+    return new Promise((resolve, reject) => {
+      this.fetch<AuthRead>(`/user/reAuthenticate?authToken=${authToken}`)
+        .then((res: AuthRead) => {
+          resolve(res.data);
+        })
+        .catch((err: Error) => {
+          reject(err);
+        });
+    });
+  }
+
   public userInfo() {
     return userInfo(this.requestOptions);
   }
