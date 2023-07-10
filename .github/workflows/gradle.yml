@@ -98,6 +98,10 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          ref: origin/master
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
           ref: ${{ github.head_ref }}
 
       # - name: Cache Build Artifacts
