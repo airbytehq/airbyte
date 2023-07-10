@@ -4,57 +4,38 @@
   "properties": {
     "advertiser_name": {
       "id": 74370077,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "campaign": {
       "id": 41496607,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "date": {
       "id": 56819777,
-      "type": [
-        "date"
-      ],
+      "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "delivery_site": {
       "id": 40760332,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "media_property": {
       "id": 37005885,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "placement_code": {
       "id": 3440670,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "placement_name": {
       "id": 60025853,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "monitored_ads": {

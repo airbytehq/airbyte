@@ -4,169 +4,108 @@
   "properties": {
     "date": {
       "id": 56819777,
-      "type": [
-        "string"
-      ],
+      "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "device_delivery_type": {
       "id": 68351092,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "advertiser_name": {
       "id": 74370077,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand": {
       "id": 348137,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "campaign": {
       "id": 41496607,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_market": {
       "id": 64455984,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_region": {
       "id": 64455983,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "traffic_validity": {
       "id": 48023071,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "buying_platform": {
       "id": 99281395,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "campaign_id": {
       "id": 37836060,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "ad_group_id": {
       "id": 99281393,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "ad_group_name": {
       "id": 99281394,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "creative_id": {
       "id": 52048214,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "creative_name": {
       "id": 99281396,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "insertion_order_id": {
       "id": 99281391,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "insertion_order_name": {
       "id": 99281392,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "line_item_id": {
       "id": 99281389,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "line_item_name": {
       "id": 99281390,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "account_id": {
       "id": 99281397,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "account_name": {
       "id": 99281402,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "vendor_client_id": {
       "id": 99281404,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "video_viewable_impressions": {

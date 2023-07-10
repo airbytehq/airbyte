@@ -4,145 +4,93 @@
   "properties": {
     "date": {
       "id": 56819777,
-      "type": [
-        "string"
-      ],
+      "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "delivery_country": {
       "id": 59341133,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "device_delivery_type": {
       "id": 68351092,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "advertiser_name": {
       "id": 74370077,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand": {
       "id": 348137,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_campaign": {
       "id": 49923136,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_market": {
       "id": 64455984,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_region": {
       "id": 64455983,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_creative_id": {
       "id": 80313470,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_creative_media_id": {
       "id": 72798949,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_objective": {
       "id": 1953759,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "traffic_validity": {
       "id": 48023071,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_account_id": {
       "id": 27608120,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_campaign_id": {
       "id": 65747629,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_account_name": {
       "id": 29214249,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_line_item_id": {
       "id": 70683272,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "twitter_line_item": {
       "id": 49288694,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "media_type": {
       "id": 11047811,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "metrics": {

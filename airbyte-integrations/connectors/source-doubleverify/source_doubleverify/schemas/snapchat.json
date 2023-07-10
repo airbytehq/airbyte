@@ -4,161 +4,102 @@
   "properties": {
     "date": {
       "id": 56819777,
-      "type": [
-        "string"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_ad_format": {
       "id": 96321557,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "delivery_country": {
       "id": 59341133,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "device_delivery_type": {
       "id": 68351092,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "advertiser": {
       "id": 15481682,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand": {
       "id": 348137,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_market": {
       "id": 64455984,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_region": {
       "id": 64455983,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_impression_type": {
       "id": 58780721,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "traffic_validity": {
       "id": 48023071,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_account_id": {
       "id": 91069731,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_account_name": {
       "id": 51465711,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_ad_id": {
       "id": 47909565,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_ad_name": {
       "id": 99281364,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_ad_set_id": {
       "id": 24378211,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_ad_set_name": {
       "id": 88748130,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_campaign_id": {
       "id": 99086685,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_campaign_name": {
       "id": 48684319,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "snap_campaign_objective": {
       "id": 9708710,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "media_type": {
       "id": 11047811,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "display_authentic_viewable_impressions": {

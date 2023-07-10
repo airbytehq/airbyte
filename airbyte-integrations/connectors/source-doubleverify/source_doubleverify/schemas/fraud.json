@@ -4,73 +4,48 @@
   "properties": {
     "advertiser_name": {
       "id": 74370077,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "app_id": {
       "id": 55695754,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "app_name": {
       "id": 77658917,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "campaign": {
       "id": 41496607,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "date": {
       "id": 56819777,
-      "type": [
-        "date"
-      ],
+      "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "device_delivery_type": {
       "id": 68351092,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "media_property": {
       "id": 37005885,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "placement_code": {
       "id": 3440670,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "placement_name": {
       "id": 60025853,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "adware_malware_incidents": {

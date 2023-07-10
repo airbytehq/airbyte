@@ -4,153 +4,98 @@
   "properties": {
     "date": {
       "id": 56819777,
-      "type": [
-        "string"
-      ],
+      "type": ["null", "string"],
+      "format": "date",
       "field_type": "dimension"
     },
     "pinterest_account_region": {
       "id": 99281375,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "device_delivery_type": {
       "id": 68351092,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "advertiser": {
       "id": 15481682,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand": {
       "id": 348137,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_campaign_name": {
       "id": 99281368,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_market": {
       "id": 64455984,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "brand_region": {
       "id": 64455983,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_ad_group_id": {
       "id": 99281370,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_ad_group_name": {
       "id": 99281371,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_advertiser_id": {
       "id": 99281365,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_advertiser_name": {
       "id": 99281366,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_campaign_id": {
       "id": 99281367,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_campaign_objective": {
       "id": 99281369,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_ad_id": {
       "id": 99281372,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_ad_name": {
       "id": 99281373,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_ad_format_name": {
       "id": 99281374,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "traffic_validity": {
       "id": 48023071,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "media_type": {
       "id": 11047811,
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["null", "string"],
       "field_type": "dimension"
     },
     "pinterest_standard_display_impressions": {
