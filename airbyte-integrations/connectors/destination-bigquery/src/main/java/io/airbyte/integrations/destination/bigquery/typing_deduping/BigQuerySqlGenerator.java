@@ -395,20 +395,24 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       return "";
     }
 
+    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
         "raw_table_id", stream.id().rawTableId(QUOTE),
+        "pk_list", pkList,
+        "pk_extracts", pkCasts,
         "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
     ).replace(
-        // TODO replace `id`, `$.id` with PK
-        // TODO replace `INT64` with PK's type
         """
-        DELETE FROM ${final_table_id} 
-        WHERE 
-          `id` IN (
-            SELECT
-              SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id
+        DELETE FROM ${final_table_id}
+        WHERE
+          (${pk_list}) IN (
+            SELECT (
+                ${pk_extracts}
+              )
             FROM  ${raw_table_id}
             WHERE
               JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
