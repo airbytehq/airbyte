@@ -275,10 +275,10 @@ definitions:
           cursor_value: "{{ response.get('pages', {}).get('next') }}"
           stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
   contacts:
-    $ref: "#/definitions/stream_incremental_search"
+    $ref: "#/definitions/stream_full_refresh"
     $parameters:
       name: "contacts"
-      path: "contacts/search"
+      path: "contacts"
       page_size: 150
   conversations:
     $ref: "#/definitions/stream_incremental_search"
