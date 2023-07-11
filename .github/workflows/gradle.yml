@@ -182,11 +182,13 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
+
       - name: Get Python changed files
         id: changed-py-files
         uses: tj-actions/changed-files@v23
         with:
-          files: airbyte-cdk/**/*.py
+          files: /**/*.py
+          subdir: "airbyte-cdk/python/"
 
       - uses: actions/setup-python@v4
         with:
