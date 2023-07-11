@@ -224,11 +224,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
     final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns(), stream.destinationSyncMode());
     String dedupFinalTable = "";
+    String cdcDeletes = "";
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix, stream.columns());
+      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get(), stream.columns());
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -236,12 +238,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
+        "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
             DECLARE missing_pk_count INT64;
 
             BEGIN TRANSACTION;
+
             ${validate_primary_keys}
 
             ${insert_new_records}
@@ -249,6 +253,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${dedup_final_table}
 
             ${dedupe_raw_table}
+
+            ${cdc_deletes}
 
             ${commit_raw_table}
 
@@ -280,7 +286,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
             IF missing_pk_count > 0 THEN
               RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
-            END IF;""");
+            END IF
+            ;""");
   }
 
   @VisibleForTesting
@@ -315,66 +322,64 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       deletionClause = "";
     }
 
-    // Note that we intentionally excluded deleted records from this insert. See dedupRawRecords for an
-    // explanation of how CDC deletes work.
+    String cdcConditionalOrIncludeStatement = "";
+    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+      cdcConditionalOrIncludeStatement = """
+      OR (
+        _airbyte_loaded_at IS NOT NULL
+        AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+      )
+      """;
+    }
+
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
-        "column_list", columnList,
-        "deletion_clause", deletionClause)).replace(
+        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+        "column_list", columnList)).replace(
             """
-            INSERT INTO ${final_table_id}
-            (
-            ${column_list}
-              _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-            )
-            WITH intermediate_data AS (
-              SELECT
-            ${column_casts}
-              array_concat(
-            ${column_errors}
-              ) as _airbyte_cast_errors,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-              FROM ${raw_table_id}
-              WHERE
-                _airbyte_loaded_at IS NULL
-            ${deletion_clause}
-            )
-            SELECT
-            ${column_list}
-              to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-            FROM intermediate_data;""");
+                INSERT INTO ${final_table_id}
+                (
+                ${column_list}
+                  _airbyte_meta,
+                  _airbyte_raw_id,
+                  _airbyte_extracted_at
+                )
+                WITH intermediate_data AS (
+                  SELECT
+                ${column_casts}
+                  array_concat(
+                ${column_errors}
+                  ) as _airbyte_cast_errors,
+                  _airbyte_raw_id,
+                  _airbyte_extracted_at
+                  FROM ${raw_table_id}
+                  WHERE
+                    _airbyte_loaded_at IS NULL
+                    ${cdcConditionalOrIncludeStatement}
+                )
+                SELECT
+                ${column_list}
+                  to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
+                  _airbyte_raw_id,
+                  _airbyte_extracted_at
+                FROM intermediate_data;""");
   }
 
   @VisibleForTesting
   String dedupFinalTable(final StreamId id,
                          final String finalSuffix,
                          final List<ColumnId> primaryKey,
-                         final ColumnId cursor,
-                         final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+                         final ColumnId cursor) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCastList = streamColumns.entrySet().stream()
-        .filter(e -> primaryKey.contains(e.getKey()))
-        .map(e -> extractAndCast(e.getKey(), e.getValue()))
-        .collect(joining(",\n "));
-    final String cursorCast = extractAndCast(cursor, streamColumns.get(cursor));
 
-    // See dedupRawTable for an explanation of why we delete records using the raw data rather than the
-    // final table's _ab_cdc_deleted_at column.
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "pk_list", pkList,
-        "pk_cast_list", pkCastList,
-        "cursor_name", cursor.name(QUOTE),
-        "cursor_cast", cursorCast)).replace(
+        "cursor_name", cursor.name(QUOTE))
+        ).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE
@@ -385,52 +390,54 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
-              );
-            
-            DELETE FROM ${final_table_id}
-            WHERE
-                (${pk_list}) IN (
-                  SELECT (
-            ${pk_cast_list}
-                  )
-                  FROM ${raw_table_id}
-                  WHERE
-                    JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                    AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
-                    AND ${cursor_name} < ${cursor_cast}
-               );""");
+              )
+            ;""");
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix, LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    /*
-     * Note that we need to keep the deletion raw records because of how async syncs work. Consider this
-     * sequence of source events: 1. Insert record id=1 2. Update record id=1 3. Delete record id=1
-     *
-     * It's possible for the destination to receive them out of order, e.g.: 1. Insert 2. Delete 3.
-     * Update
-     *
-     * We can generally resolve this using the cursor column (e.g. multiple updates in the wrong order).
-     * However, deletions are special because we propagate them as hard deletes to the final table. As a
-     * result, we need to keep the deletion in the raw table, so that a late-arriving update doesn't
-     * incorrectly reinsert the final record.
-     */
-    String cdcDeletedAtClause;
-    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcDeletedAtClause = """
-                           AND (
-                             JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-                             OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
-                           )
-                           """;
-    } else {
-      cdcDeletedAtClause = "";
+  String cdcDeletes(final StreamConfig stream,
+      final String finalSuffix,
+      final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+      return "";
     }
 
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+      return "";
+    }
+
+    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+
+    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
+    return new StringSubstitutor(Map.of(
+        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "raw_table_id", stream.id().rawTableId(QUOTE),
+        "pk_list", pkList,
+        "pk_extracts", pkCasts,
+        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
+    ).replace(
+        """
+        DELETE FROM ${final_table_id}
+        WHERE
+          (${pk_list}) IN (
+            SELECT (
+                ${pk_extracts}
+              )
+            FROM  ${raw_table_id}
+            WHERE
+              JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+          )
+        ;"""
+    );
+  }
+
+  @VisibleForTesting
+  String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
-        "cdc_deleted_at_clause", cdcDeletedAtClause)).replace(
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE))).replace(
             // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
             // would be painful,
             // and it only matters in a few edge cases.
@@ -441,7 +448,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               `_airbyte_raw_id` NOT IN (
                 SELECT `_airbyte_raw_id` FROM ${final_table_id}
               )
-              ${cdc_deleted_at_clause}
             ;""");
   }
 

@@ -75,8 +75,7 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 
 
 def validate_and_load(
-    file_path: pathlib.Path,
-    validators_to_run: List[Validator]
+    file_path: pathlib.Path, validators_to_run: List[Validator]
 ) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 

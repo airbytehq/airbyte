@@ -60,6 +60,7 @@ acceptance_tests:
           ad_groups: ["4651612872", "segments.date"]
           accounts: ["4651612872", "segments.date"]
           campaigns: ["4651612872", "segments.date"]
+          campaign_budget: ["4651612872", "segments.date"]
           user_location_report: ["4651612872", "segments.date"]
           ad_group_ad_report: ["4651612872", "segments.date"]
           display_keyword_performance_report: ["4651612872", "segments.date"]

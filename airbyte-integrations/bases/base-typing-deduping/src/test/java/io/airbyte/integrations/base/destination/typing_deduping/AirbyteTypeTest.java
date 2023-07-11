@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
@@ -340,6 +341,50 @@ public class AirbyteTypeTest {
   }
 
   @Test
+  public void testOneOfComplex() {
+    JsonNode schema = Jsons.deserialize("""
+                                        {
+                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
+                                          "properties": {
+                                            "foo": {"type": "string"}
+                                          },
+                                          "items": {"type": "string"}
+                                        }
+                                        """);
+
+    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+
+    AirbyteType expected = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Struct(new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        }),
+        new Array(AirbyteProtocolType.STRING)));
+    assertEquals(expected, parsed);
+  }
+
+  @Test
+  public void testOneOfUnderspecifiedNonPrimitives() {
+    JsonNode schema = Jsons.deserialize("""
+                                        {
+                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
+                                        }
+                                        """);
+
+    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+
+    AirbyteType expected = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Struct(new LinkedHashMap<>()),
+        new Array(AirbyteProtocolType.UNKNOWN)));
+    assertEquals(expected, parsed);
+  }
+
+  @Test
   public void testInvalidTextualType() {
     final String invalidTypeSchema = """
                                      {
@@ -404,6 +449,62 @@ public class AirbyteTypeTest {
 
     o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER, AirbyteProtocolType.STRING));
     assertEquals(AirbyteProtocolType.STRING, AirbyteTypeUtils.chooseOneOfType(o));
+  }
+
+  @Test
+  public void testAsColumns() {
+    OneOf o = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Struct(new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        }),
+        new Array(AirbyteProtocolType.STRING),
+        // This is bad behavior, but it matches current behavior so we'll test it.
+        // Ideally, we would recognize that the sub-oneOfs are also objects.
+        new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
+
+    LinkedHashMap<String, AirbyteType> columns = o.asColumns();
+
+    assertEquals(
+        new LinkedHashMap<>() {
+
+          {
+            put("foo", AirbyteProtocolType.STRING);
+          }
+
+        },
+        columns);
+  }
+
+  @Test
+  public void testAsColumnsMultipleObjects() {
+    OneOf o = new OneOf(List.of(
+        new Struct(new LinkedHashMap<>()),
+        new Struct(new LinkedHashMap<>())));
+
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
+    assertEquals(new LinkedHashMap<>(), o.asColumns());
+  }
+
+  @Test
+  public void testAsColumnsNoObjects() {
+    OneOf o = new OneOf(List.of(
+        AirbyteProtocolType.STRING,
+        new Array(AirbyteProtocolType.STRING),
+        new UnsupportedOneOf(new ArrayList<>()),
+        // Similar to testAsColumns(), this is bad behavior.
+        new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
+
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
+    assertEquals(new LinkedHashMap<>(), o.asColumns());
   }
 
 }
