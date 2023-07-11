@@ -17,8 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,12 +66,13 @@ public class AirbyteTypeUtils {
   }
 
   protected static AirbyteType getAirbyteProtocolType(final JsonNode node) {
+    if (node.isTextual()) {
+      return AirbyteProtocolType.matches(node.asText());
+    }
+
     final JsonNode propertyType = node.get("type");
     final JsonNode airbyteType = node.get("airbyte_type");
     final JsonNode format = node.get("format");
-    if (Stream.of(propertyType, airbyteType, format).allMatch(Objects::isNull)) {
-      return AirbyteProtocolType.matches(node.asText());
-    }
 
     if (nodeIsOrContainsType(propertyType, "boolean")) {
       return AirbyteProtocolType.BOOLEAN;
