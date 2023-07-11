@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static com.mongodb.client.model.Filters.gt;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoCommandException;
@@ -29,13 +31,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
-import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonType;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +39,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.mongodb.client.model.Filters.gt;
+import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonType;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
@@ -252,7 +251,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return connectionStrBuilder.toString();
   }
 
-  private Optional<Bson> generateFilter(final CursorInfo cursorInfo,final BsonType cursorFieldType ) {
+  private Optional<Bson> generateFilter(final CursorInfo cursorInfo, final BsonType cursorFieldType) {
     if (cursorInfo != null) {
       return Optional.of(gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor())));
     } else {
