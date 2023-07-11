@@ -4,7 +4,7 @@
       "stream": {
         "name": "airbyte_acceptance_table",
         "supported_sync_modes": [
-          "incremental"
+          "full_refresh"
         ],
         "source_defined_cursor": false,
         "json_schema": {
@@ -22,7 +22,7 @@
           }
         }
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     }
   ]

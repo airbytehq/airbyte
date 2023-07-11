@@ -3,7 +3,7 @@
     "supported_destination_sync_modes": [
         "append"
     ],
-    "supportsIncremental": true,
+    "supportsIncremental": false,
     "connectionSpecification": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Destination Planhat Analytics",
@@ -25,8 +25,9 @@
                 "type": "integer",
                 "description": "Your tenant UUID",
                 "order": 2,
-                "default": 1000,
-                "maximum": 5000
+                "default": 10000,
+                "minumum": 1,
+                "maximum": 100000
             },
             "api_method": {
                 "title": "API Method",
