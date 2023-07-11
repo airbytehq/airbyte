@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
 ## 0.44.3
 [ISSUE #27494] allow for state to rely on transformed field
 
