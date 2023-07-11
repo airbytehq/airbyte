@@ -32,7 +32,9 @@ def _is_severe_enough(threshold: Level, level: Level):
         return True
 
     if level not in _SEVERITY_BY_LOG_LEVEL:
-        _LOGGER.warning(f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte.")
+        _LOGGER.warning(
+            f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte."
+        )
         return True
 
     return _SEVERITY_BY_LOG_LEVEL[threshold] >= _SEVERITY_BY_LOG_LEVEL[level]

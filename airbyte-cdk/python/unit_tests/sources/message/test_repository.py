@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pydantic.error_wrappers import ValidationError
 from unittest.mock import Mock
 
 import pytest
@@ -21,6 +20,7 @@ from airbyte_cdk.sources.message import (
     MessageRepository,
     NoopMessageRepository,
 )
+from pydantic.error_wrappers import ValidationError
 
 A_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
