@@ -306,7 +306,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
             message_repository=message_repository,
         )
         mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.requests.request")
-        mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.format_http_json", return_value="formatted json")
+        mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.format_http_message", return_value="formatted json")
         authenticator.token_has_expired = mocker.Mock(return_value=True)
 
         authenticator.get_access_token()

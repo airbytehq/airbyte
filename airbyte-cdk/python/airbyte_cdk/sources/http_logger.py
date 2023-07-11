@@ -2,19 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from typing import Optional, Union
 
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
-from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from airbyte_cdk.sources.message import LogMessage
 
 
-def format_http_json(response: requests.Response, logger: str):
+def format_http_message(
+    response: requests.Response, title: str, description: str, stream_name: Optional[str], is_auxiliary: bool = None
+) -> LogMessage:
     request = response.request
     log_message = {
         "http": {
+            "title": title,
+            "description": description,
             "request": {
                 "method": request.method,
                 "body": {
@@ -31,16 +32,15 @@ def format_http_json(response: requests.Response, logger: str):
             },
         },
         "log": {
-            "logger": logger,
             "level": "debug",
         },
         "url": {"full": request.url},
     }
-    return filter_secrets(json.dumps(log_message))
-
-
-def create_airbyte_log_message(response: requests.Response, logger: str):
-    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.DEBUG, message=format_http_json(response, logger)))
+    if is_auxiliary is not None:
+        log_message["http"]["is_auxiliary"] = is_auxiliary
+    if stream_name:
+        log_message["airbyte_cdk"] = {"stream": {"name": stream_name}}
+    return log_message
 
 
 def _normalize_body_string(body_str: Optional[Union[str, bytes]]) -> Optional[str]:

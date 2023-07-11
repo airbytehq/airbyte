@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
-    GlobalRequest,
+    AuxiliaryRequest,
     HttpRequest,
     HttpResponse,
     LogMessage,
@@ -21,7 +21,6 @@ from airbyte_cdk.connector_builder.models import (
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -66,7 +65,7 @@ class MessageGrouper:
         slices = []
         log_messages = []
         latest_config_update: AirbyteControlMessage = None
-        global_requests = []
+        auxiliary_requests = []
         for message_group in self._get_message_groups(
                 self._read_stream(source, config, configured_catalog),
                 schema_inferrer,
@@ -82,8 +81,8 @@ class MessageGrouper:
             elif isinstance(message_group, AirbyteControlMessage):
                 if not latest_config_update or latest_config_update.emitted_at <= message_group.emitted_at:
                     latest_config_update = message_group
-            elif isinstance(message_group, GlobalRequest):
-                global_requests.append(message_group)
+            elif isinstance(message_group, AuxiliaryRequest):
+                auxiliary_requests.append(message_group)
             else:
                 slices.append(message_group)
 
@@ -91,7 +90,7 @@ class MessageGrouper:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            global_requests=global_requests,
+            auxiliary_requests=auxiliary_requests,
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
@@ -101,7 +100,7 @@ class MessageGrouper:
 
     def _get_message_groups(
             self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, datetime_format_inferrer: DatetimeFormatInferrer, limit: int
-    ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, GlobalRequest]]:
+    ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, AuxiliaryRequest]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -142,16 +141,21 @@ class MessageGrouper:
                 # parsing the first slice
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
-                if json_message and json_message.get("http"):
-                    if self._is_page_request_response_log(json_message):
-                        at_least_one_page_in_group = True
-                        current_page_request = self._create_request_from_log_message(json_message)
-                        current_page_response = self._create_response_from_log_message(json_message)
-                    else:
-                        yield GlobalRequest(
+                if self._is_http_log(json_message):
+                    if self._is_auxiliary_http_request(json_message):
+                        title_prefix = (
+                           "Parent stream: " if json_message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False) else ""
+                        )
+                        yield AuxiliaryRequest(
+                            title=title_prefix + json_message.get("http", {}).get("title", None),
+                            description=json_message.get("http", {}).get("description", None),
                             request=self._create_request_from_log_message(json_message),
                             response=self._create_response_from_log_message(json_message),
                         )
+                    else:
+                        at_least_one_page_in_group = True
+                        current_page_request = self._create_request_from_log_message(json_message)
+                        current_page_response = self._create_response_from_log_message(json_message)
                 else:
                     if message.log.level == Level.ERROR:
                         had_error = True
@@ -176,12 +180,30 @@ class MessageGrouper:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
-            and (MessageGrouper._is_page_request_response_log(json_message) or message.log.message.startswith("slice:"))
+            and (MessageGrouper._is_page_http_request(json_message) or message.log.message.startswith("slice:"))
         )
 
     @staticmethod
-    def _is_page_request_response_log(message: Optional[dict]):
-        return message and message.get("http") and message.get("log", {}).get("logger", "") == SimpleRetriever.LOGGER_NAME
+    def _is_page_http_request(json_message):
+        return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_auxiliary_http_request(json_message)
+
+    @staticmethod
+    def _is_http_log(message: Optional[dict]) -> bool:
+        return message and bool(message.get("http", False))
+
+    @staticmethod
+    def _is_auxiliary_http_request(message: Optional[dict]) -> bool:
+        """
+        A auxiliary request is a request that is performed and will not directly lead to record for the specific stream it is being queried.
+        A couple of examples are:
+        * OAuth authentication
+        * Substream slice generation
+        """
+        if not message:
+            return False
+
+        is_http = MessageGrouper._is_http_log(message)
+        return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete: bool):

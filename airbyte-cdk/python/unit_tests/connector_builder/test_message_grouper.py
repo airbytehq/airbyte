@@ -19,7 +19,6 @@ from airbyte_cdk.models import (
     OrchestratorType,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 MAX_PAGES_PER_SLICE = 4
@@ -96,7 +95,7 @@ def test_get_grouped_messages(mock_entrypoint_read):
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": {"content": '{"name": "field"}'}}
     expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}, "date": {"type": "string"}}, "type": "object"}
-    expected_datetime_fields = {"date":"%Y-%m-%d"}
+    expected_datetime_fields = {"date": "%Y-%m-%d"}
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
@@ -587,11 +586,11 @@ def test_given_multiple_control_messages_with_same_timestamp_then_stream_read_ha
 
 
 @patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
-def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
+def test_given_auxiliary_requests_then_return_global_request(mock_entrypoint_read):
     mock_source = make_mock_source(mock_entrypoint_read, iter(
         any_request_and_response_with_a_record() +
         [
-            global_request_log_message()
+            auxiliary_request_log_message()
         ]
     ))
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -599,7 +598,7 @@ def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
         source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
     )
 
-    assert len(stream_read.global_requests) == 1
+    assert len(stream_read.auxiliary_requests) == 1
 
 
 def make_mock_source(mock_entrypoint_read, return_value: Iterator) -> MagicMock:
@@ -635,10 +634,12 @@ def connector_configuration_control_message(emitted_at: float, config: dict) -> 
     )
 
 
-def global_request_log_message():
+def auxiliary_request_log_message():
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
-            "log": {"logger": "a logger"},
             "http": {
+                "is_auxiliary": True,
+                "title": "a title",
+                "description": "a description",
                 "request": {},
                 "response": {},
             },
@@ -648,8 +649,10 @@ def global_request_log_message():
 
 def request_response_log_message(request: dict, response: dict, url: str):
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
-            "log": {"logger": SimpleRetriever.LOGGER_NAME},
+            "airbyte_cdk": {"stream": {"name": "a stream name"}},
             "http": {
+                "title": "a title",
+                "description": "a description",
                 "request": request,
                 "response": response
             },

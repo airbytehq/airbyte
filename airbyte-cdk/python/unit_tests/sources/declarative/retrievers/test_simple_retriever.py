@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-from typing import Mapping
 from unittest.mock import MagicMock, Mock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
@@ -622,7 +620,7 @@ def test_given_state_selector_when_read_records_use_slice_state(http_stream_read
     http_stream_read_pages.assert_called_once_with(retriever.parse_records, A_STREAM_SLICE, A_SLICE_STATE)
 
 
-def test_emit_log_request_response_messages():
+def test_emit_log_request_response_messages(mocker):
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
 
@@ -634,6 +632,8 @@ def test_emit_log_request_response_messages():
     response.request = request
     response.status_code = 200
 
+    format_http_message_mock = mocker.patch("airbyte_cdk.sources.declarative.retrievers.simple_retriever.format_http_message")
+    message_repository = Mock()
     retriever = SimpleRetrieverTestReadDecorator(
         name="stream_name",
         primary_key=primary_key,
@@ -643,16 +643,11 @@ def test_emit_log_request_response_messages():
         stream_slicer=SinglePartitionRouter(parameters={}),
         parameters={},
         config={},
+        message_repository=message_repository,
     )
 
-    request_response_log_message, record_1, record_2 = [
-        record for record in retriever.parse_records(request=request, response=response, stream_slice={}, stream_state={})
-    ]
+    list(retriever.parse_records(request=request, response=response, stream_slice={}, stream_state={}))
 
-    assert isinstance(request_response_log_message, AirbyteMessage)
-    assert request_response_log_message.type == Type.LOG
-    json.loads(request_response_log_message.log.message)
-    assert isinstance(record_1, Mapping)
-    assert record_1 == records[0]
-    assert isinstance(record_1, Mapping)
-    assert record_2 == records[1]
+    assert len(message_repository.log_message.call_args_list) == 1
+    assert message_repository.log_message.call_args_list[0].args[0] == Level.DEBUG
+    assert message_repository.log_message.call_args_list[0].args[1]() == format_http_message_mock.return_value
