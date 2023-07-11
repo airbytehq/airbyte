@@ -68,7 +68,7 @@ class HttpRequester(Requester):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(parameters=parameters, config=self.config)
+        self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
@@ -186,7 +186,7 @@ class HttpRequester(Requester):
     def logger(self):
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
 
-    def should_retry(self, response: requests.Response) -> bool:
+    def _should_retry(self, response: requests.Response) -> bool:
         """
         Specifies conditions for backoff based on the response from the server.
 
@@ -196,9 +196,11 @@ class HttpRequester(Requester):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
+        if self.error_handler is None:
+            return response.status_code == 429 or 500 <= response.status_code < 600
         return self.interpret_response_status(response).action == ResponseAction.RETRY
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def _backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         Specifies backoff time.
 
@@ -208,13 +210,15 @@ class HttpRequester(Requester):
          :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
          to the default backoff behavior (e.g using an exponential algorithm).
         """
+        if self.error_handler is None:
+            return None
         should_retry = self.interpret_response_status(response)
         if should_retry.action != ResponseAction.RETRY:
             raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
         assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
 
-    def error_message(self, response: requests.Response) -> str:
+    def _error_message(self, response: requests.Response) -> str:
         """
         Constructs an error message which can incorporate the HTTP response received from the partner API.
 
@@ -431,8 +435,8 @@ class HttpRequester(Requester):
         )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
-        if self.should_retry(response):
-            custom_backoff_time = self.backoff_time(response)
+        if self._should_retry(response):
+            custom_backoff_time = self._backoff_time(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
@@ -446,6 +450,9 @@ class HttpRequester(Requester):
         # if fail -> raise exception
         # if ignore -> ignore response and return None
         # else -> delegate to caller
+        if self.error_handler is None:
+            return response
+
         response_status = self.interpret_response_status(response)
         if response_status.action == ResponseAction.FAIL:
             error_message = (
@@ -493,20 +500,3 @@ class HttpRequester(Requester):
             return _try_get_error(body)
         except requests.exceptions.JSONDecodeError:
             return None
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
-        The method should be overriden as needed to handle any additional exception types.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        if isinstance(exception, requests.HTTPError):
-            return self.parse_response_error_message(exception.response)
-        return None
-
-    # def perform_request(self, **kwargs) -> requests.Response:
