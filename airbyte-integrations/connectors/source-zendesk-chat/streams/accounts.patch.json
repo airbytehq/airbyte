@@ -1,0 +1,17 @@
+{
+    "properties": {
+        "plan": {
+            "properties": {
+                "max_advanced_triggers": {
+                    "type": ["integer", "null", "string"]
+                },
+                "max_basic_triggers": {
+                  "type": ["integer", "null", "string"]
+                },
+                "max_departments": {
+                  "type": ["integer", "null", "string"]
+                }
+            }
+        }
+    }
+}
