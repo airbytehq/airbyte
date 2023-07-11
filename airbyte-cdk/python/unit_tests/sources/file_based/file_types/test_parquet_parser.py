@@ -56,6 +56,7 @@ from pyarrow import Scalar
         pytest.param(pa.decimal128(2), {"type": "string"}, id="test_decimal128"),
         pytest.param(pa.decimal256(2), {"type": "string"}, id="test_decimal256"),
         pytest.param(pa.map_(pa.int32(), pa.int32()), {"type": "object"}, id="test_map"),
+        pytest.param(pa.null(), {"type": "null"}, id="test_null"),
     ]
 )
 def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str]) -> None:
@@ -111,6 +112,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.decimal128(5, 3), 12, "12.000", id="test_decimal128"),
         pytest.param(pa.decimal256(8, 2), 13, "13.00", id="test_decimal256"),
         pytest.param(pa.map_(pa.string(), pa.int32()), {"hello": 1, "world": 2}, {"hello": 1, "world": 2}, id="test_map"),
+        pytest.param(pa.null(), None, None, id="test_null"),
     ]
 )
 def test_value_transformation(pyarrow_type: pa.DataType, parquet_object: Scalar, expected_value: Any) -> None:

@@ -108,6 +108,8 @@ class ParquetParser(FileTypeParser):
             return {"type": "object"}
         elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type) or parquet_type == pa.month_day_nano_interval():
             return {"type": "array"}
+        elif pa.types.is_null(parquet_type):
+            return {"type": "null"}
         else:
             raise ValueError(f"Unsupported parquet type: {parquet_type}")
 
