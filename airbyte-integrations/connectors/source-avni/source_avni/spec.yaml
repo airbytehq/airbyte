@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - username
     - password
+    - lastModifiedDateTime
   properties:
     username:
       type: string

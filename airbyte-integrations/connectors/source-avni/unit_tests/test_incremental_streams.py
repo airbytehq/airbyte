@@ -17,23 +17,24 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
+
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
     expected_cursor_field = ["audit","Last modified at"]
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_update_state(patch_incremental_base_class):
-    
+
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
-    stream.state={"Last modified at":"OldDate"}
-    stream.last_record={ "audit": {"Last modified at":"NewDate"} }
+    stream.state = {"Last modified at":"OldDate"}
+    stream.last_record = {"audit": {"Last modified at":"NewDate"}}
     expected_state = {"Last modified at":"NewDate"}
     stream.update_state()
     assert stream.state == expected_state
 
 
 def test_stream_slices(patch_incremental_base_class):
-    
+
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [None]
@@ -41,20 +42,20 @@ def test_stream_slices(patch_incremental_base_class):
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    
+
     mocker.patch.object(IncrementalAvniStream, "cursor_field", "dummy_field")
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    
+
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    
+
     stream = IncrementalAvniStream(lastModifiedDateTime="",auth_token="")
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

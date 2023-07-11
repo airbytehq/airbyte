@@ -3,7 +3,19 @@
     {
       "stream": {
         "name": "subjects",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
+              "type": "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["Last modified at"],
@@ -17,7 +29,19 @@
     {
       "stream": {
         "name": "program_enrolments",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
+              "type": "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["Last modified at"],
@@ -31,7 +55,19 @@
     {
       "stream": {
         "name": "program_encounters",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
+              "type": "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["Last modified at"],
@@ -45,7 +81,19 @@
     {
       "stream": {
         "name": "encounters",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "lastModifiedDateTime":{
+              "type": "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["Last modified at"],
