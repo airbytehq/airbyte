@@ -187,7 +187,6 @@ jobs:
         id: changed-py-files
         uses: tj-actions/changed-files@v23
         with:
-          files: "./**/*.py"
           path: "airbyte-cdk/python"
 
       - uses: actions/setup-python@v4
