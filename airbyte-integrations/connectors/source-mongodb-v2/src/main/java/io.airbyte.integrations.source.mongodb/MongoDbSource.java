@@ -180,7 +180,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String tableName,
                                                                final SyncMode syncMode,
                                                                final Optional<String> cursorField) {
-    return queryTable(database, columnNames, tableName, null);
+    return queryTable(database, columnNames, tableName, Optional.empty());
   }
 
   @Override
