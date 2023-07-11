@@ -24,7 +24,7 @@ def test_streams(mocker):
     source = SourceAvni()
     config_mock = {"username": "test_user", "password": "test_password", "lastModifiedDateTime": "2000-06-27T04:18:36.914Z"}
     streams = source.streams(config_mock)
-    excepted_outcome=1
+    excepted_outcome=4
     assert len(streams)==excepted_outcome
     
 def test_get_client_id(mocker):
