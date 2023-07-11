@@ -45,23 +45,6 @@ class AddFields(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class ApiKeyAuthenticator(BaseModel):
-    type: Literal["ApiKeyAuthenticator"]
-    api_token: str = Field(
-        ...,
-        description="The API key to inject in the request. Fill it in the user inputs.",
-        examples=["{{ config['api_key'] }}", "Token token={{ config['api_key'] }}"],
-        title="API Key",
-    )
-    header: Optional[str] = Field(
-        None,
-        description="The name of the HTTP header that will be set to the API key.",
-        examples=["Authorization", "Api-Token", "X-Auth-Token"],
-        title="Header Name",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class AuthFlowType(Enum):
     oauth2_0 = "oauth2.0"
     oauth1_0 = "oauth1.0"
@@ -123,7 +106,7 @@ class CustomAuthenticator(BaseModel):
     type: Literal["CustomAuthenticator"]
     class_name: str = Field(
         ...,
-        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. The format is `source_<name>.<package>.<class_name>`.",
+        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. Has to be a sub class of DeclarativeAuthenticator. The format is `source_<name>.<package>.<class_name>`.",
         examples=["source_railz.components.ShortLivedTokenAuthenticator"],
         title="Class Name",
     )
@@ -260,6 +243,33 @@ class CustomTransformation(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class RefreshTokenUpdater(BaseModel):
+    refresh_token_name: Optional[str] = Field(
+        "refresh_token",
+        description="The name of the property which contains the updated refresh token in the response from the token refresh endpoint.",
+        examples=["refresh_token"],
+        title="Refresh Token Property Name",
+    )
+    access_token_config_path: Optional[List[str]] = Field(
+        ["credentials", "access_token"],
+        description="Config path to the access token. Make sure the field actually exists in the config.",
+        examples=[["credentials", "access_token"], ["access_token"]],
+        title="Config Path To Access Token",
+    )
+    refresh_token_config_path: Optional[List[str]] = Field(
+        ["credentials", "refresh_token"],
+        description="Config path to the access token. Make sure the field actually exists in the config.",
+        examples=[["credentials", "refresh_token"], ["refresh_token"]],
+        title="Config Path To Refresh Token",
+    )
+    token_expiry_date_config_path: Optional[List[str]] = Field(
+        ["credentials", "token_expiry_date"],
+        description="Config path to the expiry date. Make sure actually exists in the config.",
+        examples=[["credentials", "token_expiry_date"]],
+        title="Config Path To Expiry Date",
+    )
+
+
 class OAuthAuthenticator(BaseModel):
     type: Literal["OAuthAuthenticator"]
     client_id: str = Field(
@@ -340,87 +350,10 @@ class OAuthAuthenticator(BaseModel):
         examples=["%Y-%m-%d %H:%M:%S.%f+00:00"],
         title="Token Expiry Date Format",
     )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
-class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
-    type: Literal["SingleUseRefreshTokenOAuthAuthenticator"]
-    token_refresh_endpoint: str = Field(
-        ...,
-        description="Endpoint to send a POST request in order to get a new access token.",
-        examples=["https://connect.squareup.com/oauth2/token"],
-        title="Token Refresh Endpoint",
-    )
-    client_id_config_path: Optional[List[str]] = Field(
-        ["credentials", "client_id"],
-        description="Config path to the client ID.",
-        examples=[["credentials", "client_id"], ["client_id"]],
-        title="Config Path To Client ID",
-    )
-    client_secret_config_path: Optional[List[str]] = Field(
-        ["credentials", "client_secret"],
-        description="Config path to the client secret.",
-        examples=[["credentials", "client_secret"], ["client_secret"]],
-        title="Config Path To Client Secret",
-    )
-    access_token_config_path: Optional[List[str]] = Field(
-        ["credentials", "access_token"],
-        description="Config path to the access token.",
-        examples=[["credentials", "access_token"], ["access_token"]],
-        title="Config Path To Access Token",
-    )
-    refresh_token_config_path: Optional[List[str]] = Field(
-        ["credentials", "refresh_token"],
-        description="Config path to the access token.",
-        examples=[["credentials", "refresh_token"], ["refresh_token"]],
-        title="Config Path To Refresh Token",
-    )
-    token_expiry_date_config_path: Optional[List[str]] = Field(
-        ["credentials", "token_expiry_date"],
-        description="Config path to the expiry date.",
-        examples=[["credentials", "token_expiry_date"]],
-        title="Config Path To Expiry Date",
-    )
-    access_token_name: Optional[str] = Field(
-        "access_token",
-        description="The name of the field to extract the access token from in the token refresh response.",
-        examples=["access_token"],
-        title="Access Token Response Field Name",
-    )
-    refresh_token_name: Optional[str] = Field(
-        "refresh_token",
-        examples=["refresh_token"],
-        title="Refresh Token Response Field Name",
-    )
-    expires_in_name: Optional[str] = Field(
-        "expires_in",
-        description="The name of the field the extract the number of seconds the access token will be valid from the token refresh response.",
-        examples=["expires_in"],
-        title="Time To Expiration Response Field Name",
-    )
-    grant_type: Optional[str] = Field(
-        "refresh_token",
-        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
-        examples=["refresh_token", "client_credentials"],
-        title="Grant Type",
-    )
-    refresh_request_body: Optional[Dict[str, Any]] = Field(
+    refresh_token_updater: Optional[RefreshTokenUpdater] = Field(
         None,
-        description="Body of the request sent to get a new access token.",
-        examples=[
-            {
-                "applicationId": "{{ config['application_id'] }}",
-                "applicationSecret": "{{ config['application_secret'] }}",
-                "token": "{{ config['token'] }}",
-            }
-        ],
-        title="Refresh Request Body",
-    )
-    scopes: Optional[List[str]] = Field(
-        None,
-        description="List of scopes that should be granted to the access token.",
-        examples=[["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]],
-        title="Scopes",
+        description="When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.",
+        title="Token Updater",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -520,8 +453,8 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         "",
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).',
-        examples=["%Y-%m-%dT%H:%M:%S.%f%", "%Y-%m-%d", "%s"],
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`\n  * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`\n  * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date representation - `08/16/1988`\n  * **%X**: Time representation - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
+        examples=["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d", "%s"],
         title="Datetime Format",
     )
     max_datetime: Optional[str] = Field(
@@ -785,6 +718,32 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class ApiKeyAuthenticator(BaseModel):
+    type: Literal["ApiKeyAuthenticator"]
+    api_token: Optional[str] = Field(
+        None,
+        description="The API key to inject in the request. Fill it in the user inputs.",
+        examples=["{{ config['api_key'] }}", "Token token={{ config['api_key'] }}"],
+        title="API Key",
+    )
+    header: Optional[str] = Field(
+        None,
+        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. Header and inject_into can not be defined at the same time.",
+        examples=["Authorization", "Api-Token", "X-Auth-Token"],
+        title="Header Name",
+    )
+    inject_into: Optional[RequestOption] = Field(
+        None,
+        description="Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.",
+        examples=[
+            {"inject_into": "header", "field_name": "Authorization"},
+            {"inject_into": "request_parameter", "field_name": "authKey"},
+        ],
+        title="Inject API Key Into Outgoing HTTP Request",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
 class AuthFlow(BaseModel):
     auth_flow_type: Optional[AuthFlowType] = Field(None, description="The type of auth to use", title="Auth flow type")
     predicate_key: Optional[List[str]] = Field(
@@ -847,21 +806,9 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description="The datetime format of the Cursor Field.",
-        examples=["%Y-%m-%dT%H:%M:%S.%f%z"],
+        description="The datetime format of the Cursor Field. Use placeholders starting with \"%\" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`\n  * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`\n  * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date standard format - `08/16/1988`\n  * **%X**: Time standard format - `21:30:00`\n  * **%%**: Literal '%' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n",
+        examples=["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d", "%s"],
         title="Cursor Field Datetime Format",
-    )
-    cursor_granularity: str = Field(
-        ...,
-        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S.",
-        examples=["PT1S"],
-        title="Cursor Granularity",
-    )
-    end_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the last record that should be synced.",
-        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
-        title="End Datetime",
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
@@ -869,16 +816,27 @@ class DatetimeBasedCursor(BaseModel):
         examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
         title="Start Datetime",
     )
-    step: str = Field(
-        ...,
-        description="The size of the time window (ISO8601 duration).",
-        examples=["P1W", "{{ config['step_increment'] }}"],
-        title="Step",
+    cursor_granularity: Optional[str] = Field(
+        None,
+        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",
+        examples=["PT1S"],
+        title="Cursor Granularity",
+    )
+    end_datetime: Optional[Union[str, MinMaxDatetime]] = Field(
+        None,
+        description="The datetime that determines the last record that should be synced. If not provided, `{{ now_utc() }}` will be used.",
+        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
+        title="End Datetime",
     )
     end_time_option: Optional[RequestOption] = Field(
         None,
         description="Optionally configures how the end datetime will be sent in requests to the source API.",
         title="Inject End Time Into Outgoing HTTP Request",
+    )
+    is_data_feed: Optional[bool] = Field(
+        None,
+        description="A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.",
+        title="Whether the target API is formatted as a data feed",
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -902,6 +860,12 @@ class DatetimeBasedCursor(BaseModel):
         None,
         description="Optionally configures how the start datetime will be sent in requests to the source API.",
         title="Inject Start Time Into Outgoing HTTP Request",
+    )
+    step: Optional[str] = Field(
+        None,
+        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
+        examples=["P1W", "{{ config['step_increment'] }}"],
+        title="Step",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -958,7 +922,7 @@ class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
     field_path: List[str] = Field(
         ...,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array.',
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
         examples=[
             ["data"],
             ["data", "records"],
@@ -1066,7 +1030,6 @@ class HttpRequester(BaseModel):
             BearerAuthenticator,
             CustomAuthenticator,
             OAuthAuthenticator,
-            SingleUseRefreshTokenOAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
         ]
@@ -1088,7 +1051,7 @@ class HttpRequester(BaseModel):
     )
     request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
+        description="Specifies how to populate the body of the request with a non-JSON payload. Plain text will be sent as is, whereas objects will be converted to a urlencoded form.",
         examples=[
             '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_interval[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
         ],
@@ -1137,6 +1100,10 @@ class DeclarativeSource(BaseModel):
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.",
+    )
 
 
 class DeclarativeStream(BaseModel):

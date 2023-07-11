@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer-singer
   tags:
     - language:python
 metadataSpecVersion: "1.0"

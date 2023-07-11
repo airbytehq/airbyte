@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from glob import glob
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple, Union
 
 import git
 import requests
@@ -25,6 +25,10 @@ OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_regist
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
+
+
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
@@ -121,7 +125,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
-        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation).*?project\(['\"](.*?)['\"]\)",
+        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
         dependencies_block,
     )
     if matches:
@@ -194,8 +198,18 @@ class Connector:
         return self._get_type_and_name_from_technical_name()[0]
 
     @property
+    def documentation_directory(self) -> Path:
+        return Path(f"./docs/integrations/{self.connector_type}s")
+
+    @property
     def documentation_file_path(self) -> Path:
-        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}.md")
+        readme_file_name = f"{self.name}.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
+    def migration_guide_file_path(self) -> Path:
+        migration_guide_file_name = f"{self.name}-migrations.md"
+        return self.documentation_directory / migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:
@@ -207,8 +221,12 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def metadata_file_path(self) -> Path:
+        return self.code_directory / METADATA_FILE_NAME
+
+    @property
     def metadata(self) -> Optional[dict]:
-        file_path = self.code_directory / METADATA_FILE_NAME
+        file_path = self.metadata_file_path
         if not file_path.is_file():
             return None
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
@@ -293,22 +311,35 @@ class Connector:
         return self.technical_name
 
     @functools.lru_cache(maxsize=2)
-    def get_local_dependencies_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = [self.code_directory]
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )
-        return set(dependencies_paths)
+        return sorted(list(set(dependencies_paths)))
 
 
-def get_changed_connectors() -> Set[Connector]:
+def get_changed_connectors(
+    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
+) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
-    airbyte_repo = git.Repo(search_parent_directories=True)
+    if modified_files is None:
+        airbyte_repo = git.Repo(search_parent_directories=True)
+        modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+
+    prefix_to_check = []
+    if source:
+        prefix_to_check.append(SOURCE_CONNECTOR_PATH_PREFIX)
+    if destination:
+        prefix_to_check.append(DESTINATION_CONNECTOR_PATH_PREFIX)
+    if third_party:
+        prefix_to_check.append(THIRD_PARTY_CONNECTOR_PATH_PREFIX)
+
     changed_source_connector_files = {
         file_path
-        for file_path in airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
+        for file_path in modified_files
+        if any(file_path.startswith(prefix) for prefix in prefix_to_check) and SCAFFOLD_CONNECTOR_GLOB not in file_path
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
@@ -317,5 +348,5 @@ def get_all_released_connectors() -> Set:
     return {
         Connector(Path(metadata_file).parent.name)
         for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if "-scaffold-" not in metadata_file
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
     }

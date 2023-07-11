@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
+## 0.44.2
+Ensuring the state value format matches the cursor value from the record
+
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
+## 0.44.0
+Support data feed like incremental syncs
+
+## 0.43.3
+Fix return type of RecordFilter: changed from generator to list
+
+## 0.43.2
+Connector builder module: serialize request body as string
+
+## 0.43.1
+Fix availability check to handle HttpErrors which happen during slice extraction
+
+## 0.43.0
+Refactoring declarative state management
+
+## 0.42.1
+Error message on state per partition state discrepancy
+
+## 0.42.0
+Supporting state per partition given incremental sync and partition router
+
+## 0.41.0
+Use x-www-urlencoded for access token refresh requests
+
+## 0.40.5
+Replace  with  when making oauth calls
+
+## 0.40.4
+Emit messages using message repository
+
+## 0.40.3
+Add utils for inferring datetime formats
+
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
+## 0.39.2
+Make step and cursor_granularity optional
+
 ## 0.39.1
 Improve connector builder error messages
 

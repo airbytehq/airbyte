@@ -44,12 +44,16 @@ List of available streams:
 - Personas
 - Mailboxes
 - Stages
+- Users
+- Tasks
+- Templates
+- Snippets
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-
-| :------ | :-------- | :----- | :------ |
+| Version | Date       | Pull Request | Subject |
+| :------ |:-----------| :----- | :------ |
+| 0.4.0 | 2023-06-14 | [27343](https://github.com/airbytehq/airbyte/pull/27343) | Add Users, Tasks, Templates, Snippets streams
 | 0.3.0 | 2023-05-17 | [26211](https://github.com/airbytehq/airbyte/pull/26211) | Add SequenceStates Stream
 | 0.2.0 | 2022-10-27 | [17385](https://github.com/airbytehq/airbyte/pull/17385) | Add new streams + page size variable + relationship data |
 | 0.1.2 | 2022-07-04 | [14386](https://github.com/airbytehq/airbyte/pull/14386) | Fix stream schema and cursor field |

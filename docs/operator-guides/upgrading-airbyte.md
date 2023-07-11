@@ -51,7 +51,13 @@ Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docke
 
    ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh` to download the installation script.
 
-3. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (docker detached mode).
+3. Remove previous local `docker-compose.yaml` and `.env`
+
+   ```bash
+   ./run-ab-platform.sh -r
+   ```
+
+4. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (docker detached mode).
 
    ```bash
    ./run-ab-platform.sh -b
@@ -111,7 +117,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.44.12 --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.50.7 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

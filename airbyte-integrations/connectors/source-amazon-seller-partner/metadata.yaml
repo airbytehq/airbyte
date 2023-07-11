@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.3.0
   dockerRepository: airbyte/source-amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -10,7 +10,7 @@ data:
   name: Amazon Seller Partner
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
