@@ -21,9 +21,9 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   private static final long TEN_MINUTES_MILLIS = 1000 * 60 * 10;
 
-    // 15 minutes is the maximum amount of time allowed between checkpoints as defined by
-    // The Airbyte Protocol
-    private static final long FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
+  // 15 minutes is the maximum amount of time allowed between checkpoints as defined by
+  // The Airbyte Protocol
+  private static final long FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
 
   // New users of airbyte likely want to see data flowing into their tables as soon as possible
   // However, as their destination tables grow in size, typing and de-duping data becomes an expensive
@@ -37,110 +37,117 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
       TEN_MINUTES_MILLIS,
       FIFTEEN_MINUTES_MILLIS);
 
-    // Constantly getting the system time adds a bit of overhead, adding a minimum record count
-    // To reduce calls for system time
-    private static final int MINIMUM_RECORD_INTERVAL = 100;
+  // Constantly getting the system time adds a bit of overhead, adding a minimum record count
+  // To reduce calls for system time
+  private static final int MINIMUM_RECORD_INTERVAL = 100;
 
-    private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
+  private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
   private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Integer> incrementalIndex;
 
   private final Supplier<Long> nowness;
-    private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> recordCounts;
-
+  private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> recordCounts;
 
   public TypeAndDedupeOperationValve() {
     this(SYSTEM_NOW);
   }
 
+  /**
+   * This constructor is here because mocking System.currentTimeMillis() is a pain :(
+   *
+   * @param nownessSupplier Supplier which will return a long value representing now
+   */
+  public TypeAndDedupeOperationValve(Supplier<Long> nownessSupplier) {
+    super();
+    incrementalIndex = new ConcurrentHashMap<>();
+    recordCounts = new ConcurrentHashMap<>();
+    this.nowness = nownessSupplier;
+  }
 
-    /**
-     * This constructor is here because mocking System.currentTimeMillis() is a pain :(
-     * @param nownessSupplier Supplier which will return a long value representing now
-     */
-    public TypeAndDedupeOperationValve(Supplier<Long> nownessSupplier) {
-        super();
-        incrementalIndex = new ConcurrentHashMap<>();
-        recordCounts = new ConcurrentHashMap<>();
-        this.nowness = nownessSupplier;
+  @Override
+  public Long put(final AirbyteStreamNameNamespacePair key, final Long value) {
+    if (!incrementalIndex.containsKey(key)) {
+      incrementalIndex.put(key, 0);
     }
-
-    @Override
-    public Long put(final AirbyteStreamNameNamespacePair key, final Long value) {
-        if (!incrementalIndex.containsKey(key)) {
-            incrementalIndex.put(key, 0);
-        }
-        if (!recordCounts.containsKey(key)) {
-            recordCounts.put(key, 1l);
-        }
-        return super.put(key, value);
-
+    if (!recordCounts.containsKey(key)) {
+      recordCounts.put(key, 1l);
     }
+    return super.put(key, value);
 
-    /**
-     * Adds a stream specific timestamp to track type and dedupe operations
-     *
-     * @param key the AirbyteStreamNameNamespacePair to track
-     */
-    public void addStream(final AirbyteStreamNameNamespacePair key) {
-        put(key, nowness.get());
-    }
+  }
 
-    /**
-     * Whether we should type and dedupe at this point in time for this particular stream.
-     * @param key the stream in question
-     * @return a boolean indicating whether we have crossed the interval threshold for typing and deduping.
-     */
-    public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
-        if (!containsKey(key)) {
-            return false;
-        }
-        recordCounts.put(key, recordCounts.get(key) + 1);
-        if (recordCounts.get(key) % MINIMUM_RECORD_INTERVAL == 0) {
-            return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
-        }
-        return false;
-    }
+  /**
+   * Adds a stream specific timestamp to track type and dedupe operations
+   *
+   * @param key the AirbyteStreamNameNamespacePair to track
+   */
+  public void addStream(final AirbyteStreamNameNamespacePair key) {
+    put(key, nowness.get());
+  }
 
-    /**
-     * Increment the interval at which typing and deduping should occur for the stream, max out at last index of
-     * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
-     * @param key the stream to increment the interval of
-     * @return the index of the typing and deduping interval associated with this stream
-     */
-    public int incrementInterval(final AirbyteStreamNameNamespacePair key) {
-        if (incrementalIndex.get(key) < typeAndDedupeIncreasingIntervals.size() - 1) {
-            incrementalIndex.put(key, incrementalIndex.get(key) + 1);
-        }
-        return incrementalIndex.get(key);
+  /**
+   * Whether we should type and dedupe at this point in time for this particular stream.
+   *
+   * @param key the stream in question
+   * @return a boolean indicating whether we have crossed the interval threshold for typing and
+   *         deduping.
+   */
+  public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
+    if (!containsKey(key)) {
+      return false;
     }
+    recordCounts.put(key, recordCounts.get(key) + 1);
+    if (recordCounts.get(key) % MINIMUM_RECORD_INTERVAL == 0) {
+      return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
+    }
+    return false;
+  }
 
-    /**
-     * Meant to be called after {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)}
-     * will set a streams last operation to the current time and increase its index reference in
-     * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
-     * @param key the stream to update
-     */
-    public void updateTimeAndIncreaseInterval(final AirbyteStreamNameNamespacePair key) {
-        put(key, nowness.get());
-        incrementInterval(key);
+  /**
+   * Increment the interval at which typing and deduping should occur for the stream, max out at last
+   * index of {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
+   *
+   * @param key the stream to increment the interval of
+   * @return the index of the typing and deduping interval associated with this stream
+   */
+  public int incrementInterval(final AirbyteStreamNameNamespacePair key) {
+    if (incrementalIndex.get(key) < typeAndDedupeIncreasingIntervals.size() - 1) {
+      incrementalIndex.put(key, incrementalIndex.get(key) + 1);
     }
+    return incrementalIndex.get(key);
+  }
 
-    /**
-     * Get the current interval for the stream
-     * @param key the stream in question
-     * @return a long value representing the length of the interval milliseconds
-     */
-    public Long getIncrementInterval(final AirbyteStreamNameNamespacePair key) {
-        return typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
-    }
+  /**
+   * Meant to be called after
+   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)} will set
+   * a streams last operation to the current time and increase its index reference in
+   * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
+   *
+   * @param key the stream to update
+   */
+  public void updateTimeAndIncreaseInterval(final AirbyteStreamNameNamespacePair key) {
+    put(key, nowness.get());
+    incrementInterval(key);
+  }
 
-    /**
-     * Get the current record count per stream
-     * @param key the stream in question
-     * @return the recrod count
-     */
-    public Long getRecordCount(final AirbyteStreamNameNamespacePair key) {
-        return recordCounts.get(key);
-    }
+  /**
+   * Get the current interval for the stream
+   *
+   * @param key the stream in question
+   * @return a long value representing the length of the interval milliseconds
+   */
+  public Long getIncrementInterval(final AirbyteStreamNameNamespacePair key) {
+    return typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
+  }
+
+  /**
+   * Get the current record count per stream
+   *
+   * @param key the stream in question
+   * @return the recrod count
+   */
+  public Long getRecordCount(final AirbyteStreamNameNamespacePair key) {
+    return recordCounts.get(key);
+  }
+
 }
