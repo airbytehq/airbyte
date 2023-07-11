@@ -45,7 +45,7 @@
       "type": ["null", "string"]
     },
     "task_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "created_at": {
       "type":  ["null", "string"],
@@ -130,7 +130,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "_href": {
           "type": ["null", "string"]
