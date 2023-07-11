@@ -7,6 +7,18 @@ on:
     branches: [master]
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      atf_modified: ${{ steps.filter.outputs.atf }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          atf:
+            - 'airbyte-to-flow/**'
   airbyte_to_flow:
     runs-on: ubuntu-20.04
 
@@ -16,14 +28,18 @@ jobs:
 
     strategy:
       fail-fast: false
+      
+    needs: paths-filter
 
     steps:
       - uses: actions/checkout@v2
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         with:
           fetch-depth: 0
 
       - name: Prepare
         id: prep
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           echo ::set-output name=tag::${TAG}
@@ -31,6 +47,7 @@ jobs:
       # Linux builds need the non-default musl target.
       - name: Install Rust
         uses: actions-rs/toolchain@v1
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         with:
           toolchain: nightly-2023-04-16
           target: x86_64-unknown-linux-musl
@@ -38,6 +55,7 @@ jobs:
           override: true
 
       - uses: actions/cache@v3
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         with:
           path: |
             ~/.cargo/bin/
@@ -48,9 +66,11 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install protobuf compiler (it's not already included in CI runner)
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         run: sudo apt install -y libprotobuf-dev protobuf-compiler
 
       - name: Build Linux
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         run: |-
           sudo apt-get update && \
           sudo apt-get install -y musl-tools && \
@@ -58,12 +78,15 @@ jobs:
           make
 
       - name: Tests
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         run: cd airbyte-to-flow && cargo test --release --target x86_64-unknown-linux-musl
 
       - name: Set up Docker Buildx
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Login to GitHub Container Registry
+        if: needs.paths-filter.outputs.atf_modified == 'true'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -72,7 +95,7 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v3
-        if: ${{ github.ref == 'refs/heads/master' }}
+        if: needs.paths-filter.outputs.atf_modified == 'true' && github.ref == 'refs/heads/master'
         with:
           context: airbyte-to-flow
           platforms: linux/amd64
@@ -81,7 +104,7 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v3
-        if: ${{ github.ref != 'refs/heads/master' }}
+        if: needs.paths-filter.outputs.atf_modified == 'true' && github.ref != 'refs/heads/master'
         with:
           context: airbyte-to-flow
           platforms: linux/amd64
@@ -90,6 +113,7 @@ jobs:
 
   connector:
     needs:
+      - paths-filter
       - airbyte_to_flow
     runs-on: ubuntu-20.04
     strategy:
@@ -183,7 +207,7 @@ jobs:
         id: build
         run: |
           AIRBYTE_TO_FLOW_TAG=dev
-          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" && '${{ needs.paths-filter.outputs.atf_modified }}' == 'true' ]]; then
             AIRBYTE_TO_FLOW_TAG=${{ steps.prep.outputs.tag }}
           fi
 
