@@ -18,12 +18,15 @@ class PlanHatClient:
         return f"{self.endpoint}/{self.tenant_uuid}"
 
     def _get_auth_headers(self) -> Mapping[str, Any]:
-        return {"'Content-Type'": "application/json", "Authorization": f"Bearer {self.api_token}"} if self.api_token else {"'Content-Type'": "application/json"}
+        return {"Authorization": f"Bearer {self.api_token}"} if self.api_token else {}
     
     def _request(
         self, http_method: str, data: List[Mapping] = None
     ) -> requests.Response:
         url = self._get_base_url()
-        headers = self._get_auth_headers()
+        headers = {
+            "Content-Type": "application/json",
+            **self._get_auth_headers()
+        }
         response = requests.request(method=http_method, url=url, headers=headers, json=data)
         return response

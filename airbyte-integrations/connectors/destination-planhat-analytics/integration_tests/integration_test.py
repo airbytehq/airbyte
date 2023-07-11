@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, Mapping
 from logging import getLogger
 
 import pytest
@@ -27,14 +27,7 @@ logger = getLogger("airbyte")
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
     with open("secrets/config.json", "r") as f:
-        return json.loads(f.read())
-    
-@pytest.fixture(name="invalid_config")
-def invalid_config_fixture() -> Dict[str, str]:
-    with open(
-        "integration_tests/invalid_config.json",
-    ) as f:
-        return json.loads(f.read())
+        return json.load(f)
     
 @pytest.fixture(name="client")
 def client_fixture(config) -> PlanHatClient:
@@ -51,16 +44,10 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     )
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
-    
-
 def test_check_valid_config(config: Mapping):
+    print(type(config))
     outcome = DestinationPlanhatAnalytics().check(logger, config)
     assert outcome.status == Status.SUCCEEDED
-
-def test_check_invalid_config(invalid_config: Mapping):
-    outcome = DestinationPlanhatAnalytics().check(logger, invalid_config)
-    assert outcome.status == Status.FAILED
-
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))

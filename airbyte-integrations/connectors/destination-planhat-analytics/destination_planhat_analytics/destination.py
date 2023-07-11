@@ -35,9 +35,9 @@ class DestinationPlanhatAnalytics(Destination):
         writer.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        try:
-            client = PlanHatClient(**config)
-            client.write([])
+        client = PlanHatClient(**config)
+        response = client.write([])
+        if response.status_code == 200:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+        else:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(response)}")

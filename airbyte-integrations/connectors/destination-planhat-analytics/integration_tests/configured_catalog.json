@@ -18,14 +18,6 @@
             },
             "externalId": {
               "type": "string"
-            },
-            "model": {
-              "type": "string"
-            },
-            "date": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_without_timezone"
             }
           }
         }
