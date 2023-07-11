@@ -18,6 +18,7 @@ from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATOR
 from metadata_service.utils import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
+
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
 
@@ -87,6 +88,7 @@ def upload_file_if_changed(
 
     return False, remote_blob.id
 
+
 def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
     version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
     latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
@@ -104,6 +106,7 @@ def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.buck
         upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
     return version_uploaded or latest_uploaded, version_blob_id
+
 
 def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, prerelease_tag: str) -> Tuple[bool, str]:
     # replace any dockerImageTag references with the actual tag
@@ -123,6 +126,7 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
 
     prerelease_remote_path = get_metadata_remote_file_path(metadata.data.dockerRepository, prerelease_tag)
     return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path, disable_cache=True)
+
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: str) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.

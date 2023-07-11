@@ -1,6 +1,7 @@
 import json
 from pydantic import BaseModel
 
+
 def to_json_sanitized_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
     """A helper function to convert a pydantic model to a sanitized dict.
 

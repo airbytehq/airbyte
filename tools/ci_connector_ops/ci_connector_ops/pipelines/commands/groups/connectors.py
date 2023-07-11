@@ -400,7 +400,6 @@ def list(
 @connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
 @click.pass_context
 def format(ctx: click.Context) -> bool:
-
     if ctx.obj["modified"]:
         # We only want to format the connector that with modified files on the current branch.
         connectors_and_files_to_format = [
