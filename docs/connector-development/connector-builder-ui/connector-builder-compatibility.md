@@ -80,7 +80,7 @@ Examples:
 
 If the integration is not an HTTP API returning the records synchronously, use the Python CDK.
 
-# Are data endpoints fixed?
+## Are data endpoints fixed?
 
 The connector builder requires the data endpoints to be fixed. This means the data endpoints representing separate streams are not dynamically generated based on the data or user configuration, but specified as part of the API documentation.
 
