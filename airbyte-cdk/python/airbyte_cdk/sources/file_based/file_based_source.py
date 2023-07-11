@@ -81,7 +81,11 @@ class FileBasedSource(AbstractSource, ABC):
         try:
             streams = []
             for stream in config["streams"]:
-                stream_config = FileBasedStreamConfig(validation_policies=self.validation_policies, **stream)
+                stream_config = FileBasedStreamConfig(**stream)
+                if stream_config.validation_policy not in self.validation_policies:
+                    raise ValidationError(
+                        f"validation_policy must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
+                    )
                 streams.append(
                     DefaultFileBasedStream(
                         config=stream_config,
@@ -90,6 +94,7 @@ class FileBasedSource(AbstractSource, ABC):
                         availability_strategy=self.availability_strategy,
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
+                        validation_policies=self.validation_policies,
                         cursor=DefaultFileBasedCursor(stream_config.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
