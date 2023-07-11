@@ -171,7 +171,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    recordId=metric_object.get(self.metrics_type_to_id_map[report_info.record_type], str(uuid.uuid4())),
+                    recordId=metric_object.get(self.metrics_type_to_id_map[report_info.record_type]) or str(uuid.uuid4()),
                     metric=metric_object,
                 ).dict()
 
