@@ -75,11 +75,11 @@ class IncrementalSingleSlice(Cursor):
             self._state[self.cursor_field.eval(self.config)] = cursor_value
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        max_dt = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
+        latest_record = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
 
-        if not max_dt:
+        if not latest_record:
             return
-        self._state[self.cursor_field.eval(self.config)] = max_dt[self.cursor_field.eval(self.config)]
+        self._state[self.cursor_field.eval(self.config)] = latest_record[self.cursor_field.eval(self.config)]
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         yield {}
@@ -150,12 +150,12 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             }
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        max_dt = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
+        latest_record = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
 
-        if not max_dt:
+        if not latest_record:
             return
 
-        max_state = max_dt[self.cursor_field.eval(self.config)]
+        max_state = latest_record[self.cursor_field.eval(self.config)]
         self._state[self.cursor_field.eval(self.config)] = max_state
 
         if self.parent_stream:
@@ -166,46 +166,48 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
+
+        # check if state is empty ->
+        if not stream_state.get(self.parent_cursor_field):
+            # yield empty slice for complete fetch of items stream
+            yield {}
+            return
+
+        all_ids = set()
+        slice_ids = list()
+        empty_parent_slice = True
+
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            empty_parent_slice = True
+            for parent_record in self.parent_stream.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
+            ):
+                # Skip non-records (eg AirbyteLogMessage)
+                if isinstance(parent_record, AirbyteMessage):
+                    if parent_record.type == Type.RECORD:
+                        parent_record = parent_record.record.data
 
-            # check if state is empty ->
-            if not stream_state.get(self.parent_cursor_field):
-                # yield empty slice for complete fetch of items stream
-                yield from [
-                    {},
-                ]
-            else:
-                all_ids = set()
-                slice_ids = list()
+                try:
+                    substream_slice = dpath.util.get(parent_record, self.parent_field)
+                except KeyError:
+                    pass
+                else:
+                    empty_parent_slice = False
 
-                for parent_record in self.parent_stream.read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
-                ):
-                    # Skip non-records (eg AirbyteLogMessage)
-                    if isinstance(parent_record, AirbyteMessage):
-                        if parent_record.type == Type.RECORD:
-                            parent_record = parent_record.record.data
+                    # check if record with this id was already processed
+                    if substream_slice not in all_ids:
+                        all_ids.add(substream_slice)
+                        slice_ids.append(substream_slice)
 
-                    try:
-                        substream_slice = dpath.util.get(parent_record, self.parent_field)
-                    except KeyError:
-                        pass
-                    else:
-                        empty_parent_slice = False
+                        # yield slice with desired number of ids
+                        if self.nested_items_per_page == len(slice_ids):
+                            yield {self.substream_slice_field: slice_ids}
+                            slice_ids = list()
+            if slice_ids:
+                yield {self.substream_slice_field: slice_ids}
 
-                        if substream_slice not in all_ids:
-                            all_ids.add(substream_slice)
-                            slice_ids.append(substream_slice)
-                            if self.nested_items_per_page == len(slice_ids):
-                                yield {self.substream_slice_field: slice_ids}
-                                slice_ids = list()
-                if slice_ids:
-                    yield {self.substream_slice_field: slice_ids}
-
-            # If the parent slice contains no records,
-            if empty_parent_slice:
-                yield from []
+        # If the parent slice contains no records
+        if empty_parent_slice:
+            yield from []
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = (self._state or {}).get(self.parent_stream_name, {})

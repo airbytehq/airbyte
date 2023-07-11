@@ -34,8 +34,14 @@ class MondayActivityExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
         result = []
-        if len(response_body["data"]["boards"]):
-            for record in response_body["data"]["boards"][0]["activity_logs"]:
+        if not response_body["data"]["boards"]:
+            return result
+
+        for board_data in response_body["data"]["boards"]:
+            if not isinstance(board_data, dict):
+                continue
+
+            for record in board_data.get("activity_logs", []):
                 json_data = json.loads(record["data"])
                 new_record = record
                 if record.get("created_at"):
@@ -74,25 +80,23 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
     def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
         response_body = self.decoder.decode(response)
-        if len(field_path) == 0:
-            extracted = response_body
-        else:
-            path = [path.eval(self.config) for path in field_path]
-            if "*" in path:
-                extracted = dpath.util.values(response_body, path)
-            else:
-                extracted = dpath.util.get(response_body, path, default=[])
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
+
+        path = [path.eval(self.config) for path in field_path]
+        extracted = dpath.util.values(response_body, path) if path else response_body
+
+        pattern_path = "*" in path
+        if not pattern_path:
+            extracted = dpath.util.get(response_body, path, default=[])
+
+        if extracted:
+            return extracted if isinstance(extracted, list) else [extracted]
+        return []
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         result = self.try_extract_records(response, field_path=self.field_path)
         if not result and self.additional_field_path:
             result = self.try_extract_records(response, self.additional_field_path)
+
         for item_index in range(len(result)):
             if "updated_at" in result[item_index]:
                 result[item_index]["updated_at_int"] = int(
