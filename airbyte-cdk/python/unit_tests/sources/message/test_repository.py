@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pydantic.error_wrappers import ValidationError
 from unittest.mock import Mock
 
 import pytest
@@ -36,6 +37,7 @@ ANOTHER_CONTROL = AirbyteControlMessage(
     emitted_at=0,
     connectorConfig=AirbyteControlConnectorConfigMessage(config={"another config": "another value"}),
 )
+UNKNOWN_LEVEL = "potato"
 
 
 class TestInMemoryMessageRepository:
@@ -79,10 +81,32 @@ class TestInMemoryMessageRepository:
         repo.log_message(Level.INFO, lambda: "this is a log message")
         assert list(repo.consume_queue())
 
+    def test_given_log_level_is_severe_enough_when_log_message_then_filter_secrets(self, mocker):
+        filtered_message = "a filtered message"
+        mocker.patch("airbyte_cdk.sources.message.repository.filter_secrets", return_value=filtered_message)
+        repo = InMemoryMessageRepository(Level.DEBUG)
+
+        repo.log_message(Level.INFO, lambda: "this is a log message")
+
+        assert list(repo.consume_queue())[0].log.message == filtered_message
+
     def test_given_log_level_not_severe_enough_when_log_message_then_do_not_allow_message_to_be_consumed(self):
         repo = InMemoryMessageRepository(Level.ERROR)
         repo.log_message(Level.INFO, lambda: "this is a log message")
         assert not list(repo.consume_queue())
+
+    def test_given_unknown_log_level_as_threshold_when_log_message_then_allow_message_to_be_consumed(self):
+        repo = InMemoryMessageRepository(UNKNOWN_LEVEL)
+        repo.log_message(Level.DEBUG, lambda: "this is a log message")
+        assert list(repo.consume_queue())
+
+    def test_given_unknown_log_level_for_log_when_log_message_then_raise_error(self):
+        """
+        Pydantic will fail if the log level is unknown but on our side, we should try to log at least
+        """
+        repo = InMemoryMessageRepository(Level.ERROR)
+        with pytest.raises(ValidationError):
+            repo.log_message(UNKNOWN_LEVEL, lambda: "this is a log message")
 
 
 class TestNoopMessageRepository:

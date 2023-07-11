@@ -5,6 +5,7 @@
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections import deque
 from typing import Callable, Iterable, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
@@ -26,6 +27,14 @@ _SEVERITY_BY_LOG_LEVEL = {
 
 
 def _is_severe_enough(threshold: Level, level: Level):
+    if threshold not in _SEVERITY_BY_LOG_LEVEL:
+        _LOGGER.warning(f"Log level {threshold} for threshold is not supported. This is probably a CDK bug. Please contact Airbyte.")
+        return True
+
+    if level not in _SEVERITY_BY_LOG_LEVEL:
+        _LOGGER.warning(f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte.")
+        return True
+
     return _SEVERITY_BY_LOG_LEVEL[threshold] >= _SEVERITY_BY_LOG_LEVEL[level]
 
 
@@ -60,7 +69,7 @@ class NoopMessageRepository(MessageRepository):
 
 class InMemoryMessageRepository(MessageRepository):
     def __init__(self, log_level=Level.INFO):
-        self._message_queue = []
+        self._message_queue = deque()
         self._log_level = log_level
 
     def emit_message(self, message: AirbyteMessage) -> None:
@@ -80,7 +89,7 @@ class InMemoryMessageRepository(MessageRepository):
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
         while self._message_queue:
-            yield self._message_queue.pop(0)
+            yield self._message_queue.popleft()
 
 
 class LogAppenderMessageRepositoryDecorator(MessageRepository):
