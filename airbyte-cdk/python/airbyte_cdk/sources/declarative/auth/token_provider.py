@@ -4,9 +4,7 @@
 
 
 from abc import abstractmethod
-import base64
 import datetime
-import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -14,17 +12,12 @@ from airbyte_cdk.sources.declarative.exceptions import ReadException
 import dpath.util
 import pendulum
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
-from cachetools import TTLCache, cached
-from isodate import Duration, parse_duration
+from isodate import Duration
 from pendulum import DateTime
 
 SESSION_TOKEN_CONFIG_KEY = "__session_token"
@@ -65,9 +58,10 @@ class SessionTokenProvider(TokenProvider):
 class InterpolatedStringTokenProvider(TokenProvider):
     config: Config
     api_token: Union[InterpolatedString, str]
+    parameters: Mapping[str, Any]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
+    def __post_init__(self):
+        self._token = InterpolatedString.create(self.api_token, parameters=self.parameters)
     
     def get_token(self) -> str:
         return self._token.eval(self.config)

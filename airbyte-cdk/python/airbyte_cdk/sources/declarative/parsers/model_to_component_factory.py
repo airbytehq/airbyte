@@ -16,7 +16,6 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.auth.generic_session_token import SESSION_TOKEN_CONFIG_KEY, GenericSessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -81,10 +80,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    SessionTokenRequestApiKeyAuthenticator,
-    SessionTokenRequestBearerAuthenticator,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
@@ -263,7 +258,7 @@ class ModelToComponentFactory:
                 parameters=model.parameters,
             )
         )
-        return ApiKeyAuthenticator(token_provider=token_provider if token_provider is not None else InterpolatedStringTokenProvider(api_token=model.api_token, config=config), request_option=request_option, config=config, parameters=model.parameters)
+        return ApiKeyAuthenticator(token_provider=token_provider if token_provider is not None else InterpolatedStringTokenProvider(api_token=model.api_token, config=config, parameters=model.parameters), request_option=request_option, config=config, parameters=model.parameters)
 
     def create_generic_session_token_authenticator(
         self, model: GenericSessionTokenAuthenticatorModel, config: Config, **kwargs
@@ -276,7 +271,7 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
         if model.request_authentication.type == "Bearer":
-            return self.create_bearer_authenticator(
+            return ModelToComponentFactory.create_bearer_authenticator(
                 BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""), config, token_provider=token_provider
             )
         else:
@@ -293,7 +288,7 @@ class ModelToComponentFactory:
     @staticmethod
     def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs) -> BearerAuthenticator:
         return BearerAuthenticator(
-            token_provider=token_provider if token_provider is not None else InterpolatedStringTokenProvider(api_token=model.api_token, config=config),
+            token_provider=token_provider if token_provider is not None else InterpolatedStringTokenProvider(api_token=model.api_token, config=config, parameters=model.parameters),
             config=config,
             parameters=model.parameters,
         )

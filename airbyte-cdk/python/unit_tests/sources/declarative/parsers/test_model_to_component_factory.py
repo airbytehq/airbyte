@@ -239,7 +239,7 @@ spec:
     assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.requester.request_options_provider, InterpolatedRequestOptionsProvider)
     assert stream.retriever.requester.request_options_provider.request_parameters.get("unit") == "day"
@@ -939,7 +939,7 @@ def test_config_with_defaults():
     assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
