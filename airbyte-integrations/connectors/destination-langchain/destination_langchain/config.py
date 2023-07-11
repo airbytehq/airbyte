@@ -73,7 +73,7 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
     destination_path: str = Field(
         ...,
         title="Destination Path",
-        description="Path to the directory where hnswlib and meta data files will be written. The files will be placed inside that local mount.",
+        description="Path to the directory where hnswlib and meta data files will be written. The files will be placed inside that local mount. All files in the specified destination directory will be deleted on each run.",
         examples=["/local/my_hnswlib_index"],
     )
 

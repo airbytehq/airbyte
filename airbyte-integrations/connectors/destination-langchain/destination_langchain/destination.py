@@ -67,7 +67,7 @@ class DestinationLangchain(Destination):
             elif message.type == Type.RECORD:
                 batcher.add(message.record)
         batcher.flush()
-        self.indexer.post_sync()
+        yield from self.indexer.post_sync()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._init_indexer(ConfigModel.parse_obj(config))

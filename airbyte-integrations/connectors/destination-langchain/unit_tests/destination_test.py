@@ -4,7 +4,15 @@
 
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    Level,
+    Type,
+)
 from destination_langchain.config import ConfigModel
 from destination_langchain.destination import BATCH_SIZE, DestinationLangchain, embedder_map, indexer_map
 
@@ -62,6 +70,8 @@ def test_write():
     mock_indexer = MagicMock()
     indexer_map["pinecone"].return_value = mock_indexer
     mock_indexer.max_metadata_size = 1000
+    post_sync_log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="post sync"))
+    mock_indexer.post_sync.return_value = [post_sync_log_message]
 
     # Create the DestinationLangchain instance
     destination = DestinationLangchain()
@@ -77,6 +87,9 @@ def test_write():
 
     # 1 batches due to max batch size reached and 1 batch due to state message
     assert mock_indexer.index.call_count == 2
+
+    output_message = next(output_messages)
+    assert output_message == post_sync_log_message
 
     try:
         next(output_messages)

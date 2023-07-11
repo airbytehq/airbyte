@@ -57,9 +57,15 @@ vector_store = DocArrayHnswSearch.from_params(embeddings, "/tmp/airbyte_local/<y
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 ```
 
+:::danger
+
+This destination will delete all existing files in the configured directory on each. Make sure to not use a directory that contains other files.
+
+:::
+
 :::caution
 
-DocArrayHnswSearch is meant to be used on a local workstation and won't work on Kubernetes
+DocArrayHnswSearch is meant to be used on a local workstation and won't work on Kubernetes.
 
 Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 

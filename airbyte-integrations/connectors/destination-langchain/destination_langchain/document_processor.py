@@ -15,7 +15,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_airbyte_stream"
-METADATA_NATURAL_ID_FIELD = "_natural_id"
+METADATA_RECORD_ID_FIELD = "_record_id"
 
 
 class DocumentProcessor:
@@ -41,14 +41,14 @@ class DocumentProcessor:
         """
         Generate documents from records.
         :param records: List of AirbyteRecordMessages
-        :return: Tuple of (List of document chunks, Natural id to delete if applicable)
+        :return: Tuple of (List of document chunks, record id to delete if a stream is in dedup mode to avoid stale documents in the vector store)
         """
         doc = self._generate_document(record)
         if doc is None:
             self.logger.warning(f"Record {str(record.data)[:250]}... does not contain any text fields. Skipping.")
             return [], None
         chunks = self._split_document(doc)
-        id_to_delete = doc.metadata[METADATA_NATURAL_ID_FIELD] if METADATA_NATURAL_ID_FIELD in doc.metadata else None
+        id_to_delete = doc.metadata[METADATA_RECORD_ID_FIELD] if METADATA_RECORD_ID_FIELD in doc.metadata else None
         return chunks, id_to_delete
 
     def _generate_document(self, record: AirbyteRecordMessage) -> Optional[Document]:
@@ -78,17 +78,17 @@ class DocumentProcessor:
                     dpath.util.delete(metadata, field, separator=".")
                 except PathNotFound:
                     pass  # if the field doesn't exist, do nothing
-        metadata = self._normalize_metadata(metadata)
+        metadata = self._truncate_metadata(metadata)
         stream_identifier = self._stream_identifier(record)
         current_stream = self.streams[stream_identifier]
         metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
         if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
             # TODO support nested and composite primary keys
-            metadata[METADATA_NATURAL_ID_FIELD] = record.data[current_stream.primary_key[0][0]]
+            metadata[METADATA_RECORD_ID_FIELD] = record.data[current_stream.primary_key[0][0]]
         return metadata
 
-    def _normalize_metadata(self, metadata: dict) -> dict:
+    def _truncate_metadata(self, metadata: dict) -> dict:
         """
         Normalize metadata to ensure it is within the size limit and doesn't contain complex objects.
         """

@@ -16,13 +16,13 @@ def initialize_processor():
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream1", json_schema={}, namespace="namespace1"),
+                stream=AirbyteStream(name="stream1", json_schema={}, namespace="namespace1", supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 primary_key=[["id"]],
             ),
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream2", json_schema={}),
+                stream=AirbyteStream(name="stream2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
@@ -48,7 +48,7 @@ def test_process_single_chunk_without_metadata():
 
     assert len(chunks) == 1
     # natural id is only set for dedup mode
-    assert "_natural_id" not in chunks[0].metadata
+    assert "_record_id" not in chunks[0].metadata
     assert chunks[0].metadata["_airbyte_stream"] == "namespace1_stream1"
     assert chunks[0].page_content == "id: 1\ntext: This is the text"
     assert id_to_delete is None
@@ -59,7 +59,7 @@ def test_process_single_chunk_without_namespace():
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream1", json_schema={}),
+                stream=AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
@@ -228,5 +228,5 @@ def test_process_multiple_chunks_with_dedupe_mode():
     chunks, id_to_delete = processor.process(record)
 
     assert len(chunks) > 1
-    assert chunks[0].metadata["_natural_id"] == 99
+    assert chunks[0].metadata["_record_id"] == 99
     assert id_to_delete == 99

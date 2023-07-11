@@ -21,11 +21,9 @@ def measure_time(func):
     wrapper.count = 0
     wrapper.total_time = 0
     wrapper.average_time = 0
-    wrapper._print_stats = lambda: print_stats(wrapper)
+    wrapper._get_stats = lambda: get_stats(wrapper)
 
-    def print_stats(wrapper):
-        print(f"Function '{func.__name__}' called {wrapper.count} time(s).")
-        print(f"Average execution time: {wrapper.average_time:.6f} seconds.")
-        print(f"Total execution time: {wrapper.total_time:.6f} seconds.")
+    def get_stats(wrapper):
+        return f"Function '{func.__name__}' called {wrapper.count} time(s).\nAverage execution time: {wrapper.average_time:.6f} seconds.\nTotal execution time: {wrapper.total_time:.6f} seconds."
 
     return wrapper

@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from destination_langchain.config import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
+from destination_langchain.utils import format_exception
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -42,7 +43,7 @@ class OpenAIEmbedder(Embedder):
         try:
             self.embeddings.embed_query("test")
         except Exception as e:
-            return str(e)
+            return format_exception(e)
         return None
 
     @property
@@ -64,7 +65,7 @@ class FakeEmbedder(Embedder):
         try:
             self.embeddings.embed_query("test")
         except Exception as e:
-            return str(e)
+            return format_exception(e)
         return None
 
     @property

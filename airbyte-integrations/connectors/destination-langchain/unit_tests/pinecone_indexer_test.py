@@ -30,7 +30,7 @@ def test_pinecone_index_upsert_and_delete():
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.delete.assert_called_with(filter={"_natural_id": {"$in": ["delete_id1", "delete_id2"]}})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}})
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_airbyte_stream": "abc", "text": "test"}),
