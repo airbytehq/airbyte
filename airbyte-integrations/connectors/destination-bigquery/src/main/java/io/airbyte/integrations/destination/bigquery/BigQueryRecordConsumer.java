@@ -164,7 +164,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.get(streamId).upload(message);
     if (!streamTDValve.containsKey(streamId)) {
       streamTDValve.addStream(streamId);
-    } else if (streamTDValve.readyToTypeAndDedupe(streamId)) {
+    } else if (streamTDValve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
       doTypingAndDeduping(catalog.getStream(streamId.getNamespace(), streamId.getName()));
       streamTDValve.updateTimeAndIncreaseInterval(streamId);
     }
