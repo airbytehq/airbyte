@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static com.mongodb.client.model.Filters.gt;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoCommandException;
@@ -31,6 +29,13 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
+import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonType;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,12 +44,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonType;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.mongodb.client.model.Filters.gt;
 
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
@@ -190,8 +191,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final BsonType cursorFieldType) {
-    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
-    return queryTable(database, columnNames, tableName, greaterComparison);
+    final Optional<Bson> filter = generateFilter(cursorInfo, cursorFieldType);
+    return queryTable(database, columnNames, tableName, filter);
   }
 
   @Override
@@ -206,11 +207,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
                                                      final List<String> columnNames,
                                                      final String tableName,
-                                                     final Bson filter) {
+                                                     final Optional<Bson> filter) {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
+        final Stream<JsonNode> stream = database.read(tableName, columnNames, filter);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -249,6 +250,14 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
     return connectionStrBuilder.toString();
+  }
+
+  private Optional<Bson> generateFilter(final CursorInfo cursorInfo,final BsonType cursorFieldType ) {
+    if (cursorInfo != null) {
+      return Optional.of(gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor())));
+    } else {
+      return Optional.empty();
+    }
   }
 
   @Override

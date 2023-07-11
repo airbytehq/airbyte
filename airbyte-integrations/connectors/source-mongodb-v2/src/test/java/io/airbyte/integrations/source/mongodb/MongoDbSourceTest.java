@@ -138,19 +138,17 @@ class MongoDbSourceTest {
   }
 
   @Test
-  @Disabled
   void testIncrementalRefresh() throws Exception {
-    final String timestampCursorValue = "1970-01-01T00:00:00.000";
-    final CursorInfo cursor = new CursorInfo("timestamp", timestampCursorValue, "timestamp", timestampCursorValue);
+    final CursorInfo cursor = new CursorInfo("index", "0", "index", "999");
     final List<JsonNode> results = new ArrayList<>();
     final MongoDatabase database = source.createDatabase(airbyteSourceConfig);
 
     final AutoCloseableIterator<JsonNode> stream =
-        source.queryTableIncremental(database, List.of(), null, COLLECTION_NAME, cursor, BsonType.TIMESTAMP);
+            source.queryTableIncremental(database, List.of(), null, COLLECTION_NAME, cursor, BsonType.INT32);
     stream.forEachRemaining(results::add);
 
     assertNotNull(results);
-    assertEquals(DATASET_SIZE, results.size());
+    assertEquals(DATASET_SIZE - 1000, results.size());
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
@@ -173,6 +171,7 @@ class MongoDbSourceTest {
   private static Document buildDocument(final Integer i) {
     return new Document().append("_id", new ObjectId())
         .append("title", "Movie #" + i)
+        .append("index", i)
         .append("timestamp", new Timestamp(System.currentTimeMillis()).toString().replace(' ', 'T'));
   }
 
