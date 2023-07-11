@@ -16,10 +16,8 @@
             "title": "OAuth2.0",
             "x-oauth2-provider": "zendesk",
             "required": [
-              "credentials",
               "client_id",
               "client_secret",
-              "refresh_token",
               "access_token"
               ],
             "properties": {
@@ -45,12 +43,6 @@
                 "type": "string",
                 "title": "Access Token",
                 "description": "Access Token for making authenticated requests.",
-                "airbyte_secret": true
-              },
-              "refresh_token": {
-                "type": "string",
-                "title": "Refresh Token",
-                "description": "Refresh Token to obtain new Access Token, when it's expired.",
                 "airbyte_secret": true
               }
             }
