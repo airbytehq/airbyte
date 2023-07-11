@@ -66,6 +66,11 @@ class ParquetParser(FileTypeParser):
                 "values": parquet_value.dictionary.tolist(),
             }
 
+        if pa.types.is_map(parquet_value.type):
+            # Map is stored as a struct with two fields: key and value
+            # Its python representation is a tuple, so we convert it to a dict
+            return {k: v for k, v in parquet_value.as_py()}
+
         # Convert duration to seconds, then convert to the appropriate unit
         if pa.types.is_duration(parquet_value.type):
             duration = parquet_value.as_py()
@@ -99,7 +104,7 @@ class ParquetParser(FileTypeParser):
             return {"type": "integer"}
         elif pa.types.is_floating(parquet_type):
             return {"type": "number"}
-        elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type):
+        elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type) or pa.types.is_map(parquet_type):
             return {"type": "object"}
         elif pa.types.is_list(parquet_type) or pa.types.is_large_list(parquet_type) or parquet_type == pa.month_day_nano_interval():
             return {"type": "array"}
@@ -108,7 +113,9 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def _is_binary(parquet_type: pa.DataType) -> bool:
-        return bool(pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type))
+        return bool(
+            pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type) or pa.types.is_fixed_size_binary(parquet_type)
+        )
 
     @staticmethod
     def _is_integer(parquet_type: pa.DataType) -> bool:

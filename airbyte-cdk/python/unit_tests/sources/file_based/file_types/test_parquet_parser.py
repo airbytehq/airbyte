@@ -19,9 +19,11 @@ from pyarrow import Scalar
         pytest.param(pa.int8(), {"type": "integer"}, id="test_parquet_int8"),
         pytest.param(pa.int16(), {"type": "integer"}, id="test_parquet_int16"),
         pytest.param(pa.int32(), {"type": "integer"}, id="test_parquet_int32"),
+        pytest.param(pa.int64(), {"type": "integer"}, id="test_parquet_int64"),
         pytest.param(pa.uint8(), {"type": "integer"}, id="test_parquet_uint8"),
         pytest.param(pa.uint16(), {"type": "integer"}, id="test_parquet_uint16"),
         pytest.param(pa.uint32(), {"type": "integer"}, id="test_parquet_uint32"),
+        pytest.param(pa.uint64(), {"type": "integer"}, id="test_parquet_uint64"),
         pytest.param(pa.float16(), {"type": "number"}, id="test_parquet_float16"),
         pytest.param(pa.float32(), {"type": "number"}, id="test_parquet_float32"),
         pytest.param(pa.float64(), {"type": "number"}, id="test_parquet_float64"),
@@ -41,6 +43,7 @@ from pyarrow import Scalar
         pytest.param(pa.duration("ns"), {"type": "integer"}, id="test_duration_ns"),
         pytest.param(pa.month_day_nano_interval(), {"type": "array"}, id="test_parquet_month_day_nano_interval"),
         pytest.param(pa.binary(), {"type": "string"}, id="test_binary"),
+        pytest.param(pa.binary(2), {"type": "string"}, id="test_fixed_size_binary"),
         pytest.param(pa.string(), {"type": "string"}, id="test_parquet_string"),
         pytest.param(pa.utf8(), {"type": "string"}, id="test_utf8"),
         pytest.param(pa.large_binary(), {"type": "string"}, id="test_large_binary"),
@@ -52,6 +55,7 @@ from pyarrow import Scalar
         pytest.param(pa.large_list(pa.int32()), {"type": "array"}, id="test_large_list"),
         pytest.param(pa.decimal128(2), {"type": "string"}, id="test_decimal128"),
         pytest.param(pa.decimal256(2), {"type": "string"}, id="test_decimal256"),
+        pytest.param(pa.map_(pa.int32(), pa.int32()), {"type": "object"}, id="test_map"),
     ]
 )
 def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str]) -> None:
@@ -69,9 +73,11 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.int8(), -1, -1, id="test_int8"),
         pytest.param(pa.int16(), 2, 2, id="test_int16"),
         pytest.param(pa.int32(), 3, 3, id="test_int32"),
+        pytest.param(pa.int64(), 4, 4, id="test_int64"),
         pytest.param(pa.uint8(), 4, 4, id="test_parquet_uint8"),
         pytest.param(pa.uint16(), 5, 5, id="test_parquet_uint16"),
         pytest.param(pa.uint32(), 6, 6, id="test_parquet_uint32"),
+        pytest.param(pa.uint64(), 6, 6, id="test_parquet_uint64"),
         pytest.param(pa.float32(), 2.7, 2.7, id="test_parquet_float32"),
         pytest.param(pa.float64(), 3.14, 3.14, id="test_parquet_float64"),
         pytest.param(pa.time32("s"), datetime.time(1, 2, 3), "01:02:03", id="test_parquet_time32s"),
@@ -93,6 +99,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.month_day_nano_interval(), datetime.timedelta(days=3, microseconds=4), [0, 3, 4000],
                      id="test_parquet_month_day_nano_interval"),
         pytest.param(pa.binary(), b"this is a binary string", "this is a binary string", id="test_binary"),
+        pytest.param(pa.binary(2), b"t1", "t1", id="test_fixed_size_binary"),
         pytest.param(pa.string(), "this is a string", "this is a string", id="test_parquet_string"),
         pytest.param(pa.utf8(), "utf8".encode("utf8"), "utf8", id="test_utf8"),
         pytest.param(pa.large_binary(), b"large binary string", "large binary string", id="test_large_binary"),
@@ -103,6 +110,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.large_list(pa.int32()), [4, 5, 6], [4, 5, 6], id="test_large_list"),
         pytest.param(pa.decimal128(5, 3), 12, "12.000", id="test_decimal128"),
         pytest.param(pa.decimal256(8, 2), 13, "13.00", id="test_decimal256"),
+        pytest.param(pa.map_(pa.string(), pa.int32()), {"hello": 1, "world": 2}, {"hello": 1, "world": 2}, id="test_map"),
     ]
 )
 def test_value_transformation(pyarrow_type: pa.DataType, parquet_object: Scalar, expected_value: Any) -> None:
