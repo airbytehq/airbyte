@@ -1,0 +1,50 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    id 'airbyte-connector-acceptance-test'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.databricks.DatabricksSource'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens=java.base/java.nio=ALL-UNNAMED']
+}
+
+dependencies {
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-integrations:connectors:source-jdbc')
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
+
+    //TODO Add jdbc driver imporbundlet here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
+    implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.33'
+//    implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25'
+
+//    implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25-1'
+//    implementation group: 'org.apache.camel', name: 'camel-jdbc', version: '4.0.0-M3'
+
+
+    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-databricks')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+
+
+
+//    implementation project(':airbyte-db:db-lib')
+//    implementation project(':airbyte-config-oss:config-models-oss')
+//    implementation libs.airbyte.protocol
+//    implementation project(':airbyte-integrations:bases:base-java')
+//    implementation project(':airbyte-integrations:bases:base-java-s3')
+//    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+//    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
+//    implementation project(':airbyte-integrations:connectors:destination-s3')
+//    implementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
+}

@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 534aa672-d28f-4c3b-be85-93b82e902a71
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-databricks
+  githubIssueLabel: source-databricks
+  icon: databricks.svg
+  license: MIT
+  name: Databricks
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/databricks
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
