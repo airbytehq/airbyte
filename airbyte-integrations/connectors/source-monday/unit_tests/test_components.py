@@ -48,7 +48,7 @@ def test_sub_slicer(last_record, expected, records):
     )
 
     slicer = IncrementalSubstreamSlicer(
-        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config]
+        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], nested_items_per_page=10
     )
     stream_slice = next(slicer.stream_slices()) if records else {}
     slicer.close_slice(stream_slice, last_record)
