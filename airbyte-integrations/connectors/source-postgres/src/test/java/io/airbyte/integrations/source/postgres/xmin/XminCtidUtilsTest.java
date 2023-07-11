@@ -40,7 +40,8 @@ public class XminCtidUtilsTest {
       Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
       Field.of("COL_MODEL", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
+      .withSyncMode(SyncMode.INCREMENTAL);
 
   private static final ConfiguredAirbyteStream MODELS_STREAM_2 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
       "MODELS_STREAM_NAME_2",
@@ -49,7 +50,8 @@ public class XminCtidUtilsTest {
       Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
       Field.of("COL_MODEL", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
+      .withSyncMode(SyncMode.INCREMENTAL);
 
   @Test
   public void emptyStateTest() {

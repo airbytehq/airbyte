@@ -24,6 +24,7 @@ REPORT_MAPPING = {
     "ad_groups": "ad_group",
     "ad_group_labels": "ad_group_label",
     "campaigns": "campaign",
+    "campaign_budget": "campaign_budget",
     "campaign_labels": "campaign_label",
     "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
@@ -34,6 +35,8 @@ REPORT_MAPPING = {
     "click_view": "click_view",
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
+    "user_interest": "user_interest",
+    "audience": "audience",
 }
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
