@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.Str
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -28,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,8 +43,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
-  public static final int FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
-
   private final BigQuery bigquery;
   private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -53,7 +51,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final BigQueryDestinationHandler destinationHandler;
   private AirbyteMessage lastStateMessage = null;
 
-  private final Map<AirbyteStreamNameNamespacePair, AtomicLong> streamTDRunTimestamps = new HashMap();
+  private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
   private final boolean use1s1t;
   private final Map<StreamId, String> overwriteStreamsWithTmpTable;
@@ -164,11 +162,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private void processRecord(final AirbyteMessage message) throws InterruptedException {
     final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(streamId).upload(message);
-    if (!streamTDRunTimestamps.containsKey(streamId)) {
-      streamTDRunTimestamps.put(streamId, new AtomicLong(System.currentTimeMillis()));
-    } else if (System.currentTimeMillis() - streamTDRunTimestamps.get(streamId).get() > FIFTEEN_MINUTES_MILLIS) {
+    if (!streamTDValve.containsKey(streamId)) {
+      streamTDValve.addStream(streamId);
+    } else if (streamTDValve.readyToTypeAndDedupe(streamId)) {
       doTypingAndDeduping(catalog.getStream(streamId.getNamespace(), streamId.getName()));
-      streamTDRunTimestamps.get(streamId).getAndSet(System.currentTimeMillis());
+      streamTDValve.updateTimeAndIncreaseInterval(streamId);
     }
   }
 
