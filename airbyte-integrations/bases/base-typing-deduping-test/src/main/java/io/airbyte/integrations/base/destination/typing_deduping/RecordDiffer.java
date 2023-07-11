@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
@@ -21,7 +24,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,12 +34,9 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 public class RecordDiffer {
 
-  private final Comparator<JsonNode> rawRecordIdentityComparator;
-  private final Comparator<JsonNode> rawRecordSortComparator;
-  private final Function<JsonNode, String> rawRecordIdentityExtractor;
-  private final Comparator<JsonNode> finalRecordIdentityComparator;
-  private final Comparator<JsonNode> finalRecordSortComparator;
-  private final Function<JsonNode, String> finalRecordIdentityExtractor;
+  private final Comparator<JsonNode> recordIdentityComparator;
+  private final Comparator<JsonNode> recordSortComparator;
+  private final Function<JsonNode, String> recordIdentityExtractor;
 
   /**
    * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
@@ -45,14 +44,9 @@ public class RecordDiffer {
    */
   @SafeVarargs
   public RecordDiffer(final Pair<String, AirbyteType>... identifyingColumns) {
-    this.rawRecordIdentityComparator = buildIdentityComparator(record -> record.get("_airbyte_data"), identifyingColumns);
-    this.finalRecordIdentityComparator = buildIdentityComparator(record -> record, identifyingColumns);
-
-    this.rawRecordSortComparator = rawRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-    this.finalRecordSortComparator = finalRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-
-    this.rawRecordIdentityExtractor = buildIdentityExtractor(record -> record.get("_airbyte_data"), identifyingColumns);
-    this.finalRecordIdentityExtractor = buildIdentityExtractor(record -> record, identifyingColumns);
+    this.recordIdentityComparator = buildIdentityComparator(identifyingColumns);
+    this.recordSortComparator = recordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
+    this.recordIdentityExtractor = buildIdentityExtractor(identifyingColumns);
   }
 
   /**
@@ -71,12 +65,12 @@ public class RecordDiffer {
 
   public void diffRawTableRecords(List<JsonNode> expectedRecords, List<JsonNode> actualRecords) {
     String diff = diffRecords(
-        expectedRecords,
-        actualRecords,
-        rawRecordIdentityComparator,
-        rawRecordSortComparator,
-        rawRecordIdentityExtractor,
-        true);
+        expectedRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
+        actualRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
+        recordIdentityComparator,
+        recordSortComparator,
+        recordIdentityExtractor
+    );
 
     if (!diff.isEmpty()) {
       fail("Raw table was incorrect.\n" + diff);
@@ -87,10 +81,10 @@ public class RecordDiffer {
     String diff = diffRecords(
         expectedRecords,
         actualRecords,
-        finalRecordIdentityComparator,
-        finalRecordSortComparator,
-        finalRecordIdentityExtractor,
-        false);
+        recordIdentityComparator,
+        recordSortComparator,
+        recordIdentityExtractor
+    );
 
     if (!diff.isEmpty()) {
       fail("Final table was incorrect.\n" + diff);
@@ -98,30 +92,43 @@ public class RecordDiffer {
   }
 
   /**
+   * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
+   */
+  private static JsonNode copyWithLiftedData(JsonNode record) {
+    ObjectNode copy = record.deepCopy();
+    copy.remove("_airbyte_data");
+    Streams.stream(record.get("_airbyte_data").fields()).forEach(field -> {
+      if (!copy.has(field.getKey())) {
+        copy.set(field.getKey(), field.getValue());
+      } else {
+        // This would only happen if the record has one of the metadata columns (e.g. _airbyte_raw_id)
+        // We don't support that in production, so we don't support it here either.
+        throw new RuntimeException("Cannot lift field " + field.getKey() + " because it already exists in the record.");
+      }
+    });
+    return copy;
+  }
+
+  /**
    * Build a Comparator to detect equality between two records. It first compares all the identifying
    * columns in order, and breaks ties using extracted_at.
-   *
-   * @param dataExtractor A function that extracts the data from a record. For raw records, this
-   *        should return the _airbyte_data field; for final records, this should return the record
-   *        itself.
    */
-  private Comparator<JsonNode> buildIdentityComparator(Function<JsonNode, JsonNode> dataExtractor, Pair<String, AirbyteType>[] identifyingColumns) {
+  private Comparator<JsonNode> buildIdentityComparator(Pair<String, AirbyteType>[] identifyingColumns) {
     // Start with a noop comparator for convenience
     Comparator<JsonNode> comp = Comparator.comparing(record -> 0);
     for (Pair<String, AirbyteType> column : identifyingColumns) {
-      comp = comp.thenComparing(record -> extract(dataExtractor.apply(record), column.getKey(), column.getValue()));
+      comp = comp.thenComparing(record -> extract(record, column.getKey(), column.getValue()));
     }
     comp = comp.thenComparing(record -> asTimestampWithTimezone(record.get("_airbyte_extracted_at")));
     return comp;
   }
 
   /**
-   * See {@link #buildIdentityComparator(Function, Pair[])} for an explanation of dataExtractor.
+   * See {@link #buildIdentityComparator(Pair[])} for an explanation of dataExtractor.
    */
-  private Function<JsonNode, String> buildIdentityExtractor(Function<JsonNode, JsonNode> dataExtractor,
-                                                            Pair<String, AirbyteType>[] identifyingColumns) {
+  private Function<JsonNode, String> buildIdentityExtractor(Pair<String, AirbyteType>[] identifyingColumns) {
     return record -> Arrays.stream(identifyingColumns)
-        .map(column -> getPrintableFieldIfPresent(dataExtractor.apply(record), column.getKey()))
+        .map(column -> getPrintableFieldIfPresent(record, column.getKey()))
         .collect(Collectors.joining(", "))
         + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
   }
@@ -145,19 +152,17 @@ public class RecordDiffer {
    * to be present.
    *
    * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
-   *        PK+cursor+extracted_at)
-   * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
-   *        breaks that tie using _airbyte_raw_id
-   * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
-   * @param extractRawData Whether to look inside the _airbyte_data column and diff its subfields
+   *                           PK+cursor+extracted_at)
+   * @param sortComparator     Behaves identically to identityComparator, but if two records are the same,
+   *                           breaks that tie using _airbyte_raw_id
+   * @param recordIdExtractor  Dump the record's PK+cursor+extracted_at into a human-readable string
    * @return The diff, or empty string if there were no differences
    */
   private static String diffRecords(List<JsonNode> originalExpectedRecords,
                                     List<JsonNode> originalActualRecords,
                                     Comparator<JsonNode> identityComparator,
                                     Comparator<JsonNode> sortComparator,
-                                    Function<JsonNode, String> recordIdExtractor,
-                                    boolean extractRawData) {
+                                    Function<JsonNode, String> recordIdExtractor) {
     List<JsonNode> expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList();
     List<JsonNode> actualRecords = originalActualRecords.stream().sorted(sortComparator).toList();
 
@@ -173,7 +178,7 @@ public class RecordDiffer {
       if (compare == 0) {
         // These records should be the same. Find the specific fields that are different and move on
         // to the next records in both lists.
-        message += diffSingleRecord(recordIdExtractor, extractRawData, expectedRecord, actualRecord);
+        message += diffSingleRecord(recordIdExtractor, expectedRecord, actualRecord);
         expectedRecordIndex++;
         actualRecordIndex++;
       } else if (compare < 0) {
@@ -201,44 +206,17 @@ public class RecordDiffer {
     return message;
   }
 
-  private static String diffSingleRecord(Function<JsonNode, String> recordIdExtractor,
-                                         boolean extractRawData,
-                                         JsonNode expectedRecord,
-                                         JsonNode actualRecord) {
+  private static String diffSingleRecord(Function<JsonNode, String> recordIdExtractor, JsonNode expectedRecord, JsonNode actualRecord) {
     boolean foundMismatch = false;
     String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
     // Iterate through each column in the expected record and compare it to the actual record's value.
     for (String column : Streams.stream(expectedRecord.fieldNames()).sorted().toList()) {
-      if (extractRawData && "_airbyte_data".equals(column)) {
-        // For the raw data in particular, we should also diff the fields inside _airbyte_data.
-        JsonNode expectedRawData = expectedRecord.get("_airbyte_data");
-        JsonNode actualRawData = actualRecord.get("_airbyte_data");
-        // Iterate through all the subfields of the expected raw data and check that they match the actual
-        // record...
-        for (String field : Streams.stream(expectedRawData.fieldNames()).sorted().toList()) {
-          JsonNode expectedValue = expectedRawData.get(field);
-          JsonNode actualValue = actualRawData.get(field);
-          if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
-            mismatchedRecordMessage += generateFieldError("_airbyte_data." + field, expectedValue, actualValue);
-            foundMismatch = true;
-          }
-        }
-        // ... and then check the actual raw data for any subfields that we weren't expecting.
-        LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRawData, actualRawData);
-        if (extraColumns.size() > 0) {
-          for (Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
-            mismatchedRecordMessage += generateFieldError("_airbyte_data." + extraColumn.getKey(), null, extraColumn.getValue());
-            foundMismatch = true;
-          }
-        }
-      } else {
-        // For all other columns, we can just compare their values directly.
-        JsonNode expectedValue = expectedRecord.get(column);
-        JsonNode actualValue = actualRecord.get(column);
-        if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
-          mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
-          foundMismatch = true;
-        }
+      // For all other columns, we can just compare their values directly.
+      JsonNode expectedValue = expectedRecord.get(column);
+      JsonNode actualValue = actualRecord.get(column);
+      if (!areJsonNodesEquivalent(expectedValue, actualValue)) {
+        mismatchedRecordMessage += generateFieldError("column " + column, expectedValue, actualValue);
+        foundMismatch = true;
       }
     }
     // Then check the entire actual record for any columns that we weren't expecting.
