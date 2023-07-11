@@ -40,6 +40,7 @@ from source_stripe.streams import (
     PaymentIntents,
     PaymentMethods,
     Payouts,
+    Persons,
     Plans,
     Products,
     PromotionCodes,
@@ -121,4 +122,5 @@ class SourceStripe(AbstractSource):
             TransferReversals(**args),
             Transfers(**incremental_args),
             UsageRecords(**args),
+            Persons(**args),
         ]
