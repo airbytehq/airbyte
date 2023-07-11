@@ -25,16 +25,11 @@ task runLowCodeConnectorUnitTests(type: Exec) {
 
 task runMypyOnModifiedFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
-    def changedFiles = project.hasProperty('changedFiles') ? project.changedFiles : null
-    if (changedFiles == null) {
-        commandLine "bin/run-mypy-on-modified-files.sh"
-    } else {
-        commandLine "bin/run-mypy-on-modified-files.sh", "${changedFiles}"
-    }
+    commandLine 'bin/run-mypy-on-modified-files.sh'
 }
 
+blackFormat.dependsOn generateComponentManifestClassFiles
+isortFormat.dependsOn generateComponentManifestClassFiles
+flakeCheck.dependsOn generateComponentManifestClassFiles
+installReqs.dependsOn generateComponentManifestClassFiles
 runMypyOnModifiedFiles.dependsOn generateComponentManifestClassFiles
-blackFormat.dependsOn runMypyOnModifiedFiles
-isortFormat.dependsOn runMypyOnModifiedFiles
-flakeCheck.dependsOn runMypyOnModifiedFiles
-installReqs.dependsOn runMypyOnModifiedFiles
