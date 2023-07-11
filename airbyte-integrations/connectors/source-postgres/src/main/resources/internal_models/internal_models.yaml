@@ -10,17 +10,17 @@ properties:
     "$ref": "#/definitions/XminStatus"
   ctid_state:
     "$ref": "#/definitions/CtidStatus"
-  standard_state:
-    "$ref": "#/definitions/StandardStatus"
+  cursor_based_state:
+    "$ref": "#/definitions/CursorBasedStatus"
 definitions:
   StateType:
     description: Enum to define the sync mode of state.
     type: string
     enum:
-      - standard
+      - cursorBased
       - xmin
       - ctid
-  StandardStatus:
+  CursorBasedStatus:
     type: object
     extends:
       type: object
