@@ -32,4 +32,4 @@ blackFormat.dependsOn runMypyOnModifiedFiles
 isortFormat.dependsOn runMypyOnModifiedFiles
 flakeCheck.dependsOn runMypyOnModifiedFiles
 installReqs.dependsOn runMypyOnModifiedFiles
-runMypyOnModifiedFiles.dependsOn generateComponentManifestClassFiles
+generateComponentManifestClassFiles.dependsOn runMypyOnModifiedFiles
