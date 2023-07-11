@@ -883,7 +883,7 @@ class ModelToComponentFactory:
             emit_connector_builder_messages=self._emit_connector_builder_messages,
             disable_retries=self._disable_retries,
             message_repository=LogAppenderMessageRepositoryDecorator(
-                {"airbyte_cdk": {"stream": {"is_substream": True}}},
+                {"airbyte_cdk": {"stream": {"is_substream": True}}, "http": {"is_auxiliary": True}},
                 self._message_repository,
                 self._evaluate_log_level(self._emit_connector_builder_messages),
             ),

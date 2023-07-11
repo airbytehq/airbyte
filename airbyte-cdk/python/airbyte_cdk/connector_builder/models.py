@@ -43,7 +43,7 @@ class LogMessage:
 
 
 @dataclass
-class GlobalRequest:
+class AuxiliaryRequest:
     title: str
     description: str
     request: HttpRequest
@@ -55,7 +55,7 @@ class StreamRead(object):
     logs: List[LogMessage]
     slices: List[StreamReadSlices]
     test_read_limit_reached: bool
-    global_requests: List[GlobalRequest]
+    auxiliary_requests: List[AuxiliaryRequest]
     inferred_schema: Optional[Dict[str, Any]]
     inferred_datetime_formats: Optional[Dict[str, str]]
     latest_config_update: Optional[Dict[str, Any]]

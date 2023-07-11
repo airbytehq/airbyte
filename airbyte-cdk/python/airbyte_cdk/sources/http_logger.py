@@ -8,7 +8,9 @@ import requests
 from airbyte_cdk.sources.message import LogMessage
 
 
-def format_http_message(response: requests.Response, title: str, description: str, stream_name: Optional[str]) -> LogMessage:
+def format_http_message(
+    response: requests.Response, title: str, description: str, stream_name: Optional[str], is_auxiliary: bool = None
+) -> LogMessage:
     request = response.request
     log_message = {
         "http": {
@@ -34,6 +36,8 @@ def format_http_message(response: requests.Response, title: str, description: st
         },
         "url": {"full": request.url},
     }
+    if is_auxiliary is not None:
+        log_message["http"]["is_auxiliary"] = is_auxiliary
     if stream_name:
         log_message["airbyte_cdk"] = {"stream": {"name": stream_name}}
     return log_message

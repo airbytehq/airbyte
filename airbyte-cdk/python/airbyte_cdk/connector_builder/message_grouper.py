@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
-    GlobalRequest,
+    AuxiliaryRequest,
     HttpRequest,
     HttpResponse,
     LogMessage,
@@ -65,7 +65,7 @@ class MessageGrouper:
         slices = []
         log_messages = []
         latest_config_update: AirbyteControlMessage = None
-        global_requests = []
+        auxiliary_requests = []
         for message_group in self._get_message_groups(
                 self._read_stream(source, config, configured_catalog),
                 schema_inferrer,
@@ -81,8 +81,8 @@ class MessageGrouper:
             elif isinstance(message_group, AirbyteControlMessage):
                 if not latest_config_update or latest_config_update.emitted_at <= message_group.emitted_at:
                     latest_config_update = message_group
-            elif isinstance(message_group, GlobalRequest):
-                global_requests.append(message_group)
+            elif isinstance(message_group, AuxiliaryRequest):
+                auxiliary_requests.append(message_group)
             else:
                 slices.append(message_group)
 
@@ -90,7 +90,7 @@ class MessageGrouper:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            global_requests=global_requests,
+            auxiliary_requests=auxiliary_requests,
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
@@ -100,7 +100,7 @@ class MessageGrouper:
 
     def _get_message_groups(
             self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, datetime_format_inferrer: DatetimeFormatInferrer, limit: int
-    ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, GlobalRequest]]:
+    ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, AuxiliaryRequest]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -142,11 +142,11 @@ class MessageGrouper:
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
                 if self._is_http_log(json_message):
-                    if self._is_global_request(json_message):
+                    if self._is_auxiliary_http_request(json_message):
                         title_prefix = (
                            "Parent stream: " if json_message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False) else ""
                         )
-                        yield GlobalRequest(
+                        yield AuxiliaryRequest(
                             title=title_prefix + json_message.get("http", {}).get("title", None),
                             description=json_message.get("http", {}).get("description", None),
                             request=self._create_request_from_log_message(json_message),
@@ -185,17 +185,17 @@ class MessageGrouper:
 
     @staticmethod
     def _is_page_http_request(json_message):
-        return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_global_request(json_message)
+        return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_auxiliary_http_request(json_message)
 
     @staticmethod
     def _is_http_log(message: Optional[dict]) -> bool:
         return message and bool(message.get("http", False))
 
     @staticmethod
-    def _is_global_request(message: Optional[dict]) -> bool:
+    def _is_auxiliary_http_request(message: Optional[dict]) -> bool:
         """
-        A global request is a request that is performed and will not directly lead to record for the specific stream it is being queried. A
-        couple of examples are:
+        A auxiliary request is a request that is performed and will not directly lead to record for the specific stream it is being queried.
+        A couple of examples are:
         * OAuth authentication
         * Substream slice generation
         """
@@ -203,9 +203,7 @@ class MessageGrouper:
             return False
 
         is_http = MessageGrouper._is_http_log(message)
-        has_stream_name = message.get("airbyte_cdk", {}).get("stream", {}).get("name", False)
-        is_substream = message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False)
-        return is_http and (not has_stream_name or is_substream)
+        return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete: bool):

@@ -174,5 +174,6 @@ class AbstractOauth2Authenticator(AuthBase):
                 "Refresh token",
                 "Obtains access token",
                 self._NO_STREAM_NAME,
+                is_auxiliary=True,
             ),
         )

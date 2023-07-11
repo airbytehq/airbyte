@@ -586,11 +586,11 @@ def test_given_multiple_control_messages_with_same_timestamp_then_stream_read_ha
 
 
 @patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
-def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
+def test_given_auxiliary_requests_then_return_global_request(mock_entrypoint_read):
     mock_source = make_mock_source(mock_entrypoint_read, iter(
         any_request_and_response_with_a_record() +
         [
-            global_request_log_message()
+            auxiliary_request_log_message()
         ]
     ))
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -598,7 +598,7 @@ def test_given_global_requests_then_return_global_request(mock_entrypoint_read):
         source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
     )
 
-    assert len(stream_read.global_requests) == 1
+    assert len(stream_read.auxiliary_requests) == 1
 
 
 def make_mock_source(mock_entrypoint_read, return_value: Iterator) -> MagicMock:
@@ -634,10 +634,10 @@ def connector_configuration_control_message(emitted_at: float, config: dict) -> 
     )
 
 
-def global_request_log_message():
+def auxiliary_request_log_message():
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=json.dumps({
-            "airbyte_cdk": {"stream": {"is_substream": True}},
             "http": {
+                "is_auxiliary": True,
                 "title": "a title",
                 "description": "a description",
                 "request": {},

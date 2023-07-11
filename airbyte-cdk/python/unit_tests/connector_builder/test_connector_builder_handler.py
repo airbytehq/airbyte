@@ -422,7 +422,7 @@ def test_read():
                 state=None,
             )
         ],
-        global_requests=[],
+        auxiliary_requests=[],
         test_read_limit_reached=False,
         inferred_schema=None,
         inferred_datetime_formats=None,
@@ -439,7 +439,7 @@ def test_read():
                     {"pages": [{"records": [real_record], "request": None, "response": None}], "slice_descriptor": None, "state": None}
                 ],
                 "test_read_limit_reached": False,
-                "global_requests": [],
+                "auxiliary_requests": [],
                 "inferred_schema": None,
                 "inferred_datetime_formats": None,
                 "latest_config_update": {}
@@ -514,7 +514,7 @@ def test_read_returns_error_response(mock_from_exception):
                                           pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
-                                      global_requests=[],
+                                      auxiliary_requests=[],
                                       inferred_schema=None,
                                       inferred_datetime_formats={},
                                       latest_config_update=None)
