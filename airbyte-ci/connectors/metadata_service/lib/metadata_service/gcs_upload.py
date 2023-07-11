@@ -118,7 +118,6 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
     # write metadata to yaml file in system tmp folder
     tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / prerelease_tag / METADATA_FILE_NAME
     tmp_metadata_file_path.parent.mkdir(parents=True, exist_ok=True)
-    import pdb; pdb.set_trace()
     with open(tmp_metadata_file_path, "w") as f:
         yaml.dump(metadata_dict, f)
 

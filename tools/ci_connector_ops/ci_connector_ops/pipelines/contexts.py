@@ -390,8 +390,16 @@ class ConnectorContext(PipelineContext):
         return yaml.safe_load(self.metadata_path.read_text())["data"]
 
     @property
-    def docker_image_from_metadata(self) -> str:
-        return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
+    def docker_repository(self) -> str:
+        return self.metadata["dockerRepository"]
+
+    @property
+    def docker_image_tag(self) -> str:
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def docker_image(self) -> str:
+        return f"{self.docker_repository}:{self.docker_image_tag}"
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
@@ -526,11 +534,20 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
+    def docker_image_tag(self):
+        # get the docker image tag from the parent class
+        metadata_tag = super().docker_image_tag
+        if self.pre_release:
+            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
+        else:
+            return metadata_tag
+
+    @property
     def docker_image_name(self):
         if self.pre_release:
-            return f"{self.docker_image_from_metadata}-dev.{self.git_revision[:10]}"
+            return f"{self.docker_image}-dev.{self.git_revision[:10]}"
         else:
-            return self.docker_image_from_metadata
+            return self.docker_image
 
     def create_slack_message(self) -> str:
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"

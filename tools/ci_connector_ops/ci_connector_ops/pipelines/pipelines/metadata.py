@@ -70,6 +70,8 @@ class MetadataUpload(PoetryRun):
         metadata_service_gcs_credentials_secret: dagger.Secret,
         docker_hub_username_secret: dagger.Secret,
         docker_hub_password_secret: dagger.Secret,
+        pre_release: bool = False,
+        pre_release_tag: Optional[str] = None,
     ):
         title = f"Upload {metadata_path}"
         self.gcs_bucket_name = metadata_bucket_name
@@ -92,14 +94,14 @@ class MetadataUpload(PoetryRun):
         )
 
     async def _run(self) -> StepResult:
-        return await super()._run(
-            [
-                "metadata_service",
-                "upload",
-                METADATA_FILE_NAME,
-                self.gcs_bucket_name,
-            ]
-        )
+        upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
+
+
+        if self.pre_release:
+            pre_release_flag = ["--prerelease", self.pre_release_tag]
+            upload_command = upload_command + pre_release_flag
+
+        return await super()._run(upload_command)
 
 
 class DeployOrchestrator(Step):
