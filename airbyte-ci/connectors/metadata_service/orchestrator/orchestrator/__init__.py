@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dagster import Definitions, ScheduleDefinition, load_assets_from_modules
+from dagster import Definitions, ScheduleDefinition, load_assets_from_modules, SkipReason, RunRequest, schedule
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs
@@ -148,13 +148,13 @@ SENSORS = [
         gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
         interval=(1 * 60 * 60),
     ),
-    new_gcs_blobs_partition_sensor(
-        job=generate_registry_entry,
-        resources_def=METADATA_RESOURCE_TREE,
-        partitions_def=registry_entry.metadata_partitions_def,
-        gcs_blobs_resource_key="all_metadata_file_blobs",
-        interval=(10 * 60 * 60),
-    ),
+    # new_gcs_blobs_partition_sensor(
+    #     job=generate_registry_entry,
+    #     resources_def=METADATA_RESOURCE_TREE,
+    #     partitions_def=registry_entry.metadata_partitions_def,
+    #     gcs_blobs_resource_key="all_metadata_file_blobs",
+    #     interval=(10 * 60 * 60),
+    # ),
     new_gcs_blobs_partition_sensor(
         job=generate_registry_entry,
         resources_def=METADATA_RESOURCE_TREE,
@@ -164,7 +164,33 @@ SENSORS = [
     ),
 ]
 
-SCHEDULES = [ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly")]
+@schedule(cron_schedule="* * * * *", job=generate_registry_entry, required_resource_keys={"latest_metadata_file_blobs"})
+def registry_entry_partition_job_schedule(context):
+    MAX_RUN_REQUEST = 30
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    partition_name = registry_entry.metadata_partitions_def.name
+
+    new_etags_found = [
+        blob.etag for blob in latest_metadata_file_blobs if not context.instance.has_dynamic_partition(partition_name, blob.etag)
+    ]
+
+    context.log.info(f"New etags found: {new_etags_found}")
+
+    if not new_etags_found:
+        return SkipReason(f"No new metadata files to process in GCS bucket")
+
+    # if there are more than the MAX_RUN_REQUEST, we need to split them into multiple runs
+    if len(new_etags_found) > MAX_RUN_REQUEST:
+        new_etags_found = new_etags_found[:MAX_RUN_REQUEST]
+        context.log.info(f"Only processing first {MAX_RUN_REQUEST} new blobs: {new_etags_found}")
+
+    for etag in new_etags_found:
+        yield RunRequest(run_key=etag, partition_key=etag)
+
+SCHEDULES = [
+    ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
+    registry_entry_partition_job_schedule,
+]
 
 JOBS = [generate_registry_reports, generate_oss_registry, generate_cloud_registry, generate_registry_entry, generate_nightly_reports]
 
