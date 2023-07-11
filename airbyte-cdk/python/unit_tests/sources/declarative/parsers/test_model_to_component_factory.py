@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, LegacySessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -805,7 +805,7 @@ requester:
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
 
 
-def test_create_request_with_session_authenticator():
+def test_create_request_with_leacy_session_authenticator():
     content = """
 requester:
   type: HttpRequester
@@ -814,7 +814,7 @@ requester:
     name: 'lists'
   url_base: "https://api.sendgrid.com"
   authenticator:
-    type: "SessionTokenAuthenticator"
+    type: "LegacySessionTokenAuthenticator"
     username: "{{ parameters.name}}"
     password: "{{ config.apikey }}"
     login_url: "login"
@@ -836,7 +836,7 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert isinstance(selector.authenticator, SessionTokenAuthenticator)
+    assert isinstance(selector.authenticator, LegacySessionTokenAuthenticator)
     assert selector.authenticator._username.eval(input_config) == "lists"
     assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
     assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"

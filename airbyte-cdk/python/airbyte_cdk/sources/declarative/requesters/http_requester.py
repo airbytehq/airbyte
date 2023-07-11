@@ -8,11 +8,11 @@ from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler

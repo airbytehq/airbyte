@@ -635,8 +635,8 @@ class Schemas(BaseModel):
         extra = Extra.allow
 
 
-class SessionTokenAuthenticator(BaseModel):
-    type: Literal["SessionTokenAuthenticator"]
+class LegacySessionTokenAuthenticator(BaseModel):
+    type: Literal["LegacySessionTokenAuthenticator"]
     header: str = Field(
         ...,
         description="The name of the session token header that will be injected in the request",
@@ -1066,8 +1066,8 @@ class DeclarativeStream(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class GenericSessionTokenAuthenticator(BaseModel):
-    type: Literal["GenericSessionTokenAuthenticator"]
+class SessionTokenAuthenticator(BaseModel):
+    type: Literal["SessionTokenAuthenticator"]
     login_requester: HttpRequester = Field(
         ...,
         description="Description of the request to perform to obtain a session token to perform data requests. The response body is expected to be a JSON object with a session token property.",
@@ -1135,7 +1135,7 @@ class HttpRequester(BaseModel):
             OAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
-            GenericSessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
         ]
     ] = Field(
         None,
@@ -1258,5 +1258,5 @@ class SubstreamPartitionRouter(BaseModel):
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
 DeclarativeStream.update_forward_refs()
-GenericSessionTokenAuthenticator.update_forward_refs()
+SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

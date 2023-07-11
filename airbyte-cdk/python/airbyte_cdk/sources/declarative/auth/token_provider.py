@@ -3,29 +3,28 @@
 #
 
 
-from abc import abstractmethod
 import datetime
+from abc import abstractmethod
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 
 import dpath.util
 import pendulum
-import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
 from isodate import Duration
 from pendulum import DateTime
 
-SESSION_TOKEN_CONFIG_KEY = "__session_token"
 
 class TokenProvider:
     @abstractmethod
     def get_token(self) -> str:
         pass
+
 
 @dataclass
 class SessionTokenProvider(TokenProvider):
@@ -54,6 +53,7 @@ class SessionTokenProvider(TokenProvider):
         self._next_expiration_time = pendulum.now() + self.expiration_time
         self._token = session_token
 
+
 @dataclass
 class InterpolatedStringTokenProvider(TokenProvider):
     config: Config
@@ -62,6 +62,6 @@ class InterpolatedStringTokenProvider(TokenProvider):
 
     def __post_init__(self):
         self._token = InterpolatedString.create(self.api_token, parameters=self.parameters)
-    
+
     def get_token(self) -> str:
         return self._token.eval(self.config)
