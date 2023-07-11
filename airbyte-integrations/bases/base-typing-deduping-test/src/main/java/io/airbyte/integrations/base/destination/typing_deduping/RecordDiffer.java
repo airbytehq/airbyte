@@ -69,8 +69,7 @@ public class RecordDiffer {
         actualRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
         recordIdentityComparator,
         recordSortComparator,
-        recordIdentityExtractor
-    );
+        recordIdentityExtractor);
 
     if (!diff.isEmpty()) {
       fail("Raw table was incorrect.\n" + diff);
@@ -83,8 +82,7 @@ public class RecordDiffer {
         actualRecords,
         recordIdentityComparator,
         recordSortComparator,
-        recordIdentityExtractor
-    );
+        recordIdentityExtractor);
 
     if (!diff.isEmpty()) {
       fail("Final table was incorrect.\n" + diff);
@@ -152,10 +150,10 @@ public class RecordDiffer {
    * to be present.
    *
    * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
-   *                           PK+cursor+extracted_at)
-   * @param sortComparator     Behaves identically to identityComparator, but if two records are the same,
-   *                           breaks that tie using _airbyte_raw_id
-   * @param recordIdExtractor  Dump the record's PK+cursor+extracted_at into a human-readable string
+   *        PK+cursor+extracted_at)
+   * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
+   *        breaks that tie using _airbyte_raw_id
+   * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
    * @return The diff, or empty string if there were no differences
    */
   private static String diffRecords(List<JsonNode> originalExpectedRecords,
