@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 
@@ -66,7 +66,6 @@ class FileBasedStreamConfig(BaseModel):
     file_type: str
     globs: Optional[List[str]]
     validation_policy: Union[str, Any]
-    validation_policies: Dict[str, Any]
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
     input_schema: Optional[Dict[str, Any]]
     primary_key: PrimaryKeyType
@@ -74,23 +73,18 @@ class FileBasedStreamConfig(BaseModel):
     days_to_sync_if_history_is_full: Optional[int]
     format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
 
+    @validator("file_type", pre=True)
+    def validate_file_type(cls, v):
+        if v not in VALID_FILE_TYPES:
+            raise ValueError(f"Format filetype {v} is not a supported file type")
+        return v
+
     @validator("format", pre=True)
     def transform_format(cls, v):
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
-            if file_type.casefold() not in VALID_FILE_TYPES:
-                raise ValueError(f"Format filetype {file_type} is not a supported file type")
-            return {file_type: {key: val for key, val in v.items()}}
+            if file_type:
+                if file_type.casefold() not in VALID_FILE_TYPES:
+                    raise ValueError(f"Format filetype {file_type} is not a supported file type")
+                return {file_type: {key: val for key, val in v.items()}}
         return v
-
-    @root_validator
-    def set_validation_policy(cls, values):
-        validation_policy_key = values.get("validation_policy")
-        validation_policies = values.get("validation_policies")
-
-        if validation_policy_key not in validation_policies:
-            raise ValueError(f"validation_policy must be one of {list(validation_policies.keys())}")
-
-        values["validation_policy"] = validation_policies[validation_policy_key]
-
-        return values
