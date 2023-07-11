@@ -119,8 +119,8 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   /**
    * Meant to be called after
-   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupeWithAdditionalRecord(AirbyteStreamNameNamespacePair)} will set
-   * a streams last operation to the current time and increase its index reference in
+   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupeWithAdditionalRecord(AirbyteStreamNameNamespacePair)}
+   * will set a streams last operation to the current time and increase its index reference in
    * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
    *
    * @param key the stream to update
