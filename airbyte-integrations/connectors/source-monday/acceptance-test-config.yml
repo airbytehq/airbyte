@@ -22,13 +22,13 @@ acceptance_tests:
         # when `type: array` is used, the `items` should be set, instead of `properties`.
         # this change applies for all configs bellow.
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.5"
+          disable_for_version: "0.2.6"
       - config_path: "secrets/config_api_token.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.5"
+          disable_for_version: "0.2.6"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.5"
+          disable_for_version: "0.2.6"
   basic_read:
     tests:
       - config_path: "secrets/config_api_token.json"
