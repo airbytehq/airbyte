@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 import base64
 import hashlib
@@ -128,7 +128,7 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
     return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path, disable_cache=True)
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: str) -> Tuple[bool, str]:
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: Optional[str] = None) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -138,7 +138,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
         bucket_name (str): Name of the GCS bucket to which the metadata file will be uploade.
         metadata_file_path (Path): Path to the metadata file.
         service_account_file_path (Path): Path to the JSON file with the service account allowed to read and write on the bucket.
-        prerelease (str): Whether the connector is a prerelease or not.
+        prerelease (Optional[str]): Whether the connector is a prerelease or not.
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
