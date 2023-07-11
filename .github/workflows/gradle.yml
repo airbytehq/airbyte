@@ -211,7 +211,7 @@ jobs:
       - name: Format
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace -PchangedFiles="${{ steps.changed-py-files.outputs.files }}" --
+          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace -PchangedFiles="${{ steps.changed-py-files.outputs.all_changed_files }}" --
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -225,7 +225,7 @@ jobs:
       - name: Build
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: SUB_BUILD=CDK ./gradlew build --scan -PchangedFiles="${{ steps.changed-py-files.outputs.files }}"
+          command: SUB_BUILD=CDK ./gradlew build --scan -PchangedFiles="${{ steps.changed-py-files.outputs.all_changed_files }}"
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -326,14 +326,14 @@ jobs:
       - name: Format
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace -PchangedFiles="${{ steps.changed-py-files.outputs.files }}"
+          command: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace -PchangedFiles="${{ steps.changed-py-files.outputs.all_changed_files }}"
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Build
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan -PchangedFiles="${{ steps.changed-py-files.outputs.files }}"
+          command: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan -PchangedFiles="${{ steps.changed-py-files.outputs.all_changed_files }}"
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
