@@ -75,6 +75,8 @@ class MetadataUpload(PoetryRun):
     ):
         title = f"Upload {metadata_path}"
         self.gcs_bucket_name = metadata_bucket_name
+        self.pre_release = pre_release
+        self.pre_release_tag = pre_release_tag
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
 
         # Ensure the icon file is included in the upload
@@ -95,7 +97,6 @@ class MetadataUpload(PoetryRun):
 
     async def _run(self) -> StepResult:
         upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
-
 
         if self.pre_release:
             pre_release_flag = ["--prerelease", self.pre_release_tag]

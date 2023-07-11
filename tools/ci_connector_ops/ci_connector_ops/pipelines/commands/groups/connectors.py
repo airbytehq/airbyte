@@ -306,7 +306,6 @@ def publish(
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
 
-    validate_publish_options(pre_release, ctx.obj)
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -363,13 +362,6 @@ def publish(
         ctx.obj["execute_timeout"],
     )
     return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
-
-
-def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
-    """Validate that the publish options are set correctly."""
-    for k in ["spec_cache_bucket_name", "spec_cache_gcs_credentials", "metadata_service_bucket_name", "metadata_service_gcs_credentials"]:
-        if not pre_release and context_object.get(k) is None:
-            click.Abort(f'The --{k.replace("_", "-")} option is required when running a main release publish pipeline.')
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
