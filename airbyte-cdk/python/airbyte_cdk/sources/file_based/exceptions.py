@@ -30,6 +30,7 @@ class FileBasedSourceError(Enum):
     CONFIG_VALIDATION_ERROR = "Error creating stream config object."
     MISSING_SCHEMA = "Expected `json_schema` in the configured catalog but it is missing."
     UNDEFINED_PARSER = "No parser is defined for this file type."
+    UNDEFINED_VALIDATION_POLICY = "The validation policy defined in the config does not exist for the source."
 
 
 class BaseFileBasedSourceError(Exception):

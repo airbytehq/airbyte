@@ -94,7 +94,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.INFO,
-                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy.name} n_skipped={n_skipped}",
+                        message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
                     ),
                 )
                 break
@@ -115,7 +115,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         type=MessageType.LOG,
                         log=AirbyteLogMessage(
                             level=Level.INFO,
-                            message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.config.validation_policy.name}",
+                            message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.config.validation_policy}",
                         ),
                     )
 
