@@ -46,8 +46,8 @@ from source_zendesk_support.streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
-    Topics,
     TicketSkips,
+    Topics,
     Users,
     UserSettingsStream,
 )

@@ -39,8 +39,8 @@ from .streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
-    Topics,
     TicketSkips,
+    Topics,
     Users,
     UserSettingsStream,
 )

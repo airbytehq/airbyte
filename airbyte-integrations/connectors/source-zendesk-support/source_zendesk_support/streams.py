@@ -796,7 +796,7 @@ class Topics(SourceZendeskSupportCursorPaginationStream):
 
     def path(self, **kwargs):
         return "community/topics"
-    
+
 
 class SlaPolicies(SourceZendeskSupportFullRefreshStream):
     """SlaPolicies stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/sla_policies/"""
