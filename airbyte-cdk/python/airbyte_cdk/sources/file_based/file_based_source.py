@@ -74,6 +74,14 @@ class FileBasedSource(AbstractSource, ABC):
 
         return not bool(errors), (errors or None)
 
+    def _validate_stream_config(self, stream_config: FileBasedStreamConfig):
+        if stream_config.validation_policy not in self.validation_policies:
+            raise ValidationError(
+                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
+            )
+        if stream_config.input_schema and stream_config.schemaless:
+            raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
+
     def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
         """
         Return a list of this source's streams.
@@ -82,10 +90,7 @@ class FileBasedSource(AbstractSource, ABC):
             streams = []
             for stream in config["streams"]:
                 stream_config = FileBasedStreamConfig(**stream)
-                if stream_config.validation_policy not in self.validation_policies:
-                    raise ValidationError(
-                        f"validation_policy must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
-                    )
+                self._validate_stream_config(stream_config)
                 streams.append(
                     DefaultFileBasedStream(
                         config=stream_config,
