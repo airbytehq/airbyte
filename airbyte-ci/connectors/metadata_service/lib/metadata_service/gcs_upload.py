@@ -3,6 +3,7 @@
 #
 from pathlib import Path
 from typing import Tuple, Optional
+from pydash.objects import get
 
 import base64
 import hashlib
@@ -114,7 +115,7 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
     # where registries is a dictionary of registry name to registry object
     metadata_dict = to_json_sanitized_dict(metadata, exclude_none=True)
     metadata_dict["data"]["dockerImageTag"] = prerelease_tag
-    for registry in metadata_dict["data"]["registries"].values():
+    for registry in get(metadata_dict, "data.registries", {}).values():
         if "dockerImageTag" in registry:
             registry["dockerImageTag"] = prerelease_tag
 
