@@ -245,7 +245,7 @@ jobs:
         run: |
           source tools/lib/lib.sh
           export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
-          echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
+          echo "UPDATE public.connector_tags SET job_status='{\"type\": \"queued\"}'
                   WHERE connector_id IN (
                     SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector.name }}'
                   )
@@ -262,7 +262,7 @@ jobs:
         run: |
           source tools/lib/lib.sh
           export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
-          echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
+          echo "UPDATE public.connector_tags SET job_status='{\"type\": \"queued\"}'
                   WHERE connector_id IN (
                     SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector.alias }}'
                   )
