@@ -18,7 +18,7 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Discourse forum](https://discuss.airbyte.io/c/connector-development/16) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Airbyte Forum](https://github.com/airbytehq/airbyte/discussions) to inquire further!
 
 ## Getting Started
 
