@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.Str
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -28,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +42,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public static final String OVERWRITE_TABLE_SUFFIX = "_airbyte_tmp";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
-  public static final int RECORDS_PER_TYPING_AND_DEDUPING_BATCH = 10_000;
 
   private final BigQuery bigquery;
   private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
@@ -51,9 +50,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final BigQuerySqlGenerator sqlGenerator;
   private final BigQueryDestinationHandler destinationHandler;
   private AirbyteMessage lastStateMessage = null;
-  // This is super hacky, but in async land we don't need to make this decision at all. We'll just run
-  // T+D whenever we commit raw data.
-  private final AtomicLong recordsSinceLastTDRun = new AtomicLong(0);
+
+  private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
   private final boolean use1s1t;
   private final Map<StreamId, String> overwriteStreamsWithTmpTable;
@@ -164,12 +162,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private void processRecord(final AirbyteMessage message) throws InterruptedException {
     final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(streamId).upload(message);
-
-    // This is just modular arithmetic written in a complicated way. We want to run T+D every
-    // RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
-    // TODO this counter should be per stream, not global.
-    if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
+    if (!streamTDValve.containsKey(streamId)) {
+      streamTDValve.addStream(streamId);
+    } else if (streamTDValve.readyToTypeAndDedupe(streamId)) {
       doTypingAndDeduping(catalog.getStream(streamId.getNamespace(), streamId.getName()));
+      streamTDValve.updateTimeAndIncreaseInterval(streamId);
     }
   }
 
