@@ -64,7 +64,6 @@ class SourceStripe(AbstractSource):
             stripe.api_key = config["client_secret"]
             stripe.Account.retrieve(config["account_id"])
             return True, None
-            # Comment
         except Exception as e:
             return False, e
 
