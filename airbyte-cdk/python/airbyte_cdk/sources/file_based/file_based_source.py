@@ -82,7 +82,7 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
-            streams: List[Stream] = []
+            streams: Mapping[str, str] = []
             for stream in config["streams"]:
                 stream_config = FileBasedStreamConfig(**stream)
                 if stream_config.validation_policy not in self.validation_policies:
