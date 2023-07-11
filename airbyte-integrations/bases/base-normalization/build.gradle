@@ -58,13 +58,29 @@ def buildAirbyteDocker(String customConnector) {
         arch = 'linux/arm64'
     }
 
-    def baseCommand = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
-    // println("Building normalization container: " + baseCommand.join(" "))
+    def cmdArray = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
+    // println("Building normalization container: " + cmdArray.join(" "))
 
     return {
-        commandLine baseCommand
+        commandLine cmdArray
     }
 }
+
+task rebuildDbtForLocalArch(type: Exec)  {
+    // we need to rebuild the dbt base image for this system's architecture
+
+    def arch = 'linux/amd64'
+    if (Os.isArch("aarch_64") || Os.isArch("aarch64")) {
+        arch = 'linux/arm64'
+    }
+
+    def cmdArray = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', 'dbt.Dockerfile', '-t', 'fishtownanalytics/dbt:1.0.0-dev', '.']
+    println("Rebuilding base normalization container: " + cmdArray.join(" "))
+
+    commandLine cmdArray
+}
+
+airbyteDocker.dependsOn rebuildDbtForLocalArch
 
 task airbyteDockerMSSql(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('mssql')
