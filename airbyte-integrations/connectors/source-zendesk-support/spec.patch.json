@@ -4,6 +4,27 @@
       "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
       "oneOf": [
         {
+          "title": "OAuth2.0",
+          "type": "object",
+          "required": ["access_token"],
+          "additionalProperties": true,
+          "x-oauth2-provider": "zendesk",
+          "properties": {
+            "credentials": {
+              "type": "string",
+              "const": "oauth2.0",
+              "order": 0,
+              "default": "oauth2.0"
+            },
+            "access_token": {
+              "type": "string",
+              "title": "Access Token",
+              "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-support\">docs</a> for more information.",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
           "additionalProperties": true,
           "properties": {
             "api_token": {
