@@ -1,10 +1,9 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
   registries:
+    cloud:
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 13a7652d-1d94-4033-931a-613d22d3cbb3

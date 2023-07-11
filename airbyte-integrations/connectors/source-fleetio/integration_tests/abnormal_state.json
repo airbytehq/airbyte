@@ -1,5 +1,14 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "issues": {
+    "id": ""
+  },
+  "service_entries": {
+    "id": ""
+  },
+  "submitted_inspection_forms": {
+    "id": ""
+  },
+  "vehicles": {
+    "id": ""
   }
 }

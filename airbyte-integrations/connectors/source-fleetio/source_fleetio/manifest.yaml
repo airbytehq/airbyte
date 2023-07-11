@@ -158,10 +158,9 @@ spec:
         type: string
         order: 1
         title: account_token
-        description: found in the url
         airbyte_secret: true
     additionalProperties: true
-  documentation_url: https://example.org
+  documentation_url: https://docs.airbyte.com/integrations/sources/fleetio
   type: Spec
 metadata:
   autoImportSchema:
