@@ -3,7 +3,7 @@ version: "0.29.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_monday/schemas/{{ parameters.get('json_name') or parameters['name'] }}.json"
+    file_path: "./source_monday/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -20,6 +20,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
     limit: "{{ parameters['items_per_page'] }}"
+    nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
@@ -54,12 +55,6 @@ definitions:
       type: "PageIncrement"
       start_from_page: 1
       page_size: 100
-  double_paginator:
-    $ref: "#/definitions/default_paginator"
-    pagination_strategy:
-      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
-      type: "CustomPaginationStrategy"
-      page_size: 50
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -78,30 +73,30 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         type: NoPagination
-  items_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path: ["data", "boards", "*", "items", "*"]
-      paginator:
-        $ref: "#/definitions/default_paginator"
-        pagination_strategy:
-          class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
-          type: "CustomPaginationStrategy"
-          page_size: 100
-    $parameters:
-      name: "items"
-      path: ""
-      items_per_page: 1
-  boards_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "boards"
-      path: ""
-      items_per_page: 100
+#  items_stream:
+#    $ref: "#/definitions/base_stream"
+#    retriever:
+#      $ref: "#/definitions/retriever"
+#      record_selector:
+#        type: RecordSelector
+#        extractor:
+#          field_path: ["data", "boards", "*", "items", "*"]
+#      paginator:
+#        $ref: "#/definitions/default_paginator"
+#        pagination_strategy:
+#          class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+#          type: "CustomPaginationStrategy"
+#          page_size: 100
+#    $parameters:
+#      name: "items"
+#      path: ""
+#      items_per_page: 1
+#  boards_stream:
+#    $ref: "#/definitions/base_stream"
+#    $parameters:
+#      name: "boards"
+#      path: ""
+#      items_per_page: 100
   tags_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
@@ -128,11 +123,14 @@ definitions:
       name: "workspaces"
       path: ""
 
-  # semi-incremental
-  # (full-refresh and emit records >= *prior state)
-  # (prior state - frozen state from previous sync, it automatically updates with next sync)
-  stream_semi_incremental:
-    $ref: "#/definitions/base_stream"
+  double_paginator:
+    $ref: "#/definitions/default_paginator"
+    pagination_strategy:
+      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+      type: "CustomPaginationStrategy"
+
+  activity_logs_stream:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_monday.components.IncrementalSingleSlice
@@ -145,16 +143,13 @@ definitions:
           class_name: "source_monday.extractor.MondayActivityExtractor"
       paginator:
         $ref: "#/definitions/double_paginator"
-
-  activity_logs_stream:
-    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
-    $ref: "#/definitions/stream_semi_incremental"
     $parameters:
       name: "activity_logs"
-      json_name: "activity_logs"
       primary_key: "id"
       path: ""
       items_per_page: 1
+      page_size: 50
+      nested_items_per_page: 50
 
   # semi-incremental substreams
   substream_semi_incremental:
@@ -162,7 +157,48 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_monday.components.IncrementalSubstreamSlicer
-      cursor_field: "updated_at"
+      cursor_field: "updated_at_int"
+      parent_complete_fetch: true
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/activity_logs_stream"
+          partition_field: "ids"
+  incremental_extractor:
+    class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
+
+  boards_stream:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "boards"
+      path: ""
+      parent_key: "board_id"
+      items_per_page: 10
+      nested_items_per_page: 10
+      field_path: [ "data", "boards", "*" ]
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          start_from_page: 1
+          page_size: 10
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          $ref: "#/definitions/incremental_extractor"
+
+  items_stream:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "items"
+      path: ""
+      items_per_page: 1
+      page_size: 20
+      nested_items_per_page: 20
+      parent_key: "pulse_id"
+      field_path: [ "data", "items", "*" ]
+      additional_field_path: [ "data", "boards", "*", "items", "*" ]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -170,31 +206,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
-          class_name: "source_monday.extractor.MondayItemsExtractor"
-          field_path: [ "data", "items", "*" ]
-          additional_field_path: [ "data", "boards", "*", "items", "*" ]
-
-  items_incremental_stream:
-    $ref: "#/definitions/substream_semi_incremental"
-    $parameters:
-      name: "items_incremental"
-      json_name: "items"
-      primary_key: "id"
-      path: ""
-      items_per_page: 1
-
-    incremental_sync:
-      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
-      parent_complete_fetch: false
-      items_per_request: 100
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          stream: "#/definitions/activity_logs_stream"
-          parent_key: "pulse_id"
-          partition_field: "ids"
-    retriever:
-      $ref: "#/definitions/substream_semi_incremental/retriever"
-
+          $ref: "#/definitions/incremental_extractor"
 
 
 streams:
@@ -205,7 +217,6 @@ streams:
   - "#/definitions/updates_stream"
   - "#/definitions/users_stream"
   - "#/definitions/workspaces_stream"
-  - "#/definitions/items_incremental_stream"
   - "#/definitions/activity_logs_stream"
 
 check:

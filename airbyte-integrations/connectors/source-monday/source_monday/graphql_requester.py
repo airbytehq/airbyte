@@ -16,17 +16,16 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 @dataclass
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
-    NESTED_OBJECTS_LIMIT_MAX_VALUE = 100
 
     limit: Union[InterpolatedString, str, int] = None
+    nested_limit: Union[InterpolatedString, str, int] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         super(MondayGraphqlRequester, self).__post_init__(parameters)
 
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
+        self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
-        # used for streams
-        self.json_name = parameters.get("json_name", "").lower() or self.name
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -36,9 +35,18 @@ class MondayGraphqlRequester(HttpRequester):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.json_name})
-        schema = schema_loader.get_json_schema()
-        return schema["properties"]
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
+        schema = schema_loader.get_json_schema()["properties"]
+
+        # delete fields that will be created by extractor
+        delete_fields = ["updated_at_int", "created_at_int", "pulse_id"]
+        if self.name == "activity_logs":
+            delete_fields.append("board_id")
+        for field in delete_fields:
+            if field in schema:
+                schema.pop(field)
+
+        return schema
 
     def _get_object_arguments(self, **object_arguments) -> str:
         return ",".join(
@@ -78,7 +86,9 @@ class MondayGraphqlRequester(HttpRequester):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        query = self._build_query("items", field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page)
+        nested_limit = self.nested_limit.eval(self.config)
+
+        query = self._build_query("items", field_schema, limit=nested_limit, page=sub_page)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 
@@ -87,7 +97,9 @@ class MondayGraphqlRequester(HttpRequester):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        object_arguments["limit"] = self.NESTED_OBJECTS_LIMIT_MAX_VALUE
+        nested_limit = self.nested_limit.eval(self.config)
+
+        object_arguments["limit"] = nested_limit
         object_arguments["ids"] = stream_slice["ids"]
         return self._build_query("items", field_schema, **object_arguments)
 
@@ -109,16 +121,15 @@ class MondayGraphqlRequester(HttpRequester):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
+        nested_limit = self.nested_limit.eval(self.config)
+
         created_at = (object_arguments.get("stream_state", dict()) or dict()).get("created_at_int")
         object_arguments.pop("stream_state")
 
         if created_at:
             created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        # delete fields that will be created by extractor
-        for field in ["created_at_int", "pulse_id"]:
-            field_schema.pop(field)
-        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE, page=sub_page, fromt=created_at)
+        query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 
@@ -133,22 +144,22 @@ class MondayGraphqlRequester(HttpRequester):
         Combines queries to a single GraphQL query.
         """
         limit = self.limit.eval(self.config)
+
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
-        if self.name == "items":
+        if self.name == "boards" and stream_slice:
+            query_builder = partial(self._build_query, **stream_slice)
+        elif self.name == "items":
             # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
-            page, sub_page = page if page else (None, None)
-            query_builder = partial(self._build_items_query, sub_page=sub_page)
-        elif self.name == "teams":
-            query_builder = self._build_teams_query
-        elif self.name == "activity_logs":
-            page, sub_page = page if page else (None, None)
-            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
-        elif self.name == "items_incremental":
             page, sub_page = page if page else (None, None)
             if not stream_slice:
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
             else:
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
+        elif self.name == "teams":
+            query_builder = self._build_teams_query
+        elif self.name == "activity_logs":
+            page, sub_page = page if page else (None, None)
+            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
         else:
             query_builder = self._build_query
         query = query_builder(

@@ -3,7 +3,6 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
@@ -16,23 +15,6 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
-
-
-def is_valid_format(date_string: str) -> bool:
-    try:
-        datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S%z")
-        return True
-    except ValueError:
-        return False
-
-
-def compare_date_strings(str1: str, str2: str) -> bool:
-    if not is_valid_format(str1) or not is_valid_format(str2):
-        raise ValueError("Invalid date format")
-
-    dt1 = datetime.strptime(str1, "%Y-%m-%dT%H:%M:%S%z")
-    dt2 = datetime.strptime(str2, "%Y-%m-%dT%H:%M:%S%z")
-    return dt1 > dt2
 
 
 @dataclass
@@ -87,20 +69,6 @@ class IncrementalSingleSlice(Cursor):
     def get_stream_state(self) -> StreamState:
         return self._state
 
-    def _get_max_state_value(
-        self,
-        current_state_value: Optional[Union[int, str]],
-        last_record_value: Optional[Union[int, str]],
-    ) -> Optional[Union[int, str]]:
-        if isinstance(last_record_value, str) and isinstance(current_state_value, str):
-            return compare_date_strings(current_state_value, last_record_value)
-        elif isinstance(last_record_value, int) and isinstance(current_state_value, int):
-            return current_state_value > last_record_value
-        elif last_record_value:
-            return False
-        else:
-            return True
-
     def set_initial_state(self, stream_state: StreamState):
         cursor_value = stream_state.get(self.cursor_field.eval(self.config))
         if cursor_value:
@@ -130,7 +98,7 @@ class IncrementalSingleSlice(Cursor):
         first_cursor_value = first.get(self.cursor_field.eval(self.config)) if first else None
         second_cursor_value = second.get(self.cursor_field.eval(self.config)) if second else None
         if first_cursor_value and second_cursor_value:
-            return self._get_max_state_value(first_cursor_value, second_cursor_value)
+            return first_cursor_value > second_cursor_value
         elif first_cursor_value:
             return True
         else:
@@ -155,7 +123,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: Union[InterpolatedString, str]
     parent_stream_configs: List[ParentStreamConfig]
-    items_per_request: int = field(default=100)
+    nested_items_per_page: int
     parent_complete_fetch: bool = field(default=False)
 
     def __post_init__(self, parameters: Mapping[str, Any]):
@@ -186,15 +154,13 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
         if not max_dt:
             return
-        self._state[self.cursor_field.eval(self.config)] = max_dt[self.cursor_field.eval(self.config)]
+
+        max_state = max_dt[self.cursor_field.eval(self.config)]
+        self._state[self.cursor_field.eval(self.config)] = max_state
 
         if self.parent_stream:
-            if self.parent_cursor_field not in most_recent_record:
-                date_str = most_recent_record[self.cursor_field.eval(self.config)]
-                parent_cursor = int(datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S%z").timestamp())
-            else:
-                parent_cursor = most_recent_record[self.parent_cursor_field]
-            self._state[self.parent_stream_name] = {self.parent_cursor_field: parent_cursor}
+            parent_state = self.parent_stream.state or {self.parent_cursor_field: max_state}
+            self._state[self.parent_stream_name] = parent_state
 
     def read_parent_stream(
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
@@ -210,8 +176,8 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
                     {},
                 ]
             else:
-                slice = {self.substream_slice_field: list()}
                 all_ids = set()
+                slice_ids = list()
 
                 for parent_record in self.parent_stream.read_records(
                     sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
@@ -230,13 +196,12 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
                         if substream_slice not in all_ids:
                             all_ids.add(substream_slice)
-                            slice[self.substream_slice_field].append(substream_slice)
-
-                        if self.items_per_request == len(slice[self.substream_slice_field]):
-                            yield slice
-                            slice[self.substream_slice_field] = list()
-                if slice[self.substream_slice_field]:
-                    yield slice
+                            slice_ids.append(substream_slice)
+                            if self.nested_items_per_page == len(slice_ids):
+                                yield {self.substream_slice_field: slice_ids}
+                                slice_ids = list()
+                if slice_ids:
+                    yield {self.substream_slice_field: slice_ids}
 
             # If the parent slice contains no records,
             if empty_parent_slice:
@@ -246,7 +211,4 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
 
         slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        if self.parent_complete_fetch:
-            yield from [slice for slice in slices_generator]
-        else:
-            yield from slices_generator
+        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator

@@ -12,7 +12,7 @@ from source_monday.components import IncrementalSingleSlice, IncrementalSubstrea
 
 
 def test_slicer():
-    date_time_dict = {"updated_at": "2022-09-05T10:10:10Z"}
+    date_time_dict = {"updated_at": 1662459010}
     slicer = IncrementalSingleSlice(config={}, parameters={}, cursor_field="updated_at")
     slicer.close_slice(date_time_dict, date_time_dict)
     assert slicer.get_stream_state() == date_time_dict
@@ -25,9 +25,9 @@ def test_slicer():
     "last_record, expected, records",
     [
         (
-                {"first_stream_cursor": "2022-09-06T10:10:10Z"},
-                {'parent_stream_name': {'parent_cursor_field': 1662459010}, 'first_stream_cursor': '2022-09-06T10:10:10Z'},
-                [{"first_stream_cursor": "2022-09-05T10:10:10Z"}],
+                {"first_stream_cursor": 1662459010},
+                {'parent_stream_name': {'parent_cursor_field': 1662459010}, 'first_stream_cursor': 1662459010},
+                [{"first_stream_cursor": 1662459010}],
         ),
         (None, {}, []),
     ],

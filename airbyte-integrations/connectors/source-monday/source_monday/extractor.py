@@ -3,7 +3,8 @@
 #
 
 import json
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
+from datetime import datetime
 from typing import Any, List, Mapping, Union
 
 import dpath.util
@@ -36,33 +37,40 @@ class MondayActivityExtractor(RecordExtractor):
         if len(response_body["data"]["boards"]):
             for record in response_body["data"]["boards"][0]["activity_logs"]:
                 json_data = json.loads(record["data"])
-                if json_data.get("pulse_id"):
-                    result.append(
-                        dict(
-                            record,
-                            **{"pulse_id": json_data.get("pulse_id"), "created_at_int": int(record.get("created_at", 0)) // 10_000_000},
-                        )
-                    )
+                new_record = record
+                if record.get("created_at"):
+                    new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
+                else:
+                    continue
+
+                if record.get("entity") == "pulse" and json_data.get("pulse_id"):
+                    new_record.update({"pulse_id": json_data.get("pulse_id")})
+
+                if record.get("entity") == "board" and json_data.get("board_id"):
+                    new_record.update({"board_id": json_data.get("board_id")})
+
+                result.append(new_record)
+
         return result
 
 
 @dataclass
-class MondayItemsExtractor(RecordExtractor):
+class MondayIncrementalItemsExtractor(RecordExtractor):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
     """
 
     field_path: List[Union[InterpolatedString, str]]
-    additional_field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    additional_field_path: List[Union[InterpolatedString, str]] = field(default_factory=list)
     decoder: Decoder = JsonDecoder(parameters={})
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        for field in (self.field_path, self.additional_field_path):
-            for path_index in range(len(field)):
-                if isinstance(field[path_index], str):
-                    field[path_index] = InterpolatedString.create(field[path_index], parameters=parameters)
+        for field_list in (self.field_path, self.additional_field_path):
+            for path_index in range(len(field_list)):
+                if isinstance(field_list[path_index], str):
+                    field_list[path_index] = InterpolatedString.create(field_list[path_index], parameters=parameters)
 
     def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
         response_body = self.decoder.decode(response)
@@ -82,7 +90,12 @@ class MondayItemsExtractor(RecordExtractor):
             return []
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        default_path_records = self.try_extract_records(response, field_path=self.field_path)
-        if not default_path_records:
-            return self.try_extract_records(response, self.additional_field_path)
-        return default_path_records
+        result = self.try_extract_records(response, field_path=self.field_path)
+        if not result and self.additional_field_path:
+            result = self.try_extract_records(response, self.additional_field_path)
+        for item_index in range(len(result)):
+            if "updated_at" in result[item_index]:
+                result[item_index]["updated_at_int"] = int(
+                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
+                )
+        return result

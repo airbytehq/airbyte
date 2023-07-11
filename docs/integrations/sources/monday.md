@@ -31,7 +31,7 @@ The Monday supports full refresh syncs
 | Feature           | Supported? |
 |:------------------|:-----------|
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 | SSL connection    | No         |
 | Namespaces        | No         |
 
@@ -56,7 +56,10 @@ The typical name of the table depends on the `destination` you use like `boards.
 The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-* `Items_incremental` stream is the same as Items, with incremental sync added. 
+* Incremental sync for `Items` and `Boards` streams is done using `Activity logs` stream.
+Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
+If time between incremental syncs is bigger activity logs retention time for your plan some data may be lost.
+Check you Monday plan at https://monday.com/pricing.
 
 
 ## Performance considerations
@@ -68,7 +71,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
-| 1.1.0   | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items stream                                   |
+| 1.1.0   | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items and Boards streams                       |
 | 1.0.0   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410)  | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
 | 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244)  | Added http error handling for `403` and `500` HTTP errors               |  
 | 0.2.5   | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                     |  

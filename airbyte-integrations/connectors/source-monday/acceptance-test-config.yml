@@ -18,10 +18,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        # `boards`, `items`, `updates` streams schemas were modified
-        #  changed type of id for assets in items and updates
-        #  change deprecated owner to owners in boards
-        # All changes described in corresponding pr
+        # `boards`, `items`, `updates` streams schemas were modified. Pr 27410.
         # Changes applies to all configs
         backward_compatibility_tests_config:
           disable_for_version: "0.2.6"
@@ -49,9 +46,6 @@ acceptance_tests:
           updates:
             - name: assets/*/public_url
               bypass_reason: "Unstable data"
-          items_incremental:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -68,9 +62,6 @@ acceptance_tests:
           updates:
             - name: assets/*/public_url
               bypass_reason: "Unstable data"
-          items_incremental:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
   full_refresh:
     tests:
       - config_path: "secrets/config_api_token.json"
@@ -81,5 +72,6 @@ acceptance_tests:
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
-        items_incremental: [ "updated_at" ]
+        items: [ "updated_at_int" ]
+        boards: [ "updated_at_int" ]
         activity_logs: [ "created_at_int" ]
