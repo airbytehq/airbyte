@@ -3,8 +3,7 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
-from airbyte_cdk.sources.file_based.schema_validation_policies import EmitRecordPolicy
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig, QuotingBehavior
 from pydantic import ValidationError
 
 
@@ -27,9 +26,11 @@ def test_csv_config(file_type, input_format, expected_format, expected_error):
         "file_type": file_type,
         "globs": ["*"],
         "validation_policy": "emit_record",
-        "validation_policies": {"emit_record": EmitRecordPolicy()},
-        "format": input_format,
+        "format": {
+            file_type: input_format
+        },
     }
+
     if expected_error:
         with pytest.raises(expected_error):
             FileBasedStreamConfig(**stream_config)
@@ -37,4 +38,41 @@ def test_csv_config(file_type, input_format, expected_format, expected_error):
         actual_config = FileBasedStreamConfig(**stream_config)
         assert not hasattr(actual_config.format[file_type], "filetype")
         for expected_format_field, expected_format_value in expected_format.items():
+            assert isinstance(actual_config.format[file_type], CsvFormat)
             assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
+
+
+def test_legacy_format():
+    """
+    This test verifies that we can process the legacy format of the config object used by the existing S3 source with a
+    single `format` option as opposed to the current file_type -> format mapping.
+    """
+    stream_config = {
+        "name": "stream1",
+        "file_type": "csv",
+        "globs": ["*"],
+        "validation_policy": "emit_record_on_schema_mismatch",
+        "format": {
+            "filetype": "csv",
+            "delimiter": "d",
+            "quote_char": "q",
+            "escape_char": "e",
+            "encoding": "ascii",
+            "double_quote": True,
+            "quoting_behavior": "Quote All"
+        },
+    }
+
+    expected_format = {
+        "delimiter": "d",
+        "quote_char": "q",
+        "escape_char": "e",
+        "encoding": "ascii",
+        "double_quote": True,
+        "quoting_behavior": QuotingBehavior.QUOTE_ALL
+    }
+
+    actual_config = FileBasedStreamConfig(**stream_config)
+    assert isinstance(actual_config.format["csv"], CsvFormat)
+    for expected_format_field, expected_format_value in expected_format.items():
+        assert getattr(actual_config.format["csv"], expected_format_field) == expected_format_value
