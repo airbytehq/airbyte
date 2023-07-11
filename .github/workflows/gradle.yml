@@ -188,7 +188,7 @@ jobs:
         uses: tj-actions/changed-files@v23
         with:
           files: /**/*.py
-          subdir: "airbyte-cdk/python/"
+          path: "airbyte-cdk/python/"
 
       - uses: actions/setup-python@v4
         with:
