@@ -38,16 +38,23 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"dimensionId": {"type": "str"}, "value": {"type": "str"}, "externalId": {"type": "str"}}}
 
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="stream_metrics", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
+        stream=AirbyteStream(name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
+
 def test_check_valid_config(config: Mapping):
     print(type(config))
     outcome = DestinationPlanhatAnalytics().check(logger, config)
     assert outcome.status == Status.SUCCEEDED
+
+def test_check_invalid_config():
+    f = open("integration_tests/invalid_config.json")
+    config = json.load(f)
+    outcome = DestinationPlanhatAnalytics().check(logger=logger, config=config)
+    assert outcome.status == Status.FAILED
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
@@ -70,5 +77,5 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
             config, configured_catalog, [*record_chunk, state_message]
         )
     )
+    
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-

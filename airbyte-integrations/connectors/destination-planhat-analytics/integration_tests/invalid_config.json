@@ -1,0 +1,6 @@
+{
+    "tenant_uuid": "abc",
+    "api_method": {
+        "url": "https://analytics.planhat.com/analytics/bulk"
+    }
+}

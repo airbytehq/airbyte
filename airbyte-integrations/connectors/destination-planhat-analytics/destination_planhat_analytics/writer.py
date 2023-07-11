@@ -19,5 +19,8 @@ class PlanHatWriter:
 
     def flush(self):
         response = self.client.write(self.write_buffer)
-        logger.info(response.json())
+        if response.json()["errors"] != []:
+            logger.warning(response.json())
+        else:
+            logger.info(response.json())
         self.write_buffer.clear()
