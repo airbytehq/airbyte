@@ -202,8 +202,9 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
                         if self.nested_items_per_page == len(slice_ids):
                             yield {self.substream_slice_field: slice_ids}
                             slice_ids = list()
-            if slice_ids:
-                yield {self.substream_slice_field: slice_ids}
+        # yield leftover ids if any left
+        if slice_ids:
+            yield {self.substream_slice_field: slice_ids}
 
         # If the parent slice contains no records
         if empty_parent_slice:
