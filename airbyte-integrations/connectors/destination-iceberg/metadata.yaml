@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: df65a8f3-9908-451b-aa9b-445462803560
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-iceberg
   githubIssueLabel: destination-iceberg
   license: MIT
