@@ -60,7 +60,6 @@ connectionSpecification:
       description: The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite.
       order: 6
       examples: ["customer", "salesorder"]
-      default: []
     start_datetime:
       type: string
       title: Start Date
