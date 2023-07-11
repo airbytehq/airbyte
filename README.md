@@ -120,6 +120,7 @@ does not really make sense. Some common pitfalls:
   schema-inference again and get the correct schema. However, this may be time-consuming until we have
   automatic continuous schema-inference running on these collections, so it is also a
   fair choice to omit these fields from your patch.
+- Do not include `_meta` field changes in patches
 
 
 # CI/CD
