@@ -56,10 +56,10 @@ The typical name of the table depends on the `destination` you use like `boards.
 The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-* Incremental sync for `Items` and `Boards` streams is done using `Activity logs` stream.
+* Incremental sync for `Items` and `Boards` streams is done using the `Activity logs` stream.
 Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
-If time between incremental syncs is bigger activity logs retention time for your plan some data may be lost.
-Check you Monday plan at https://monday.com/pricing.
+Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
+Check your Monday plan at https://monday.com/pricing.
 
 
 ## Performance considerations

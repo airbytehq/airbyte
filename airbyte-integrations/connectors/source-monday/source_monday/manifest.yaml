@@ -73,30 +73,6 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         type: NoPagination
-#  items_stream:
-#    $ref: "#/definitions/base_stream"
-#    retriever:
-#      $ref: "#/definitions/retriever"
-#      record_selector:
-#        type: RecordSelector
-#        extractor:
-#          field_path: ["data", "boards", "*", "items", "*"]
-#      paginator:
-#        $ref: "#/definitions/default_paginator"
-#        pagination_strategy:
-#          class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
-#          type: "CustomPaginationStrategy"
-#          page_size: 100
-#    $parameters:
-#      name: "items"
-#      path: ""
-#      items_per_page: 1
-#  boards_stream:
-#    $ref: "#/definitions/base_stream"
-#    $parameters:
-#      name: "boards"
-#      path: ""
-#      items_per_page: 100
   tags_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
