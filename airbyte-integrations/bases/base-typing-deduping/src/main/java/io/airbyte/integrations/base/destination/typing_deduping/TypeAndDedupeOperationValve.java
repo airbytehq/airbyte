@@ -92,7 +92,7 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    * @return a boolean indicating whether we have crossed the interval threshold for typing and
    *         deduping.
    */
-  public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
+  public boolean readyToTypeAndDedupeWithAdditionalRecord(final AirbyteStreamNameNamespacePair key) {
     if (!containsKey(key)) {
       return false;
     }
@@ -119,8 +119,8 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   /**
    * Meant to be called after
-   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)} will set
-   * a streams last operation to the current time and increase its index reference in
+   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupeWithAdditionalRecord(AirbyteStreamNameNamespacePair)}
+   * will set a streams last operation to the current time and increase its index reference in
    * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
    *
    * @param key the stream to update
