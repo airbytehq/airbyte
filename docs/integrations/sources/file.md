@@ -4,10 +4,7 @@ This page contains the setup guide and reference information for the Files sourc
 
 ## Prerequisites
 
-- URL to access the file
-- File Format
-- Storage Provider
-- Reader Options (Optional)
+- A file hosted on AWS S3, GCS, HTTPS, or an SFTP server
 
 ## Setup guide
 
@@ -71,12 +68,12 @@ Enter the _username_ associated with your account on the remote server.
 
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
 
-<!-- env:local -->
+<!-- env:oss -->
 #### Local Filesystem (Airbyte Open Source only)
 - `Storage`
 
 :::caution 
-Currently, the local storage URL for reading must start with the local mount "/local/" until we implement more advanced docker mounting options.
+Currently, the local storage URL for reading must start with the local mount "/local/".
 :::
 
 Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for: 
@@ -85,7 +82,7 @@ Please note that if you are replicating data from a locally stored file on Windo
 - `HACK_LOCAL_ROOT_PARENT` 
 
 Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
-<!-- /env:local -->
+<!-- /env:oss -->
 
 ### Step 3: Complete the connector setup
 1. For **URL**, enter the _URL path_ of the file to be replicated.
