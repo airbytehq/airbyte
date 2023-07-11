@@ -25,7 +25,8 @@ task runLowCodeConnectorUnitTests(type: Exec) {
 
 task runMypyOnModifiedFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
-    commandLine 'bin/run-mypy-on-modified-files.sh'
+    def changedFiles = project.hasProperty('changedFiles') ? project.changedFiles : ''
+    commandLine "bin/run-mypy-on-modified-files.sh", "${changedFiles}"
 }
 
 runMypyOnModifiedFiles.dependsOn generateComponentManifestClassFiles
