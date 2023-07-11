@@ -77,7 +77,7 @@ class FileBasedSource(AbstractSource, ABC):
 
         return not bool(errors), (errors or None)
 
-    def _validate_stream_config(self, stream_config: FileBasedStreamConfig):
+    def _validate_stream_config(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.validation_policy not in self.validation_policies:
             raise ValidationError(
                 f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
