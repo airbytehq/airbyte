@@ -5,10 +5,12 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
@@ -29,12 +31,14 @@ class FileBasedSource(AbstractSource, ABC):
         stream_reader: AbstractFileBasedStreamReader,
         catalog: Optional[ConfiguredAirbyteCatalog],
         availability_strategy: Optional[AvailabilityStrategy],
+        spec_class: Type[AbstractFileBasedSpec],
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Dict[str, FileTypeParser] = None,
         validation_policies: Dict[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
+        self.spec_class = spec_class
         self.discovery_policy = discovery_policy
         self.parsers = parsers or default_parsers
         self.validation_policies = validation_policies
@@ -79,9 +83,9 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
+            parsed_config = self.spec_class(**config)
             streams = []
-            for stream in config["streams"]:
-                stream_config = FileBasedStreamConfig(**stream)
+            for stream_config in parsed_config.streams:
                 if stream_config.validation_policy not in self.validation_policies:
                     raise ValidationError(
                         f"validation_policy must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
@@ -102,3 +106,13 @@ class FileBasedSource(AbstractSource, ABC):
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
+
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        """
+        Returns the specification describing what fields can be configured by a user when setting up a file-based source.
+        """
+
+        return ConnectorSpecification(
+            documentationUrl=self.spec_class.documentation_url(),
+            connectionSpecification=self.spec_class.schema(),
+        )

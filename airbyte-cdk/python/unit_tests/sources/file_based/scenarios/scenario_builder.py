@@ -29,6 +29,7 @@ class TestScenario:
             config: Mapping[str, Any],
             files: Dict[str, Any],
             file_type: str,
+            expected_spec: Optional[Dict[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Dict[str, Any]],
             expected_logs: Optional[Dict[str, Any]],
@@ -46,6 +47,7 @@ class TestScenario:
     ):
         self.name = name
         self.config = config
+        self.expected_spec = expected_spec
         self.expected_check_status = expected_check_status
         self.expected_catalog = expected_catalog
         self.expected_logs = expected_logs
@@ -103,6 +105,7 @@ class TestScenarioBuilder:
         self._config = {}
         self._files = {}
         self._file_type = None
+        self._expected_spec = None
         self._expected_check_status = None
         self._expected_catalog = {}
         self._expected_logs = {}
@@ -132,6 +135,10 @@ class TestScenarioBuilder:
 
     def set_file_type(self, file_type: str):
         self._file_type = file_type
+        return self
+
+    def set_expected_spec(self, expected_spec: Dict[str, Any]):
+        self._expected_spec = expected_spec
         return self
 
     def set_expected_check_status(self, expected_check_status: str):
@@ -199,6 +206,7 @@ class TestScenarioBuilder:
             self._config,
             self._files,
             self._file_type,
+            self._expected_spec,
             self._expected_check_status,
             self._expected_catalog,
             self._expected_logs,

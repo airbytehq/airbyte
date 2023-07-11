@@ -91,7 +91,7 @@ discover_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", discover_scenarios, ids=[s.name for s in discover_scenarios])
-def test_discover(capsys, tmp_path, json_spec, scenario):
+def test_discover(capsys, tmp_path, scenario):
     expected_exc, expected_msg = scenario.expected_discover_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:
@@ -115,7 +115,7 @@ read_scenarios = discover_scenarios + [
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_read(capsys, tmp_path, json_spec, scenario):
+def test_read(capsys, tmp_path, scenario):
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, tmp_path, scenario)
     else:
@@ -167,6 +167,16 @@ def run_test_read_incremental(capsys, tmp_path, scenario):
                 assert actual["state"]["data"] == expected
 
 
+spec_scenarios = [
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
+]
+
+
+def test_spec(capsys):
+    assert spec(capsys, single_csv_scenario) == single_csv_scenario.expected_spec
+
+
 check_scenarios = [
     error_empty_stream_scenario,
     error_extension_mismatch_scenario,
@@ -182,7 +192,7 @@ check_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", check_scenarios, ids=[c.name for c in check_scenarios])
-def test_check(capsys, tmp_path, json_spec, scenario):
+def test_check(capsys, tmp_path, scenario):
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
@@ -195,6 +205,15 @@ def test_check(capsys, tmp_path, json_spec, scenario):
     else:
         output = check(capsys, tmp_path, scenario)
         assert output["status"] == scenario.expected_check_status
+
+
+def spec(capsys, scenario):
+    launch(
+        scenario.source,
+        ["spec"],
+    )
+    captured = capsys.readouterr()
+    return json.loads(captured.out.splitlines()[0])["spec"]
 
 
 def check(capsys, tmp_path, scenario) -> Dict[str, Any]:

@@ -9,6 +9,7 @@ from io import IOBase
 from typing import Any, Dict, Iterable, List, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
@@ -17,6 +18,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from pydantic import AnyUrl, Field
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -38,6 +40,7 @@ class InMemoryFilesSource(FileBasedSource):
             stream_reader,
             catalog=ConfiguredAirbyteCatalog(streams=catalog["streams"]) if catalog else None,
             availability_strategy=availability_strategy,
+            spec_class=InMemorySpec,
             discovery_policy=discovery_policy,
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
@@ -82,3 +85,18 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             writer = csv.writer(fh)
             writer.writerows(self.files[file_name]["contents"])
         return fh.getvalue()
+
+
+class InMemorySpec(AbstractFileBasedSpec):
+    @classmethod
+    def documentation_url(cls) -> AnyUrl:
+        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")
+
+    start_date: Optional[str] = Field(
+        title="Start Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+        examples=["2021-01-01T00:00:00Z"],
+        format="date-time",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        order=1,
+    )

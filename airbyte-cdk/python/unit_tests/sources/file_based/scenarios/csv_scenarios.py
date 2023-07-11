@@ -18,7 +18,8 @@ single_csv_scenario = (
                     "globs": ["*"],
                     "validation_policy": "emit_record",
                 }
-            ]
+            ],
+            "start_date": "2023-06-04T03:54:07Z"
         }
     )
     .set_files(
@@ -34,6 +35,158 @@ single_csv_scenario = (
         }
     )
     .set_file_type("csv")
+    .set_expected_spec(
+        {
+            "documentationUrl": "https://docs.airbyte.com/integrations/sources/in_memory_files",
+            "connectionSpecification": {
+                "title": "InMemorySpec",
+                "description": "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed "
+                               "when users configure a file-based source.",
+                "type": "object",
+                "properties": {
+                    "streams": {
+                        "title": "The list of streams to sync",
+                        "description": "Streams defines the behavior for grouping files together that will be synced to the downstream "
+                                       "destination. Each stream has it own independent configuration to handle which files to sync, "
+                                       "how files should be parsed, and the validation of records against the schema.",
+                        "order": 10,
+                        "type": "array",
+                        "items": {
+                            "title": "FileBasedStreamConfig",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "title": "Name",
+                                    "type": "string"
+                                },
+                                "file_type": {
+                                    "title": "File Type",
+                                    "type": "string"
+                                },
+                                "globs": {
+                                    "title": "Globs",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "validation_policy": {
+                                    "title": "Validation Policy",
+                                    "type": "string"
+                                },
+                                "catalog_schema": {
+                                    "title": "ConfiguredAirbyteCatalog",
+                                    "type": "object",
+                                    "properties": {
+                                        "streams": {
+                                            "title": "Streams",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/ConfiguredAirbyteStream"
+                                            }
+                                        }
+                                    },
+                                    "required": ["streams"]
+                                },
+                                "input_schema": {
+                                    "title": "Input Schema",
+                                    "type": "object"
+                                },
+                                "primary_key": {
+                                    "title": "Primary Key",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "max_history_size": {
+                                    "title": "Max History Size",
+                                    "type": "integer"
+                                },
+                                "days_to_sync_if_history_is_full": {
+                                    "title": "Days To Sync If History Is Full",
+                                    "type": "integer"
+                                },
+                                "format": {
+                                    "anyOf": [
+                                        {
+                                            "title": "Format",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "title": "CsvFormat",
+                                                "type": "object",
+                                                "properties": {
+                                                    "delimiter": {
+                                                        "title": "Delimiter",
+                                                        "default": ",",
+                                                        "type": "string"
+                                                    },
+                                                    "quote_char": {
+                                                        "title": "Quote Char",
+                                                        "default": "\"",
+                                                        "type": "string"
+                                                    },
+                                                    "escape_char": {
+                                                        "title": "Escape Char",
+                                                        "type": "string"
+                                                    },
+                                                    "encoding": {
+                                                        "title": "Encoding",
+                                                        "default": "utf8",
+                                                        "type": "string"
+                                                    },
+                                                    "double_quote": {
+                                                        "title": "Double Quote",
+                                                        "type": "boolean"
+                                                    },
+                                                    "quoting_behavior": {
+                                                        "default": "Quote Special Characters",
+                                                        "allOf": [{"$ref": "#/definitions/QuotingBehavior"}]
+                                                    }
+                                                },
+                                                "required": ["double_quote"]
+                                            }
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["name", "file_type", "validation_policy"]
+                        }
+                    },
+                    "start_date": {
+                        "title": "Start Date",
+                        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not "
+                                       "be replicated.",
+                        "examples": ["2021-01-01T00:00:00Z"],
+                        "format": "date-time",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "order": 1,
+                        "type": "string"
+                    }
+                },
+                "required": ["streams"]
+            },
+        }
+    )
     .set_expected_catalog(
         {
             "streams": [
