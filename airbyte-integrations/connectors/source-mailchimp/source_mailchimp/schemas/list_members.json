@@ -71,12 +71,12 @@
         "description": "Statistics related to the member.",
         "properties": {
           "avg_open_rate": {
-            "type": ["null", "integer"],
+            "type": ["null", "number"],
             "title": "Average Open Rate",
             "description": "The average open rate of the member."
           },
           "avg_click_rate": {
-            "type": ["null", "integer"],
+            "type": ["null", "number"],
             "title": "Average Click Rate",
             "description": "The average click rate of the member."
           },
@@ -155,12 +155,12 @@
         "description": "Location information of the member.",
         "properties": {
           "latitude": {
-            "type": ["null", "integer"],
+            "type": ["null", "number"],
             "title": "Latitude",
             "description": "The latitude of the member's location."
           },
           "longitude": {
-            "type": ["null", "integer"],
+            "type": ["null", "number"],
             "title": "Longitude",
             "description": "The longitude of the member's location."
           },
