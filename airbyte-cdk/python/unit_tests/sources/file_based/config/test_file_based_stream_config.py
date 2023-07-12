@@ -34,7 +34,6 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
     }
 
     if expected_error:
-        FileBasedStreamConfig(**stream_config)
         with pytest.raises(expected_error):
             FileBasedStreamConfig(**stream_config)
     else:
