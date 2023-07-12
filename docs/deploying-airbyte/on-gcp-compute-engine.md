@@ -20,6 +20,7 @@ The instructions have been tested on a `Debian GNU/Linux 10` VM instance.
 
 ```bash
 PROJECT_ID=PROJECT_ID_WHERE_YOU_CREATED_YOUR_INSTANCE
+INSTANCE_ZONE=ZONE_WHERE_YOU_CREATED_YOUR_INSTANCE (ex. northamerica-northeast1-a)
 INSTANCE_NAME=airbyte # or any other name that you've used
 ```
 
@@ -97,7 +98,9 @@ For security reasons, we strongly recommended not exposing Airbyte publicly.
 1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
+gcloud compute ssh --project=$PROJECT_ID\
+ --zone=$INSTANCE_ZONE \
+ $INSTANCE_NAME -- -NL 8000:localhost:8000
 ```
 
 2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
