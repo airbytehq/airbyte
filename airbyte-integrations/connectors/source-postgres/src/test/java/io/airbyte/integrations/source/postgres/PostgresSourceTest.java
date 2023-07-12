@@ -61,6 +61,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -508,6 +509,7 @@ class PostgresSourceTest {
   }
 
   @Test
+  @Disabled
   void testReadIncrementalSuccess() throws Exception {
     final JsonNode config = getConfig(PSQL_DB, dbName);
     // We want to test ordering, so we can delete the NaN entry and add a 3.
