@@ -23,6 +23,7 @@ class BuildConnectorDistributionTar(GradleTask):
                 self.build_include,
             )
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            .with_exec(["cat", "airbyte-integrations/connectors/destination-bigquery/src/main/resources/spec.json"])
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
         )
