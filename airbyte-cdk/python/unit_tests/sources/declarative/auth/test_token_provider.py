@@ -38,13 +38,14 @@ def test_session_token_provider_cache():
 
 
 def test_session_token_provider_cache_expiration():
-    pendulum.set_test_now(pendulum.datetime(2001, 5, 21, 12))
-    provider = create_session_token_provider()
-    provider.get_token()
+    with pendulum.test(pendulum.datetime(2001, 5, 21, 12)):
+        provider = create_session_token_provider()
+        provider.get_token()
 
-    pendulum.set_test_now(pendulum.datetime(2001, 5, 21, 14))
     provider.login_requester.send_request.return_value.json.return_value = {"nested": {"token": "updated_token"}}
-    assert provider.get_token() == "updated_token"
+
+    with pendulum.test(pendulum.datetime(2001, 5, 21, 14)):
+        assert provider.get_token() == "updated_token"
 
     assert provider.login_requester.send_request.call_count == 2
 
