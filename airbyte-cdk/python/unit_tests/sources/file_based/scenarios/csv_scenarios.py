@@ -74,20 +74,6 @@ single_csv_scenario = (
                                     "title": "Validation Policy",
                                     "type": "string"
                                 },
-                                "catalog_schema": {
-                                    "title": "ConfiguredAirbyteCatalog",
-                                    "type": "object",
-                                    "properties": {
-                                        "streams": {
-                                            "title": "Streams",
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/ConfiguredAirbyteStream"
-                                            }
-                                        }
-                                    },
-                                    "required": ["streams"]
-                                },
                                 "input_schema": {
                                     "title": "Input Schema",
                                     "type": "object"
@@ -115,12 +101,9 @@ single_csv_scenario = (
                                         }
                                     ]
                                 },
-                                "max_history_size": {
-                                    "title": "Max History Size",
-                                    "type": "integer"
-                                },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",
+                                    "default": 3,
                                     "type": "integer"
                                 },
                                 "format": {
@@ -157,7 +140,7 @@ single_csv_scenario = (
                                                     },
                                                     "quoting_behavior": {
                                                         "default": "Quote Special Characters",
-                                                        "allOf": [{"$ref": "#/definitions/QuotingBehavior"}]
+                                                        "enum": ["Quote All", "Quote Special Characters", "Quote Non-numeric", "Quote None"]
                                                     }
                                                 },
                                                 "required": ["double_quote"]
@@ -654,12 +637,102 @@ csv_custom_format_scenario = (
                     "globs": ["*"],
                     "validation_policy": "emit_record",
                     "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "quote_char": "|",
+                            "escape_char": "!",
+                            "double_quote": True,
+                            "quoting_behavior": "Quote Special Characters"
+                        }
+                    }
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11", "val12", "val |13|"),
+                    ("val21", "val22", "val23"),
+                    ("val,31", "val |,32|", "val, !!!! 33"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string",
+                            },
+                            "col2": {
+                                "type": "string",
+                            },
+                            "col3": {
+                                "type": "string",
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "col3": "val |13|", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val21", "col2": "val22", "col3": "val23", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val,31", "col2": "val |,32|", "col3": "val, !! 33", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+    .set_file_write_options(
+        {
+            "delimiter": "#",
+            "quotechar": "|",
+        }
+    )
+).build()
+
+
+csv_legacy_format_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_legacy_format")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
                         "filetype": "csv",
                         "delimiter": "#",
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote Special Characters"
+                        "quoting_behavior": "Quote All"
                     }
                 }
             ]
@@ -742,11 +815,13 @@ multi_stream_custom_format = (
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record",
                     "format": {
-                        "filetype": "csv",
-                        "delimiter": "#",
-                        "escape_char": "!",
-                        "double_quote": True,
-                        "newlines_in_values": False
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "escape_char": "!",
+                            "double_quote": True,
+                            "newlines_in_values": False
+                        }
                     }
                 },
                 {
@@ -755,12 +830,14 @@ multi_stream_custom_format = (
                     "globs": ["b.csv"],
                     "validation_policy": "emit_record",
                     "format": {
-                        "filetype": "csv",
-                        "delimiter": "#",
-                        "escape_char": "@",
-                        "double_quote": True,
-                        "newlines_in_values": False,
-                        "quoting_behavior": "Quote All"
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "escape_char": "@",
+                            "double_quote": True,
+                            "newlines_in_values": False,
+                            "quoting_behavior": "Quote All"
+                        }
                     }
                 }
             ]

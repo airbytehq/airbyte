@@ -24,6 +24,8 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
 
+DEFAULT_MAX_HISTORY_SIZE = 10_000
+
 
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
@@ -35,6 +37,7 @@ class FileBasedSource(AbstractSource, ABC):
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Dict[str, FileTypeParser] = None,
         validation_policies: Dict[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
+        max_history_size: int = DEFAULT_MAX_HISTORY_SIZE,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
@@ -43,6 +46,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.parsers = parsers or default_parsers
         self.validation_policies = validation_policies
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
+        self.max_history_size = max_history_size
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -99,7 +103,7 @@ class FileBasedSource(AbstractSource, ABC):
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policies=self.validation_policies,
-                        cursor=DefaultFileBasedCursor(stream_config.max_history_size, stream_config.days_to_sync_if_history_is_full),
+                        cursor=DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
             return streams

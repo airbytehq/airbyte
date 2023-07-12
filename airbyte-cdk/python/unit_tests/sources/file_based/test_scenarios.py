@@ -25,6 +25,7 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_custom_format_scenario,
+    csv_legacy_format_scenario,
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
     empty_schema_inference_scenario,
@@ -85,6 +86,7 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
+    csv_legacy_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
 ]
@@ -173,7 +175,8 @@ spec_scenarios = [
 ]
 
 
-def test_spec(capsys):
+@pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
+def test_spec(capsys, scenario):
     assert spec(capsys, single_csv_scenario) == single_csv_scenario.expected_spec
 
 
