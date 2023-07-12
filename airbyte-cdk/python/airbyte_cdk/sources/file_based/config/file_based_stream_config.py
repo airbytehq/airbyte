@@ -72,6 +72,7 @@ class FileBasedStreamConfig(BaseModel):
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
     format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
+    schemaless: bool = False
 
     @validator("file_type", pre=True)
     def validate_file_type(cls, v):

@@ -39,7 +39,7 @@ public class XminCtidUtilsTest {
     final XminStatus xminStatus = new XminStatus().withStateType(StateType.XMIN).withVersion(2L).withXminXidValue(9L).withXminRawValue(9L)
         .withNumWraparound(1L);
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
-    final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
+    final StreamsCategorised<XminStreams> streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
 
     assertTrue(streamsCategorised.remainingStreams().streamsForXminSync().isEmpty());
     assertTrue(streamsCategorised.remainingStreams().statesFromXminSync().isEmpty());
@@ -65,7 +65,7 @@ public class XminCtidUtilsTest {
         generateStateMessage(MODELS_STREAM_2.getStream().getName(), MODELS_STREAM_2.getStream().getNamespace(), ctidStatusAsJson);
 
     final StreamStateManager streamStateManager = new StreamStateManager(Arrays.asList(xminState, ctidState), configuredCatalog);
-    final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
+    final StreamsCategorised<XminStreams> streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
 
     assertEquals(1, streamsCategorised.remainingStreams().streamsForXminSync().size());
     assertEquals(MODELS_STREAM, streamsCategorised.remainingStreams().streamsForXminSync().get(0));
