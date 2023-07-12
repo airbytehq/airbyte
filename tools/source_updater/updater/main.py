@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import yaml
+from pydantic.error_wrappers import ValidationError
 from typing import Any, List, Mapping
 
 from airbyte_cdk.connector import BaseConnector
@@ -18,7 +19,7 @@ from airbyte_cdk.sources.streams import Stream
 os.environ["VERSION"] = "dev"
 from ci_credentials import SecretsManager
 
-from yaml_utils import PrettyDumper
+from updater.yaml_utils import PrettyDumper
 
 _DEFAULT_CONFIG_FILE = "config.json"
 
@@ -30,7 +31,10 @@ class SourceRepository:
         return os.path.exists(self._path_from_name(source_name))
 
     def fetch_catalog(self, source_name: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(self._catalog_path(source_name)))
+        try:
+            return ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(self._catalog_path(source_name)))
+        except ValidationError as error:
+            raise ValueError(error)
 
     def update_catalog(self, source_name: str, catalog: ConfiguredAirbyteCatalog) -> None:
         with open(self._catalog_path(source_name), "w") as catalog_file:
@@ -51,7 +55,8 @@ class SourceRepository:
             pass
 
     def write_manifest(self, source_name: str, source: ManifestDeclarativeSource) -> None:
-        # FIXME this seems very intrusive and we should probably have a method to explicit this behavior
+        # FIXME This seems very intrusive because it modifies the internal attribute of ManifestDeclarativeSource. We should probably have a
+        #  method to explicit this behavior
         if "metadata" in source.resolved_manifest:
             del source.resolved_manifest["metadata"]
 

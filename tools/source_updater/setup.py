@@ -18,7 +18,7 @@ def local_pkg(name: str) -> str:
 # These internal packages are not yet published to a Pypi repository.
 LOCAL_REQUIREMENTS = [local_pkg("ci_credentials")]
 
-TEST_REQUIREMENTS = ["pytest"]
+TEST_REQUIREMENTS = ["pytest", "pytest-mock", "pyfakefs"]
 
 setup(
     version="0.0.1",
