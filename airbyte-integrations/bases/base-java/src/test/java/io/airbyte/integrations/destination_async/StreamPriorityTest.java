@@ -42,7 +42,7 @@ public class StreamPriorityTest {
   @Test
   void testOrderByPrioritySecondarySortByTime() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(1L));
+    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
     when(bufferDequeue.getTimeOfLastRecord(DESC1)).thenReturn(Optional.of(FIVE_MIN_AGO)).thenReturn(Optional.of(NOW));
     when(bufferDequeue.getTimeOfLastRecord(DESC2)).thenReturn(Optional.of(NOW)).thenReturn(Optional.of(FIVE_MIN_AGO));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
@@ -53,7 +53,7 @@ public class StreamPriorityTest {
   @Test
   void testOrderByPriorityTertiarySortByName() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(1L));
+    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
     when(bufferDequeue.getTimeOfLastRecord(any())).thenReturn(Optional.of(NOW));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
     final List<StreamDescriptor> descs = List.of(Jsons.clone(DESC1), Jsons.clone(DESC2));
