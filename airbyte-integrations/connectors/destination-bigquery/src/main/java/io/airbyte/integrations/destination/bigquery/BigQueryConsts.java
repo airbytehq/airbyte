@@ -35,3 +35,4 @@ public class BigQueryConsts {
   public static final String HMAC_KEY_ACCESS_SECRET = "hmac_key_secret";
 
 }
+
