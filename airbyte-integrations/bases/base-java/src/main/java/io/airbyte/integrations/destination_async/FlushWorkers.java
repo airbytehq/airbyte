@@ -197,10 +197,10 @@ public class FlushWorkers implements AutoCloseable {
       streamDescriptorToRemainingRecords.entrySet()
           .stream()
           .filter(entry -> entry.getValue() > 0)
-          .forEach(entry -> workerInfo.append(String.format("  Namespace: %s Stream: %s -- remaining records: %d",
-              entry.getKey().getNamespace(),
-              entry.getKey().getName(),
-              entry.getValue())));
+          .forEach(entry -> workerInfo.append(
+              String.format("  Namespace: %s Stream: %s -- remaining records: %d", entry.getKey().getNamespace(), entry.getKey().getName(),
+                  entry.getValue()))
+                .append(System.lineSeparator()));
       log.info(workerInfo.toString());
       log.info("Waiting for all streams to flush.");
       Thread.sleep(1000);
