@@ -17,7 +17,7 @@ cd ../..
 This script will update the source secrets in GSM. In order to allow that, please setup your GSM key following the `tools/ci_credentials/README.md` file.
 
 ### Git
-This script will run git commands which means you should be able to run commands like `
+This script will run git commands which means you should be able to run commands like `git checkout -b <branch>`
 
 ## Usage
 Now that all the dependencies are installed, change directory to be at the root of your local airbyte repository and run:
