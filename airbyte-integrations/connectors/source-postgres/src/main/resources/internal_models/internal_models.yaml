@@ -10,13 +10,27 @@ properties:
     "$ref": "#/definitions/XminStatus"
   ctid_state:
     "$ref": "#/definitions/CtidStatus"
+  cursor_based_state:
+    "$ref": "#/definitions/CursorBasedStatus"
 definitions:
   StateType:
     description: Enum to define the sync mode of state.
     type: string
     enum:
+      - cursorBased
       - xmin
       - ctid
+  CursorBasedStatus:
+    type: object
+    extends:
+      type: object
+      existingJavaType: "io.airbyte.integrations.source.relationaldb.models.DbStreamState"
+    properties:
+      state_type:
+        "$ref": "#/definitions/StateType"
+      version:
+        description: Version of state.
+        type: integer
   XminStatus:
     type: object
     properties:
