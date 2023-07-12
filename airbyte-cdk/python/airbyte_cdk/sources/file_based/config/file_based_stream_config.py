@@ -81,7 +81,7 @@ class FileBasedStreamConfig(BaseModel):
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[Mapping[str, CsvFormat]]
+    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat, JsonlFormat]]]
     schemaless: bool = False
 
     @validator("file_type", pre=True)
