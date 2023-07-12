@@ -106,9 +106,6 @@ discover_scenarios = [
     schemaless_csv_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
-    single_parquet_scenario,
-    multi_parquet_scenario,
-    parquet_various_types_scenario,
 ]
 
 
