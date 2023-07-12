@@ -8,14 +8,13 @@ from typing import Any, Mapping
 
 import pyarrow as pa
 import pytest
-
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 from pyarrow import Scalar
 
-
 _default_parquet_format = ParquetFormat()
 _decimal_as_float_parquet_format = ParquetFormat(decimal_as_float=True)
+
 
 @pytest.mark.parametrize(
     "parquet_type, expected_type, parquet_format",

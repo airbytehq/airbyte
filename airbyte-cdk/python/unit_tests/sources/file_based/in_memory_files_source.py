@@ -94,9 +94,9 @@ class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     """
 
     def open_file(self, file: RemoteFile) -> IOBase:
-        return io.BytesIO(self._make_file_contents(file.uri))
+        return io.BytesIO(self._create_file(file.uri))
 
-    def _make_file_contents(self, file_name: str) -> bytes:
+    def _create_file(self, file_name: str) -> bytes:
         contents = self.files[file_name]["contents"]
         schema = self.files[file_name].get("schema")
 

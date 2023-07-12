@@ -20,7 +20,7 @@ class ParquetParser(FileTypeParser):
     ) -> Dict[str, Any]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}") #FIXME test this branch!
+            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
 
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
@@ -34,11 +34,13 @@ class ParquetParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}") #FIXME test this branch!
+            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
         table = pq.read_table(stream_reader.open_file(file))
         for batch in table.to_batches():
             for i in range(batch.num_rows):
-                row_dict = {column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in table.column_names}
+                row_dict = {
+                    column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in table.column_names
+                }
                 yield row_dict
 
     @staticmethod
@@ -71,7 +73,7 @@ class ParquetParser(FileTypeParser):
                 "values": parquet_value.dictionary.tolist(),
             }
         if pa.types.is_map(parquet_value.type):
-            return {k: v for k,v in parquet_value.as_py()}
+            return {k: v for k, v in parquet_value.as_py()}
 
         if pa.types.is_null(parquet_value.type):
             return None
@@ -123,18 +125,21 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def _is_binary(parquet_type: pa.DataType) -> bool:
-        return bool(pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type) or pa.types.is_fixed_size_binary(parquet_type))
+        return bool(
+            pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type) or pa.types.is_fixed_size_binary(parquet_type)
+        )
 
     @staticmethod
     def _is_integer(parquet_type: pa.DataType) -> bool:
         return bool(pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type))
 
     @staticmethod
-    def _is_float(parquet_type: pa.DataType, parquet_format: ParquetFormat):
+    def _is_float(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> bool:
         if pa.types.is_decimal(parquet_type):
             return parquet_format.decimal_as_float
         else:
-            return pa.types.is_floating(parquet_type)
+            return bool(pa.types.is_floating(parquet_type))
+
     @staticmethod
     def _is_string(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> bool:
         if pa.types.is_decimal(parquet_type):

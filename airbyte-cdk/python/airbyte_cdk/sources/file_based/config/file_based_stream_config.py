@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pydantic import BaseModel, validator
@@ -81,7 +81,7 @@ class FileBasedStreamConfig(BaseModel):
     schemaless: bool = False
 
     @validator("file_type", pre=True)
-    def validate_file_type(cls, v):
+    def validate_file_type(cls, v: str) -> str:
         if v not in VALID_FILE_TYPES:
             raise ValueError(f"Format filetype {v} is not a supported file type")
         return v

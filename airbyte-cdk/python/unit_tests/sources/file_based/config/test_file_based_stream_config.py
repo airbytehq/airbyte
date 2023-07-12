@@ -39,13 +39,16 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
             FileBasedStreamConfig(**stream_config)
     else:
         actual_config = FileBasedStreamConfig(**stream_config)
-        assert not hasattr(actual_config.format[file_type], "filetype")
-        for expected_format_field, expected_format_value in expected_format.items():
-            assert isinstance(actual_config.format[file_type], CsvFormat)
-            assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
+        if actual_config.format is not None:
+            assert not hasattr(actual_config.format[file_type], "filetype")
+            for expected_format_field, expected_format_value in expected_format.items():
+                assert isinstance(actual_config.format[file_type], CsvFormat)
+                assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
+        else:
+            assert False, "Expected format to be set"
 
 
-def test_legacy_format():
+def test_legacy_format() -> None:
     """
     This test verifies that we can process the legacy format of the config object used by the existing S3 source with a
     single `format` option as opposed to the current file_type -> format mapping.
@@ -76,6 +79,9 @@ def test_legacy_format():
     }
 
     actual_config = FileBasedStreamConfig(**stream_config)
-    assert isinstance(actual_config.format["csv"], CsvFormat)
-    for expected_format_field, expected_format_value in expected_format.items():
-        assert getattr(actual_config.format["csv"], expected_format_field) == expected_format_value
+    if actual_config.format:
+        assert isinstance(actual_config.format["csv"], CsvFormat)
+        for expected_format_field, expected_format_value in expected_format.items():
+            assert getattr(actual_config.format["csv"], expected_format_field) == expected_format_value
+    else:
+        assert False, "Expected format to be set"

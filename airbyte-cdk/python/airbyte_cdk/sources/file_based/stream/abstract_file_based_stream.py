@@ -13,9 +13,8 @@ from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, Reco
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
@@ -49,7 +48,6 @@ class AbstractFileBasedStream(Stream):
         super().__init__()
         self.config = config
         self._catalog_schema: Optional[Mapping[str, Any]] = catalog_schema
-        self._catalog_schema = catalog_schema
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy

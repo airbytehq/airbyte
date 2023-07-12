@@ -162,6 +162,13 @@ jobs:
     name: "Airbyte CDK: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
@@ -192,16 +199,6 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
-      - name: Install mypy
-        run: pip install mypy==1.4.1 pydantic==1.9.2
-      - name: Get Python changed files
-        id: changed-py-files
-        uses: tj-actions/changed-files@v23
-        with:
-          files: airbyte-cdk/**/*.py
-      - name: Run mypy on changed files
-        if: steps.changed-py-files.outputs.any_changed == 'true'
-        run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --config-file airbyte-cdk/python/mypy.ini --install-types --non-interactive
 
       - name: Format
         uses: Wandalen/wretry.action@v1.0.42
@@ -261,6 +258,13 @@ jobs:
     name: "Connectors Base: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
