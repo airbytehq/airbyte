@@ -99,8 +99,7 @@ class FileBasedStreamConfig(BaseModel):
                 # legacy case
                 if file_type.casefold() not in VALID_FILE_TYPES:
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                ret = {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
-                return ret
+                return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
             else:
                 try:
                     return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
