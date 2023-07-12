@@ -4,6 +4,7 @@
 
 import csv
 import io
+import json
 import tempfile
 from datetime import datetime
 from io import IOBase
@@ -78,7 +79,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         if self.file_type == "csv":
             return self._make_csv_file_contents(file_name)
         else:
-            raise NotImplementedError(f"No implementation for filename: {file_name}")
+            return self._make_jsonl_file_contents(file_name)
 
     def _make_csv_file_contents(self, file_name: str) -> str:
         fh = io.StringIO()
@@ -90,6 +91,18 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         else:
             writer = csv.writer(fh)
             writer.writerows(self.files[file_name]["contents"])
+        return fh.getvalue()
+
+    def _make_jsonl_file_contents(self, file_name: str) -> str:
+        fh = io.StringIO()
+
+        for line in self.files[file_name]["contents"]:
+            try:
+                fh.write(json.dumps(line) + '\n')
+            except TypeError:
+                # Intentionally trigger json validation error
+                fh.write(str(line) + '\n')
+
         return fh.getvalue()
 
 
