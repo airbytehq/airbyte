@@ -166,7 +166,7 @@ SENSORS = [
 
 @schedule(cron_schedule="* * * * *", job=generate_registry_entry, required_resource_keys={"latest_metadata_file_blobs"})
 def registry_entry_partition_job_schedule(context):
-    MAX_RUN_REQUEST = 30
+    MAX_RUN_REQUEST = 50
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
     partition_name = registry_entry.metadata_partitions_def.name
 
@@ -185,8 +185,6 @@ def registry_entry_partition_job_schedule(context):
         context.log.info(f"Only processing first {MAX_RUN_REQUEST} new blobs: {new_etags_found}")
 
     context.instance.add_dynamic_partitions(partition_name, new_etags_found)
-    for etag in new_etags_found:
-        yield RunRequest(run_key=etag, partition_key=etag)
 
 SCHEDULES = [
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
