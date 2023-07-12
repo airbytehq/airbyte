@@ -35,14 +35,16 @@ public class StreamPriorityTest {
     when(bufferDequeue.getQueueSizeBytes(DESC2)).thenReturn(Optional.of(0L)).thenReturn(Optional.of(1L));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
 
-    assertEquals(List.of(DESC1, DESC2), detect.orderStreamsByPriority(DESCS));
-    assertEquals(List.of(DESC2, DESC1), detect.orderStreamsByPriority(DESCS));
+    // DESC1 has 1 byte, DESC2 has 0 bytes
+    assertEquals(List.of(DESC1), detect.orderStreamsByPriority(DESCS));
+    // DESC1 has 0 bytes, DESC2 has 1 byte
+    assertEquals(List.of(DESC2), detect.orderStreamsByPriority(DESCS));
   }
 
   @Test
   void testOrderByPrioritySecondarySortByTime() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
+    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(1L));
     when(bufferDequeue.getTimeOfLastRecord(DESC1)).thenReturn(Optional.of(FIVE_MIN_AGO)).thenReturn(Optional.of(NOW));
     when(bufferDequeue.getTimeOfLastRecord(DESC2)).thenReturn(Optional.of(NOW)).thenReturn(Optional.of(FIVE_MIN_AGO));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
@@ -53,7 +55,7 @@ public class StreamPriorityTest {
   @Test
   void testOrderByPriorityTertiarySortByName() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
+    when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(1L));
     when(bufferDequeue.getTimeOfLastRecord(any())).thenReturn(Optional.of(NOW));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
     final List<StreamDescriptor> descs = List.of(Jsons.clone(DESC1), Jsons.clone(DESC2));

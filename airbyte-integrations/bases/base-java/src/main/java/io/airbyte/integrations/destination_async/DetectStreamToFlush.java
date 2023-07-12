@@ -211,6 +211,7 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> streams) {
     return streams.stream()
+        .filter(stream -> bufferDequeue.getQueueSizeBytes(stream).orElseThrow() > 0L)
         .sorted(Comparator.comparing((StreamDescriptor s) -> bufferDequeue.getQueueSizeBytes(s).orElseThrow(), Comparator.reverseOrder())
             // if no time is present, it suggests the queue has no records. set MAX time as a sentinel value to
             // represent no records.
