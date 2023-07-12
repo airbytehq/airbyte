@@ -23,13 +23,13 @@ class BuildConnectorDistributionTar(GradleTask):
                 self.build_include,
             )
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
-            .with_exec(["cat", "airbyte-integrations/connectors/destination-bigquery/src/main/resources/spec.json"])
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
         )
         distributions = await with_built_tar.directory(".").entries()
         tar_files = [f for f in distributions if f.endswith(".tar")]
         await self._export_gradle_dependency_cache(with_built_tar)
+        await with_built_tar.with_exec(["cat", "airbyte-integrations/connectors/destination-bigquery/src/main/resources/spec.json"]).stdout()
         if len(tar_files) == 1:
             return StepResult(
                 self,
