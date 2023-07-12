@@ -18,6 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
 from isodate import Duration
 from pendulum import DateTime
+import requests
+from airbyte_cdk.models import Level
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 
 
 class TokenProvider:
@@ -32,6 +36,7 @@ class SessionTokenProvider(TokenProvider):
     session_token_path: List[str]
     expiration_time: Optional[Union[datetime.timedelta, Duration]]
     parameters: InitVar[Mapping[str, Any]]
+    message_repository: MessageRepository = NoopMessageRepository()
 
     _decoder: Decoder = JsonDecoder(parameters={})
     _next_expiration_time: Optional[DateTime] = None
@@ -47,12 +52,25 @@ class SessionTokenProvider(TokenProvider):
 
     def _refresh(self):
         response = self.login_requester.send_request()
+        self._log_response(response)
         if response is None:
             raise ReadException("Failed to get session token, response got ignored by requester")
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
         if self.expiration_time is not None:
             self._next_expiration_time = pendulum.now() + self.expiration_time
         self._token = session_token
+
+    def _log_response(self, response: requests.Response):
+        self.message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                "Login request",
+                "Obtains session token",
+                None,
+                is_auxiliary=True,
+            ),
+        )
 
 
 @dataclass

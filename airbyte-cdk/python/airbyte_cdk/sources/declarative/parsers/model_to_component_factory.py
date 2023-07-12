@@ -279,6 +279,7 @@ class ModelToComponentFactory:
             session_token_path=model.session_token_path,
             expiration_time=parse_duration(model.expiration_time) if model.expiration_time else None,
             parameters=model.parameters,
+            message_repository=self._message_repository,
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
