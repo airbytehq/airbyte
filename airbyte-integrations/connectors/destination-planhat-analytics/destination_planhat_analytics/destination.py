@@ -66,6 +66,7 @@ class DestinationPlanhatAnalytics(Destination):
             response = client.write([])
             if response.status_code != 200:
                 raise Exception("Invalid connection parameters.")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

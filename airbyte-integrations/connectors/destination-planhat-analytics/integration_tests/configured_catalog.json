@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "airbyte_acceptance_table",
+        "name": "append_stream_metric",
         "supported_sync_modes": [
           "full_refresh"
         ],
@@ -18,6 +18,31 @@
             },
             "externalId": {
               "type": "string"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "append_stream_activity",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer"
             }
           }
         }
