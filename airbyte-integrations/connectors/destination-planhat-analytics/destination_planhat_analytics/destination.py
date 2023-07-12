@@ -36,9 +36,6 @@ class DestinationPlanhatAnalytics(Destination):
 
         for message in input_messages:
             if message.type == Type.STATE:
-                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
-                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
-                writer.flush()
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record

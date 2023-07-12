@@ -28,16 +28,24 @@ logger = getLogger("airbyte")
 def config_metric_fixture() -> Mapping[str, Any]:
     with open("secrets/config_metric.json", "r") as f:
         return json.load(f)
-    
+
+
 @pytest.fixture(name="config_activity")
 def config_activity_fixture() -> Mapping[str, Any]:
     with open("secrets/config_activity.json", "r") as f:
         return json.load(f)
-    
+
+
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    stream_schema_metric = {"type": "object", "properties": {"dimensionId": {"type": "str"}, "value": {"type": "str"}, "externalId": {"type": "str"}}}
-    stream_schema_activity = {"type": "object", "properties": {"euExtId": {"type": "str"}, "action": {"type": "str"}, "count": {"type": "int"}}}
+    stream_schema_metric = {
+        "type": "object",
+        "properties": {"dimensionId": {"type": "str"}, "value": {"type": "str"}, "externalId": {"type": "str"}},
+    }
+    stream_schema_activity = {
+        "type": "object",
+        "properties": {"euExtId": {"type": "str"}, "action": {"type": "str"}, "count": {"type": "int"}},
+    }
 
     append_stream_metric = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="append_stream_metric", json_schema=stream_schema_metric, supported_sync_modes=[SyncMode.full_refresh]),
@@ -45,7 +53,9 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
         destination_sync_mode=DestinationSyncMode.append,
     )
     append_stream_activity = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="append_stream_activity", json_schema=stream_schema_activity, supported_sync_modes=[SyncMode.full_refresh]),
+        stream=AirbyteStream(
+            name="append_stream_activity", json_schema=stream_schema_activity, supported_sync_modes=[SyncMode.full_refresh]
+        ),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.append,
     )
@@ -56,9 +66,11 @@ def test_check_valid_config_metric(config_metric: Mapping):
     outcome = DestinationPlanhatAnalytics().check(logger, config_metric)
     assert outcome.status == Status.SUCCEEDED
 
+
 def test_check_valid_config_activity(config_activity: Mapping):
     outcome = DestinationPlanhatAnalytics().check(logger, config_activity)
     assert outcome.status == Status.SUCCEEDED
+
 
 def test_check_invalid_config():
     f = open("integration_tests/invalid_config.json")
@@ -66,18 +78,25 @@ def test_check_invalid_config():
     outcome = DestinationPlanhatAnalytics().check(logger, invalid_config)
     assert outcome.status == Status.FAILED
 
+
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
+
 def _record_metric(stream: str, dimensionId_value: str, value: str, externalId_value: str) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"dimensionId": dimensionId_value, "value": value, "externalId": externalId_value}, emitted_at=0)
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=stream, data={"dimensionId": dimensionId_value, "value": value, "externalId": externalId_value}, emitted_at=0
+        ),
     )
+
 
 def _record_activity(stream: str, id: str, action: str, count: str) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"euExtId": id, "action": action, "count": count}, emitted_at=0)
     )
+
 
 def test_write_metric(config_metric: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     stream_metric = configured_catalog.streams[0].stream.name
@@ -87,12 +106,8 @@ def test_write_metric(config_metric: Mapping, configured_catalog: ConfiguredAirb
     destination = DestinationPlanhatAnalytics()
 
     expected_states = [state_message]
-    output_states = list(
-        destination.write(
-            config_metric, configured_catalog, [*record_chunk, state_message]
-        )
-    )
-    
+    output_states = list(destination.write(config_metric, configured_catalog, [*record_chunk, state_message]))
+
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
 
@@ -104,10 +119,6 @@ def test_write_activity(config_activity: Mapping, configured_catalog: Configured
     destination = DestinationPlanhatAnalytics()
 
     expected_states = [state_message]
-    output_states = list(
-        destination.write(
-            config_activity, configured_catalog, [*record_chunk, state_message]
-        )
-    )
-    
+    output_states = list(destination.write(config_activity, configured_catalog, [*record_chunk, state_message]))
+
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"

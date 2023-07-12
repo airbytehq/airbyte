@@ -19,7 +19,7 @@ class PlanHatWriter:
 
     def flush(self):
         response = self.client.write(self.write_buffer)
-        if self.client.api_token: 
+        if self.client.api_token:
             if response.json()["errors"] != []:
                 logger.warning(response.json())
             else:

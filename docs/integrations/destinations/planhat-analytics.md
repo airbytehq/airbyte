@@ -8,10 +8,7 @@ See your data on the [Planhat dashboard](https://app.planhat.com/developer).
 
 ## Overview
 
-The Planhat destination connector only supports the Full Refresh Append. The connector uses the bulk upsert endpoints. 
-
-Be careful: Planhat does not store a history table like some other destinations that use DBT, it simply allows records to be written, which can duplicate events.
-
+The Planhat destination connector supports the Append Sync. The connector uses the bulk upsert endpoints. 
 
 ## Prerequisites
 
