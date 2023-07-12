@@ -19,6 +19,7 @@ data:
       dockerImageTag: 2.1.1 # Pinned to rollback https://github.com/airbytehq/airbyte/pull/27442
       enabled: true
     oss:
+      dockerImageTag: 2.1.1 # Pinned to rollback https://github.com/airbytehq/airbyte/pull/27442
       enabled: true
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
