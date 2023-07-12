@@ -203,7 +203,7 @@ public class DetectStreamToFlush {
    * resources optimally. Then get rid of old stuff (time to value for the user and, generally, as the
    * age of the last record grows, the likelihood of getting any more records from that stream
    * decreases, so by flushing them, we can totally complete that stream). Finally, tertiary sort by
-   * name so the order is deterministic.
+   * name so the order is deterministic. Ignore queues with 0 bytes i.e. no records.
    *
    * @param streams streams to sort.
    * @return streams sorted by priority.
