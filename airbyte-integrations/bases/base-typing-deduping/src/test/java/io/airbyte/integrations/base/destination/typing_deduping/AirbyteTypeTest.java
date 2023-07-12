@@ -5,7 +5,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -488,7 +487,8 @@ public class AirbyteTypeTest {
         new Struct(new LinkedHashMap<>()),
         new Struct(new LinkedHashMap<>())));
 
-    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a warning for now.
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
     assertEquals(new LinkedHashMap<>(), o.asColumns());
   }
 
@@ -502,7 +502,8 @@ public class AirbyteTypeTest {
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
         new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
-    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a warning for now.
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
     assertEquals(new LinkedHashMap<>(), o.asColumns());
   }
 
