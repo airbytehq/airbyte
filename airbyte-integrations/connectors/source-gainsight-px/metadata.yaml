@@ -14,7 +14,9 @@ data:
   icon: gainsight-px.svg
   license: MIT
   name: Gainsight Px
-  releaseDate: TODO
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
