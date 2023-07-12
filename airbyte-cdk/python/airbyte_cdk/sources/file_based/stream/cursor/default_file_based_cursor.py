@@ -13,12 +13,11 @@ from airbyte_cdk.sources.file_based.types import StreamState
 
 class DefaultFileBasedCursor(FileBasedCursor):
     DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
-    DEFAULT_MAX_HISTORY_SIZE = 10_000
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-    def __init__(self, max_history_size: Optional[int], days_to_sync_if_history_is_full: Optional[int]):
+    def __init__(self, max_history_size: int, days_to_sync_if_history_is_full: Optional[int]):
         self._file_to_datetime_history: Mapping[str:datetime] = {}
-        self._max_history_size = max_history_size or self.DEFAULT_MAX_HISTORY_SIZE
+        self._max_history_size = max_history_size
         self._time_window_if_history_is_full = timedelta(
             days=days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
         )
