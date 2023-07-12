@@ -161,7 +161,7 @@ public class SnowflakeDestinationTest {
       noLoadingMethod.put("loading_method", "standard");
 
       return Stream.of(
-              Arguments.of(standard, true),
+              Arguments.of(standard, false),
               Arguments.of(internalStagingSpace, true),
               Arguments.of(internalStagingSpaceCapital, true),
               Arguments.of(internalStagingDash, true),
