@@ -9,6 +9,7 @@ import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 
@@ -33,6 +34,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         token_expiry_date_format str: format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
         grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
+        message_repository (MessageRepository): the message repository used to emit logs on HTTP requests
     """
 
     token_refresh_endpoint: Union[InterpolatedString, str]
@@ -49,6 +51,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
@@ -134,6 +137,13 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
+
+    @property
+    def _message_repository(self) -> MessageRepository:
+        """
+        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """
+        return self.message_repository
 
 
 @dataclass

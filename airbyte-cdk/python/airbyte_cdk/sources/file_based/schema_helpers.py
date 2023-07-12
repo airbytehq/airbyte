@@ -14,6 +14,8 @@ type_widths = {str: 0}
 JsonSchemaSupportedType = Union[List, Literal["string"], str]
 SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
 
+schemaless_schema = {"data": {"type": "object"}}
+
 
 @total_ordering
 class ComparableType(Enum):
