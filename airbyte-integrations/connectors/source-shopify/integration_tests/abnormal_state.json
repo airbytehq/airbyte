@@ -460,5 +460,30 @@
         "name": "metafield_shops"
       }
     }
+  },
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 99999999999999,
+        "customers": {
+          "updated_at": "2025-02-22T00:37:28-08:00"
+        }
+      },
+      "stream_descriptor": {
+        "name": "customer_address"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 99999999999999
+      },
+      "stream_descriptor": {
+        "name": "customer_saved_search"
+      }
+    }
   }
 ]

@@ -1,0 +1,14 @@
+documentation_url: https://docs.airbyte.com/integrations/sources/gainsight-px
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Gainsight Px Spec
+  type: object
+  additionalProperties: true
+  required:
+    - api_key
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: The Aptrinsic API Key which is recieved from the dashboard settings (ref - https://app.aptrinsic.com/settings/api-keys)
+      airbyte_secret: true
