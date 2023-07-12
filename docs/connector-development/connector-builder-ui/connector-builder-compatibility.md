@@ -1,6 +1,7 @@
 # Compatibility Guide
 Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
 - [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-an-http-api-returning-a-collection-of-records-synchronously)
+- [ ] [Are data endpoints fixed?](#are-data-endpoints-fixed)
 - [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)
     - [Basic HTTP](#basic-http)
     - [API key injected in request header or query parameter](#api-key)
@@ -78,6 +79,14 @@ Examples:
 - No: [Amazon Ads](https://advertising.amazon.com/API/docs/en-us/info/api-overview)
 
 If the integration is not an HTTP API returning the records synchronously, use the Python CDK.
+
+## Are data endpoints fixed?
+
+The connector builder requires the data endpoints to be fixed. This means the data endpoints representing separate streams are not dynamically generated based on the data or user configuration, but specified as part of the API documentation.
+
+For example, the [Congress API](https://api.congress.gov/#/) specifies the data endpoints as part of the documentation, while the [Salesforce API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_discoveryresource.htm) features a dynamic and configurable list of resources that can't be known in advance.
+
+If an integration has a dynamic list of data endpoints representing separate streams, use the Python CDK.
 
 ## What type of authentication is required?
 Look up the authentication mechanism in the API documentation, and identify which type it is.
