@@ -10,6 +10,7 @@ python -m venv .venv
 source .venv/bin/activate
 python setup.py install
 pip install --quiet -e ../ci_credentials
+cd ../..
 ```
 
 ### GSM setup
