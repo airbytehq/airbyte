@@ -11,10 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
-import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.StreamsCategorised;
+import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.XminStreams;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -59,10 +60,10 @@ public class XminCtidUtilsTest {
     final XminStatus xminStatus = new XminStatus().withStateType(StateType.XMIN).withVersion(2L).withXminXidValue(9L).withXminRawValue(9L)
         .withNumWraparound(1L);
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
-    final StreamsCategorised streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
+    final StreamsCategorised<XminStreams> streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
 
-    assertTrue(streamsCategorised.xminStreams().streamsForXminSync().isEmpty());
-    assertTrue(streamsCategorised.xminStreams().statesFromXminSync().isEmpty());
+    assertTrue(streamsCategorised.remainingStreams().streamsForXminSync().isEmpty());
+    assertTrue(streamsCategorised.remainingStreams().statesFromXminSync().isEmpty());
 
     assertEquals(2, streamsCategorised.ctidStreams().streamsForCtidSync().size());
     assertThat(streamsCategorised.ctidStreams().streamsForCtidSync()).containsExactlyInAnyOrder(MODELS_STREAM, MODELS_STREAM_2);
@@ -85,12 +86,12 @@ public class XminCtidUtilsTest {
         new StreamDescriptor().withName(MODELS_STREAM_2.getStream().getName()).withNamespace(MODELS_STREAM_2.getStream().getNamespace()));
 
     final StreamStateManager streamStateManager = new StreamStateManager(Arrays.asList(xminState, ctidState), configuredCatalog);
-    final StreamsCategorised streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
+    final StreamsCategorised<XminStreams> streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
 
-    assertEquals(1, streamsCategorised.xminStreams().streamsForXminSync().size());
-    assertEquals(MODELS_STREAM, streamsCategorised.xminStreams().streamsForXminSync().get(0));
-    assertEquals(1, streamsCategorised.xminStreams().statesFromXminSync().size());
-    assertEquals(xminState, streamsCategorised.xminStreams().statesFromXminSync().get(0));
+    assertEquals(1, streamsCategorised.remainingStreams().streamsForXminSync().size());
+    assertEquals(MODELS_STREAM, streamsCategorised.remainingStreams().streamsForXminSync().get(0));
+    assertEquals(1, streamsCategorised.remainingStreams().statesFromXminSync().size());
+    assertEquals(xminState, streamsCategorised.remainingStreams().statesFromXminSync().get(0));
 
     assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
     assertEquals(MODELS_STREAM_2, streamsCategorised.ctidStreams().streamsForCtidSync().get(0));
