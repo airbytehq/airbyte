@@ -29,7 +29,7 @@ class ParquetFormat(BaseModel):
 
 class CsvFormat(BaseModel):
     delimiter: str = ","
-    quote_char: str = '"airbyte_cdk/sources/file_based/config/file_based_stream_config.py'
+    quote_char: str = '"'
     escape_char: Optional[str]
     encoding: Optional[str] = "utf8"
     double_quote: bool
