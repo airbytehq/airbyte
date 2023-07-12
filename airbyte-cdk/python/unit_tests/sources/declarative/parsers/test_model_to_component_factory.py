@@ -6,7 +6,13 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, LegacySessionTokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    LegacySessionTokenAuthenticator,
+)
+from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -840,6 +846,56 @@ requester:
     assert selector.authenticator._username.eval(input_config) == "lists"
     assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
     assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"
+
+
+def test_create_request_with_session_authenticator():
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  authenticator:
+    type: SessionTokenAuthenticator
+    expiration_time: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(selector.authenticator, ApiKeyAuthenticator)
+    assert isinstance(selector.authenticator.token_provider, SessionTokenProvider)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert selector.authenticator.token_provider.login_requester.url_base.eval(input_config) == "https://api.sendgrid.com"
+    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {"username": "lists", "password": "verysecrettoken"}
 
 
 def test_create_composite_error_handler():

@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
@@ -227,6 +226,16 @@ class HttpRequester(Requester):
         """
         return self.interpret_response_status(response).error_message
 
+    def _get_mapping(self, method, **kwargs):
+        """
+        Get mapping from the provided method, and get the keys of the mapping.
+        If the method returns a string, it will return the string and an empty set.
+        If the method returns a dict, it will return the dict and its keys.
+        """
+        mapping = method(**kwargs) or {}
+        keys = set(mapping.keys()) if not isinstance(mapping, str) else set()
+        return mapping, keys
+
     def _get_request_options(
         self,
         stream_slice: Optional[StreamSlice],
@@ -236,33 +245,34 @@ class HttpRequester(Requester):
         extra_options: Optional[Mapping[str, Any]] = None,
     ):
         """
-        Get the request_option from the requester and from the paginator
+        Get the request_option from the requester, the authenticator and extra_options passed in.
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
-        :param stream_slice:
-        :param next_page_token:
-        :param requester_method:
-        :param paginator_method:
-        :return:
         """
-
-        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        requester_mapping = requester_method(stream_slice=stream_slice, next_page_token=next_page_token)
-        requester_mapping_keys = set(requester_mapping.keys())
-        auth_options_mapping = auth_options_method()
-        auth_options_mapping_keys = set(auth_options_mapping.keys())
+        requester_mapping, requester_keys = self._get_mapping(requester_method, stream_slice=stream_slice, next_page_token=next_page_token)
+        auth_options_mapping, auth_options_keys = self._get_mapping(auth_options_method)
         extra_options = extra_options or {}
-        extra_options_keys = set(extra_options.keys())
+        extra_mapping, extra_keys = self._get_mapping(lambda: extra_options)
 
-        intersection = (
-            (requester_mapping_keys & auth_options_mapping_keys)
-            | (requester_mapping_keys & extra_options_keys)
-            | (extra_options_keys & auth_options_mapping_keys)
-        )
+        all_mappings = [requester_mapping, auth_options_mapping, extra_mapping]
+        all_keys = [requester_keys, auth_options_keys, extra_keys]
 
-        if intersection:
+        # If more than one mapping is a string, raise a ValueError
+        if sum(isinstance(mapping, str) for mapping in all_mappings) > 1:
+            raise ValueError("Cannot combine multiple options if one is a string")
+
+        # If any mapping is a string, return it
+        for mapping in all_mappings:
+            if isinstance(mapping, str):
+                return mapping
+
+        # If there are duplicate keys across mappings, raise a ValueError
+        intersection = set().union(*all_keys)
+        if len(intersection) < sum(len(keys) for keys in all_keys):
             raise ValueError(f"Duplicate keys found: {intersection}")
-        return {**requester_mapping, **auth_options_mapping, **extra_options}
+
+        # Return the combined mappings
+        return {**requester_mapping, **auth_options_mapping, **extra_mapping}
 
     def _request_headers(
         self,
@@ -278,8 +288,7 @@ class HttpRequester(Requester):
             stream_slice,
             next_page_token,
             self.get_request_headers,
-            # auth headers are handled separately by passing the authenticator to the HttpStream constructor
-            lambda: {},
+            self.authenticator.get_auth_header,
             extra_headers,
         )
         return {str(k): str(v) for k, v in headers.items()}
@@ -303,7 +312,7 @@ class HttpRequester(Requester):
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
-        extra_body_data: Optional[Mapping[str, Any]] = None,
+        extra_body_data: Optional[Union[Mapping[str, Any], str]] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
@@ -364,13 +373,12 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
-        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
     ) -> requests.Response:
-        request_headers = self._request_headers(stream_slice, next_page_token, request_headers)
         request = self._create_prepared_request(
             path=path if path is not None else self.get_path(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=self._request_headers(stream_slice, next_page_token, request_headers),
             params=self._request_params(stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_slice, next_page_token, request_body_data),

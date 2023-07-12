@@ -272,7 +272,7 @@ class ModelToComponentFactory:
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
-            expiration_time=parse_duration(model.expiration_time),
+            expiration_time=parse_duration(model.expiration_time) if model.expiration_time else None,
             parameters=model.parameters,
         )
         if model.request_authentication.type == "Bearer":

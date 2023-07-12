@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -146,7 +146,7 @@ class Requester(RequestOptionsProvider):
         next_page_token: Optional[Mapping[str, Any]] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
-        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         """

@@ -30,7 +30,7 @@ class TokenProvider:
 class SessionTokenProvider(TokenProvider):
     login_requester: Requester
     session_token_path: List[str]
-    expiration_time: Union[datetime.timedelta, Duration]
+    expiration_time: Optional[Union[datetime.timedelta, Duration]]
     parameters: InitVar[Mapping[str, Any]]
 
     _decoder: Decoder = JsonDecoder(parameters={})
@@ -50,7 +50,8 @@ class SessionTokenProvider(TokenProvider):
         if response is None:
             raise ReadException("Failed to get session token, response got ignored by requester")
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
-        self._next_expiration_time = pendulum.now() + self.expiration_time
+        if self.expiration_time is not None:
+            self._next_expiration_time = pendulum.now() + self.expiration_time
         self._token = session_token
 
 
