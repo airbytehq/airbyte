@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.8.0
+  dockerImageTag: 0.8.1
   dockerRepository: airbyte/source-twilio
   githubIssueLabel: source-twilio
   icon: twilio.svg

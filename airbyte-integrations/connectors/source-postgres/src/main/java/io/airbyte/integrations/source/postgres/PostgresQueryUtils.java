@@ -9,17 +9,25 @@ import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
+import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PostgresQueryUtils {
 
-  public record TableBlockSize(Long tableSize, Long blockSize) { }
+  public record TableBlockSize(Long tableSize, Long blockSize) {}
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQueryUtils.class);
 
@@ -62,6 +70,10 @@ public class PostgresQueryUtils {
             (txid_snapshot_xmin(txid_current_snapshot()) % (2^32)::bigint) AS xmin_xid_value,
             txid_snapshot_xmin(txid_current_snapshot()) AS xmin_raw_value;
       """;
+  public static final String MAX_CURSOR_VALUE_QUERY =
+      """
+        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+      """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
       """
@@ -82,14 +94,14 @@ public class PostgresQueryUtils {
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
 
   /**
-   * Query returns the size table data takes on DB server disk (not incling any index or other metadata)
-   * And the size of each page used in (page, tuple) ctid.
-   * This helps us evaluate how many pages we need to read to traverse the entire table.
+   * Query returns the size table data takes on DB server disk (not incling any index or other
+   * metadata) And the size of each page used in (page, tuple) ctid. This helps us evaluate how many
+   * pages we need to read to traverse the entire table.
    */
   public static final String CTID_TABLE_BLOCK_SIZE =
-    """
-    WITH block_sz AS (SELECT current_setting('block_size')::int), rel_sz AS (select pg_relation_size('%s')) SELECT * from block_sz, rel_sz
-    """;
+      """
+      WITH block_sz AS (SELECT current_setting('block_size')::int), rel_sz AS (select pg_relation_size('%s')) SELECT * from block_sz, rel_sz
+      """;
 
   /**
    * Logs the current xmin status : 1. The number of wraparounds the source DB has undergone. (These
@@ -112,9 +124,63 @@ public class PostgresQueryUtils {
         .withStateType(StateType.XMIN);
   }
 
+  /**
+   * Iterates through each stream and find the max cursor value and the record count which has that
+   * value based on each cursor field provided by the customer per stream This information is saved in
+   * a Hashmap with the mapping being the AirbyteStreamNameNamespacepair -> CursorBasedStatus
+   *
+   * @param database the source db
+   * @param streams streams to be synced
+   * @param stateManager stream stateManager
+   * @return
+   */
+  public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
+                                                                                                          final List<ConfiguredAirbyteStream> streams,
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+
+    final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
+    streams.forEach(stream -> {
+      try {
+        final String name = stream.getStream().getName();
+        final String namespace = stream.getStream().getNamespace();
+        final Optional<CursorInfo> cursorInfoOptional =
+            stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
+        if (cursorInfoOptional.isEmpty()) {
+          throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
+        }
+
+        final String cursorField = cursorInfoOptional.get().getCursorField();
+        final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
+            cursorField,
+            name,
+            cursorField,
+            cursorField,
+            name);
+        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        final JsonNode result = jsonNodes.get(0);
+        final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+
+        cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+        cursorBasedStatus.setVersion(2L);
+        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
+        cursorBasedStatus.setCursor(result.get(cursorField).asText());
+        cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
+        cursorBasedStatus.setStreamName(name);
+        cursorBasedStatus.setStreamNamespace(namespace);
+
+        cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    return cursorBasedStatusMap;
+  }
+
   public static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
-                                                                      final List<ConfiguredAirbyteStream> streams,
-                                                                      final String quoteString) {
+                                                                             final List<ConfiguredAirbyteStream> streams,
+                                                                             final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -171,8 +237,8 @@ public class PostgresQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableBlockSize> getTableBlockSizeForStream(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                               final List<ConfiguredAirbyteStream> streams,
+                                                                                               final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -183,9 +249,10 @@ public class PostgresQueryUtils {
     return tableBlockSizes;
 
   }
+
   public static TableBlockSize getTableBlockSizeForStream(final JdbcDatabase database,
-      final AirbyteStreamNameNamespacePair stream,
-      final String quoteString) {
+                                                          final AirbyteStreamNameNamespacePair stream,
+                                                          final String quoteString) {
     try {
       final String streamName = stream.getName();
       final String schemaName = stream.getNamespace();
@@ -203,4 +270,20 @@ public class PostgresQueryUtils {
       throw new RuntimeException(e);
     }
   }
+
+  /**
+   * Filter out streams that are currently under vacuum from being synced via Ctid
+   *
+   * @param streamsUnderVacuum streams that are currently under vacuum
+   * @param ctidStreams preliminary streams to be synced via Ctid
+   * @return ctid streams that are not under vacuum
+   */
+  public static List<ConfiguredAirbyteStream> filterStreamsUnderVacuumForCtidSync(final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum,
+                                                                                  final CtidStreams ctidStreams) {
+    return streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
+        : ctidStreams.streamsForCtidSync().stream()
+            .filter(c -> !streamsUnderVacuum.contains(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
+            .toList();
+  }
+
 }
