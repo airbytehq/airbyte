@@ -10,18 +10,18 @@ from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
 import pendulum
+import requests
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
-from isodate import Duration
-from pendulum import DateTime
-import requests
-from airbyte_cdk.models import Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from isodate import Duration
+from pendulum import DateTime
 
 
 class TokenProvider:

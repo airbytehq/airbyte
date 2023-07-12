@@ -8,7 +8,6 @@ import importlib
 import inspect
 import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
-from isodate import parse_duration
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -112,8 +111,8 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from isodate import parse_duration
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
