@@ -46,6 +46,8 @@ acceptance_tests:
           companies:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_was_imported
+              bypass_reason: attribute is not stable
           contacts:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time

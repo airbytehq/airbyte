@@ -39,9 +39,6 @@ from .utils import (
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 LOOKBACK_WINDOW = datetime.timedelta(days=2)
-# set page_size to 100000 due to determination of maximum limit value in official documentation
-# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
-PAGE_SIZE = 100000
 
 
 class ConfigurationError(Exception):
@@ -71,14 +68,25 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     http_method = "POST"
     raise_on_http_errors = True
 
-    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+    def __init__(self, *, config: Mapping[str, Any], page_size: int = 100_000, **kwargs):
         super().__init__(**kwargs)
         self._config = config
         self._source_defined_primary_key = get_source_defined_primary_key(self.name)
+        # default value is 100 000 due to determination of maximum limit value in official documentation
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+        self._page_size = page_size
 
     @property
     def config(self):
         return self._config
+
+    @property
+    def page_size(self):
+        return self._page_size
+
+    @page_size.setter
+    def page_size(self, value: int):
+        self._page_size = value
 
     # handle the quota errors with prepared values for:
     # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
@@ -180,9 +188,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             total_rows = r["rowCount"]
 
             if self.offset == 0:
-                self.offset = PAGE_SIZE
+                self.offset = self.page_size
             else:
-                self.offset += PAGE_SIZE
+                self.offset += self.page_size
 
             if total_rows <= self.offset:
                 self.offset = 0
@@ -251,7 +259,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(PAGE_SIZE),
+            "limit": str(self.page_size),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -414,6 +422,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         metadata = None
         try:
+            # explicitly setting small page size for the check operation not to cause OOM issues
             stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
@@ -445,7 +454,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if invalid_metrics:
                 invalid_metrics = ", ".join(invalid_metrics)
                 return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
-            report_stream = self.instantiate_report_class(report, config)
+            report_stream = self.instantiate_report_class(report, config, page_size=100)
             # check if custom_report dimensions + metrics can be combined and report generated
             stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
             next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
@@ -458,7 +467,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
 
     @staticmethod
-    def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
+    def instantiate_report_class(report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
         stream_config = {
@@ -473,4 +482,4 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if cohort_spec:
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
-        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"])
+        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)

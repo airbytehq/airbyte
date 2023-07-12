@@ -7,12 +7,12 @@ import pytest
 
 @pytest.fixture
 def config():
-    return {"start_date": "2020-01-01T00:00:00Z", "token": "7607999ef26581e81726777b7b79f20e70e75602", "form_ids": ["u6nXL7", "k9xNV4"]}
+    return {"start_date": "2020-01-01T00:00:00Z", "credentials": {"access_token": "7607999ef26581e81726777b7b79f20e70e75602"}, "form_ids": ["u6nXL7", "k9xNV4"]}
 
 
 @pytest.fixture
 def config_without_forms():
-    return {"start_date": "2020-01-01T00:00:00Z", "token": "7607999ef26581e81726777b7b79f20e70e75602"}
+    return {"start_date": "2020-01-01T00:00:00Z", "credentials":{"access_token": "7607999ef26581e81726777b7b79f20e70e75602"}}
 
 
 @pytest.fixture
