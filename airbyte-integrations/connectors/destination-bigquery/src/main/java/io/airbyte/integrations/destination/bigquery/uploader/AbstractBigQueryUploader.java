@@ -124,7 +124,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     // TODO alter an existing raw table?
     final Table rawTable = bigQuery.getTable(table);
     if (rawTable == null) {
-      LOGGER.info("Creating raw table {}.", table.getTable());
+      LOGGER.info("Creating raw table {}.", table);
       bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
     } else {
       LOGGER.info("Found raw table {}.", rawTable.getTableId());
