@@ -28,7 +28,7 @@ task runMypyOnModifiedFiles(type: Exec) {
     commandLine 'bin/run-mypy-on-modified-files.sh'
 }
 
-blackFormat.dependsOn generateComponentManifestClassFiles
+blackFormat.dependsOn runMypyOnModifiedFiles
 isortFormat.dependsOn generateComponentManifestClassFiles
 flakeCheck.dependsOn generateComponentManifestClassFiles
 installReqs.dependsOn generateComponentManifestClassFiles
