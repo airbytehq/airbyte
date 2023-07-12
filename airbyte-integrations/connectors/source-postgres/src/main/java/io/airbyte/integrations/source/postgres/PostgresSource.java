@@ -642,7 +642,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     // Azure Postgres server has this username pattern: <username>@<host>.
     // Inside Postgres, the true username is just <username>.
-    // The jdbc_url is constructed in the toDatabaseConfig method.
+    // The jdbc_url is constructed in the toDatabaseConfig method. Do not commit me
     if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
       final String[] tokens = username.split("@");
       final String postgresUsername = tokens[0];
