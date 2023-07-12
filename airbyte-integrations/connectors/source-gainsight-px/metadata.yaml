@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.aptrinsic.com/v1
+  registries:
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0da3b186-8879-4e94-8738-55b48762f1e8
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-gainsight-px
+  githubIssueLabel: source-gainsight-px
+  icon: gainsight-px.svg
+  license: MIT
+  name: Gainsight Px
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"
