@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 0.2.6
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-monday
   githubIssueLabel: source-monday
   icon: monday.svg
@@ -16,7 +16,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   tags:
     - language:low-code

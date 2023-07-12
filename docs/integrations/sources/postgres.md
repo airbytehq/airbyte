@@ -267,6 +267,15 @@ If you know there are database changes to be synced, but the connector cannot re
 
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
+## Xmin replication mode
+Xmin replication is a new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which is available in all Postgres databases is used to track inserts and updates to your source data.
+
+This is a good solution if:
+- There is not a well-defined cursor candidate to use for Standard incremental mode.
+- You want to replace a previously configured full-refresh sync.
+- You are replicating Postgres tables less than 500GB.
+
+
 ## Supported sync modes
 
 The Postgres source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -398,6 +407,7 @@ Some larger tables may encounter an error related to the temporary file size lim
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 2.1.1   | 2023-07-06 | [26723](https://github.com/airbytehq/airbyte/pull/26723) | Add new xmin replication method.                                                                                                                                           |
 | 2.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                                                                                       |
 | 2.0.34  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                   |
 | 2.0.33  | 2023-06-01 | [26873](https://github.com/airbytehq/airbyte/pull/26873) | Add prepareThreshold=0 to JDBC url to mitigate PGBouncer prepared statement [X] already exists.                                                                            |

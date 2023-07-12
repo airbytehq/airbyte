@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 
@@ -29,7 +29,7 @@ class ParquetFormat(BaseModel):
 
 class CsvFormat(BaseModel):
     delimiter: str = ","
-    quote_char: str = '"'
+    quote_char: str = '"airbyte_cdk/sources/file_based/config/file_based_stream_config.py'
     escape_char: Optional[str]
     encoding: Optional[str] = "utf8"
     double_quote: bool
@@ -72,32 +72,26 @@ class FileBasedStreamConfig(BaseModel):
     file_type: str
     globs: Optional[List[str]]
     validation_policy: Any
-    validation_policies: Mapping[str, Any]
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
     input_schema: Optional[Mapping[str, Any]]
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat]]]
+    format: Optional[Mapping[str, CsvFormat]]
+    schemaless: bool = False
+
+    @validator("file_type", pre=True)
+    def validate_file_type(cls, v):
+        if v not in VALID_FILE_TYPES:
+            raise ValueError(f"Format filetype {v} is not a supported file type")
+        return v
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
         if isinstance(v, Mapping):
-            file_type = v["filetype"]
-            if file_type.casefold() not in VALID_FILE_TYPES:
-                raise ValueError(f"Format filetype {file_type} is not a supported file type")
-            v = {file_type: {key: val for key, val in v.items()}}
-            raise Exception(v)
+            file_type = v.get("filetype", "")
+            if file_type:
+                if file_type.casefold() not in VALID_FILE_TYPES:
+                    raise ValueError(f"Format filetype {file_type} is not a supported file type")
+                return {file_type: {key: val for key, val in v.items()}}
         return v
-
-    @root_validator
-    def set_validation_policy(cls, values: Dict[str, Any]) -> Mapping[str, Any]:
-        validation_policy_key = values.get("validation_policy", {})
-        validation_policies = values.get("validation_policies", {})
-
-        if validation_policy_key not in validation_policies:
-            raise ValueError(f"validation_policy must be one of {list(validation_policies.keys())}")
-
-        values["validation_policy"] = validation_policies[validation_policy_key]
-
-        return values
