@@ -11,7 +11,6 @@ from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 
-VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
 
 
 class QuotingBehavior(Enum):
@@ -26,6 +25,9 @@ class ParquetFormat(BaseModel):
     # We default to keeping decimals as strings, but allow users to opt into the legacy behavior.
     decimal_as_float: bool = False
 
+
+class JsonlFormat(BaseModel):
+    pass
 
 class CsvFormat(BaseModel):
     delimiter: str = ","
@@ -66,6 +68,8 @@ class CsvFormat(BaseModel):
             raise ValueError(f"invalid encoding format: {v}")
         return v
 
+VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
+
 
 class FileBasedStreamConfig(BaseModel):
     name: str
@@ -77,7 +81,7 @@ class FileBasedStreamConfig(BaseModel):
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat]]]
+    format: Optional[Mapping[str, CsvFormat]]
     schemaless: bool = False
 
     @validator("file_type", pre=True)
@@ -88,10 +92,17 @@ class FileBasedStreamConfig(BaseModel):
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
-        if isinstance(v, Mapping):
+        if isinstance(v, dict):
             file_type = v.get("filetype", "")
             if file_type:
+                # legacy case
                 if file_type.casefold() not in VALID_FILE_TYPES:
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                return {file_type: {key: val for key, val in v.items()}}
+                ret = {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
+                return ret
+            else:
+                try:
+                    return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
+                except KeyError as e:
+                    raise ValueError(f"Format filetype {e.args[0]} is not a supported file type")
         return v
