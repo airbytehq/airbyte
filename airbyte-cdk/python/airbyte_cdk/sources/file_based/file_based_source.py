@@ -5,10 +5,12 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
@@ -22,6 +24,8 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
 
+DEFAULT_MAX_HISTORY_SIZE = 10_000
+
 
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
@@ -29,16 +33,20 @@ class FileBasedSource(AbstractSource, ABC):
         stream_reader: AbstractFileBasedStreamReader,
         catalog: Optional[ConfiguredAirbyteCatalog],
         availability_strategy: Optional[AvailabilityStrategy],
+        spec_class: Type[AbstractFileBasedSpec],
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Dict[str, FileTypeParser] = None,
         validation_policies: Dict[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
+        max_history_size: int = DEFAULT_MAX_HISTORY_SIZE,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
+        self.spec_class = spec_class
         self.discovery_policy = discovery_policy
         self.parsers = parsers or default_parsers
         self.validation_policies = validation_policies
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
+        self.max_history_size = max_history_size
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -87,9 +95,9 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
+            parsed_config = self.spec_class(**config)
             streams = []
-            for stream in config["streams"]:
-                stream_config = FileBasedStreamConfig(**stream)
+            for stream_config in parsed_config.streams:
                 self._validate_stream_config(stream_config)
                 streams.append(
                     DefaultFileBasedStream(
@@ -100,10 +108,20 @@ class FileBasedSource(AbstractSource, ABC):
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policies=self.validation_policies,
-                        cursor=DefaultFileBasedCursor(stream_config.max_history_size, stream_config.days_to_sync_if_history_is_full),
+                        cursor=DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
             return streams
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
+
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        """
+        Returns the specification describing what fields can be configured by a user when setting up a file-based source.
+        """
+
+        return ConnectorSpecification(
+            documentationUrl=self.spec_class.documentation_url(),
+            connectionSpecification=self.spec_class.schema(),
+        )
