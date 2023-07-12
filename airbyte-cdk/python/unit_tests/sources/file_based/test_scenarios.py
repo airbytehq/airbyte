@@ -59,11 +59,11 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
+    parquet_file_with_decimal_as_float_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
-    parquet_file_with_decimal_no_config_scenario,
-    parquet_file_with_decimal_as_string_scenario,
-    parquet_file_with_decimal_as_float_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (

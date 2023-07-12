@@ -12,7 +12,6 @@ from pydantic import BaseModel, validator
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
 
 
-
 class QuotingBehavior(Enum):
     QUOTE_ALL = "Quote All"
     QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
@@ -28,6 +27,7 @@ class ParquetFormat(BaseModel):
 
 class JsonlFormat(BaseModel):
     pass
+
 
 class CsvFormat(BaseModel):
     delimiter: str = ","
@@ -67,6 +67,7 @@ class CsvFormat(BaseModel):
         except LookupError:
             raise ValueError(f"invalid encoding format: {v}")
         return v
+
 
 VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
 
