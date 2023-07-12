@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterable, Mapping
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -18,20 +18,23 @@ class ParquetParser(FileTypeParser):
     async def infer_schema(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Dict[str, Any]:
+
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
+        parquet_format = ParquetParser.get_parquet_format(config)
         parquet_file = pq.ParquetFile(stream_reader.open_file(file))
         parquet_schema = parquet_file.schema_arrow
-        schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type) for field in parquet_schema}
+        schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type, parquet_format) for field in parquet_schema}
         return schema
 
     def parse_records(
         self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
     ) -> Iterable[Dict[str, Any]]:
+        parquet_format = ParquetParser.get_parquet_format(config)
         table = self._read_file(file, stream_reader)
         for batch in table.to_batches():
             for i in range(batch.num_rows):
-                row_dict = {column: ParquetParser.to_py_value(batch.column(column)[i]) for column in table.column_names}
+                row_dict = {column: ParquetParser.to_py_value(batch.column(column)[i], parquet_format) for column in table.column_names}
                 yield row_dict
 
     @staticmethod
@@ -39,7 +42,7 @@ class ParquetParser(FileTypeParser):
         return pq.read_table(stream_reader.open_file(file))
 
     @staticmethod
-    def to_py_value(parquet_value: Scalar) -> Any:
+    def to_py_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type):
             return parquet_value.as_py().isoformat()
@@ -56,7 +59,10 @@ class ParquetParser(FileTypeParser):
         if ParquetParser._is_binary(parquet_value.type):
             return parquet_value.as_py().decode("utf-8")
         if pa.types.is_decimal(parquet_value.type):
-            return str(parquet_value.as_py())
+            if parquet_format.decimal_as_float:
+                return float(parquet_value.as_py())
+            else:
+                return str(parquet_value.as_py())
 
         # Dictionaries are stored as two columns: indices and values
         # The indices column is an array of integers that maps to the values column
@@ -89,20 +95,20 @@ class ParquetParser(FileTypeParser):
             return parquet_value.as_py()
 
     @staticmethod
-    def parquet_type_to_schema_type(parquet_type: pa.DataType) -> Mapping[str, str]:
+    def parquet_type_to_schema_type(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> Mapping[str, str]:
         # Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
 
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
         elif pa.types.is_date(parquet_type):
             return {"type": "string", "format": "date"}
-        elif ParquetParser._is_string(parquet_type):
+        elif ParquetParser._is_string(parquet_type, parquet_format):
             return {"type": "string"}
         elif pa.types.is_boolean(parquet_type):
             return {"type": "boolean"}
         elif ParquetParser._is_integer(parquet_type):
             return {"type": "integer"}
-        elif pa.types.is_floating(parquet_type):
+        elif ParquetParser._is_float(parquet_type, parquet_format):
             return {"type": "number"}
         elif pa.types.is_dictionary(parquet_type) or pa.types.is_struct(parquet_type) or pa.types.is_map(parquet_type):
             return {"type": "object"}
@@ -124,11 +130,30 @@ class ParquetParser(FileTypeParser):
         return bool(pa.types.is_integer(parquet_type) or pa.types.is_duration(parquet_type))
 
     @staticmethod
-    def _is_string(parquet_type: pa.DataType) -> bool:
-        return bool(
-            pa.types.is_time(parquet_type)
-            or pa.types.is_string(parquet_type)
-            or pa.types.is_large_string(parquet_type)
-            or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
-            or ParquetParser._is_binary(parquet_type)
-        )  # Best we can do is return as a string since we do not support binary
+    def _is_float(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> bool:
+        if pa.types.is_decimal(parquet_type):
+            return parquet_format.decimal_as_float
+        return bool(pa.types.is_floating(parquet_type))
+
+    @staticmethod
+    def _is_string(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> bool:
+        if pa.types.is_decimal(parquet_type):
+            return not parquet_format.decimal_as_float
+        else:
+            return bool(
+                pa.types.is_time(parquet_type)
+                or pa.types.is_string(parquet_type)
+                or pa.types.is_large_string(parquet_type)
+                or pa.types.is_decimal(parquet_type)  # Return as a string to ensure no precision is lost
+                or ParquetParser._is_binary(parquet_type)
+            )  # Best we can do is return as a string since we do not support binary
+
+    @staticmethod
+    def get_parquet_format(config: FileBasedStreamConfig) -> ParquetFormat:
+        if config.format is not None:
+            config_format = config.format.get(config.file_type) or ParquetFormat()
+            if not isinstance(config_format, ParquetFormat):
+                raise ValueError(f"Invalid format for Parquet file: {config_format}")
+            return config_format
+        else:
+            return ParquetFormat()

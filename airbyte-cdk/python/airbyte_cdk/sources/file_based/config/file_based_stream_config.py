@@ -21,6 +21,12 @@ class QuotingBehavior(Enum):
     QUOTE_NONE = "Quote None"
 
 
+class ParquetFormat(BaseModel):
+    # Legacy S3 source converted decimal columns to floats, which is not ideal because it loses precision.
+    # We default to keeping decimals as strings, but allow users to opt into the legacy behavior.
+    decimal_as_float: bool = False
+
+
 class CsvFormat(BaseModel):
     delimiter: str = ","
     quote_char: str = '"'
@@ -72,15 +78,16 @@ class FileBasedStreamConfig(BaseModel):
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
     days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
+    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat]]]
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
         if isinstance(v, Mapping):
-            file_type = v.get("filetype", "")
+            file_type = v["filetype"]
             if file_type.casefold() not in VALID_FILE_TYPES:
                 raise ValueError(f"Format filetype {file_type} is not a supported file type")
-            return {file_type: {key: val for key, val in v.items()}}
+            v = {file_type: {key: val for key, val in v.items()}}
+            raise Exception(v)
         return v
 
     @root_validator
