@@ -70,6 +70,11 @@ single_csv_scenario = (
                                         "type": "string"
                                     }
                                 },
+                                "schemaless": {
+                                    "title": "Schemaless",
+                                    "default": False,
+                                    "type": "boolean"
+                                },
                                 "validation_policy": {
                                     "title": "Validation Policy",
                                     "type": "string"
