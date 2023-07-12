@@ -26,9 +26,6 @@
       "status": {
         "type": ["null", "string"]
       },
-      "shop_url": {
-        "type": ["null", "string"]
-      },
       "initiated_at": {
         "type": ["null", "string"],
         "format": "date-time"
