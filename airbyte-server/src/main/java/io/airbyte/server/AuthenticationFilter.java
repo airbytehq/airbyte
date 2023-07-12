@@ -16,6 +16,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private static final String REALM = "Bearer <BLOTOUT_TOKEN>";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
+    private static final String EDGETAG_ORIGIN = "https://app.edgetag.io";
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
     private final BlotoutAuthentication blotoutAuthentication = new BlotoutAuthentication();
@@ -26,38 +27,63 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Get the Authorization header from the request
             String authorizationHeader =
                     requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+            // Extract the token from the Authorization header
+            String token = authorizationHeader
+                    .substring(AUTHENTICATION_SCHEME.length()).trim();
+            LOGGER.info(" Token " + token);
             // Validate the Authorization header
             if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
                 return;
             }
-            if (!isTokenBasedAuthentication(authorizationHeader)) {
-                abortWithUnauthorized(requestContext);
-                LOGGER.error(" return from isTokenBasedAuthentication ");
-                return;
-            }
-            // Extract the token from the Authorization header
-            String token = authorizationHeader
-                    .substring(AUTHENTICATION_SCHEME.length()).trim();
-            LOGGER.info(" Token " + token);
-            try {
-                if (!validateToken(token)) {
-                    abortWithUnauthorized(requestContext);
-                    LOGGER.error(" return from validateToken ");
-                    return;
+            // Validate origin based authentication
+            String originHeader =
+                    requestContext.getHeaderString("origin");
+            LOGGER.info(" originHeader " + originHeader);
+            if (isEdgeTagBasedAuthentication(originHeader)) {
+                try {
+                    if (!validateEdgeBasedToken(originHeader, token)) {
+                        abortWithUnauthorized(requestContext);
+                        LOGGER.error(" return from validateEdgeBasedToken ");
+                        return;
+                    }
+                } catch (Exception e) {
+                    try {
+                        if (!validateEdgeBasedToken(originHeader, token)) {
+                            abortWithUnauthorized(requestContext);
+                            LOGGER.error(" return from validateEdgeBasedToken ");
+                            return;
+                        }
+                    } catch (Exception e1) {
+                        LOGGER.error(" return from inner exception " + e1.getCause());
+                        e1.printStackTrace();
+                        abortWithUnauthorized(requestContext);
+                    }
                 }
-            } catch (Exception e) {
+            } else if (isTokenBasedAuthentication(authorizationHeader)) {
                 try {
                     if (!validateToken(token)) {
                         abortWithUnauthorized(requestContext);
                         LOGGER.error(" return from validateToken ");
                         return;
                     }
-                } catch (Exception e1) {
-                    LOGGER.error(" return from inner exception " + e1.getCause());
-                    e1.printStackTrace();
-                    abortWithUnauthorized(requestContext);
+                } catch (Exception e) {
+                    try {
+                        if (!validateToken(token)) {
+                            abortWithUnauthorized(requestContext);
+                            LOGGER.error(" return from validateToken ");
+                            return;
+                        }
+                    } catch (Exception e1) {
+                        LOGGER.error(" return from inner exception " + e1.getCause());
+                        e1.printStackTrace();
+                        abortWithUnauthorized(requestContext);
+                    }
                 }
+            } else {
+                abortWithUnauthorized(requestContext);
+                LOGGER.error(" return from isTokenBasedAuthentication ");
+                return;
             }
         }
     }
@@ -68,6 +94,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         // The authentication scheme comparison must be case-insensitive
         return authorizationHeader != null && authorizationHeader.toLowerCase()
                 .startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
+    }
+
+    private boolean isEdgeTagBasedAuthentication(String originHeader) {
+        return originHeader != null && originHeader.toLowerCase()
+                .equalsIgnoreCase(EDGETAG_ORIGIN);
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
@@ -83,6 +114,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private boolean validateToken(String token) throws Exception {
         // Checking token from blotout
         return blotoutAuthentication.validateToken(token);
+    }
+
+    private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
+        return blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
+
     }
 
 }
