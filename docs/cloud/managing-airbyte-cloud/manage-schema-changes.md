@@ -83,3 +83,6 @@ In addition to Airbyte Cloud’s automatic schema change detection, you can manu
  3. In the **Activate the streams you want to sync** table, click **Refresh source schema** to fetch the schema of your data source.
 
  2. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.
+
+## Manage Schema Change Notifications
+[Refer to our notification documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#enable-schema-update-notifications) to understand how to stay updated on any schema updates to your connections.
