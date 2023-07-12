@@ -4,7 +4,6 @@
 
 import logging
 from typing import Any, Mapping
-from urllib import parse
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
