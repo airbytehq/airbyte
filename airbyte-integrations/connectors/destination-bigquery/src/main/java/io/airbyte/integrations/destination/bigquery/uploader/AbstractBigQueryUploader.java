@@ -107,13 +107,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
         LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
         uploadDataToTableFromTmpTable();
         LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
-      } else {
-        // Otherwise, we just need to ensure that this table exists.
-        // TODO alter an existing raw table?
-        final Table rawTable = bigQuery.getTable(table);
-        if (rawTable == null) {
-          bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
-        }
       }
 
       outputRecordCollector.accept(lastStateMessage);
@@ -123,6 +116,18 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       throw e;
     } finally {
       dropTmpTable();
+    }
+  }
+
+  public void createRawTable() {
+    // Ensure that this table exists.
+    // TODO alter an existing raw table?
+    final Table rawTable = bigQuery.getTable(table);
+    if (rawTable == null) {
+      LOGGER.info("Creating raw table {}.", table.getTable());
+      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
+    } else {
+      LOGGER.info("Found raw table {}.", rawTable.getTableId());
     }
   }
 
