@@ -92,7 +92,7 @@ class FileBasedStreamConfig(BaseModel):
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
-        if isinstance(v, dict):
+        if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
                 # legacy case
