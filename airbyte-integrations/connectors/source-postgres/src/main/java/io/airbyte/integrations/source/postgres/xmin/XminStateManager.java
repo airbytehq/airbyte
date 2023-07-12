@@ -90,11 +90,8 @@ public class XminStateManager {
             .withStreamState(Jsons.jsonNode(xminStatus));
 
     // Set state
-    final AirbyteStateMessage stateMessage =
-        new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(airbyteStreamState);
-    return stateMessage;
+    return new AirbyteStateMessage()
+        .withType(AirbyteStateType.STREAM)
+        .withStream(airbyteStreamState);
   }
-
 }
