@@ -63,6 +63,7 @@ setup(
         "Jinja2~=3.1.2",
         "cachetools",
         "wcmatch==8.4",
+        "pyarrow==12.0.1",
     ],
     python_requires=">=3.8",
     extras_require={
@@ -74,6 +75,7 @@ setup(
             "pytest-mock",
             "requests-mock",
             "pytest-httpserver",
+            "pandas==2.0.3",
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
