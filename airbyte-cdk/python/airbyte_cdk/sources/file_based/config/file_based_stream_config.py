@@ -6,7 +6,6 @@ import codecs
 from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
@@ -65,12 +64,10 @@ class FileBasedStreamConfig(BaseModel):
     name: str
     file_type: str
     globs: Optional[List[str]]
-    validation_policy: Union[str, Any]
-    catalog_schema: Optional[ConfiguredAirbyteCatalog]
+    validation_policy: str
     input_schema: Optional[Dict[str, Any]]
     primary_key: PrimaryKeyType
-    max_history_size: Optional[int]
-    days_to_sync_if_history_is_full: Optional[int]
+    days_to_sync_if_history_is_full: int = 3
     format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
     schemaless: bool = False
 
