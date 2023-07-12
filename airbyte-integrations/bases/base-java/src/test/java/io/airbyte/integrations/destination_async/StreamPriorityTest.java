@@ -35,10 +35,8 @@ public class StreamPriorityTest {
     when(bufferDequeue.getQueueSizeBytes(DESC2)).thenReturn(Optional.of(0L)).thenReturn(Optional.of(1L));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
 
-    // DESC1 has 1 byte, DESC2 has 0 bytes
-    assertEquals(List.of(DESC1), detect.orderStreamsByPriority(DESCS));
-    // DESC1 has 0 bytes, DESC2 has 1 byte
-    assertEquals(List.of(DESC2), detect.orderStreamsByPriority(DESCS));
+    assertEquals(List.of(DESC1, DESC2), detect.orderStreamsByPriority(DESCS));
+    assertEquals(List.of(DESC2, DESC1), detect.orderStreamsByPriority(DESCS));
   }
 
   @Test

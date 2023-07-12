@@ -203,7 +203,7 @@ public class DetectStreamToFlush {
    * resources optimally. Then get rid of old stuff (time to value for the user and, generally, as the
    * age of the last record grows, the likelihood of getting any more records from that stream
    * decreases, so by flushing them, we can totally complete that stream). Finally, tertiary sort by
-   * name so the order is deterministic. Ignore queues with 0 bytes i.e. no records.
+   * name so the order is deterministic.
    *
    * @param streams streams to sort.
    * @return streams sorted by priority.
@@ -211,7 +211,6 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> streams) {
     return streams.stream()
-        .filter(stream -> bufferDequeue.getQueueSizeBytes(stream).orElseThrow() > 0L)
         .sorted(Comparator.comparing((StreamDescriptor s) -> bufferDequeue.getQueueSizeBytes(s).orElseThrow(), Comparator.reverseOrder())
             // if no time is present, it suggests the queue has no records. set MAX time as a sentinel value to
             // represent no records.
