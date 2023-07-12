@@ -1,12 +1,27 @@
 # Manage schema changes
 
-Once every 24 hours, Airbyte checks for changes in your source schema and allows you to review the changes and fix breaking changes. This process helps ensure accurate and efficient data syncs, minimizing errors and saving you time and effort in managing your data pipelines.
+You can specify for each connection how Airbyte should handle any change of schema in the source. This process helps ensure accurate and efficient data syncs, minimizing errors and saving you time and effort in managing your data pipelines.
 
-:::note 
+Airbyte checks for any changes in your source schema before every sync or once every 24 hours, whichever is more frequent.
 
-Schema changes are flagged in your connection but are not propagated to your destination.
-    
-:::
+Based on your configured settings for "Detect and propagate schema changes", Airbyte can automatically sync those changes or ignore them: 
+* **Propagate all changes** automatically propagates stream changes (additions or deletions) or column changes (additions or deletions) detected in the source
+* **Propagate column changes only** automatically propagates column changes detected in the source
+* **Ignore** any schema change, in which case the schema you’ve set up will not change even if the source schema changes until you approve the changes manually
+* **Pause connection** disables the connection from syncing further once a change is detected
+
+When a new column is detected and propagated, values for that column will be filled in for the updated rows. If you are missing values for rows not updated, a backfill can be done by completing a full refresh.
+
+When a column is deleted, the values for that column will stop updating for the updated rows and be filled with Null values.
+
+When a new stream is detected and propagated, the first sync will fill all data in as if it is a historical sync. When a stream is deleted from the source, the stream will stop updating, and we leave any existing data in the destination. The rest of the enabled streams will continue syncing.
+
+In all cases, if a breaking change is detected, the connection will be paused for manual review to prevent future syncs from failing. Breaking schema changes occur when:
+* The data type of a field from the source changes
+* An existing primary key is removed from the source
+* An existing cursor is removed from the source
+
+See "Fix breaking schema changes" to understand how to resolve these types of changes.
 
 ## Review non-breaking schema changes
 
@@ -29,11 +44,10 @@ To review non-breaking schema changes:
 
 ## Fix breaking schema changes
 
-:::note 
-
-Breaking changes can only occur in the **Cursor** or **Primary key** fields.
-    
-:::
+Breaking schema changes occur when:
+* The data type of a field from the source changes
+* An existing primary key is removed from the source
+* An existing cursor is removed from the source
 
 To review and fix breaking schema changes:
 1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
