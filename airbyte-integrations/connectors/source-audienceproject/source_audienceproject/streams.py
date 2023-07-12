@@ -11,6 +11,8 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams import IncrementalMixin
 
 DEFAULT_CAMPAIGN_STATUS = "deleted,active,archived,dirty"
+DEFAULT_END_DATE = pendulum.yesterday().date()
+DEFAULT_DATE_FLAG = False
 
 
 class AudienceprojectStream(HttpStream, ABC):
@@ -44,16 +46,18 @@ class AudienceprojectStream(HttpStream, ABC):
             starting_date: Union[pendulum.datetime, str],
             ending_date: Union[pendulum.datetime, str]
     ) -> Iterable[Tuple[pendulum.datetime, pendulum.datetime]]:
-        if starting_date:
-            if isinstance(starting_date, str):
-                starting_date = pendulum.parse(starting_date).date()
-        if ending_date:
-            ending_date = pendulum.parse(ending_date).date()
-            if ending_date < starting_date:
-                raise ValueError(
-                    f"""Provided start date has to be before end_date.
-                        Start date: {starting_date} -> end date: {ending_date}""")
-        return starting_date, ending_date
+        if isinstance(starting_date, str):
+            start_date = pendulum.parse(starting_date).date()
+        if isinstance(ending_date, str):
+            end_date = pendulum.parse(ending_date).date()
+        else:
+            end_date = DEFAULT_END_DATE
+        if end_date < start_date:
+            raise ValueError(
+                f"""Provided start date has to be before end_date.
+                     Start date: {start_date} -> end date: {end_date}""")
+        return start_date, end_date
+
 
     def stream_slices(
         self, sync_mode: SyncMode.incremental, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -117,23 +121,18 @@ class Campaigns(AudienceprojectStream, ABC):
         params = {"type": "all", "sortDirection": "asc"}
         params.update({"status": self.config.get("campaign_status")}) if self.config.get("campaign_status") else params.update(
             {"status": DEFAULT_CAMPAIGN_STATUS})
-
-        start_date = self.config.get("start_date") if self.config.get("start_date") else False
-        end_date = self.config.get("end_date") if self.config.get("end_date") else False
-        stream_start, stream_end = self._get_time_interval(
-            start_date, end_date)
-        if stream_end:
+        date_required = self.config.get("date_flag") if self.config.get("date_flag") else DEFAULT_DATE_FLAG
+        if date_required:
+            stream_start, stream_end = self._get_time_interval(
+                self.config.get("start_date"), self.config.get("end_date"))
             params.update({
                 "creationDate": stream_start,
                 "reportEnd": stream_end
             })
-        if start_date:
-            params.update({
-                "creationDate": stream_start
-            })
         if next_page_token:
             params.update(**next_page_token)
         return params
+
 
     @property
     def use_cache(self) -> bool:

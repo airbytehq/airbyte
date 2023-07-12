@@ -3,7 +3,7 @@ connectionSpecification:
   $schema: 'http://json-schema.org/draft-07/schema#'
   title: Audienceproject Spec
   type: object
-  required: ["credentials"]
+  required: ["credentials", "start_date"]
   properties:
     credentials:
       title: Authentication Method
@@ -68,4 +68,10 @@ connectionSpecification:
         Provided as a comma separated string without spaces.
         Allowed values: deleted, active, archived, dirty.
         Default value: active, dirty, archived.
+    date_flag:
+      type: boolean
+      order: 4
+      description: >-
+        Fetch data based on date range. By default it's False.
+
 
