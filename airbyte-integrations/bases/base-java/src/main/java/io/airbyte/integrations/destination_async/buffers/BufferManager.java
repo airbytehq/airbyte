@@ -87,9 +87,9 @@ public class BufferManager {
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
-              String.format("  Queue name: %s, num records: %d, num bytes: %s",
-                      entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
-              .append(System.lineSeparator());
+          String.format("  Queue name: %s, num records: %d, num bytes: %s",
+              entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
+          .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
   }
