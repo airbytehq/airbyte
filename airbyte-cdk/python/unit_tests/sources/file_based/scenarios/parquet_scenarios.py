@@ -5,8 +5,8 @@
 import datetime
 
 import pyarrow as pa
+from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
-from unit_tests.sources.file_based.temporary_parquet_files_source import TemporaryParquetFilesStreamReader
 
 _single_parquet_file = {
     "a.parquet": {
