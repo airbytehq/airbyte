@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 0.2.10
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg

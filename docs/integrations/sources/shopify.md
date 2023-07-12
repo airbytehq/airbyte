@@ -70,7 +70,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Troubleshooting tips
 
-Check out common troubleshooting issues for the Shopify source connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
+Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Supported Streams
 
