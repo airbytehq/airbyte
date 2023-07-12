@@ -35,3 +35,8 @@ connectionSpecification:
       default: "2023-03-15T00:00:00"
       order: 4
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+    exclude_fields:
+      type: array
+      title: Exclude Fields
+      description: Column names that you dont want to sync
+      order: 5

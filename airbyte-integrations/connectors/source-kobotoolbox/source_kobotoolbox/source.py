@@ -44,6 +44,7 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         self.PAGINATION_LIMIT = pagination_limit
         self._cursor_value = None
         self.start_time = config["start_time"]
+        self.exclude_fields = config['exclude_fields'] if 'exclude_fields' in config else []
 
     @property
     def url_base(self) -> str:
@@ -55,7 +56,8 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         regex = re.compile("[^a-zA-Z ]")
         s = regex.sub("", self.stream_name)
         s = s.strip()
-        return s if len(s) > 0 else self.form_id
+        # return s if len(s) > 0 else self.form_id
+        return self.form_id
 
     # State will be a dict : {'endtime': '2023-03-15T00:00:00.000+05:30'}
 
@@ -107,6 +109,9 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         result = json_response.get("results")
 
         for record in result:
+            for to_remove_field in self.exclude_fields:
+                if to_remove_field in record:
+                    record.pop(to_remove_field)
             yield record
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -173,14 +178,15 @@ class SourceKobotoolbox(AbstractSource):
         # Generate array of stream objects
         streams = []
         for form_dict in key_list:
-            stream = KoboToolStream(
-                config=config,
-                form_id=form_dict["uid"],
-                schema=stream_json_schema,
-                name=form_dict["name"],
-                pagination_limit=self.PAGINATION_LIMIT,
-                auth_token=auth_token,
-            )
-            streams.append(stream)
-
+            if form_dict['has_deployment']:
+                stream = KoboToolStream(
+                    config=config,
+                    form_id=form_dict["uid"],
+                    schema=stream_json_schema,
+                    name=form_dict["name"],
+                    pagination_limit=self.PAGINATION_LIMIT,
+                    auth_token=auth_token,
+                )
+                streams.append(stream)
+        
         return streams
