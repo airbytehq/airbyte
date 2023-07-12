@@ -8,7 +8,9 @@ import importlib
 import inspect
 import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from isodate import parse_duration
 
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
@@ -111,7 +113,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from isodate import parse_duration
+from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -126,14 +128,17 @@ class ModelToComponentFactory:
         limit_pages_fetched_per_slice: int = None,
         limit_slices_fetched: int = None,
         emit_connector_builder_messages: bool = False,
-        disable_retries=False,
+        disable_retries: bool = False,
+        message_repository: MessageRepository = None,
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
-        self._message_repository = InMemoryMessageRepository()
+        self._message_repository = message_repository or InMemoryMessageRepository(
+            self._evaluate_log_level(emit_connector_builder_messages)
+        )
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -773,6 +778,7 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
+            message_repository=self._message_repository,
         )
 
     @staticmethod
@@ -878,6 +884,7 @@ class ModelToComponentFactory:
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
                 disable_retries=self._disable_retries,
+                message_repository=self._message_repository,
             )
         return SimpleRetriever(
             name=name,
@@ -890,6 +897,7 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters,
             disable_retries=self._disable_retries,
+            message_repository=self._message_repository,
         )
 
     @staticmethod
@@ -906,12 +914,26 @@ class ModelToComponentFactory:
         if model.parent_stream_configs:
             parent_stream_configs.extend(
                 [
-                    self._create_component_from_model(model=parent_stream_config, config=config)
+                    self._create_message_repository_substream_wrapper(model=parent_stream_config, config=config)
                     for parent_stream_config in model.parent_stream_configs
                 ]
             )
 
         return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
+
+    def _create_message_repository_substream_wrapper(self, model, config):
+        substream_factory = ModelToComponentFactory(
+            limit_pages_fetched_per_slice=self._limit_pages_fetched_per_slice,
+            limit_slices_fetched=self._limit_slices_fetched,
+            emit_connector_builder_messages=self._emit_connector_builder_messages,
+            disable_retries=self._disable_retries,
+            message_repository=LogAppenderMessageRepositoryDecorator(
+                {"airbyte_cdk": {"stream": {"is_substream": True}}, "http": {"is_auxiliary": True}},
+                self._message_repository,
+                self._evaluate_log_level(self._emit_connector_builder_messages),
+            ),
+        )
+        return substream_factory._create_component_from_model(model=model, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:
@@ -927,3 +949,6 @@ class ModelToComponentFactory:
 
     def get_message_repository(self):
         return self._message_repository
+
+    def _evaluate_log_level(self, emit_connector_builder_messages) -> Level:
+        return Level.DEBUG if emit_connector_builder_messages else Level.INFO

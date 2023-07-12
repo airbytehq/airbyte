@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "user_slug": {
+      "type": ["null", "string"]
+    },
+    "primary_calendar_id": {
+      "type": ["null", "string"]
+    },
+    "primary_calendar_name": {
+      "type": ["null", "string"]
+    },
+    "email_address": {
+      "type": ["null", "string"]
+    },
+    "user_details": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "calendar_type": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "default_meeting_length": {
+      "type": ["null", "integer"]
+    },
+    "availability_limit_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "availability_limit": {
+      "type": ["null", "integer"]
+    },
+    "schedule_delay": {
+      "type": ["null", "integer"]
+    },
+    "buffer_time_duration": {
+      "type": ["null", "integer"]
+    },
+    "schedule_buffer_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "times_available": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "allow_booking_on_behalf": {
+      "type": ["null", "boolean"]
+    },
+    "allow_booking_overtime": {
+      "type": ["null", "boolean"]
+    },
+    "allow_event_overlap": {
+      "type": ["null", "boolean"]
+    },
+    "allow_event_detail": {
+      "type": ["null", "boolean"]
+    },
+    "enable_dynamic_location": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "time_zone": {
+      "type": ["null", "string"]
+    },
+    "primary_calendar_connection_failed": {
+      "type": ["null", "boolean"]
+    },
+    "enable_calendar_sync": {
+      "type": ["null", "boolean"]
+    },
+    "reschedule_meetings_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "active_meeting_url": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "url": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type":  ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type":  ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

@@ -18,7 +18,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
@@ -79,8 +79,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             try:
                 for record in parser.parse_records(self.config, file, self._stream_reader):
                     line_no += 1
-
-                    if not self.record_passes_validation_policy(record):
+                    if self.config.schemaless:
+                        record = {"data": record}
+                    elif not self.record_passes_validation_policy(record):
                         n_skipped += 1
                         continue
                     record[self.ab_last_mod_col] = file_datetime_string
@@ -148,6 +149,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
             schema = self.config.input_schema
+        elif self.config.schemaless:
+            return schemaless_schema
         else:
             files = self.list_files()
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
