@@ -5,6 +5,8 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -322,16 +324,6 @@ class XminPostgresSourceTest {
   // Assert that the state message is the last message to be emitted.
   private static void assertMessageSequence(final List<AirbyteMessage> messages) {
     assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
-  }
-
-  private static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
-        .collect(Collectors.toList());
-  }
-
-  private static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.RECORD)
-        .collect(Collectors.toList());
   }
 
   private static ConfiguredAirbyteCatalog toConfiguredXminCatalog(final AirbyteCatalog catalog) {

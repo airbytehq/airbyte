@@ -43,10 +43,19 @@ class LogMessage:
 
 
 @dataclass
+class AuxiliaryRequest:
+    title: str
+    description: str
+    request: HttpRequest
+    response: HttpResponse
+
+
+@dataclass
 class StreamRead(object):
     logs: List[LogMessage]
     slices: List[StreamReadSlices]
     test_read_limit_reached: bool
+    auxiliary_requests: List[AuxiliaryRequest]
     inferred_schema: Optional[Dict[str, Any]]
     inferred_datetime_formats: Optional[Dict[str, str]]
     latest_config_update: Optional[Dict[str, Any]]
