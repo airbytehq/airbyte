@@ -249,7 +249,7 @@ def test_stream_users_read():
 @responses.activate
 def test_stream_repositories_404():
     organization_args = {"organizations": ["org_name"]}
-    stream = Repositories(**organization_args)
+    stream = Repositories(10, **organization_args)
 
     responses.add(
         "GET",
@@ -260,13 +260,13 @@ def test_stream_repositories_404():
 
     assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=10&sort=updated&direction=desc"
 
 
 @responses.activate
 def test_stream_repositories_401(caplog):
     organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
-    stream = Repositories(**organization_args)
+    stream = Repositories(10, **organization_args)
 
     responses.add(
         "GET",
@@ -279,14 +279,14 @@ def test_stream_repositories_401(caplog):
         assert list(read_full_refresh(stream)) == []
 
     assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=10&sort=updated&direction=desc"
     assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
 
 
 @responses.activate
 def test_stream_repositories_read():
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Repositories(**organization_args)
+    stream = Repositories(10, **organization_args)
     updated_at = "2020-01-01T00:00:00Z"
     responses.add(
         "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
@@ -299,8 +299,8 @@ def test_stream_repositories_read():
         {"id": 3, "organization": "org2", "updated_at": updated_at},
     ]
     assert len(responses.calls) == 2
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
-    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=10&sort=updated&direction=desc"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=10&sort=updated&direction=desc"
 
 
 @responses.activate

@@ -403,11 +403,19 @@ class Repositories(SemiIncrementalMixin, Organizations):
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
+    use_cache = True
+    large_stream = True
     is_sorted = "desc"
     stream_base_params = {
         "sort": "updated",
         "direction": "desc",
     }
+
+    def __init__(self, page_size_for_large_streams: int, **kwargs):
+        super().__init__(**kwargs)
+        # GitHub pagination could be from 1 to 100.
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
+        self.page_size = page_size_for_large_streams if self.large_stream else constants.DEFAULT_PAGE_SIZE
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"

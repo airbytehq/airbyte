@@ -77,6 +77,7 @@ class SourceGithub(AbstractSource):
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
         config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
+        page_size_for_large_streams = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         repositories = set()
         organizations = set()
@@ -91,7 +92,11 @@ class SourceGithub(AbstractSource):
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs)
+            stream = Repositories(
+                page_size_for_large_streams=page_size_for_large_streams,
+                authenticator=authenticator,
+                organizations=unchecked_orgs,
+            )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
                 organizations.add(record["organization"])
@@ -102,7 +107,7 @@ class SourceGithub(AbstractSource):
                 authenticator=authenticator,
                 repositories=unchecked_repos,
                 # This parameter is deprecated and in future will be used sane default, page_size: 10
-                page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+                page_size_for_large_streams=page_size_for_large_streams,
             )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -276,7 +281,7 @@ class SourceGithub(AbstractSource):
             PullRequestStats(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args_with_start_date),
+            Repositories(page_size_for_large_streams=page_size, **organization_args_with_start_date),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
