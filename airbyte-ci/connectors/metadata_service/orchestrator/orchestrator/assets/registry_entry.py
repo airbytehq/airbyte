@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from google.cloud import storage
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
+from pydash.objects import get
 
 from metadata_service.spec_cache import get_cached_spec
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
@@ -251,10 +252,12 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
         Tuple[List[str], List[str]]: The enabled and disabled registries.
     """
     metadata_data_dict = registry_entry.metadata_definition.dict()
-    registries_field = metadata_data_dict["data"].get("registries", {})
+
+    # get data.registries fiield, handling the case where it is not present or none
+    registries_field = get(metadata_data_dict, "data.registries") or {}
 
     # registries is a dict of registry_name -> {enabled: bool}
-    all_enabled_registries = [registry_name for registry_name, registry_data in registries_field.items() if registry_data.get("enabled")]
+    all_enabled_registries = [registry_name for registry_name, registry_data in registries_field.items() if registry_data and registry_data.get("enabled")]
 
     valid_enabled_registries = [registry_name for registry_name in all_enabled_registries if registry_name in VALID_REGISTRIES]
 
