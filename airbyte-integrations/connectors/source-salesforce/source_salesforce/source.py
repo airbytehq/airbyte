@@ -21,6 +21,8 @@ from requests import codes, exceptions  # type: ignore[import]
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
 
+logger = logging.getLogger("airbyte")
+
 
 class AirbyteStopSync(AirbyteTracedException):
     pass
@@ -64,6 +66,7 @@ class SourceSalesforce(AbstractSource):
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
+        logger.info(f"{stream_name=}, object-like and binary properties {properties_not_supported_by_bulk=}")
         rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
         if rest_required:
             return "rest"
@@ -76,8 +79,7 @@ class SourceSalesforce(AbstractSource):
         stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
     ) -> List[Stream]:
-        """ "Generates a list of stream by their names. It can be used for different tests too"""
-        logger = logging.getLogger()
+        """Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -86,6 +88,7 @@ class SourceSalesforce(AbstractSource):
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
             api_type = cls._get_api_type(stream_name, selected_properties)
+            logger.info(f"{stream_name=} is of {api_type=}")
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":

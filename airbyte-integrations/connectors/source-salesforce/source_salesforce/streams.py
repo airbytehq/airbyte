@@ -4,6 +4,7 @@
 
 import csv
 import ctypes
+import logging
 import math
 import os
 import time
@@ -34,6 +35,8 @@ CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
+
+logger = logging.getLogger("airbyte")
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -78,6 +81,7 @@ class SalesforceStream(HttpStream, ABC):
         return properties_length > self.max_properties_length
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        logger.info(f"{response.json().get('total_size')}")
         yield from response.json()["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -125,6 +129,8 @@ class RestSalesforceStream(SalesforceStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
         next_token = response_data.get("nextRecordsUrl")
+        logger.info(f"{response_data.keys()=}")
+        logger.info(f"{next_token=}")
         return {"next_token": next_token} if next_token else None
 
     def request_params(
@@ -148,7 +154,7 @@ class RestSalesforceStream(SalesforceStream):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
-
+        logger.info(f"{query=}")
         return {"q": query}
 
     def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
@@ -275,6 +281,7 @@ class RestSalesforceStream(SalesforceStream):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        logger.info(f"{request.url=}")
         response = self._send_request(request, request_kwargs)
         return request, response
 
@@ -495,6 +502,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+        logger.info(f"{query=}")
         return {"q": query}
 
     def read_records(
@@ -643,7 +651,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
-
+        logger.info(f"{query=}")
         return {"q": query}
 
     @property
@@ -686,6 +694,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        logger.info(f"{query=}")
         return {"q": query}
 
 
