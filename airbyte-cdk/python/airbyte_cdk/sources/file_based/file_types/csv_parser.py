@@ -64,6 +64,8 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         schema = config.input_schema
+        if isinstance(schema, str):
+            raise ValueError(f"Expected schema to be a dict, but got a string: {schema}")
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
@@ -80,16 +82,16 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
                 yield from self._read_and_cast_types(reader, schema, logger)
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)
+                reader = csv.DictReader(fp)  # type: ignore
                 yield from self._read_and_cast_types(reader, schema, logger)
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, str]], logger: logging.Logger
+        reader: csv.DictReader[Any], schema: Optional[Mapping[str, Any]], logger: logging.Logger
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -120,9 +122,9 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
 
     for key, value in row.items():
         prop_type = property_types.get(key)
-        cast_value = value
+        cast_value: Any = value
 
-        if prop_type in TYPE_PYTHON_MAPPING:
+        if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
             _, python_type = TYPE_PYTHON_MAPPING[prop_type]
 
             if python_type is None:
@@ -133,7 +135,7 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
 
             elif python_type == bool:
                 try:
-                    cast_value = strtobool(value)
+                    cast_value = bool(strtobool(value))
                 except ValueError:
                     warnings.append(_format_warning(key, value, prop_type))
 
@@ -169,5 +171,5 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
     return result
 
 
-def _format_warning(key: str, value: str, expected_type: str) -> str:
+def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
     return f"{key}: value={value},expected_type={expected_type}"

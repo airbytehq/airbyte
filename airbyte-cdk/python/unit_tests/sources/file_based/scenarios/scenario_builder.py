@@ -32,8 +32,8 @@ class TestScenario:
             expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
-            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
-            expected_records: Optional[Mapping[str, Any]],
+            expected_logs: Mapping[str, Mapping[str, Any]],
+            expected_records: List[Mapping[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
@@ -105,24 +105,24 @@ class TestScenario:
 class TestScenarioBuilder:
     def __init__(self) -> None:
         self._name = ""
-        self._config = {}
-        self._files = {}
-        self._file_type = None
-        self._expected_spec = None
-        self._expected_check_status = None
-        self._expected_catalog = {}
-        self._expected_logs = None
-        self._expected_records = {}
-        self._availability_strategy = None
-        self._discovery_policy = DefaultDiscoveryPolicy()
-        self._validation_policies = None
+        self._config: Mapping[str, Any] = {}
+        self._files: Mapping[str, Any] = {}
+        self._file_type: Optional[str] = None
+        self._expected_spec: Optional[Mapping[str, Any]] = None
+        self._expected_check_status: Optional[str] = None
+        self._expected_catalog: Mapping[str, Any] = {}
+        self._expected_logs: Mapping[str, Any] = {}
+        self._expected_records: List[Mapping[str, Any]] = []
+        self._availability_strategy: Optional[AvailabilityStrategy] = None
+        self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
+        self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
         self._parsers = default_parsers
-        self._stream_reader = None
-        self._expected_check_error = None, None
-        self._expected_discover_error = None, None
-        self._expected_read_error = None, None
-        self._incremental_scenario_config = None
-        self._file_write_options = {}
+        self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
+        self._expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
+        self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
+        self._file_write_options: Mapping[str, Any] = {}
         self._max_history_size = DEFAULT_MAX_HISTORY_SIZE
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
@@ -141,11 +141,11 @@ class TestScenarioBuilder:
         self._file_type = file_type
         return self
 
-    def set_expected_spec(self, expected_spec: Mapping[str, Any]):
+    def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder":
         self._expected_spec = expected_spec
         return self
 
-    def set_expected_check_status(self, expected_check_status: str):
+    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder":
         self._expected_check_status = expected_check_status
         return self
 
@@ -153,7 +153,7 @@ class TestScenarioBuilder:
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]):
+    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]) -> "TestScenarioBuilder":
         self._expected_logs = expected_logs
         return self
 
@@ -181,11 +181,11 @@ class TestScenarioBuilder:
         self._stream_reader = stream_reader
         return self
 
-    def set_max_history_size(self, max_history_size: int):
+    def set_max_history_size(self, max_history_size: int) -> "TestScenarioBuilder":
         self._max_history_size = max_history_size
         return self
 
-    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig):
+    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
         self._incremental_scenario_config = incremental_scenario_config
         return self
 

@@ -10,6 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
@@ -51,7 +52,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         self._cursor.set_initial_state(value)
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> PrimaryKeyType:
         return self.config.primary_key
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -142,12 +143,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
-            schema["properties"] = {**extra_fields, **schema["properties"]}
-            return schema
+            return {"type": "object", "properties": {**extra_fields, **schema}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema
+            return self.config.input_schema  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:

@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Iterable, MutableMapping, Optional
+from typing import Iterable, Mapping, Optional, MutableMapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
@@ -16,7 +16,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     def __init__(self, max_history_size: int, days_to_sync_if_history_is_full: Optional[int]):
-        self._file_to_datetime_history: Mapping[str:datetime] = {}
+        self._file_to_datetime_history: MutableMapping[str, str] = {}
         self._max_history_size = max_history_size
         self._time_window_if_history_is_full = timedelta(
             days=days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL

@@ -61,7 +61,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
         return files
 
-    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile, logger: logging.Logger):
+    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile, logger: logging.Logger) -> None:
         parser = stream.get_parser(stream.config.file_type)
 
         try:
@@ -76,7 +76,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
         schema = stream.catalog_schema or stream.config.input_schema
         if schema and stream.validation_policy.validate_schema_before_sync:
-            if not conforms_to_schema(record, schema):
+            if not conforms_to_schema(record, schema): # type: ignore
                 raise CheckAvailabilityError(
                     FileBasedSourceError.ERROR_VALIDATING_RECORD,
                     stream=stream.name,

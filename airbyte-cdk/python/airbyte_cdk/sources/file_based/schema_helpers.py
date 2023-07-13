@@ -6,7 +6,7 @@ import json
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, List, Literal, Mapping, Optional, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union, Type, Tuple
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
 
@@ -32,7 +32,7 @@ class ComparableType(Enum):
             return NotImplemented
 
 
-TYPE_PYTHON_MAPPING = {
+TYPE_PYTHON_MAPPING: Mapping[str, Tuple[str, Optional[Type[Any]]]] = {
     "null": ("null", None),
     "array": ("array", list),
     "boolean": ("boolean", bool),
@@ -44,7 +44,7 @@ TYPE_PYTHON_MAPPING = {
 }
 
 
-def get_comparable_type(value: Any) -> ComparableType:
+def get_comparable_type(value: Any) -> Optional[ComparableType]:
     if value == "null":
         return ComparableType.NULL
     if value == "boolean":
@@ -189,9 +189,12 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
     return True
 
 
-def _parse_json_input(input_schema: Optional[Union[str, Dict[str, str]]]) -> Optional[Mapping[str, str]]:
+def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[Mapping[str, str]]:
     try:
-        schema = json.loads(input_schema)
+        if isinstance(input_schema, str):
+            schema: Mapping[str, str] = json.loads(input_schema)
+        else:
+            schema = input_schema
         if not all(isinstance(s, str) for s in schema.values()):
             raise ConfigValidationError(
                 FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details="Invalid input schema; nested schemas are not supported."
@@ -203,7 +206,7 @@ def _parse_json_input(input_schema: Optional[Union[str, Dict[str, str]]]) -> Opt
     return schema
 
 
-def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[Mapping[str, str]]:
+def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[Mapping[str, Any]]:
     """
     Return the user input schema (type mapping), transformed to JSON Schema format.
 
