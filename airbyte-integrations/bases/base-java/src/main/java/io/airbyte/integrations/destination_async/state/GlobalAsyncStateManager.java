@@ -153,7 +153,7 @@ public class GlobalAsyncStateManager {
         if (emptyQ) {
           break;
         }
-        // technically possible that this map hasn't been updated yet.
+        // technically possible this map hasn't been updated yet.
         final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
         if (noCorrespondingStateMsg) {
           break;
