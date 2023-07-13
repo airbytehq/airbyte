@@ -25,6 +25,7 @@ class SkipRecordPolicy(AbstractSchemaValidationPolicy):
 
 class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):
     name = "wait_for_discover"
+    validate_schema_before_sync = True
 
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
         if not conforms_to_schema(record, schema):

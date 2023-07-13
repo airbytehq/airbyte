@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -15,11 +16,19 @@ class JsonlParser(FileTypeParser):
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
 
     async def infer_schema(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Dict[str, Any]:
         ...
 
     def parse_records(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         ...
