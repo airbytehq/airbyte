@@ -3,11 +3,8 @@ This page contains the setup guide and reference information for the SFTP source
 
 ## Prerequisites
 
-* Host address of the remote SFTP-enabled server
-* Valid username associated with the server
-* Either:
-  - OS-level password associated with the username
-  - Private and public key
+* Host address
+* Valid username and password associated with the host server
 
 ## Setup guide
 ### Step 1: Set up SFTP authentication
@@ -19,27 +16,25 @@ To set up the SFTP connector, you will need to select _one_ of the following aut
 
 To set up key pair authentication, you may use the following steps as a guide:
 
-1. Open your terminal or command prompt.
-2. Use the `ssh-keygen` command to generate a new key pair.
-
+1. Open your terminal or command prompt and use the `ssh-keygen` command to generate a new key pair.
 :::note
-If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.ssh.com/academy/ssh/putty/windows/puttygen) to generate the key pair instead.
+If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair instead.
 :::
 
-3. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
-4. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
+2. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
+
+3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
 ```
 ssh-copy-id <username>@<server_ip_address>
 ```
 
 Be sure to replace your specific values for your username and the server's IP address.
-
 :::note
 Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
 :::
 
-5. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
+4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
 ```
 ssh <username>@<server_ip_address>
@@ -52,18 +47,18 @@ For more information on SSH key pair authentication, please refer to the
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **SFTP** from the list of available sources.
+3. Find and select **SFTP** from the list of available sources. 
 <!-- env:cloud -->
-If you do not see the **SFTP** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
+**For Airbyte Cloud users**: If you do not see the **SFTP** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
 <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
-4. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If you are using a different port, please enter it here.
-5. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the **Upload file** button.
-6. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
+5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
+6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the **Upload file** button.
+7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
 ## Optional fields
 
-The **Optional fields** can be used to further configure the SFTP source connector. These fields can be left untouched if you do not wish to use them.
+The **Optional fields** can be used to further configure the SFTP source connector. If you do not wish to set additional configurations, these fields can be left at their default settings.
 
 1. **File Types**: Enter the desired file types to replicate as comma-separated values. Currently, only CSV and JSON are supported. The default value is `csv,json`.
 2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
@@ -72,7 +67,7 @@ The **Optional fields** can be used to further configure the SFTP source connect
 Root
 | - logs
 |   | - 2021
-|   | - 2022 
+|   | - 2022
 |
 | - files
 |   | - 2021
