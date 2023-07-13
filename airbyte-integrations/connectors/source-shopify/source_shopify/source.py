@@ -786,6 +786,7 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         try:
             response = list(Shop(config).read_records(sync_mode=None))
@@ -801,6 +802,7 @@ class SourceShopify(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
         always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
@@ -872,6 +874,12 @@ class SourceShopify(AbstractSource):
             return access_scopes
         else:
             raise ErrorAccessScopes(f"Reason: {response}")
+
+    @staticmethod
+    def get_shop_name(config):
+        split_pattern = ".myshopify.com"
+        shop_name = config.get("shop")
+        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
 
     @staticmethod
     def format_name(name):
