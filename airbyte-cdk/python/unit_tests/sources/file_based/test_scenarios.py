@@ -27,6 +27,7 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_custom_format_scenario,
+    csv_legacy_format_scenario,
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
     empty_schema_inference_scenario,
@@ -97,6 +98,7 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
+    csv_legacy_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
     single_parquet_scenario,
@@ -110,7 +112,7 @@ discover_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", discover_scenarios, ids=[s.name for s in discover_scenarios])
-def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
+def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_discover_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:
@@ -135,7 +137,7 @@ read_scenarios = discover_scenarios + [
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_read(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
+def test_read(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, tmp_path, scenario)
     else:
@@ -192,6 +194,17 @@ def run_test_read_incremental(capsys: CaptureFixture[str], tmp_path: PosixPath, 
                 assert actual["state"]["data"] == expected
 
 
+spec_scenarios = [
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
+]
+
+
+@pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
+def test_spec(capsys, scenario):
+    assert spec(capsys, single_csv_scenario) == single_csv_scenario.expected_spec
+
+
 check_scenarios = [
     error_empty_stream_scenario,
     error_extension_mismatch_scenario,
@@ -209,7 +222,7 @@ check_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", check_scenarios, ids=[c.name for c in check_scenarios])
-def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapping[str, Any], scenario: TestScenario) -> None:
+def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
@@ -223,6 +236,15 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, json_spec: Mapp
     else:
         output = check(capsys, tmp_path, scenario)
         assert output["status"] == scenario.expected_check_status
+
+
+def spec(capsys, scenario):
+    launch(
+        scenario.source,
+        ["spec"],
+    )
+    captured = capsys.readouterr()
+    return json.loads(captured.out.splitlines()[0])["spec"]
 
 
 def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:

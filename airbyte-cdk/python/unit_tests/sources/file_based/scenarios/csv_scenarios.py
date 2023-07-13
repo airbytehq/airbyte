@@ -18,7 +18,8 @@ single_csv_scenario = (
                     "globs": ["*"],
                     "validation_policy": "emit_record",
                 }
-            ]
+            ],
+            "start_date": "2023-06-04T03:54:07Z"
         }
     )
     .set_files(
@@ -34,6 +35,146 @@ single_csv_scenario = (
         }
     )
     .set_file_type("csv")
+    .set_expected_spec(
+        {
+            "documentationUrl": "https://docs.airbyte.com/integrations/sources/in_memory_files",
+            "connectionSpecification": {
+                "title": "InMemorySpec",
+                "description": "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed "
+                               "when users configure a file-based source.",
+                "type": "object",
+                "properties": {
+                    "streams": {
+                        "title": "The list of streams to sync",
+                        "description": "Streams defines the behavior for grouping files together that will be synced to the downstream "
+                                       "destination. Each stream has it own independent configuration to handle which files to sync, "
+                                       "how files should be parsed, and the validation of records against the schema.",
+                        "order": 10,
+                        "type": "array",
+                        "items": {
+                            "title": "FileBasedStreamConfig",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "title": "Name",
+                                    "type": "string"
+                                },
+                                "file_type": {
+                                    "title": "File Type",
+                                    "type": "string"
+                                },
+                                "globs": {
+                                    "title": "Globs",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "schemaless": {
+                                    "title": "Schemaless",
+                                    "default": False,
+                                    "type": "boolean"
+                                },
+                                "validation_policy": {
+                                    "title": "Validation Policy",
+                                    "type": "string"
+                                },
+                                "input_schema": {
+                                    "title": "Input Schema",
+                                    "type": "object"
+                                },
+                                "primary_key": {
+                                    "title": "Primary Key",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "days_to_sync_if_history_is_full": {
+                                    "title": "Days To Sync If History Is Full",
+                                    "default": 3,
+                                    "type": "integer"
+                                },
+                                "format": {
+                                    "anyOf": [
+                                        {
+                                            "title": "Format",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "title": "CsvFormat",
+                                                "type": "object",
+                                                "properties": {
+                                                    "delimiter": {
+                                                        "title": "Delimiter",
+                                                        "default": ",",
+                                                        "type": "string"
+                                                    },
+                                                    "quote_char": {
+                                                        "title": "Quote Char",
+                                                        "default": "\"",
+                                                        "type": "string"
+                                                    },
+                                                    "escape_char": {
+                                                        "title": "Escape Char",
+                                                        "type": "string"
+                                                    },
+                                                    "encoding": {
+                                                        "title": "Encoding",
+                                                        "default": "utf8",
+                                                        "type": "string"
+                                                    },
+                                                    "double_quote": {
+                                                        "title": "Double Quote",
+                                                        "type": "boolean"
+                                                    },
+                                                    "quoting_behavior": {
+                                                        "default": "Quote Special Characters",
+                                                        "enum": ["Quote All", "Quote Special Characters", "Quote Non-numeric", "Quote None"]
+                                                    }
+                                                },
+                                                "required": ["double_quote"]
+                                            }
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["name", "file_type", "validation_policy"]
+                        }
+                    },
+                    "start_date": {
+                        "title": "Start Date",
+                        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not "
+                                       "be replicated.",
+                        "examples": ["2021-01-01T00:00:00Z"],
+                        "format": "date-time",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "order": 1,
+                        "type": "string"
+                    }
+                },
+                "required": ["streams"]
+            },
+        }
+    )
     .set_expected_catalog(
         {
             "streams": [
@@ -501,12 +642,102 @@ csv_custom_format_scenario = (
                     "globs": ["*"],
                     "validation_policy": "emit_record",
                     "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "quote_char": "|",
+                            "escape_char": "!",
+                            "double_quote": True,
+                            "quoting_behavior": "Quote Special Characters"
+                        }
+                    }
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11", "val12", "val |13|"),
+                    ("val21", "val22", "val23"),
+                    ("val,31", "val |,32|", "val, !!!! 33"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string",
+                            },
+                            "col2": {
+                                "type": "string",
+                            },
+                            "col3": {
+                                "type": "string",
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": "val11", "col2": "val12", "col3": "val |13|", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val21", "col2": "val22", "col3": "val23", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col1": "val,31", "col2": "val |,32|", "col3": "val, !! 33", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+    .set_file_write_options(
+        {
+            "delimiter": "#",
+            "quotechar": "|",
+        }
+    )
+).build()
+
+
+csv_legacy_format_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_legacy_format")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
                         "filetype": "csv",
                         "delimiter": "#",
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote Special Characters"
+                        "quoting_behavior": "Quote All"
                     }
                 }
             ]
@@ -589,11 +820,13 @@ multi_stream_custom_format = (
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record",
                     "format": {
-                        "filetype": "csv",
-                        "delimiter": "#",
-                        "escape_char": "!",
-                        "double_quote": True,
-                        "newlines_in_values": False
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "escape_char": "!",
+                            "double_quote": True,
+                            "newlines_in_values": False
+                        }
                     }
                 },
                 {
@@ -602,12 +835,14 @@ multi_stream_custom_format = (
                     "globs": ["b.csv"],
                     "validation_policy": "emit_record",
                     "format": {
-                        "filetype": "csv",
-                        "delimiter": "#",
-                        "escape_char": "@",
-                        "double_quote": True,
-                        "newlines_in_values": False,
-                        "quoting_behavior": "Quote All"
+                        "csv": {
+                            "filetype": "csv",
+                            "delimiter": "#",
+                            "escape_char": "@",
+                            "double_quote": True,
+                            "newlines_in_values": False,
+                            "quoting_behavior": "Quote All"
+                        }
                     }
                 }
             ]
