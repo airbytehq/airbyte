@@ -40,7 +40,6 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
 )
-from unit_tests.sources.file_based.scenarios.http_source_scenarios import test_source_base_scenario
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
@@ -75,6 +74,8 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
     wait_for_rediscovery_scenario_single_stream,
 )
 
+from unit_tests.sources.file_based.scenarios.declarative_scenarios import declarative_scenario
+
 discover_scenarios = [
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
@@ -107,6 +108,7 @@ discover_scenarios = [
     schemaless_csv_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
+    declarative_scenario
 ]
 
 

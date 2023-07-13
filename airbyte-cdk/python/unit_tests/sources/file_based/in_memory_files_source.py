@@ -4,15 +4,17 @@
 
 import csv
 import io
+import logging
 import tempfile
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
@@ -20,7 +22,20 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+
+
+class MockSource(AbstractSource):
+
+    def __init__(self):
+        pass
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        pass
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        pass
 
 
 class InMemoryFilesSource(FileBasedSource):

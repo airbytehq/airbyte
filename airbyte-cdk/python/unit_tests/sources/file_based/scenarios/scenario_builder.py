@@ -55,7 +55,7 @@ class TestScenario:
         assert self.name
         if not self.expected_catalog:
             return
-        streams = {s["name"] for s in self.config["streams"]}
+        streams = {s["name"] for s in self.config["streams"]} # FIXME I think this should come from the source.streams()
         expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
         assert expected_streams <= streams
 
@@ -89,7 +89,8 @@ class SourceBuilder(Generic[SourceType]):
 
 SourceBuilderType = TypeVar('SourceBuilderType', bound=SourceBuilder)
 class SourceProvider(Generic[SourceType]):
-    def __init__(self, source: SourceType):
+    def __init__(self, owner, source: SourceType):
+        self._owner = owner
         self._source = source
     def build(self, configured_catalog) -> SourceType:
         return self._source
@@ -157,7 +158,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
 
 
 class TestScenarioBuilder(Generic[SourceBuilderType, SourceType]):
-    def __init__(self, builder_factory = lambda scenario_builder: FileBasedSourceBuilder(scenario_builder)) -> None:
+    def __init__(self, builder_factory = lambda scenario_builder: FileBasedSourceBuilder(scenario_builder)):
         self._name = ""
         self._config: Mapping[str, Any] = {}
         self._expected_check_status: Optional[str] = None
