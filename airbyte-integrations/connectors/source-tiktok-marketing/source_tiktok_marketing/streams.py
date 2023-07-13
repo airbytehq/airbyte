@@ -503,7 +503,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
-        self.include_deleted = kwargs.get("include_deleted") or False
+        self.include_deleted = kwargs.get("include_deleted", False)
         super().__init__(**kwargs)
 
         # Important:
