@@ -47,6 +47,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.validation_policies = validation_policies
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
         self.max_history_size = max_history_size
+        self.logger = logging.getLogger(f"airbyte.{self.name}")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -82,14 +83,6 @@ class FileBasedSource(AbstractSource, ABC):
 
         return not bool(errors), (errors or None)
 
-    def _validate_stream_config(self, stream_config: FileBasedStreamConfig):
-        if stream_config.validation_policy not in self.validation_policies:
-            raise ValidationError(
-                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
-            )
-        if stream_config.input_schema and stream_config.schemaless:
-            raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
-
     def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
         """
         Return a list of this source's streams.
@@ -98,7 +91,7 @@ class FileBasedSource(AbstractSource, ABC):
             parsed_config = self.spec_class(**config)
             streams = []
             for stream_config in parsed_config.streams:
-                self._validate_stream_config(stream_config)
+                self._validate_input_schema(stream_config)
                 streams.append(
                     DefaultFileBasedStream(
                         config=stream_config,
@@ -107,7 +100,7 @@ class FileBasedSource(AbstractSource, ABC):
                         availability_strategy=self.availability_strategy,
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
-                        validation_policies=self.validation_policies,
+                        validation_policy=self._validate_and_get_validation_policy(stream_config),
                         cursor=DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
@@ -125,3 +118,14 @@ class FileBasedSource(AbstractSource, ABC):
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
         )
+
+    def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig):
+        if stream_config.validation_policy not in self.validation_policies:
+            raise ValidationError(
+                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
+            )
+        return self.validation_policies[stream_config.validation_policy]
+
+    def _validate_input_schema(self, stream_config: FileBasedStreamConfig):
+        if stream_config.schemaless and stream_config.input_schema:
+            raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)

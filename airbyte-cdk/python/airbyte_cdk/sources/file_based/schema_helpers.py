@@ -2,19 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, List, Literal, Mapping, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, SchemaInferenceError
-
-type_widths = {str: 0}
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
 
 JsonSchemaSupportedType = Union[List, Literal["string"], str]
 SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
 
-schemaless_schema = {"data": {"type": "object"}}
+schemaless_schema = {"type": "object", "properties": {"data": {"type": "object"}}}
 
 
 @total_ordering
@@ -31,6 +30,18 @@ class ComparableType(Enum):
             return self.value < other.value
         else:
             return NotImplemented
+
+
+TYPE_PYTHON_MAPPING = {
+    "null": ("null", None),
+    "array": ("array", list),
+    "boolean": ("boolean", bool),
+    "float": ("number", float),
+    "integer": ("integer", int),
+    "number": ("number", float),
+    "object": ("object", dict),
+    "string": ("string", str),
+}
 
 
 def get_comparable_type(value: Any) -> ComparableType:
@@ -116,11 +127,13 @@ def _choose_wider_type(key: str, t1: Dict[str, Any], t2: Dict[str, Any]) -> Dict
             detected_types=f"{t1},{t2}",
         )
     else:
-        comparable_t1 = get_comparable_type(t1["type"])
-        comparable_t2 = get_comparable_type(t2["type"])
+        comparable_t1 = get_comparable_type(TYPE_PYTHON_MAPPING[t1["type"]][0])  # accessing the type_mapping value
+        comparable_t2 = get_comparable_type(TYPE_PYTHON_MAPPING[t2["type"]][0])  # accessing the type_mapping value
         if not comparable_t1 and comparable_t2:
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=key, detected_types=f"{t1},{t2}")
-        return max([t1, t2], key=lambda x: ComparableType(get_comparable_type(x["type"])))
+        return max(
+            [t1, t2], key=lambda x: ComparableType(get_comparable_type(TYPE_PYTHON_MAPPING[x["type"]][0]))
+        )  # accessing the type_mapping value
 
 
 def is_equal_or_narrower_type(value: Any, expected_type: str):
@@ -172,8 +185,51 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, str]) -> 
     return True
 
 
-def type_mapping_to_jsonschema(type_mapping: Mapping[str, Any]) -> Mapping[str, str]:
+def _parse_json_input(input_schema: Optional[Union[str, Dict[str, str]]]) -> Optional[Mapping[str, str]]:
+    try:
+        schema = json.loads(input_schema)
+        if not all(isinstance(s, str) for s in schema.values()):
+            raise ConfigValidationError(
+                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details="Invalid input schema; nested schemas are not supported."
+            )
+
+    except json.decoder.JSONDecodeError:
+        return None
+
+    return schema
+
+
+def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[Mapping[str, str]]:
     """
     Return the user input schema (type mapping), transformed to JSON Schema format.
+
+    Verify that the input schema:
+        - is a key:value map
+        - all values in the map correspond to a JsonSchema datatype
     """
-    ...
+    if not input_schema:
+        return None
+
+    result_schema = {}
+
+    json_mapping = _parse_json_input(input_schema) or {}
+
+    for col_name, type_name in json_mapping.items():
+        col_name, type_name = col_name.strip(), type_name.strip()
+        if not (col_name and type_name):
+            raise ConfigValidationError(
+                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA,
+                details=f"Invalid input schema; expected mapping in the format column_name: type, got {input_schema}.",
+            )
+
+        _json_schema_type = TYPE_PYTHON_MAPPING.get(type_name.casefold())
+
+        if not _json_schema_type:
+            raise ConfigValidationError(
+                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details=f"Invalid type '{type_name}' for property '{col_name}'."
+            )
+
+        json_schema_type = _json_schema_type[0]
+        result_schema[col_name] = {"type": json_schema_type}
+
+    return {"type": "object", "properties": result_schema}

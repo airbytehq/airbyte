@@ -43,16 +43,16 @@ class AbstractFileBasedStream(Stream):
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[str, FileTypeParser],
-        validation_policies: Dict[str, AbstractSchemaValidationPolicy],
+        validation_policy: AbstractSchemaValidationPolicy,
     ):
         super().__init__()
         self.config = config
-        self._catalog_schema = catalog_schema
+        self.catalog_schema = catalog_schema
+        self.validation_policy = validation_policy
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
         self._parsers = parsers
-        self._validation_policies = validation_policies
 
     @property
     @abstractmethod
@@ -125,9 +125,8 @@ class AbstractFileBasedStream(Stream):
             raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
 
     def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
-        validation_policy = self._validation_policies.get(self.config.validation_policy)
-        if validation_policy:
-            return validation_policy.record_passes_validation_policy(record=record, schema=self._catalog_schema)
+        if self.validation_policy:
+            return self.validation_policy.record_passes_validation_policy(record=record, schema=self.catalog_schema)
         else:
             raise RecordParseError(
                 FileBasedSourceError.UNDEFINED_VALIDATION_POLICY, stream=self.name, validation_policy=self.config.validation_policy
