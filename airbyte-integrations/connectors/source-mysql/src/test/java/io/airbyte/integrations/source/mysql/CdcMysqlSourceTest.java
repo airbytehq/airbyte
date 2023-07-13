@@ -192,6 +192,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
+  protected void addCdcDefaultCursorField(final AirbyteStream stream) {
+    // Leaving empty until cdc default cursor is implemented for MySQL
+  }
+
+  @Override
   protected Source getSource() {
     return source;
   }

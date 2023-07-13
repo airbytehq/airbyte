@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-monday:dev
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -18,10 +19,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        # `boards`, `items`, `updates` streams schemas were modified
-        #  changed type of id for assets in items and updates
-        #  change deprecated owner to owners in boards
-        # All changes described in corresponding pr
+        # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
         # Changes applies to all configs
         backward_compatibility_tests_config:
           disable_for_version: "0.2.6"
@@ -69,4 +67,12 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_api_token.json"
   incremental:
-    bypass_reason: "Incremental syncs are not supported on this connector."
+    tests:
+    - config_path: "secrets/config_api_token.json"
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        items: [ "updated_at_int" ]
+        boards: [ "updated_at_int" ]
+        activity_logs: [ "created_at_int" ]
