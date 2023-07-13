@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
@@ -53,18 +54,18 @@ public class FlushWorkers implements AutoCloseable {
   private static final long DEBUG_INITIAL_DELAY_SECS = 0L;
   private static final long DEBUG_PERIOD_SECS = 10L;
 
-  private final ScheduledExecutorService supervisorThread;
-  private final ExecutorService workerPool;
+  private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
+  private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+  private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
+  private final AtomicBoolean isClosing = new AtomicBoolean(false);
+  private final RunningFlushWorkers runningFlushWorkers = new RunningFlushWorkers();
   private final BufferDequeue bufferDequeue;
   private final DestinationFlushFunction flusher;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final ScheduledExecutorService debugLoop;
-  private final RunningFlushWorkers runningFlushWorkers;
   private final DetectStreamToFlush detectStreamToFlush;
 
   private final FlushFailure flushFailure;
 
-  private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
 
   public FlushWorkers(final BufferDequeue bufferDequeue,
@@ -77,12 +78,22 @@ public class FlushWorkers implements AutoCloseable {
     this.flushFailure = flushFailure;
     this.stateManager = stateManager;
     flusher = flushFunction;
-    debugLoop = Executors.newSingleThreadScheduledExecutor();
-    supervisorThread = Executors.newScheduledThreadPool(1);
-    workerPool = Executors.newFixedThreadPool(5);
-    isClosing = new AtomicBoolean(false);
-    runningFlushWorkers = new RunningFlushWorkers();
     detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
+  }
+
+  @VisibleForTesting
+  public FlushWorkers(final BufferDequeue bufferDequeue,
+                      final DestinationFlushFunction flushFunction,
+                      final Consumer<AirbyteMessage> outputRecordCollector,
+                      final FlushFailure flushFailure,
+                      final GlobalAsyncStateManager stateManager,
+                      final DetectStreamToFlush detectStreamToFlushFunction) {
+    this.bufferDequeue = bufferDequeue;
+    this.outputRecordCollector = outputRecordCollector;
+    this.flushFailure = flushFailure;
+    this.stateManager = stateManager;
+    flusher = flushFunction;
+    detectStreamToFlush = detectStreamToFlushFunction;
   }
 
   public void start() {
@@ -158,7 +169,7 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          emitStateMessages(batch.flushStates(stateIdToCount));
+          emitStateMessagesOnSuccess(batch.flushStates(stateIdToCount));
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
@@ -178,37 +189,11 @@ public class FlushWorkers implements AutoCloseable {
   public void close() throws Exception {
     log.info("Closing flush workers -- waiting for all buffers to flush");
     isClosing.set(true);
-    // wait for all buffers to be flushed.
-    while (true) {
-      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords = bufferDequeue.getBufferedStreams()
-          .stream()
-          .collect(Collectors.toMap(desc -> desc, desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
-
-      final boolean anyRecordsLeft = streamDescriptorToRemainingRecords
-          .values()
-          .stream()
-          .anyMatch(size -> size > 0);
-
-      if (!anyRecordsLeft) {
-        break;
-      }
-
-      final var workerInfo = new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
-      streamDescriptorToRemainingRecords.entrySet()
-          .stream()
-          .filter(entry -> entry.getValue() > 0)
-          .forEach(entry -> workerInfo.append(String.format("  Namespace: %s Stream: %s -- remaining records: %d",
-              entry.getKey().getNamespace(),
-              entry.getKey().getName(),
-              entry.getValue())));
-      log.info(workerInfo.toString());
-      log.info("Waiting for all streams to flush.");
-      Thread.sleep(1000);
-    }
+    waitForAllBuffersToFlush();
     log.info("Closing flush workers -- all buffers flushed");
 
     // before shutting down the supervisor, flush all state.
-    emitStateMessages(stateManager.flushStates());
+    emitStateMessagesOnSuccess(stateManager.flushStates());
     supervisorThread.shutdown();
     final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
@@ -221,11 +206,39 @@ public class FlushWorkers implements AutoCloseable {
     debugLoop.shutdownNow();
   }
 
-  private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
-    partials
-        .stream()
-        .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
-        .forEach(outputRecordCollector);
+  private void waitForAllBuffersToFlush() throws InterruptedException {
+    boolean anyRecordsLeft = true;
+    while (anyRecordsLeft && !flushFailure.isFailed()) {
+      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords = bufferDequeue.getBufferedStreams()
+          .stream()
+          .collect(Collectors.toMap(desc -> desc, desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
+
+      anyRecordsLeft = streamDescriptorToRemainingRecords
+          .values()
+          .stream()
+          .anyMatch(size -> size > 0);
+
+      final var workerInfo = new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
+      streamDescriptorToRemainingRecords.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue() > 0)
+          .forEach(entry -> workerInfo.append(
+              String.format("  Namespace: %s Stream: %s -- remaining records: %d", entry.getKey().getNamespace(), entry.getKey().getName(),
+                  entry.getValue()))
+              .append(System.lineSeparator()));
+      log.info(workerInfo.toString());
+      log.info("Waiting for all streams to flush.");
+      Thread.sleep(1000);
+    }
+  }
+
+  private void emitStateMessagesOnSuccess(final List<PartialAirbyteMessage> partials) {
+    if (!flushFailure.isFailed()) {
+      partials
+          .stream()
+          .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
+          .forEach(outputRecordCollector);
+    }
   }
 
   private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {

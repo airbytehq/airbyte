@@ -25,7 +25,57 @@ import org.junit.jupiter.api.Test;
 public class FlushWorkersTest {
 
   @Test
-  void testErrorHandling() throws Exception {
+  void testErrorHandlingFlushWorkersWhileReading() throws Exception {
+    final AtomicBoolean hasThrownError = new AtomicBoolean(false);
+    final var desc = new StreamDescriptor().withName("test");
+    final var dequeue = mock(BufferDequeue.class);
+    when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
+    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
+    when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
+      if (hasThrownError.get()) {
+        return Optional.of(0L);
+      } else {
+        return Optional.of(1L);
+      }
+    });
+
+    final var flushFailure = new FlushFailure();
+    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
+    workers.start();
+    workers.close();
+
+    Assertions.assertTrue(flushFailure.isFailed());
+    Assertions.assertEquals(IOException.class, flushFailure.getException().getClass());
+  }
+
+  @Test
+  void testErrorHandlingFlushSchedulerWhileReading() throws Exception {
+    final AtomicBoolean hasThrownError = new AtomicBoolean(false);
+    final var desc = new StreamDescriptor().withName("test");
+    final var dequeue = mock(BufferDequeue.class);
+    when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
+    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
+    when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
+      if (hasThrownError.get()) {
+        return Optional.of(0L);
+      } else {
+        return Optional.of(1L);
+      }
+    });
+
+    final var flushFailure = new FlushFailure();
+    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
+    workers.start();
+    workers.close();
+
+    Assertions.assertTrue(flushFailure.isFailed());
+    Assertions.assertEquals(IOException.class, flushFailure.getException().getClass());
+  }
+
+  @Test
+  void testErrorHandlingOnClose() throws Exception {
     final AtomicBoolean hasThrownError = new AtomicBoolean(false);
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
