@@ -32,7 +32,7 @@ class TestScenario:
             expected_spec: Optional[Dict[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Dict[str, Any]],
-            expected_logs: Optional[Dict[str, Any]],
+            expected_logs: Optional[Dict[str, Dict[str, Any]]],
             expected_records: Optional[Dict[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
@@ -56,6 +56,7 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
+        self.expected_logs = expected_logs
         self.source = InMemoryFilesSource(
             files,
             file_type,
@@ -110,7 +111,7 @@ class TestScenarioBuilder:
         self._expected_spec = None
         self._expected_check_status = None
         self._expected_catalog = {}
-        self._expected_logs = {}
+        self._expected_logs = None
         self._expected_records = {}
         self._availability_strategy = None
         self._discovery_policy = DefaultDiscoveryPolicy()
@@ -152,7 +153,7 @@ class TestScenarioBuilder:
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Dict[str, Any]):
+    def set_expected_logs(self, expected_logs: Dict[str, List[Dict[str, Any]]]):
         self._expected_logs = expected_logs
         return self
 
