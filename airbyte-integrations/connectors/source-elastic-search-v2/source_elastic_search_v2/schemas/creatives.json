@@ -88,6 +88,9 @@
     },
     "conversions_many_per_click": {
       "type": "integer"
+    },
+    "split": {
+      "type": "string"
     }
   }
 }
