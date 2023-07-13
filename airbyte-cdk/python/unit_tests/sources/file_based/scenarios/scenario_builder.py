@@ -4,16 +4,21 @@
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
+
+import requests
 from typing import Any, List, Mapping, Optional, Tuple, Type, TypeVar, Generic
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources import Source, AbstractSource
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.http import HttpStream
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
@@ -93,6 +98,58 @@ class SourceProvider(Generic[SourceType]):
         self._owner = owner
         self._source = source
     def build(self, configured_catalog) -> SourceType:
+        return self._source
+
+@dataclass(eq=True, frozen=True)
+class RequestDescriptor:
+    path: str
+
+
+@dataclass(eq=True, frozen=True)
+class ResponseDescriptor:
+    status_code: int
+    body: str # FIXME obviously this is not the right type
+
+
+class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
+
+    def __init__(self, owner, source: AbstractSource):
+        self._owner = owner
+        self._source = source
+        self._request_response_mapping: Mapping[RequestDescriptor, ResponseDescriptor] = {}
+
+    def set_request_response_mapping(self, request_response_mapping: Mapping[str, Any]) -> "MockedHttpRequestsSourceBuilder":
+        self._request_response_mapping = request_response_mapping
+        return self
+
+    def build(self, configured_catalog) -> SourceType:
+
+        old_streams = self._source.streams
+        request_response_mapping = self._request_response_mapping
+        def mock_http_request(self, request: requests.PreparedRequest, **request_kwargs) -> requests.Response:
+            request_descriptor = RequestDescriptor(path=request.path_url)
+            if request_descriptor not in request_response_mapping:
+                raise Exception(f"Unexpected request {request_descriptor}")
+            else:
+                response_descriptor = request_response_mapping[request_descriptor]
+                return requests.Response(
+                    status_code=response_descriptor.status_code,
+                    content=response_descriptor.body,
+                )
+
+        def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+            streams = old_streams(config)
+            for stream in streams:
+                if isinstance(stream, HttpStream):
+                    stream._actually_send_request = mock_http_request.__get__(stream, HttpStream)
+                elif isinstance(stream, DeclarativeStream):
+                    stream.retriever._actually_send_request = mock_http_request.__get__(stream, HttpStream)
+                else:
+                    raise ValueError(f"Unexpected stream type {stream}")
+            return streams
+
+        self._source.streams = streams.__get__(self._source, AbstractSource)
+
         return self._source
 
 
