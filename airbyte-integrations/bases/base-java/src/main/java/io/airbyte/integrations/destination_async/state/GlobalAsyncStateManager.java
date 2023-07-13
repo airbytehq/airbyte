@@ -148,11 +148,11 @@ public class GlobalAsyncStateManager {
       // remove all states with 0 counters.
       final LinkedList<Long> stateIdQueue = entry.getValue();
       while (true) {
-        final Long oldestState = stateIdQueue.peek();
-        final boolean emptyQ = oldestState == null;
-        if (emptyQ) {
+        if (stateIdQueue.isEmpty()) {
           break;
         }
+        final Long oldestState = stateIdQueue.peek();
+
         // technically possible this map hasn't been updated yet.
         final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
         if (noCorrespondingStateMsg) {
