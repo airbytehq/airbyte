@@ -56,8 +56,7 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         regex = re.compile("[^a-zA-Z ]")
         s = regex.sub("", self.stream_name)
         s = s.strip()
-        # return s if len(s) > 0 else self.form_id
-        return self.form_id
+        return s if len(s) > 0 else self.form_id
 
     # State will be a dict : {'endtime': '2023-03-15T00:00:00.000+05:30'}
 
