@@ -265,10 +265,10 @@ class MessageGrouper:
 
         record_count = 0
 
-        for slice in slices:
-            if len(slice.pages) >= self._max_pages_per_slice:
+        for _slice in slices:
+            if len(_slice.pages) >= self._max_pages_per_slice:
                 return True
-            for page in slice.pages:
+            for page in _slice.pages:
                 record_count += len(page.records)
                 if record_count >= self._max_record_limit:
                     return True
