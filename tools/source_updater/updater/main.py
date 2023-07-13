@@ -197,6 +197,12 @@ if __name__ == "__main__":
     repo = SourceRepository()
 
     # FIXME is there a state of the local git we would like to enforce?
+    branch_name = f"source-updater/updating-{source_name}"
+    validate_branch_process = subprocess.run(["git", "rev-parse", "--verify", branch_name])
+    if validate_branch_process.returncode == 0:
+        error_message = f"The target branch `{branch_name}` for the update operations already exist. Please make sure to push those local changes before doing more changes or delete this branch"
+        logger.error(error_message)
+        sys.exit(error_message)
 
     if not repo.exists(source_name):
         error_message = "Source does not exist. Please generate it as demonstrated by https://docs.airbyte.com/connector-development/config-based/tutorial/create-source"
@@ -220,7 +226,6 @@ if __name__ == "__main__":
     pass
 
     # GitHub PR
-    branch_name = f"source-updater/updating-{source_name}"
     subprocess.run(["git", "checkout", "-b", branch_name])
     subprocess.run(["git", "add", "."])
     # to avoid pushing secrets to GitHub
