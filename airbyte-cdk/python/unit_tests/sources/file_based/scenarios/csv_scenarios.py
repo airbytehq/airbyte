@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -777,4 +777,354 @@ empty_schema_inference_scenario = (
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
+).build()
+
+
+schemaless_csv_scenario = (
+    TestScenarioBuilder()
+    .set_name("schemaless_csv_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "skip_record",
+                    "schemaless": True,
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11b", "val12b", "val13b"),
+                    ("val21b", "val22b", "val23b"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        }
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"data": {"col1": "val11a", "col2": "val12a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"data": {"col1": "val21a", "col2": "val22a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+            {"data": {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+
+schemaless_csv_multi_stream_scenario = (
+    TestScenarioBuilder()
+    .set_name("schemaless_csv_multi_stream_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["a.csv"],
+                    "validation_policy": "skip_record",
+                    "schemaless": True,
+                },
+                {
+                    "name": "stream2",
+                    "file_type": "csv",
+                    "globs": ["b.csv"],
+                    "validation_policy": "skip_record",
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col3",),
+                    ("val13b",),
+                    ("val23b",),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                },
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col3": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"data": {"col1": "val11a", "col2": "val12a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"data": {"col1": "val21a", "col2": "val22a"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+            {"data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+             "stream": "stream2"},
+            {"data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+             "stream": "stream2"},
+        ]
+    )
+).build()
+
+
+schemaless_with_user_input_schema_fails_connection_check_scenario = (
+    TestScenarioBuilder()
+    .set_name("schemaless_with_user_input_schema_fails_connection_check_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "skip_record",
+                    "input_schema": {"col1": "string", "col2": "string", "col3": "string"},
+                    "schemaless": True,
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11b", "val12b", "val13b"),
+                    ("val21b", "val22b", "val23b"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        }
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_check_status("FAILED")
+    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+).build()
+
+
+schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario = (
+    TestScenarioBuilder()
+    .set_name("schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["a.csv"],
+                    "validation_policy": "skip_record",
+                    "schemaless": True,
+                    "input_schema": {"col1": "string", "col2": "string", "col3": "string"},
+                },
+                {
+                    "name": "stream2",
+                    "file_type": "csv",
+                    "globs": ["b.csv"],
+                    "validation_policy": "skip_record",
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col3",),
+                    ("val13b",),
+                    ("val23b",),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                },
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col3": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_check_status("FAILED")
+    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()

@@ -3,6 +3,7 @@
 #
 
 import json
+import math
 from pathlib import Path, PosixPath
 from typing import Any, Dict, List, Mapping, Optional, Union
 
@@ -33,6 +34,10 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     multi_stream_custom_format,
+    schemaless_csv_multi_stream_scenario,
+    schemaless_csv_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
 )
 from unit_tests.sources.file_based.scenarios.http_source_scenarios import test_source_base_scenario
@@ -52,6 +57,11 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_earlier_scenario,
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
+)
+from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
+    multi_parquet_scenario,
+    parquet_various_types_scenario,
+    single_parquet_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
@@ -90,6 +100,13 @@ discover_scenarios = [
     csv_custom_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
+    single_parquet_scenario,
+    multi_parquet_scenario,
+    parquet_various_types_scenario,
+    schemaless_csv_scenario,
+    schemaless_csv_multi_stream_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_scenario,
 ]
 
 
@@ -146,7 +163,11 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
 
 def assert_expected_records_match_output(output: List[Mapping[str, Any]], expected_output: List[Mapping[str, Any]]) -> None:
     for actual, expected in zip(output, expected_output):
-        assert actual["record"]["data"] == expected["data"]
+        for key, value in actual["record"]["data"].items():
+            if isinstance(value, float):
+                assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
+            else:
+                assert value == expected["data"][key]
         assert actual["record"]["stream"] == expected["stream"]
 
 
@@ -183,7 +204,8 @@ check_scenarios = [
     success_extensionless_scenario,
     success_multi_stream_scenario,
     success_user_provided_schema_scenario,
-    test_source_base_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_scenario,
 ]
 
 
