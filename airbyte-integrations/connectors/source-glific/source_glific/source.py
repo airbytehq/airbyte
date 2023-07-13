@@ -32,9 +32,10 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class GlificStream(HttpStream, ABC):
-    """
-    TODO remove this comment
 
+    primary_key = None
+
+    """
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
@@ -58,24 +59,34 @@ class GlificStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    def __init__(self, stream_name: str, url_base: str, credentials: Mapping[str: str], **kwargs):
+    def __init__(self, stream_name: str, url_base: str, pagination_limit: int, credentials: dict, **kwargs):
         super().__init__(**kwargs)
 
         self.stream_name = stream_name
-        self.url_base = url_base
+        self.api_url = url_base
         self.credentials = credentials
+        self.pagination_limit = pagination_limit
+        self.offset = 0
 
     @property
     def url_base(self) -> str:
-        return self.url_base
+        return self.api_url
     
     @property
     def name(self) -> str:
         return self.stream_name
+    
+    @property
+    def http_method(self) -> str:
+        """All requests in the glific stream are posts with body"""
+        return "POST"
+    
+    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+        return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
 
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
@@ -88,8 +99,19 @@ class GlificStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+
+        json_resp = response.json()
+        records_str = json_resp['data']['organizationExportData']['data']
+        records_obj = json.loads(records_str)
+        if self.stream_name in records_obj['data']:
+            records = json.loads(records_str)['data'][f'{self.stream_name}']
+            # more records need to be fetched
+            if len(records) == (self.pagination_limit + 1):
+                self.offset += 1
+                return {"offset": self.offset, "limit": self.pagination_limit}
+
         return None
-    
+
     def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Add the authorization token in the headers"""
         return {'authorization': self.credentials['access_token'], 'Content-Type': 'application/json'}
@@ -98,118 +120,66 @@ class GlificStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return {}
     
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping | None:
+        """Request body to post"""
+
+        query = "query organizationExportData($filter: ExportFilter) {\n \
+                        organizationExportData(filter: $filter) {\n \
+                            data \n \
+                            errors { \n \
+                                key \n \
+                                message \n \
+                            } \n \
+                        } \n \
+                } \n"
         
-        return {}
+        filter_obj = {
+            "startTime": "2023-01-26T11:11:11Z",
+            "endTime": "2023-07-04T13:13:13Z", # TODO: need to remove this once its made optional in the API
+            "offset": self.offset,
+            "limit": self.pagination_limit,
+            "tables": [self.stream_name]
+        }
+
+        if next_page_token is not None:
+            filter_obj["offset"] = next_page_token["offset"]
+            filter_obj["limit"] = next_page_token["limit"]
+
+        return {"query":  query, "varaiables": {"filter": filter_obj}}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
-
-
-class Customers(GlificStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
-
-
-# Basic incremental stream
-class IncrementalGlificStream(GlificStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
-
-
-class Employees(IncrementalGlificStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+        json_resp = response.json()
+        records_str = json_resp['data']['organizationExportData']['data']
+        records_obj = json.loads(records_str)
+        if self.stream_name in records_obj['data']:
+            records = json.loads(records_str)['data'][f'{self.stream_name}']
+            col_names = records[0].split(',')
+            for i in range(1, len(records)): # each record
+                record = {}
+                for j, col_val in enumerate(records[i].split(',')): # each col_val
+                    record[col_names[j]] = col_val
+                yield record
 
 # Source
 class SourceGlific(AbstractSource):
+    """Glific source"""
+
     API_URL = "https://api.staging.tides.coloredcow.com/api"
+    PAGINATION_LIMIT = 500
 
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -245,8 +215,6 @@ class SourceGlific(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
@@ -261,7 +229,7 @@ class SourceGlific(AbstractSource):
         try:
             response = requests.post(endpoint, json=auth_payload, timeout=30)
             response.raise_for_status()
-            credentials = response['data']
+            credentials = response.json()['data']
         except requests.exceptions.HTTPError:
             # return empty zero streams since authentication failed
             return []
@@ -284,7 +252,7 @@ class SourceGlific(AbstractSource):
         config = json.loads(data['data']['organizationExportConfig']['data'])
         streams = []
         for table in config['tables']:
-            stream_obj = GlificStream(table, self.API_URL, credentials)
+            stream_obj = GlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials)
             streams.append(stream_obj)
 
         return streams

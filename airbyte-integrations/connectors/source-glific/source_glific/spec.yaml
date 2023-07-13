@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - phone
     - password
+    - start_time
   properties:
     phone:
       type: string
@@ -18,3 +19,8 @@ connectionSpecification:
       description: Password to authenticate into the your glific account
       airbyte_secret: true
       order: 1
+    start_time:
+      type: string
+      title: Start Time
+      description: Start Time from which to pull the data
+      order: 2
