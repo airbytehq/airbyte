@@ -6,34 +6,10 @@ set -o pipefail
 destination_exit_code=$?
 echo '{"type": "LOG","log":{"level":"INFO","message":"Destination process done (exit code '"$destination_exit_code"')"}}'
 
-# store original args
-args=$@
-
-while [ $# -ne 0 ]; do
-  case "$1" in
-  --config)
-    CONFIG_FILE="$2"
-    shift 2
-    ;;
-  *)
-    # move on
-    shift
-    ;;
-  esac
-done
-
-# restore original args after shifts
-set -- $args
-
-USE_1S1T_FORMAT="false"
-if [[ -s "$CONFIG_FILE" ]]; then
-  USE_1S1T_FORMAT=$(jq -r '.use_1s1t_format' "$CONFIG_FILE")
-fi
-
 if test "$1" != 'write'
 then
   normalization_exit_code=0
-elif test "$NORMALIZATION_TECHNIQUE" = 'LEGACY' && test "$USE_1S1T_FORMAT" != "true"
+elif test "$NORMALIZATION_TECHNIQUE" = 'LEGACY'
 then
   echo '{"type": "LOG","log":{"level":"INFO","message":"Starting in-connector normalization"}}'
   # the args in a write command are `write --catalog foo.json --config bar.json`

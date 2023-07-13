@@ -8,7 +8,6 @@ from enum import Enum
 from typing import Any, Iterator, List, Mapping, MutableMapping
 
 import backoff
-import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
@@ -25,6 +24,7 @@ REPORT_MAPPING = {
     "ad_groups": "ad_group",
     "ad_group_labels": "ad_group_label",
     "campaigns": "campaign",
+    "campaign_budget": "campaign_budget",
     "campaign_labels": "campaign_label",
     "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
@@ -35,6 +35,8 @@ REPORT_MAPPING = {
     "click_view": "click_view",
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
+    "user_interest": "user_interest",
+    "audience": "audience",
 }
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
@@ -107,15 +109,12 @@ class GoogleAds:
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
-        fields = ",\n".join(fields)
+        fields = ", ".join(fields)
 
-        query_template = f"SELECT {fields} FROM {from_category} "
+        query_template = f"SELECT {fields} FROM {from_category}"
 
         if cursor_field:
-            end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
-            query_template += (
-                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
-            )
+            query_template += f" WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 
