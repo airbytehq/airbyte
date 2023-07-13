@@ -150,8 +150,7 @@ public class GlobalAsyncStateManager {
       while (true) {
         final Long oldestState = stateIdQueue.peek();
         final boolean emptyQ = oldestState == null;
-        final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
-        if (emptyQ || noCorrespondingStateMsg) {
+        if (emptyQ) {
           break;
         }
 
