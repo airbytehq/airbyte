@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, Set
 
 import dagger
-from ci_connector_ops.pipelines.actions import run_steps
+from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext

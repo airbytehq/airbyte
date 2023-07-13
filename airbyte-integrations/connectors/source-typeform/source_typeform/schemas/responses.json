@@ -7,7 +7,13 @@
     "landed_at": {
       "type": ["null", "string"]
     },
+    "landing_id": {
+      "type": ["null", "string"]
+    },
     "submitted_at": {
+      "type": ["null", "string"]
+    },
+    "token": {
       "type": ["null", "string"]
     },
     "metadata": {

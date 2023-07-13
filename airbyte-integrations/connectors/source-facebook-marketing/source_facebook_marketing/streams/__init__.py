@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from .streams import (
@@ -9,18 +9,15 @@ from .streams import (
     Ads,
     AdSets,
     AdsInsights,
-    AdsInsightsActionType,
-    AdsInsightsAgeAndGender,
-    AdsInsightsCountry,
-    AdsInsightsDma,
-    AdsInsightsPlatformAndDevice,
-    AdsInsightsRegion,
     AdsInsightsActionCarouselCard,
     AdsInsightsActionConversionDevice,
     AdsInsightsActionProductID,
     AdsInsightsActionReaction,
+    AdsInsightsActionType,
     AdsInsightsActionVideoSound,
     AdsInsightsActionVideoType,
+    AdsInsightsAgeAndGender,
+    AdsInsightsCountry,
     AdsInsightsDeliveryDevice,
     AdsInsightsDeliveryPlatform,
     AdsInsightsDeliveryPlatformAndDevicePlatform,
@@ -28,6 +25,9 @@ from .streams import (
     AdsInsightsDemographicsCountry,
     AdsInsightsDemographicsDMARegion,
     AdsInsightsDemographicsGender,
+    AdsInsightsDma,
+    AdsInsightsPlatformAndDevice,
+    AdsInsightsRegion,
     Campaigns,
     CustomConversions,
     Images,

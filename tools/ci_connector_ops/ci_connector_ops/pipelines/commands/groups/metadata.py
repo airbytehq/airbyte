@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import logging
 
 import anyio
 import click
@@ -13,12 +12,12 @@ from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
 )
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_modified_metadata_files
-from rich.logging import RichHandler
-
-logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
-logger = logging.getLogger(__name__)
-
+from ci_connector_ops.pipelines.utils import (
+    DaggerPipelineCommand,
+    get_all_metadata_files,
+    get_expected_metadata_files,
+    get_modified_metadata_files,
+)
 
 # MAIN GROUP
 
@@ -37,7 +36,7 @@ def metadata(ctx: click.Context):
 @click.pass_context
 def validate(ctx: click.Context, modified_only: bool) -> bool:
     if modified_only:
-        metadata_to_validate = get_modified_metadata_files(ctx.obj["modified_files"])
+        metadata_to_validate = get_expected_metadata_files(ctx.obj["modified_files"])
     else:
         click.secho("Will run metadata validation on all the metadata files found in the repo.")
         metadata_to_validate = get_all_metadata_files()

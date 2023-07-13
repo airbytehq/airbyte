@@ -503,7 +503,7 @@ def test_invalid_custom_query_handled(mocked_gads_api, config):
         (ServiceAccounts, "internal_error", 1, True),
     ),
 )
-def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, failure_code, raise_expected):
+def test_read_record_error_handling(config, customers, mocked_gads_api, cls, error, failure_code, raise_expected):
     error_msg = "Some unexpected error"
     mocked_gads_api(failure_code=failure_code, failure_msg=error_msg, error_type=error)
     google_api = GoogleAds(credentials=config["credentials"])

@@ -43,6 +43,9 @@
     "alt_text": {
       "type": ["null", "string"]
     },
+    "note": {
+      "type": ["null", "string"]
+    },
     "board_id": {
       "type": ["null", "string"]
     },

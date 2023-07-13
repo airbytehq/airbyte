@@ -379,6 +379,98 @@
           }
         }
       }
+    },
+    "feature_flags_access_level": {
+      "type": ["null", "string"]
+    },
+    "group_runners_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "enforce_auth_checks_on_uploads": {
+      "type": ["null", "boolean"]
+    },
+    "monitor_access_level": {
+      "type": ["null", "string"]
+    },
+    "container_registry_access_level": {
+      "type": ["null", "string"]
+    },
+    "import_type": {
+      "type": ["null", "string"]
+    },
+    "ci_job_token_scope_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "requirements_access_level": {
+      "type": ["null", "string"]
+    },
+    "releases_access_level": {
+      "type": ["null", "string"]
+    },
+    "runner_token_expiration_interval": {
+      "type": ["null", "string"]
+    },
+    "squash_option": {
+      "type": ["null", "string"]
+    },
+    "squash_commit_template": {
+      "type": ["null", "string"]
+    },
+    "issue_branch_template": {
+      "type": ["null", "string"]
+    },
+    "keep_latest_artifact": {
+      "type": ["null", "boolean"]
+    },
+    "import_url": {
+      "type": ["null", "string"]
+    },
+    "ci_separated_caches": {
+      "type": ["null", "boolean"]
+    },
+    "security_and_compliance_access_level": {
+      "type": ["null", "string"]
+    },
+    "infrastructure_access_level": {
+      "type": ["null", "string"]
+    },
+    "merge_commit_template": {
+      "type": ["null", "string"]
+    },
+    "ci_allow_fork_pipelines_to_run_in_parent_project": {
+      "type": ["null", "boolean"]
+    },
+    "environments_access_level": {
+      "type": ["null", "string"]
+    },
+    "approvals_before_merge": {
+      "type": ["null", "integer"]
+    },
+    "marked_for_deletion_at": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "merge_trains_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "mirror": {
+      "type": ["null", "boolean"]
+    },
+    "issues_template": {
+      "type": ["null", "string"]
+    },
+    "merge_pipelines_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "merge_requests_template": {
+      "type": ["null", "string"]
+    },
+    "allow_pipeline_trigger_approve_deployment": {
+      "type": ["null", "boolean"]
+    },
+    "marked_for_deletion_on": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

@@ -34,5 +34,5 @@ COPY source_monday ./source_monday
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.5
+LABEL io.airbyte.version=0.2.6
 LABEL io.airbyte.name=airbyte/source-monday

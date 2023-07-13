@@ -1,6 +1,12 @@
 {
   "type": "object",
   "properties": {
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "default":{
+      "type": ["null", "boolean"]
+    },
     "forms": {
       "type": ["null", "object"],
       "properties": {

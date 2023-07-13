@@ -69,6 +69,16 @@ class SponsoredProductNegativeKeywords(SubProfilesStream):
         return "v2/sp/negativeKeywords"
 
 
+class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords):
+    """
+    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
+    """
+
+    def path(self, **kvargs) -> str:
+        return "v2/sp/campaignNegativeKeywords"
+
+
 class SponsoredProductAds(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Ads

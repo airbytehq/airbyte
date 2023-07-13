@@ -10,10 +10,27 @@ from typing import TYPE_CHECKING
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import Directory
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext
+    from dagger import Container
+
+
+async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:
+    """This function will print the secrets to mask in the GitHub actions logs with the ::add-mask:: prefix.
+    We're not doing it directly from the ci_credentials tool because its stdout is wrapped around the dagger logger,
+    And GHA will only interpret lines starting with ::add-mask:: as secrets to mask.
+    """
+    secrets_to_mask = []
+    if secrets_to_mask_file := await get_file_contents(ci_credentials_with_downloaded_secrets, "/tmp/secrets_to_mask.txt"):
+        for secret_to_mask in secrets_to_mask_file.splitlines():
+            # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
+            # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
+            print(f"::add-mask::{secret_to_mask}")
+            secrets_to_mask.append(secret_to_mask)
+    return secrets_to_mask
 
 
 async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Directory:
@@ -30,14 +47,17 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     secrets_path = f"/{context.connector.code_directory}/secrets"
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
-    return (
+    with_downloaded_secrets = (
         ci_credentials.with_exec(["mkdir", "-p", secrets_path])
         .with_env_variable(
             "CACHEBUSTER", datetime.datetime.now().isoformat()
         )  # Secrets can be updated on GSM anytime, we can't cache this step...
         .with_exec(["ci_credentials", context.connector.technical_name, "write-to-storage"])
-        .directory(secrets_path)
     )
+    # We don't want to print secrets in the logs when running locally.
+    if context.is_ci:
+        context.secrets_to_mask = await get_secrets_to_mask(with_downloaded_secrets)
+    return with_downloaded_secrets.directory(secrets_path)
 
 
 async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> int:

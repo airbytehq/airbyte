@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import sys
 import tempfile
 import traceback
@@ -30,14 +31,17 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
-from paramiko import SSHException
 from pandas.errors import ParserError
+from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+
+# Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
+logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):

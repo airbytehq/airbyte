@@ -31,5 +31,17 @@
   },
   "calls": {
     "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "users": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "tasks": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "templates": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "snippets": {
+    "updatedAt": "2021-06-28T10:10:20Z"
   }
 }

@@ -34,3 +34,5 @@ elif [ "$ARCH" == "aarch64" ] || [ "$ARCH" = "arm64" ]; then
 else
   echo "Unknown architecture"
 fi
+
+yum clean all
