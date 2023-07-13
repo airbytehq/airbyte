@@ -44,7 +44,7 @@ class CsvFormat(BaseModel):
     double_quote: bool = Field(
         title="Double Quote", default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data."
     )
-    quoting_behavior: Optional[QuotingBehavior] = Field(
+    quoting_behavior: QuotingBehavior = Field(
         title="Quoting Behavior",
         default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
         description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
@@ -54,7 +54,7 @@ class CsvFormat(BaseModel):
     # of using pyarrow
 
     @validator("delimiter")
-    def validate_delimiter(cls, v):
+    def validate_delimiter(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("delimiter should only be one character")
         if v in {"\r", "\n"}:
@@ -62,19 +62,19 @@ class CsvFormat(BaseModel):
         return v
 
     @validator("quote_char")
-    def validate_quote_char(cls, v):
+    def validate_quote_char(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("quote_char should only be one character")
         return v
 
     @validator("escape_char")
-    def validate_escape_char(cls, v):
+    def validate_escape_char(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
     @validator("encoding")
-    def validate_encoding(cls, v):
+    def validate_encoding(cls, v: str) -> str:
         try:
             codecs.lookup(v)
         except LookupError:
@@ -116,13 +116,13 @@ class FileBasedStreamConfig(BaseModel):
     )
 
     @validator("file_type", pre=True)
-    def validate_file_type(cls, v):
+    def validate_file_type(cls, v: str) -> str:
         if v not in VALID_FILE_TYPES:
             raise ValueError(f"Format filetype {v} is not a supported file type")
         return v
 
     @validator("format", pre=True)
-    def transform_format(cls, v):
+    def transform_format(cls, v: Mapping[str, str]) -> Any:
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
@@ -132,6 +132,8 @@ class FileBasedStreamConfig(BaseModel):
         return v
 
     @validator("input_schema", pre=True)
-    def transform_input_schema(cls, v):
+    def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
         if v:
             return type_mapping_to_jsonschema(v)
+        else:
+            return None

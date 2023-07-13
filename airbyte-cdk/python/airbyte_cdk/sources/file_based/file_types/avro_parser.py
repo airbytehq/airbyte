@@ -19,7 +19,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError()
 
     def parse_records(
         self,
@@ -28,4 +28,4 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        ...
+        raise NotImplementedError()
