@@ -19,6 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.pipelines import consts, main_logger
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from google.cloud import storage
@@ -34,6 +35,7 @@ AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
+IGNORED_FILE_EXTENSIONS = [".md"]
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -238,6 +240,37 @@ def get_last_commit_message() -> str:
     return git.Repo().head.commit.message
 
 
+def _is_ignored_file(file_path: Union[str, Path]) -> bool:
+    """Check if the provided file has an ignored extension."""
+    return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
+
+def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
+    """Check if the file path starts with the connector dependency path."""
+    given_file_path_parts = given_file_path.parts
+    starts_with_path_parts = starts_with_path.parts
+
+    return given_file_path_parts[:len(starts_with_path_parts)] == starts_with_path_parts
+
+def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
+    """Find all connectors whose dependencies were modified."""
+    modified_connectors = {}
+    for connector, connector_dependencies in all_dependencies:
+        for connector_dependency in connector_dependencies:
+            file_path = Path(file)
+
+            if _file_path_starts_with(file_path, connector_dependency):
+                # Add the connector to the modified connectors
+                modified_connectors.setdefault(connector, [])
+                connector_directory_path = Path(connector.code_directory)
+
+                # If the file is in the connector directory, add it to the modified files
+                if _file_path_starts_with(file_path, connector_directory_path):
+                    modified_connectors[connector].append(file)
+                else:
+                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file}'.")
+
+    return modified_connectors
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -246,21 +279,18 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
+    all_connector_dependencies = [
+        (connector, connector.get_local_dependency_paths())
+        for connector in get_all_released_connectors()
+    ]
+
+    # Ignore files with certain extensions
+    modified_files = [file for file in modified_files if not _is_ignored_file(file)]
+
     modified_connectors = {}
-    all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
     for modified_file in modified_files:
-        if str(modified_file).endswith(".md"):
-            continue
-        for connector, connector_dependencies in all_connector_dependencies:
-            for connector_dependency in connector_dependencies:
-                connector_dependency_parts = connector_dependency.parts
-                modified_file_parts = Path(modified_file).parts
-                # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
-                if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
-                    modified_connectors.setdefault(connector, [])
-                    connector_directory_parts = Path(connector.code_directory).parts
-                    if modified_file_parts[: len(connector_directory_parts)] == connector_directory_parts:
-                        modified_connectors[connector].append(modified_file)
+        modified_connectors.update(_find_modified_connectors(modified_file, all_connector_dependencies))
+
     return modified_connectors
 
 
@@ -346,8 +376,9 @@ class DaggerPipelineCommand(click.Command):
         main_logger.info(
             "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
         )
+        ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
+        dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
         try:
-            ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
             if not ctx.obj["show_dagger_logs"]:
                 dagger_log_dir = Path(f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}")
                 dagger_log_dir.mkdir(parents=True, exist_ok=True)
@@ -355,6 +386,10 @@ class DaggerPipelineCommand(click.Command):
                 dagger_log_path.touch()
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
+                if ctx.obj["is_ci"]:
+                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                else:
+                    ctx.obj["dagger_logs_url"] = None
             else:
                 ctx.obj["dagger_logs_path"] = None
             pipeline_success = super().invoke(ctx)
@@ -368,7 +403,6 @@ class DaggerPipelineCommand(click.Command):
                 if ctx.obj["is_local"]:
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
-                    dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
                     gcs_uri, public_url = upload_to_gcs(
                         ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
                     )
@@ -489,5 +523,5 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     blob = bucket.blob(object_name)
     blob.upload_from_filename(str(file_path))
     gcs_uri = f"gs://{bucket_name}/{object_name}"
-    public_url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+    public_url = f"{GCS_PUBLIC_DOMAIN}/{bucket_name}/{object_name}"
     return gcs_uri, public_url
