@@ -84,7 +84,7 @@ class DetectStreamToFlushTest {
         .thenReturn(Optional.of(NOW))
         .thenReturn(Optional.of(FIVE_MIN_AGO))
         .thenReturn(Optional.of(FIVE_MIN_AGO));
-    
+
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
