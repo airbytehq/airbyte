@@ -169,9 +169,8 @@ public class PostgresQueryUtils {
           final JsonNode result = jsonNodes.get(0);
           cursorBasedStatus.setCursor(result.get(cursorField).asText());
           cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
-
-          cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
         }
+        
         cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
