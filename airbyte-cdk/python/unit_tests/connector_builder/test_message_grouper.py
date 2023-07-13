@@ -249,6 +249,7 @@ def test_get_grouped_messages_record_limit(mock_entrypoint_read, request_record_
 
     assert (total_records >= max_record_limit) == actual_response.test_read_limit_reached
 
+
 @pytest.mark.parametrize(
     "max_record_limit",
     [
