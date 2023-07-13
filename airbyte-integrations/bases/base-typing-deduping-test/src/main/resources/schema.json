@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "id1": { "type": "integer" },
+    "id2": { "type": "integer" },
+    "updated_at": {
+      "type": "string",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "_ab_cdc_deleted_at": {
+      "type": "string",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "name": { "type": "string" },
+    "address": {
+      "type": "object",
+      "properties": {
+        "city": { "type": "string" },
+        "state": { "type": "string" }
+      }
+    },
+    "age": { "type": "integer" },
+    "registration_date": {
+      "type": "string",
+      "format": "date",
+      "airbyte_type": "date"
+    }
+  }
+}

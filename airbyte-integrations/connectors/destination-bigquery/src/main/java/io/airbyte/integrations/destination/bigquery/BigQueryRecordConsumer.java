@@ -85,7 +85,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     if (use1s1t) {
       // TODO extract common logic with GCS record consumer + extract into a higher level class
       // For each stream, make sure that its corresponding final table exists.
-      for (StreamConfig stream : catalog.streams()) {
+      for (final StreamConfig stream : catalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
           destinationHandler.execute(sqlGenerator.createTable(stream, ""));
@@ -111,9 +111,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       // For streams in overwrite mode, truncate the raw table and create a tmp table.
-      // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in
+      // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
       // 1s1t mode.
-      for (StreamConfig stream : catalog.streams()) {
+      for (final StreamConfig stream : catalog.streams()) {
         LOGGER.info("Stream {} has sync mode {}", stream.id(), stream.destinationSyncMode());
         final String suffix = overwriteStreamsWithTmpTable.get(stream.id());
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && suffix != null && !suffix.isEmpty()) {
@@ -126,6 +126,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           destinationHandler.execute(sqlGenerator.createTable(stream, suffix));
         }
       }
+
+      uploaderMap.forEach((streamId, uploader) -> {
+        uploader.createRawTable();
+      });
     }
   }
 
@@ -203,7 +207,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private void doTypingAndDeduping(final StreamConfig stream) throws InterruptedException {
     if (use1s1t) {
-      String suffix;
+      final String suffix;
       suffix = overwriteStreamsWithTmpTable.getOrDefault(stream.id(), "");
       final String sql = sqlGenerator.updateTable(suffix, stream);
       destinationHandler.execute(sql);
