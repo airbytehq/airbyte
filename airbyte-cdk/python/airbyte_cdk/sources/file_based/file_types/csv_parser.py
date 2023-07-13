@@ -91,7 +91,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader[Any], schema: Optional[Mapping[str, Any]], logger: logging.Logger
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], logger: logging.Logger  # type: ignore
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
