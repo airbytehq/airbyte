@@ -60,9 +60,11 @@ class AbstractFileBasedSpec(BaseModel):
                     object_property["enum"] = object_property["allOf"][0]["enum"]
                     object_property.pop("allOf")
 
-        schema["properties"]["streams"]["items"]["properties"]["primary_key"]["oneOf"] = schema["properties"]["streams"]["items"][
-            "properties"
-        ]["primary_key"].pop("anyOf")
+        properties_to_change = ["primary_key", "input_schema"]
+        for property_to_change in properties_to_change:
+            schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = schema["properties"]["streams"]["items"][
+                "properties"
+            ][property_to_change].pop("anyOf")
         return schema
 
     @staticmethod
