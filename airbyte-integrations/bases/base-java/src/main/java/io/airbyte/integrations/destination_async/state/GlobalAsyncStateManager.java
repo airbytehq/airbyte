@@ -153,6 +153,11 @@ public class GlobalAsyncStateManager {
         if (emptyQ) {
           break;
         }
+        // technically possible that this map hasn't been updated yet.
+        final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
+        if (noCorrespondingStateMsg) {
+          break;
+        }
 
         final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
         final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
