@@ -6,9 +6,11 @@ from unittest.mock import Mock
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from updater.main import SourceRepository
+from updater.config import Config
+from updater.source import SourceRepository
 
 
+A_CONFIG_NAME = "a-config-name"
 A_CONFIG_FILE_PATH = "a-config-file.json"
 SOURCE_NAME = "source-toto"
 SOURCE_DIRECTORY_PATH = f"airbyte-integrations/connectors/{SOURCE_NAME}"
@@ -22,7 +24,7 @@ class SourceRepositoryTestCase(TestCase):
     def setUp(self):
         self.setUpPyfakefs()
         self._repo = SourceRepository()
-        self._secret_manager = self.mocker.patch("updater.main.SecretsManager")
+        self._secret_manager = self.mocker.patch("updater.source.SecretsManager")
 
     @pytest.fixture(autouse=True)
     def __inject_fixtures(self, mocker):
@@ -100,29 +102,11 @@ class SourceRepositoryTestCase(TestCase):
         os.environ["GCP_GSM_CREDENTIALS"] = '{"gsm_credentials": "actual credentials"}'
         self.fs.create_dir(SOURCE_DIRECTORY_PATH)
         content = '{"any_config": 1}'
-        self.fs.create_file(A_CONFIG_FILE_PATH, contents=content)
 
-        self._repo.upsert_secrets(SOURCE_NAME, A_CONFIG_FILE_PATH)
+        self._repo.upsert_secrets(SOURCE_NAME, {Config(A_CONFIG_NAME, json.loads(content))})
 
-        with open(os.path.join(SOURCE_DIRECTORY_PATH, "secrets", "updated_configurations", os.path.basename(A_CONFIG_FILE_PATH))) as secret_file:
+        with open(os.path.join(SOURCE_DIRECTORY_PATH, "secrets", "updated_configurations", A_CONFIG_NAME + ".json")) as secret_file:
             assert secret_file.read() == content
-        self._secret_manager.return_value.update_secrets.assert_called_once_with(self._secret_manager.return_value.read_from_gsm.return_value)
-
-    def test_given_config_is_folder_when_upsert_secrets_then_create_files_and_call_secret_manager(self):
-        os.environ["GCP_GSM_CREDENTIALS"] = '{"gsm_credentials": "actual credentials"}'
-        self.fs.create_dir(SOURCE_DIRECTORY_PATH)
-        self.fs.create_dir("config-folder")
-        a_config_file_content = '{"a_config": 1}'
-        another_config_file_content = '{"another_config": 1}'
-        self.fs.create_file(os.path.join("config-folder", "a-config-file.json"), contents=a_config_file_content)
-        self.fs.create_file(os.path.join("config-folder", "another-config-file.json"), contents=another_config_file_content)
-
-        self._repo.upsert_secrets(SOURCE_NAME, "config-folder")
-
-        with open(os.path.join(SOURCE_DIRECTORY_PATH, "secrets", "updated_configurations", "a-config-file.json")) as secret_file:
-            assert secret_file.read() == a_config_file_content
-        with open(os.path.join(SOURCE_DIRECTORY_PATH, "secrets", "updated_configurations", "another-config-file.json")) as secret_file:
-            assert secret_file.read() == another_config_file_content
         self._secret_manager.return_value.update_secrets.assert_called_once_with(self._secret_manager.return_value.read_from_gsm.return_value)
 
     def test_given_gsm_credentials_not_present_when_upsert_secrets_then_raise_error(self):
@@ -130,4 +114,4 @@ class SourceRepositoryTestCase(TestCase):
         self.fs.create_file(A_CONFIG_FILE_PATH, contents='{"any_config": "config value"}')
 
         with pytest.raises(KeyError):
-            self._repo.upsert_secrets(SOURCE_NAME, A_CONFIG_FILE_PATH)
+            self._repo.upsert_secrets(SOURCE_NAME, {Config(A_CONFIG_NAME, {})})
