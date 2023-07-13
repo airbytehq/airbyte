@@ -159,16 +159,6 @@ class HttpRequester(Requester):
         #  constructs is a little unclear. We may revisit this, but for now lets leave it out of the DSL
         return {}
 
-    @property
-    def cache_filename(self) -> str:
-        # FIXME: this should be declarative
-        return f"{self.name}.yml"
-
-    @property
-    def use_cache(self) -> bool:
-        # FIXME: this should be declarative
-        return False
-
     disable_retries: bool = False
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
@@ -177,9 +167,9 @@ class HttpRequester(Requester):
     def max_retries(self) -> Union[int, None]:
         if self.disable_retries:
             return 0
-        if hasattr(self.error_handler, "max_retries"):
-            return self.error_handler.max_retries
-        return self._DEFAULT_MAX_RETRY
+        if self.error_handler is None:
+            return self._DEFAULT_MAX_RETRY
+        return self.error_handler.max_retries
 
     @property
     def logger(self):

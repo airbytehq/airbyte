@@ -141,9 +141,9 @@ class Requester(RequestOptionsProvider):
     @abstractmethod
     def send_request(
         self,
-        path: Optional[str] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
@@ -151,18 +151,6 @@ class Requester(RequestOptionsProvider):
     ) -> Optional[requests.Response]:
         """
         Sends a request and returns the response. Might return no response if the error handler chooses to ignore the response or throw an exception in case of an error.
-        """
-
-    @property
-    @abstractmethod
-    def cache_filename(self) -> str:
-        """
-        Return the name of cache file
-        """
-
-    @property
-    @abstractmethod
-    def use_cache(self) -> bool:
-        """
-        If True, all records will be cached.
+        If path is set, the path configured on the requester itself is ignored.
+        If header, params and body are set, they are merged with the ones configured on the requester itself.
         """

@@ -859,7 +859,7 @@ requester:
   url_base: "https://api.sendgrid.com"
   authenticator:
     type: SessionTokenAuthenticator
-    expiration_time: P10D
+    expiration_duration: P10D
     login_requester:
       path: /session
       type: HttpRequester

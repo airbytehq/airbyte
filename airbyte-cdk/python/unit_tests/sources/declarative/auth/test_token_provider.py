@@ -17,7 +17,7 @@ def create_session_token_provider():
     login_response.json.return_value = {"nested": {"token": "my_token"}}
     login_requester.send_request.return_value = login_response
 
-    return SessionTokenProvider(login_requester=login_requester, session_token_path=["nested", "token"], expiration_time=parse_duration("PT1H"), parameters={"test": "test"})
+    return SessionTokenProvider(login_requester=login_requester, session_token_path=["nested", "token"], expiration_duration=parse_duration("PT1H"), parameters={"test": "test"})
 
 
 def test_interpolated_string_token_provider():
@@ -52,7 +52,7 @@ def test_session_token_provider_cache_expiration():
 
 def test_session_token_provider_no_cache():
     provider = create_session_token_provider()
-    provider.expiration_time = None
+    provider.expiration_duration = None
     provider.get_token()
     assert provider.login_requester.send_request.call_count == 1
     provider.get_token()

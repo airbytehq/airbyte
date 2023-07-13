@@ -1042,8 +1042,8 @@ definitions:
         type: array
         items:
           type: string
-      expiration_time:
-        title: Expiration Time
+      expiration_duration:
+        title: Expiration Duration
         description: The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.
         type: string
         examples:

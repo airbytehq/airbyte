@@ -34,7 +34,7 @@ class TokenProvider:
 class SessionTokenProvider(TokenProvider):
     login_requester: Requester
     session_token_path: List[str]
-    expiration_time: Optional[Union[datetime.timedelta, Duration]]
+    expiration_duration: Optional[Union[datetime.timedelta, Duration]]
     parameters: InitVar[Mapping[str, Any]]
     message_repository: MessageRepository = NoopMessageRepository()
 
@@ -56,8 +56,8 @@ class SessionTokenProvider(TokenProvider):
         if response is None:
             raise ReadException("Failed to get session token, response got ignored by requester")
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
-        if self.expiration_time is not None:
-            self._next_expiration_time = pendulum.now() + self.expiration_time
+        if self.expiration_duration is not None:
+            self._next_expiration_time = pendulum.now() + self.expiration_duration
         self._token = session_token
 
     def _log_response(self, response: requests.Response):

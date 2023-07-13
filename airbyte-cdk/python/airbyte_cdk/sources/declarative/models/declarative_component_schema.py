@@ -1091,11 +1091,11 @@ class SessionTokenAuthenticator(BaseModel):
         examples=[["access_token"], ["result", "token"]],
         title="Session Token Path",
     )
-    expiration_time: Optional[str] = Field(
+    expiration_duration: Optional[str] = Field(
         None,
         description="The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.",
         examples=["PT1H", "P1D"],
-        title="Expiration Time",
+        title="Expiration Duration",
     )
     request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
         ...,

@@ -276,7 +276,7 @@ class ModelToComponentFactory:
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
-            expiration_time=parse_duration(model.expiration_time) if model.expiration_time else None,
+            expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
             parameters=model.parameters,
             message_repository=self._message_repository,
         )
