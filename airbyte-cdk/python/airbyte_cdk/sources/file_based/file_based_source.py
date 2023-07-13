@@ -7,8 +7,7 @@ import traceback
 from abc import ABC
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -122,7 +121,7 @@ class FileBasedSource(AbstractSource, ABC):
             connectionSpecification=self.spec_class.schema(),
         )
 
-    def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) ->  AbstractSchemaValidationPolicy:
+    def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) -> AbstractSchemaValidationPolicy:
         if stream_config.validation_policy not in self.validation_policies:
             raise ValidationError(
                 f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
