@@ -247,6 +247,9 @@ class ModelToComponentFactory:
         if model.inject_into is not None and model.header is not None:
             raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
 
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+
         request_option = (
             RequestOption(
                 inject_into=RequestOptionType(model.inject_into.inject_into.value),
@@ -299,6 +302,8 @@ class ModelToComponentFactory:
     def create_bearer_authenticator(
         model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs
     ) -> BearerAuthenticator:
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
             token_provider=token_provider
             if token_provider is not None
