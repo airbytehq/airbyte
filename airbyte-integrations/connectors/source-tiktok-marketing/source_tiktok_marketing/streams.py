@@ -482,6 +482,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     schema_name = "basic_reports"
     report_granularity = None
+    include_deleted = False
 
     spec_id_dimensions = {
         ReportLevel.ADVERTISER: "advertiser_id",
@@ -502,6 +503,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
+        self.include_deleted = kwargs.get("include_deleted") or False
         super().__init__(**kwargs)
 
         # Important:
@@ -512,12 +514,14 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     @property
     def filters(self) -> List[MutableMapping[str, Any]]:
-        return [
-            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-        ]
-
+        if self.include_deleted :
+            return [
+                {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+                {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+                {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
+            ]
+        return []
+    
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:

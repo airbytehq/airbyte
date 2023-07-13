@@ -91,6 +91,12 @@
         "type": "string",
         "format": "date"
       },
+      "include_deleted": {
+        "title": "Include Deleted Data in Reports",
+        "description": "Set to active if you want to include deleted data in reports.",
+        "default": false,
+        "type": "boolean"
+      },
       "attribution_window": {
         "title": "Attribution Window",
         "description": "The attribution window in days.",

@@ -33,6 +33,7 @@ CONFIG = {
     "end_date": END_DATE,
     "app_id": 1234,
     "advertiser_id": 0,
+    "include_deleted": True,
 }
 CONFIG_SANDBOX = {
     "access_token": "access_token",
