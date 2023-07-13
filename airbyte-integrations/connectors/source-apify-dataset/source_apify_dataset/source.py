@@ -93,6 +93,7 @@ class SourceApifyDataset(Source):
                     "additionalProperties": True,
                 }
             },
+            "additionalProperties": True,
         }
 
         return AirbyteCatalog(
