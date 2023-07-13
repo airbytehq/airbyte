@@ -76,7 +76,7 @@ Root
 
 An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
 
-3. **File Pattern**: Enter a [regular expression](https://www.tutorialspoint.com/java/java_regular_expressions.htm) to specify a naming pattern for the files to be replicated. Consider the following example:
+3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
 ```
 log-([0-9]{4})([0-9]{2})([0-9]{2})
