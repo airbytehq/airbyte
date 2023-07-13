@@ -159,14 +159,14 @@ public class PostgresQueryUtils {
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+        cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+        cursorBasedStatus.setVersion(2L);
         cursorBasedStatus.setStreamName(name);
         cursorBasedStatus.setStreamNamespace(namespace);
         cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
 
         if (!jsonNodes.isEmpty()) {
           final JsonNode result = jsonNodes.get(0);
-          cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
-          cursorBasedStatus.setVersion(2L);
           cursorBasedStatus.setCursor(result.get(cursorField).asText());
           cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
 
