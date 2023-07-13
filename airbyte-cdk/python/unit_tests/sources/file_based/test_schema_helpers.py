@@ -6,7 +6,8 @@ from typing import Any, Mapping, Optional
 
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas, type_mapping_to_jsonschema
+from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas, type_mapping_to_jsonschema, \
+    SchemaType
 
 COMPLETE_CONFORMING_RECORD = {
     "null_field": None,

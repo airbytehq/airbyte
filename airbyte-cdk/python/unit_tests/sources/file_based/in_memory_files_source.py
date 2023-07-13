@@ -32,11 +32,11 @@ class InMemoryFilesSource(FileBasedSource):
             file_type,
             availability_strategy: AvailabilityStrategy,
             discovery_policy: AbstractDiscoveryPolicy,
-            validation_policies: Dict[str, AbstractSchemaValidationPolicy],
-            parsers: Dict[str, FileTypeParser],
+            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
+            parsers: Mapping[str, FileTypeParser],
             stream_reader: AbstractFileBasedStreamReader,
-            catalog: Optional[Dict[str, Any]],
-            file_write_options: Dict[str, Any],
+            catalog: Optional[Mapping[str, Any]],
+            file_write_options: Mapping[str, Any],
             max_history_size: int,
     ):
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)

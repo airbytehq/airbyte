@@ -29,11 +29,11 @@ class TestScenario:
             config: Mapping[str, Any],
             files: Mapping[str, Any],
             file_type: str,
-            expected_spec: Optional[Dict[str, Any]],
+            expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
-            expected_catalog: Optional[Dict[str, Any]],
-            expected_logs: Optional[Dict[str, Dict[str, Any]]],
-            expected_records: Optional[Dict[str, Any]],
+            expected_catalog: Optional[Mapping[str, Any]],
+            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
+            expected_records: Optional[Mapping[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
@@ -43,7 +43,7 @@ class TestScenario:
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
-            file_write_options: Dict[str, Any],
+            file_write_options: Mapping[str, Any],
             max_history_size: int,
     ):
         self.name = name
@@ -141,7 +141,7 @@ class TestScenarioBuilder:
         self._file_type = file_type
         return self
 
-    def set_expected_spec(self, expected_spec: Dict[str, Any]):
+    def set_expected_spec(self, expected_spec: Mapping[str, Any]):
         self._expected_spec = expected_spec
         return self
 
@@ -153,7 +153,7 @@ class TestScenarioBuilder:
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Dict[str, List[Dict[str, Any]]]):
+    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]):
         self._expected_logs = expected_logs
         return self
 
