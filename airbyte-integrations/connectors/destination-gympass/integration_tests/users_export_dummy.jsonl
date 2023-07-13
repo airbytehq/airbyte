@@ -1,0 +1,5 @@
+{"type": "RECORD", "record": {"stream": "gympass_user_activity_export", "data": { "email": "some.one.else@mail.com", "event_type": "other", "timestamp": "2023-07-01"}, "emitted_at": 1626172757000}}
+{"type": "RECORD", "record": {"stream": "gympass_user_activity_export", "data": { "email": "your.man@mail.com", "event_type": "signup", "timestamp": "2023-07-02"}, "emitted_at": 1626172757000}}
+{"type": "RECORD", "record": {"stream": "gympass_user_activity_export", "data": { "email": "the.other.fella@mail.com", "event_type": "other", "timestamp": "2023-07-03"}, "emitted_at": 1626172757000}}
+{"type": "RECORD", "record": {"stream": "gympass_user_activity_export", "data": { "email": "your.one@mail.com", "event_type": "other", "timestamp": "2023-07-04"}, "emitted_at": 1626172757000}}
+{"type": "RECORD", "record": {"stream": "gympass_user_activity_export", "data": { "email": "some.one@mail.com", "event_type": "other", "timestamp": "2023-07-05"}, "emitted_at": 1626172757000}}

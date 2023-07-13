@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 1830d8d6-0d8f-4d86-8fe1-6712556c0840
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-gympass
+  githubIssueLabel: destination-gympass
+  icon: gympass.svg
+  license: MIT
+  name: Gympass
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gympass
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
