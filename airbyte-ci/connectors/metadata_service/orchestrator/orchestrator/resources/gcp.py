@@ -40,7 +40,16 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         else:
             return "text/plain"
 
-    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None):
+    def get_full_key(self, *args, **kwargs):
+        full_key = super().get_full_key(*args, **kwargs)
+
+        # remove the first slash if it exists to prevent double slashes
+        if full_key.startswith("/"):
+            full_key = full_key[1:]
+
+        return full_key
+
+    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None) -> PublicGCSFileHandle:
         """
         Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
 
@@ -49,6 +58,7 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         key = check.opt_str_param(key, "key", default=str(uuid.uuid4()))
         check_file_like_obj(file_obj)
         gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+
         bucket_obj = self._client.bucket(self._gcs_bucket)
         blob = bucket_obj.blob(gcs_key)
 
@@ -59,6 +69,18 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         blob.content_type = self.get_content_type(ext)
 
         blob.upload_from_file(file_obj)
+        return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
+
+    def delete_by_key(self, key: str, ext: Optional[str] = None) -> Optional[PublicGCSFileHandle]:
+        gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+        bucket_obj = self._client.bucket(self._gcs_bucket)
+        blob = bucket_obj.blob(gcs_key)
+
+        # if the file does not exist, return None
+        if not blob.exists():
+            return None
+
+        blob.delete()
         return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 
 

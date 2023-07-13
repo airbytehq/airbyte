@@ -2,15 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import AirbyteMessage, Level, SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -23,9 +20,10 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 @dataclass
@@ -65,14 +63,14 @@ class SimpleRetriever(Retriever, HttpStream):
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
     cursor: Optional[Cursor] = None
-    emit_connector_builder_messages: bool = False
     disable_retries: bool = False
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
-        self._last_records = None
+        self._records_from_last_response = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -166,6 +164,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -359,7 +358,7 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._records_from_last_response = records
         return records
 
     @property
@@ -380,7 +379,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self.paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._records_from_last_response)
 
     def read_records(
         self,
@@ -409,23 +408,39 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        records_generator = self._read_pages(
-            self.parse_records,
-            stream_slice,
-            slice_state,
-        )
-        cursor_updated = False
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=record)
-                cursor_updated = True
-            yield record
-        if self.cursor and not cursor_updated:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=last_record)
-            yield from []
+        most_recent_record_from_slice = None
+        for stream_data in self._read_pages(self.parse_records, stream_slice, slice_state):
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
+            yield stream_data
+
+        if self.cursor:
+            self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
+        return
+
+    def _get_most_recent_record(
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+    ) -> Optional[Record]:
+        if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
+            if not current_most_recent:
+                return record
+            else:
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
+        else:
+            return None
+
+    @staticmethod
+    def _extract_record(stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+        """
+        As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
+        to data to streamline the rest of the process.
+        """
+        if isinstance(stream_data, Record):
+            # Record is not part of `StreamData` but is the most common implementation of `Mapping[str, Any]` which is part of `StreamData`
+            return stream_data
+        elif isinstance(stream_data, (dict, Mapping)):
+            return Record(dict(stream_data), stream_slice)
+        elif isinstance(stream_data, AirbyteMessage) and stream_data.record:
+            return Record(stream_data.record.data, stream_slice)
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -447,7 +462,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
+            self.cursor.set_initial_state(value)
 
     def parse_records(
         self,
@@ -485,37 +500,13 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        yield _prepared_request_to_airbyte_message(request)
-        yield _response_to_airbyte_message(response)
+        self.message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                f"Stream '{self.name}' request",
+                f"Request performed in order to extract records for stream '{self.name}'",
+                self.name,
+            ),
+        )
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
-
-
-def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:
-    # FIXME: this should return some sort of trace message
-    request_dict = {
-        "url": request.url,
-        "http_method": request.method,
-        "headers": dict(request.headers),
-        "body": _body_binary_string_to_dict(request.body),
-    }
-    log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
-    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
-
-
-def _body_binary_string_to_dict(body_str: str) -> Optional[Mapping[str, str]]:
-    if body_str:
-        if isinstance(body_str, (bytes, bytearray)):
-            body_str = body_str.decode()
-        try:
-            return json.loads(body_str)
-        except JSONDecodeError:
-            return {k: v for k, v in [s.split("=") for s in body_str.split("&")]}
-    else:
-        return None
-
-
-def _response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:
-    # FIXME: this should return some sort of trace message
-    response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
-    log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
-    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))

@@ -5,6 +5,8 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,7 +74,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
@@ -81,7 +83,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true),
       CatalogHelpers.createAirbyteStream(
           "names",
@@ -89,7 +91,7 @@ class XminPostgresSourceTest {
           Field.of("first_name", JsonSchemaType.STRING),
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
 
@@ -322,16 +324,6 @@ class XminPostgresSourceTest {
   // Assert that the state message is the last message to be emitted.
   private static void assertMessageSequence(final List<AirbyteMessage> messages) {
     assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
-  }
-
-  private static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
-        .collect(Collectors.toList());
-  }
-
-  private static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(r -> r.getType() == Type.RECORD)
-        .collect(Collectors.toList());
   }
 
   private static ConfiguredAirbyteCatalog toConfiguredXminCatalog(final AirbyteCatalog catalog) {

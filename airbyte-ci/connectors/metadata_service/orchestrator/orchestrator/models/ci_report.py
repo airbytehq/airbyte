@@ -1,9 +1,9 @@
-
 from typing import Optional, List
 from pydantic import BaseModel, Extra
 
 # TODO (ben): When the pipeline project is brought into the airbyte-ci folder
 # we should update these models to import their twin models from the pipeline project
+
 
 class ConnectorNightlyReport(BaseModel):
     file_path: str
@@ -45,6 +45,7 @@ class ConnectorPipelineReport(BaseModel):
     git_revision: Optional[str] = None
     ci_context: Optional[str] = None
     cdk_version: Optional[str] = None
+    html_report_url: Optional[str] = None
 
     class Config:
         extra = Extra.allow
