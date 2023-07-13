@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.helpers import (
     FailingSchemaValidationPolicy,
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
@@ -112,7 +112,7 @@ success_user_provided_schema_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record",
-                    "input_schema": {"col1": "string", "col2": "string"},
+                    "input_schema": '{"col1": "string", "col2": "string"}',
                 }
             ],
         }
@@ -169,13 +169,13 @@ error_record_validation_user_provided_schema_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "always_fail",
-                    "input_schema": {"col1": "number", "col2": "string"},
+                    "input_schema": '{"col1": "number", "col2": "string"}',
                 }
             ],
         }
     )
-    .set_validation_policies(FailingSchemaValidationPolicy)
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.ERROR_VALIDATING_RECORD)
+    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL:  FailingSchemaValidationPolicy()})
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD)
 ).build()
 
 

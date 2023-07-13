@@ -5,6 +5,7 @@
 import datetime
 
 import pytest
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
@@ -1478,6 +1479,7 @@ def test_simple_retriever_emit_log_messages():
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
+    assert connector_builder_factory._message_repository._log_level == Level.DEBUG
 
 
 def test_ignore_retry():

@@ -10,6 +10,7 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
@@ -39,7 +40,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         """
         try:
             files = self._check_list_files(stream)
-            self._check_parse_record(stream, files[0])
+            self._check_parse_record(stream, files[0], logger)
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 
@@ -59,11 +60,11 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
         return files
 
-    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile):
+    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile, logger: logging.Logger):
         parser = stream.get_parser(stream.config.file_type)
 
         try:
-            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader)))
+            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger)))
         except StopIteration:
             # The file is empty. We've verified that we can open it, so will
             # consider the connection check successful even though it means
@@ -72,11 +73,11 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
         except Exception as exc:
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
 
-        if stream.config.input_schema:
-            if not stream.record_passes_validation_policy(record):
+        schema = stream.catalog_schema or stream.config.input_schema
+        if schema and stream.validation_policy.validate_schema_before_sync:
+            if not conforms_to_schema(record, schema):
                 raise CheckAvailabilityError(
                     FileBasedSourceError.ERROR_VALIDATING_RECORD,
                     stream=stream.name,
                     file=file.uri,
-                    validation_policy=stream.config.validation_policy,
                 )
