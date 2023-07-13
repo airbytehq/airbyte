@@ -231,7 +231,7 @@ if __name__ == "__main__":
     # to avoid pushing secrets to GitHub
     subprocess.run(["git", "restore", "--staged", config_path])
     subprocess.run(["git", "commit", "-m", f"Updating {source_name}"])
-    subprocess.run(["git", "push", " --set-upstream", "origin", branch_name])
+    subprocess.run(["git", "push", "--set-upstream", "origin", branch_name])
 
     # Change management
     #   Is there a breaking change?
