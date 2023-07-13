@@ -135,7 +135,7 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
 
             elif python_type == bool:
                 try:
-                    cast_value = bool(strtobool(value))
+                    cast_value = strtobool(value)
                 except ValueError:
                     warnings.append(_format_warning(key, value, prop_type))
 
