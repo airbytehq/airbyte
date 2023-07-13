@@ -232,7 +232,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]],
         requester_method,
         auth_options_method,
-        extra_options: Optional[Mapping[str, Any]] = None,
+        extra_options: Optional[Union[Mapping[str, Any], str]] = None,
     ):
         """
         Get the request_option from the requester, the authenticator and extra_options passed in.
