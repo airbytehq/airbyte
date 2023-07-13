@@ -222,14 +222,13 @@ def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: List[Dict[s
 
 
 spec_scenarios = [
-    csv_multi_stream_scenario,
-    csv_single_stream_scenario,
+    single_csv_scenario,
 ]
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
 def test_spec(capsys, scenario):
-    assert spec(capsys, scenario) == single_csv_scenario.expected_spec
+    assert spec(capsys, scenario) == scenario.expected_spec
 
 
 check_scenarios = [
