@@ -27,7 +27,7 @@ If your operating system does not support the `ssh-keygen` command, you can use 
 :::
 
 3. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
-4. Use the `ssh-copy-id` command to copy the `public key` to the server. This command is usually formatted as: 
+4. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
 ```
 ssh-copy-id <username>@<server_ip_address>
@@ -52,13 +52,16 @@ For more information on SSH key pair authentication, please refer to the
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **SFTP** from the list of available sources. If you do not see the **SFTP** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
+3. Find and select **SFTP** from the list of available sources.
+<!-- env:cloud -->
+If you do not see the **SFTP** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
+<!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 4. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If you are using a different port, please enter it here.
 5. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the **Upload file** button.
-6. If you wish to configure additional optional settings, please continue to the next step. Otherwise, click **Set up source** and wait for the tests to complete.
+6. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
-### Step 3 (Optional): Configure advanced settings
+## Optional fields
 
 The **Optional fields** can be used to further configure the SFTP source connector. These fields can be left untouched if you do not wish to use them.
 
@@ -101,7 +104,7 @@ The SFTP source connector supports the following [sync modes](https://docs.airby
 
 ## Supported streams
 
-This source provides a single stream per file with a dynamic schema. The current supported file types are `.csv` and `.json`.
+This source provides a single stream per file with a dynamic schema. The current supported file types are CSV and JSON.
 More formats \(e.g. Apache Avro\) will be supported in the future.
 
 
