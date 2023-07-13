@@ -150,6 +150,7 @@ public class PostgresQueryUtils {
           throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
         }
 
+        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,

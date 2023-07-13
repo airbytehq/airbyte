@@ -24,6 +24,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterS
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
@@ -510,12 +511,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
       } else {
         LOGGER.info("No Streams will be synced via ctid.");
       }
 
       if (!streamsCategorised.remainingStreams().streamsForXminSync().isEmpty()) {
         LOGGER.info("Streams to be synced via xmin : {}", streamsCategorised.remainingStreams().streamsForXminSync().size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streamsCategorised.remainingStreams().streamsForXminSync()));
       } else {
         LOGGER.info("No Streams will be synced via xmin.");
       }
@@ -573,10 +576,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         LOGGER.info("No Streams will be synced via ctid.");
       } else {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
       }
 
       if (!streamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty()) {
         LOGGER.info("Streams to be synced via cursor : {}", streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streamsCategorised.remainingStreams().streamsForCursorBasedSync()));
       } else {
         LOGGER.info("No streams to be synced via cursor");
       }

@@ -1,6 +1,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -121,6 +122,7 @@ public class PostgresCdcCtidInitializer {
                     .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
         final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
