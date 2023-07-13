@@ -214,7 +214,7 @@ public class BigQueryStagingConsumerFactory {
             overwriteStreamsWithTmpTable.put(stream.id(), "");
           }
         } else {
-          destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+          destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
           if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             final BigInteger rowsInFinalTable = destinationHandler.getFinalTable(stream.id()).getNumRows();
             if (new BigInteger("0").equals(rowsInFinalTable)) {

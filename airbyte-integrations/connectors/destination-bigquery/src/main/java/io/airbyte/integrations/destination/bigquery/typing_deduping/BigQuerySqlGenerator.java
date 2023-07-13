@@ -4,12 +4,17 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
+import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.BiMap;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
@@ -21,11 +26,21 @@ import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.St
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
@@ -33,6 +48,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
 
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
+
+  private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
+
+  private final String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
@@ -60,7 +79,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "_colidentifier_"
     );
     String canonicalized = name.toLowerCase();
-    // Bigquery columns are case insensitive, so do all our validation on the lowercased name
+    // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
     if (invalidColumnPrefixes.stream().anyMatch(prefix -> name.toLowerCase().startsWith(prefix))) {
       quotedName = "_" + quotedName;
       canonicalized = "_" + canonicalized;
@@ -138,6 +157,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
   }
 
+  // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to the SQLGenerator?
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       // TODO doublecheck these
@@ -156,18 +176,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix) {
-    final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()).name())
-        .collect(joining(",\n"));
-    final String clusterConfig;
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      // We're doing deduping, therefore we have a primary key.
-      // Cluster on all the PK columns, and also extracted_at.
-      clusterConfig = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(",")) + ", _airbyte_extracted_at";
-    } else {
-      // Otherwise just cluser on extracted_at.
-      clusterConfig = "_airbyte_extracted_at";
-    }
+    final String columnDeclarations = columnsAndTypes(stream);
+    final String clusterConfig = String.join(", ", clusteringColumns(stream));
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
@@ -188,32 +198,111 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
-  @Override
-  public String alterTable(final StreamConfig stream,
-                           final TableDefinition existingTable) {
-    if (existingTable instanceof final StandardTableDefinition s) {
-      // TODO check if clustering/partitioning config is different from what we want, do something to
-      // handle it
-      // iirc this will depend on the stream (destination?) sync mode + cursor + pk name
-      if (s.getClustering() != null) {
-
-      }
-    } else {
-      // TODO idk
+  private List<String> clusteringColumns(final StreamConfig stream) {
+    List<String> clusterColumns = new ArrayList<>();
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // We're doing deduping, therefore we have a primary key.
+      // Cluster on all the PK columns
+      stream.primaryKey().forEach(columnId -> {
+        clusterColumns.add(columnId.name(QUOTE));
+      });
     }
-    /*
-     * TODO maybe we do something like this? CREATE OR REPLACE TABLE ${final_table_id} AS ( SELECT
-     * _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, -- cast columns when needed CAST(col1 AS
-     * new_type) AS col1, -- some columns will not change at all col2, -- new columns default to null
-     * NULL as col3 ... FROM ${final_table_id} )
-     *
-     * This has a few advantages: * bypasses the whole "you can only alter certain column types" problem
-     * * preserves column ordering
-     *
-     * But it does mean that we have to rewrite the entire table, which really sucks. But maybe that's
-     * fine, since it only happens on schema change? And it's presumably no worse than a soft reset.
-     */
-    return "";
+    clusterColumns.add("_airbyte_extracted_at");
+    return clusterColumns;
+  }
+
+  private String columnsAndTypes(final StreamConfig stream) {
+    return stream.columns().entrySet().stream()
+            .map(column ->
+                    String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
+            .collect(joining(",\n"));
+  }
+
+
+  @Override
+  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
+                           final TableDefinition existingTable) throws TableNotMigratedException {
+    final var alterTableReport = buildAlterTableReport(stream, existingTable);
+    if (!alterTableReport.isDestinationV2Format()) {
+      throw new TableNotMigratedException();
+    }
+    boolean tableClusteringMatches = false;
+    boolean tablePartitioningMatches = false;
+    if (existingTable instanceof StandardTableDefinition standardExistingTable) {
+      tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
+      tablePartitioningMatches = partitioningMatches(standardExistingTable);
+    }
+    return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
+  }
+
+  private boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
+    return existingTable.getClustering() == null ? false : existingTable.getClustering().getFields().stream()
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet())
+            .containsAll(clusteringColumns(stream));
+  }
+
+  private boolean partitioningMatches(StandardTableDefinition existingTable) {
+    return existingTable.getTimePartitioning() == null ? false : existingTable.getTimePartitioning()
+            .getField()
+            .equalsIgnoreCase("_airbyte_extracted_at") &&
+            TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
+  }
+
+  @Override
+  public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
+    final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
+            .collect(Collectors.toMap(
+                    entry -> entry.getKey().name(),
+                    entry -> toDialectType(entry.getValue())
+            ));
+
+    final Map<String, StandardSQLTypeName> existingSchema = existingTable.getSchema().getFields().stream()
+            .collect(Collectors.toMap(
+                    field -> field.getName(),
+                    field -> field.getType().getStandardType()
+            ));
+
+    // Columns in the StreamConfig that don't exist in the TableDefinition
+    final Set<String> columnsToAdd = streamSchema.keySet().stream()
+            .filter(name -> !containsIgnoreCase(existingSchema.keySet(), name))
+            .collect(Collectors.toSet());
+
+    // Columns in the current schema that are no longer in the StreamConfig
+    final Set<String> columnsToRemove = existingSchema.keySet().stream()
+            .filter(name -> !containsIgnoreCase(streamSchema.keySet(), name) && !containsIgnoreCase(FINAL_TABLE_AIRBYTE_COLUMNS, name))
+            .collect(Collectors.toSet());
+
+    // Columns that are typed differently than the StreamConfig
+    final Set<String> columnsToChangeType = streamSchema.keySet().stream()
+            // If it's not in the existing schema, it should already be in the columnsToAdd Set
+            .filter(name -> {
+              // Big Query Columns are case-insensitive
+              final String matchedKey = matchingKey(existingSchema.keySet(), name).orElse(name);
+              return !existingSchema.getOrDefault(matchedKey, streamSchema.get(name)).equals(streamSchema.get(name));
+            })
+            .collect(Collectors.toSet());
+
+    final boolean isDestinationV2Format = FINAL_TABLE_AIRBYTE_COLUMNS.stream()
+            .allMatch(column -> containsIgnoreCase(existingSchema.keySet(), column));
+
+    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
+  }
+
+  @Override
+  public List<String> softReset(final StreamConfig stream, final TableDefinition existingTable) {
+    String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    String clearLoadedAt = clearLoadedAt(stream.id());
+    String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
+    String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
+    return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+  }
+
+  private String clearLoadedAt(StreamId streamId) {
+    return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
+            .replace("""
+            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL;
+            """);
   }
 
   @Override
@@ -465,17 +554,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamConfig stream) {
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
-      return Optional.of(new StringSubstitutor(Map.of(
-          "final_table_id", stream.id().finalTableId(QUOTE),
-          "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
-          "real_final_table", stream.id().finalName(QUOTE))).replace(
-              """
-              DROP TABLE IF EXISTS ${final_table_id};
-              ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-              """));
+      return Optional.of(overwriteFinalTableStatement(stream, finalSuffix));
     } else {
       return Optional.empty();
     }
+  }
+
+  private String overwriteFinalTableStatement(StreamConfig stream, String finalSuffix) {
+    return new StringSubstitutor(Map.of(
+            "final_table_id", stream.id().finalTableId(QUOTE),
+            "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
+            "real_final_table", stream.id().finalName(QUOTE))).replace(
+            """
+            DROP TABLE IF EXISTS ${final_table_id};
+            ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+            """);
   }
 
 }

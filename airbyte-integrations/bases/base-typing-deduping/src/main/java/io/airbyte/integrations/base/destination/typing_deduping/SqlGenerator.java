@@ -5,7 +5,12 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface SqlGenerator<DialectTableDefinition> {
 
@@ -79,21 +84,16 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
    * The generated SQL may throw an exception if the table already exists. Callers should use
-   * {@link #alterTable(StreamConfig, java.lang.Object)} if the table is known to exist.
+   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known to exist.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
    */
   String createTable(final StreamConfig stream, final String suffix);
 
-  /**
-   * Generate a SQL statement to alter an existing table to match the given stream.
-   * <p>
-   * The operations may differ based on the existing table definition (BigQuery does not allow
-   * altering a partitioning scheme and requires you to recreate+rename the table; snowflake only
-   * allows altering some column types to certain other types, etc.).
-   */
-  String alterTable(final StreamConfig stream, DialectTableDefinition existingTable);
+  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
+
+  List<String> softReset(final StreamConfig stream, final DialectTableDefinition existingTable);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -122,5 +122,19 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Drop the previous final table, and rename the new final table to match the old final table.
    */
   Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
+
+  Set<String> FINAL_TABLE_AIRBYTE_COLUMNS = Set.of("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta");
+
+  record AlterTableReport(Set<String> columnsToAdd, Set<String> columnsToRemove, Set<String> columnsToChangeType, boolean isDestinationV2Format) {
+
+    public boolean isNoOp() {
+      return isDestinationV2Format && Stream.of(this.columnsToAdd, this.columnsToRemove, this.columnsToChangeType).allMatch(Set::isEmpty);
+    }
+
+  }
+
+  AlterTableReport buildAlterTableReport(final StreamConfig stream, final DialectTableDefinition existingTable);
+
+  class TableNotMigratedException extends Exception {}
 
 }

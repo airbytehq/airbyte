@@ -8,10 +8,13 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatistics;
+import com.google.cloud.bigquery.JobException;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +57,26 @@ public class BigQueryDestinationHandler {
         statistics.getEndTime() - statistics.getStartTime(),
         statistics.getTotalBytesProcessed(),
         statistics.getTotalBytesBilled());
+  }
+
+  public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final CatalogParser.StreamConfig stream, final TableDefinition existingTable) {
+    try {
+      if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
+        attemptSoftReset(sqlGenerator, stream, existingTable);
+      }
+    } catch (SqlGenerator.TableNotMigratedException nm) {
+      throw new RuntimeException("Cannot complete destinations v2 sync, final table not migrated");
+    }
+  }
+
+  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final CatalogParser.StreamConfig stream, final TableDefinition existingTable) {
+    sqlGenerator.softReset(stream, existingTable).forEach(sql -> {
+      try {
+        execute(sql);
+      } catch (InterruptedException | JobException ex) {
+        throw new RuntimeException(ex);
+      }
+    });
   }
 
 }
