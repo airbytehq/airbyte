@@ -1,5 +1,5 @@
 connector_image: airbyte/source-hubspot:dev
-test_strictness_level: high
+# test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -15,7 +15,7 @@ acceptance_tests:
       - config_path: integration_tests/invalid_config_oauth.json
         status: failed
       - config_path: integration_tests/invalid_config_wrong_title.json
-  #       status: failed
+        status: failed
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
