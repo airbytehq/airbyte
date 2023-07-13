@@ -32,7 +32,7 @@ class TestScenario:
             expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
-            expected_logs: Mapping[str, Mapping[str, Any]],
+            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
             expected_records: List[Mapping[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
@@ -111,7 +111,7 @@ class TestScenarioBuilder:
         self._expected_spec: Optional[Mapping[str, Any]] = None
         self._expected_check_status: Optional[str] = None
         self._expected_catalog: Mapping[str, Any] = {}
-        self._expected_logs: Mapping[str, Any] = {}
+        self._expected_logs: Optional[Mapping[str, Any]] = None
         self._expected_records: List[Mapping[str, Any]] = []
         self._availability_strategy: Optional[AvailabilityStrategy] = None
         self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
