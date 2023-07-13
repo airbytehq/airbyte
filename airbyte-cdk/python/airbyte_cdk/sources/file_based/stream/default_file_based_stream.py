@@ -143,7 +143,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
-            return {"type": "object", "properties": {**extra_fields, **schema}}
+            return {"type": "object", "properties": {**extra_fields, **schema["properties"]}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
