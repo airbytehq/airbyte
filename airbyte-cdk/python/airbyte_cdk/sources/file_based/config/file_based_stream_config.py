@@ -4,8 +4,9 @@
 
 import codecs
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
+from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, validator
 
 PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
@@ -65,7 +66,7 @@ class FileBasedStreamConfig(BaseModel):
     file_type: str
     globs: Optional[List[str]]
     validation_policy: str
-    input_schema: Optional[Dict[str, Any]]
+    input_schema: Optional[Union[str, Mapping[str, Any]]]
     primary_key: PrimaryKeyType
     days_to_sync_if_history_is_full: int = 3
     format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
@@ -86,3 +87,8 @@ class FileBasedStreamConfig(BaseModel):
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
                 return {file_type: {key: val for key, val in v.items()}}
         return v
+
+    @validator("input_schema", pre=True)
+    def transform_input_schema(cls, v):
+        if v:
+            return type_mapping_to_jsonschema(v)

@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from typing import Any, Dict, Iterable, Mapping
 
 import pyarrow as pa
@@ -16,7 +17,11 @@ from pyarrow import Scalar
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Dict[str, Any]:
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
@@ -26,7 +31,11 @@ class ParquetParser(FileTypeParser):
         return schema
 
     def parse_records(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         table = pq.read_table(stream_reader.open_file(file))
         for batch in table.to_batches():
