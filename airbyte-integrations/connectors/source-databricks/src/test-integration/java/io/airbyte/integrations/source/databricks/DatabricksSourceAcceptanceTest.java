@@ -5,31 +5,50 @@
 package io.airbyte.integrations.source.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.sql.DataSource;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
 
+//  protected static final List<Field> FIELDS = List.of(
+//      Field.of("ID", JsonSchemaType.INTEGER),
+//      Field.of("NAME", JsonSchemaType.STRING));
   private JsonNode config;
+  protected JdbcDatabase database;
+  protected DataSource dataSource;
 
-  @Override
-  protected void setupEnvironment(final TestDestinationEnv testEnv) {
-    // TODO create new container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g");"
-    // TODO make container started. Ex: "container.start();"
-    // TODO init JsonNode config
-    // TODO crete airbyte Database object "Databases.createJdbcDatabase(...)"
-    // TODO insert test data to DB. Ex: "database.execute(connection-> ...)"
-    // TODO close Database. Ex: "database.close();"
-  }
+  protected static final String SCHEMA_NAME = "source_integration_test_"
+      + RandomStringUtils.randomAlphanumeric(4).toLowerCase();
+  private static final String STREAM_NAME1 = "id_and_name1";
+  private static final String STREAM_NAME2 = "id_and_name2";
 
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    // TODO close container that was initialized in setup() method. Ex: "container.close();"
+  JsonNode getStaticConfig() {
+    return Jsons
+        .deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
@@ -49,8 +68,26 @@ public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    // TODO Return the ConfiguredAirbyteCatalog with ConfiguredAirbyteStream objects
-    return null;
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME1, SCHEMA_NAME,
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME2, SCHEMA_NAME,
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -58,4 +95,64 @@ public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  // for each test we create a new schema in the database. run the test in there and then remove it.
+  @Override
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    config = buildUsernamePasswordConfig(getStaticConfig());
+    dataSource = createDataSource();
+    database = new DefaultJdbcDatabase(dataSource, new DatabricksSourceOperations());
+    final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
+    final String createTableQuery1 = String
+        .format("CREATE OR REPLACE TABLE %s.%s (id INTEGER, name VARCHAR(200))", SCHEMA_NAME,
+            STREAM_NAME1);
+    final String createTableQuery2 = String
+        .format("CREATE OR REPLACE TABLE %s.%s (id INTEGER, name VARCHAR(200))", SCHEMA_NAME,
+            STREAM_NAME2);
+    final String insertIntoTableQuery1 = String
+        .format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+            SCHEMA_NAME, STREAM_NAME1);
+    final String insertIntoTableQuery2 = String
+        .format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+            SCHEMA_NAME, STREAM_NAME2);
+
+    database.execute(createSchemaQuery);
+    database.execute(createTableQuery1);
+    database.execute(createTableQuery2);
+    database.execute(insertIntoTableQuery1);
+    database.execute(insertIntoTableQuery2);
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    try {
+      final String dropStream1Query = String
+          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, STREAM_NAME1);
+      database.execute(dropStream1Query);
+      final String dropStream2Query = String
+          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, STREAM_NAME2);
+      database.execute(dropStream2Query);
+      final String dropSchemaQuery = String
+          .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+      database.execute(dropSchemaQuery);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
+  }
+
+  private JsonNode buildUsernamePasswordConfig(final JsonNode config) {
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, config.get(JdbcUtils.JDBC_URL_KEY).asText());
+    return Jsons.jsonNode(configBuilder.build());
+  }
+
+  protected DataSource createDataSource() {
+    config = Jsons.clone(getStaticConfig());
+    return DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        null,
+        DatabricksSource.DRIVER_CLASS,
+        config.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        new HashMap<String, String>());
+  }
 }

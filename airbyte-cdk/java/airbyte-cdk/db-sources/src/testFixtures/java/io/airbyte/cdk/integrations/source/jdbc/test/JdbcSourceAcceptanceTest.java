@@ -534,6 +534,11 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testTablesWithQuoting() throws Exception {
+    String driverClass = getDriverClass().toLowerCase();
+    // Databricks does not allow table or column names to contain `space` in it.
+    if (driverClass.contains("databricks")) {
+      return;
+    }
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
@@ -609,6 +614,11 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testIncrementalStringCheckCursorSpaceInColumnName() throws Exception {
+    String driverClass = getDriverClass().toLowerCase();
+    // Databricks does not allow table or column names to contain `space` in it.
+    if (driverClass.contains("databricks")) {
+      return;
+    }
     final ConfiguredAirbyteStream streamWithSpaces = createTableWithSpaces();
 
     final List<AirbyteMessage> expectedRecordMessages = getAirbyteMessagesCheckCursorSpaceInColumnName(streamWithSpaces);
@@ -886,7 +896,8 @@ public abstract class JdbcSourceAcceptanceTest {
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     // teradata doesn't make insertion order guarantee when equal ordering value
-    if (driverName.contains("teradata")) {
+    // Databricks does not maintain the order of concurrent insertions into a table by default.
+    if (driverName.contains("teradata") || driverName.contains("databricks")) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
       assertEquals(List.of("a", "b"), firstSyncNames);
@@ -942,7 +953,8 @@ public abstract class JdbcSourceAcceptanceTest {
         .toList();
 
     // teradata doesn't make insertion order guarantee when equal ordering value
-    if (driverName.contains("teradata")) {
+    // Databricks does not maintain the order of concurrent insertions into a table by default.
+    if (driverName.contains("teradata") || driverName.contains("databricks")) {
       assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
     } else {
       assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);

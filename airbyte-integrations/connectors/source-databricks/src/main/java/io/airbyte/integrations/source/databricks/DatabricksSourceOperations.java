@@ -33,7 +33,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
-        LOGGER.info("---- putDouble : objectNode {} columnName {} resultSet {} index {}", node, columnName, resultSet, index);
 
         try {
             final double value = resultSet.getDouble(index);
@@ -45,7 +44,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     public JDBCType getDatabaseFieldType(final JsonNode field) {
-        LOGGER.info("---- getDatabaseFieldType : jsonNode {}", field);
 
         try {
             final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
@@ -64,7 +62,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
-        LOGGER.info("---- putBigInt : objectNode {} columnName {} resultSet {} index {}", node, columnName, resultSet, index);
 
         try {
             final var value = resultSet.getBigDecimal(index);
@@ -76,29 +73,25 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-        LOGGER.info("------- setTimestamp preparedStatement {} parameterIndex {} value {}", preparedStatement, parameterIndex, value);
 
         preparedStatement.setString(parameterIndex, value);
     }
 
     protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
             throws SQLException {
-        LOGGER.info("------- setTimestampWithTimezone preparedStatement {} parameterIndex {} value {}", preparedStatement, parameterIndex, value);
 
         preparedStatement.setString(parameterIndex, value);
     }
 
     protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-        LOGGER.info("------- setTimeWithTimezone preparedStatement {} parameterIndex {} value {}", preparedStatement, parameterIndex, value);
 
         preparedStatement.setString(parameterIndex, value);
     }
 
     @Override
     public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
-        LOGGER.info("----getAirbyteType : {}", jdbcType);
         return switch (jdbcType) {
-            case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
+            case BOOLEAN -> JsonSchemaType.BOOLEAN;
             case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
             case TINYINT, SMALLINT, INTEGER,  BIGINT -> JsonSchemaType.INTEGER;
             case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
@@ -117,7 +110,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-        LOGGER.info("----- copyToJsonField :resultset {}, colIndex {}, json {}", resultSet, colIndex, json);
         final String columnName = resultSet.getMetaData().getColumnName(colIndex);
         final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
@@ -131,7 +123,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
 
     @Override
     protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-        LOGGER.info("------- setDate preparedStatement {} parameterIndex {} value {}", preparedStatement, parameterIndex, value);
         final LocalDate date = LocalDate.parse(value);
         preparedStatement.setDate(parameterIndex, Date.valueOf(date));
     }
@@ -139,14 +130,12 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
     @Override
     protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
             throws SQLException {
-        LOGGER.info("------- putTimestampWithTimezone node {} columnName {} resultSet {} index {}", node, columnName, resultSet, index);
         final Timestamp timestamp = resultSet.getTimestamp(index);
         node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
     }
 
     @Override
     protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-        LOGGER.info("------- putTimestamp node {} columnName {} resultSet {} index {}", node, columnName, resultSet, index);
 
         final Timestamp timestamp = resultSet.getTimestamp(index);
         node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
@@ -158,7 +147,6 @@ public class DatabricksSourceOperations extends JdbcSourceOperations {
                            final ResultSet resultSet,
                            final int index)
             throws SQLException {
-        LOGGER.info("------- putTime node {} columnName {} resultSet {} index {}", node, columnName, resultSet, index);
         putJavaSQLTime(node, columnName, resultSet, index);
     }
 
