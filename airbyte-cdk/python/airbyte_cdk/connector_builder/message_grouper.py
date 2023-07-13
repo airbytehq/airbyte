@@ -263,9 +263,15 @@ class MessageGrouper:
         if len(slices) >= self._max_slices:
             return True
 
+        record_count = 0
+
         for slice in slices:
             if len(slice.pages) >= self._max_pages_per_slice:
                 return True
+            for page in slice.pages:
+                record_count += len(page.records)
+                if record_count >= self._max_record_limit:
+                    return True
         return False
 
     def _parse_slice_description(self, log_message):
