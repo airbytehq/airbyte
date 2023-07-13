@@ -63,9 +63,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema = config.input_schema
-        if isinstance(schema, str):
-            raise ValueError(f"Expected schema to be a dict, but got a string: {schema}")
+        schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
