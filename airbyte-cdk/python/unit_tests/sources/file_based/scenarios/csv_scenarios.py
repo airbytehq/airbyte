@@ -796,7 +796,7 @@ schemaless_csv_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -816,7 +816,7 @@ schemaless_csv_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -880,7 +880,7 @@ schemaless_csv_multi_stream_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -900,7 +900,7 @@ schemaless_csv_multi_stream_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -979,7 +979,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -999,7 +999,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1056,7 +1056,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
             ]
         }
     )
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {
                 "contents": [
@@ -1076,7 +1076,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [

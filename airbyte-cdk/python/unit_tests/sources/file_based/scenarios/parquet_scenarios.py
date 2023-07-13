@@ -152,8 +152,8 @@ single_parquet_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
-    .set_file_type("parquet")
+    .source_builder.set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+    .source_builder.set_file_type("parquet")
     .set_expected_records(
         [
             {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
@@ -208,8 +208,8 @@ multi_parquet_scenario = (
             ]
         }
     )
-    .set_file_type("parquet")
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
+    .source_builder.set_file_type("parquet")
+    .source_builder.set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
     .set_expected_catalog(
         {
             "streams": [
@@ -271,8 +271,8 @@ parquet_various_types_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
-    .set_file_type("parquet")
+    .source_builder.set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
+    .source_builder.set_file_type("parquet")
     .set_expected_catalog(
         {
             "streams": [
