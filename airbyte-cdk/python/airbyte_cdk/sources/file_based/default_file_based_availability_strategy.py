@@ -76,7 +76,7 @@ class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
         schema = stream.catalog_schema or stream.config.input_schema
         if schema and stream.validation_policy.validate_schema_before_sync:
-            if not conforms_to_schema(record, schema): # type: ignore
+            if not conforms_to_schema(record, schema):  # type: ignore
                 raise CheckAvailabilityError(
                     FileBasedSourceError.ERROR_VALIDATING_RECORD,
                     stream=stream.name,
