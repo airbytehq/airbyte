@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import default_parsers
+from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
@@ -29,9 +29,10 @@ class TestScenario:
             config: Mapping[str, Any],
             files: Dict[str, Any],
             file_type: str,
+            expected_spec: Optional[Dict[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Dict[str, Any]],
-            expected_logs: Optional[Dict[str, Any]],
+            expected_logs: Optional[Dict[str, Dict[str, Any]]],
             expected_records: Optional[Dict[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
@@ -42,10 +43,12 @@ class TestScenario:
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
-            file_write_options: Dict[str, Any]
+            file_write_options: Dict[str, Any],
+            max_history_size: int,
     ):
         self.name = name
         self.config = config
+        self.expected_spec = expected_spec
         self.expected_check_status = expected_check_status
         self.expected_catalog = expected_catalog
         self.expected_logs = expected_logs
@@ -53,6 +56,7 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
+        self.expected_logs = expected_logs
         self.source = InMemoryFilesSource(
             files,
             file_type,
@@ -63,6 +67,7 @@ class TestScenario:
             stream_reader,
             self.configured_catalog(SyncMode.incremental if incremental_scenario_config else SyncMode.full_refresh),
             file_write_options,
+            max_history_size,
         )
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
@@ -103,9 +108,10 @@ class TestScenarioBuilder:
         self._config = {}
         self._files = {}
         self._file_type = None
+        self._expected_spec = None
         self._expected_check_status = None
         self._expected_catalog = {}
-        self._expected_logs = {}
+        self._expected_logs = None
         self._expected_records = {}
         self._availability_strategy = None
         self._discovery_policy = DefaultDiscoveryPolicy()
@@ -117,6 +123,7 @@ class TestScenarioBuilder:
         self._expected_read_error = None, None
         self._incremental_scenario_config = None
         self._file_write_options = {}
+        self._max_history_size = DEFAULT_MAX_HISTORY_SIZE
 
     def set_name(self, name: str):
         self._name = name
@@ -134,6 +141,10 @@ class TestScenarioBuilder:
         self._file_type = file_type
         return self
 
+    def set_expected_spec(self, expected_spec: Dict[str, Any]):
+        self._expected_spec = expected_spec
+        return self
+
     def set_expected_check_status(self, expected_check_status: str):
         self._expected_check_status = expected_check_status
         return self
@@ -142,7 +153,7 @@ class TestScenarioBuilder:
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Dict[str, Any]):
+    def set_expected_logs(self, expected_logs: Dict[str, List[Dict[str, Any]]]):
         self._expected_logs = expected_logs
         return self
 
@@ -168,6 +179,10 @@ class TestScenarioBuilder:
 
     def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader):
         self._stream_reader = stream_reader
+        return self
+
+    def set_max_history_size(self, max_history_size: int):
+        self._max_history_size = max_history_size
         return self
 
     def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig):
@@ -199,6 +214,7 @@ class TestScenarioBuilder:
             self._config,
             self._files,
             self._file_type,
+            self._expected_spec,
             self._expected_check_status,
             self._expected_catalog,
             self._expected_logs,
@@ -213,4 +229,5 @@ class TestScenarioBuilder:
             self._expected_read_error,
             self._incremental_scenario_config,
             self._file_write_options,
+            self._max_history_size,
         )
