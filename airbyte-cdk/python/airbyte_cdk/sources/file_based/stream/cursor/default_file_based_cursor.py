@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Iterable, Mapping, Optional, MutableMapping
+from typing import Iterable, Optional, MutableMapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
