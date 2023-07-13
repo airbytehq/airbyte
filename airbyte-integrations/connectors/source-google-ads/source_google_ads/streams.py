@@ -203,7 +203,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         date_in_latest_record = pendulum.parse(record[self.cursor_field])
                         cursor_value = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
                         self.state = {customer_id: {self.cursor_field: cursor_value}}
-                        self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
+                        # When large amount of data this log produces so much records so the enire log is not usable
+                        # See: https://github.com/airbytehq/oncall/issues/2460
+                        # self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
                         yield record
                         continue
                     self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
