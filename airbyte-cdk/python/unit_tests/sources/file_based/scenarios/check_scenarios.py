@@ -112,7 +112,7 @@ success_user_provided_schema_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record",
-                    "input_schema": {"col1": "string", "col2": "string"},
+                    "input_schema": '{"col1": "string", "col2": "string"}',
                 }
             ],
         }
@@ -169,7 +169,7 @@ error_record_validation_user_provided_schema_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "always_fail",
-                    "input_schema": {"col1": "number", "col2": "string"},
+                    "input_schema": '{"col1": "number", "col2": "string"}',
                 }
             ],
         }
