@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -79,9 +79,12 @@ single_csv_scenario = (
                                     "title": "Validation Policy",
                                     "type": "string"
                                 },
-                                "input_schema": {
-                                    "title": "Input Schema",
-                                    "type": "object"
+                                'input_schema': {
+                                    'title': 'Input Schema',
+                                    'anyOf': [
+                                        {'type': 'object'},
+                                        {'type': 'string'},
+                                    ],
                                 },
                                 "primary_key": {
                                     "title": "Primary Key",
@@ -298,7 +301,7 @@ multi_csv_scenario = (
 
 multi_csv_stream_n_file_exceeds_limit_for_inference = (
     TestScenarioBuilder()
-    .set_name("multi_csv_stream_n_file_exceeds_limit")
+    .set_name("multi_csv_stream_n_file_exceeds_limit_for_inference")
     .set_config(
         {
             "streams": [
@@ -372,6 +375,8 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                       "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
         ]
     )
+    .set_expected_logs({
+        "discover": [{"level": "WARN", "message": "Refusing to infer schema for all 2 files; using 1 files."}]})
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 
@@ -433,14 +438,14 @@ invalid_csv_scenario = (
     )
     .set_expected_records([])
     .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
                 "level": "ERROR",
                 "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
             },
         ]
-    )
+    })
 ).build()
 
 csv_single_stream_scenario = (
@@ -1003,7 +1008,7 @@ empty_schema_inference_scenario = (
         }
     )
     .set_parsers({'csv': EmptySchemaParser()})
-    .set_expected_discover_error(InvalidSchemaError, FileBasedSourceError.INVALID_SCHEMA_ERROR.value)
+    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_records(
         [
             {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
