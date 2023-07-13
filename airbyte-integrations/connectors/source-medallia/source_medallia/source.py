@@ -18,7 +18,7 @@ from sgqlc.operation import Operation
 
 from .utils import initialize_authenticator
 from abc import ABC
-from .authenticator import Medalliaauth2Authenticator
+from .authenticator import MedalliaOauth2Authenticator
 from . import medallia_schema
 import sgqlc.operation
 from .utils import read_full_refresh
@@ -33,6 +33,8 @@ class MedalliaStream(HttpStream, ABC):
     limit = 100
     primary_key = "id"
     http_method = "POST"
+    metadata_columns = []
+    question_columns = []
 
     def __init__(self, url_base: str, fields: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)

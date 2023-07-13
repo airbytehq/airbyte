@@ -10,13 +10,13 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
 from requests.auth import AuthBase
 
-from .authenticator import Medalliaauth2Authenticator
+from .authenticator import MedalliaOauth2Authenticator
 
 logger = logging.getLogger("airbyte")
 
 
 def initialize_authenticator(config: Dict) -> AuthBase:
-    return Medalliaauth2Authenticator(
+    return MedalliaOauth2Authenticator(
         token_endpoint=config.get("token-endpoint"),
         client_secret=config.get("client-secret"),
         client_id=config.get("client-id")

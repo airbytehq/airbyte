@@ -10,7 +10,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 logger = logging.getLogger("airbyte")
 
 
-class Medalliaauth2Authenticator(Oauth2Authenticator):
+class MedalliaOauth2Authenticator(Oauth2Authenticator):
     def __init__(self, token_endpoint: str, client_id: str, client_secret: str):
         super().__init__(token_endpoint, client_id, client_secret, "")
 
