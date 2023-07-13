@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List, Set
+
 import pytest
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from unit_tests.sources.file_based.helpers import make_remote_files
@@ -76,6 +78,6 @@ FILES = make_remote_files(FILEPATHS)
         pytest.param(["a/*.csv", "a/b/*.csv"], {"a/b.csv", "a/c.csv", "a/b/c.csv"}, {"a", "a/b"}, id="a/*.csv,a/b/*.csv"),
     ],
 )
-def test_globs_and_prefixes_from_globs(globs, expected_matches, expected_path_prefixes):
+def test_globs_and_prefixes_from_globs(globs: List[str], expected_matches: Set[str], expected_path_prefixes: Set[str]) -> None:
     assert set([f.uri for f in reader.filter_files_by_globs(FILES, globs)]) == expected_matches
     assert set(reader.get_prefixes_from_globs(globs)) == expected_path_prefixes
