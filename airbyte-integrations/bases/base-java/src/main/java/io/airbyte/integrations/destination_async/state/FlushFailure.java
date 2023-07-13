@@ -13,7 +13,7 @@ public class FlushFailure {
 
   private final AtomicReference<Exception> exceptionAtomicReference = new AtomicReference<>();
 
-  public void propagateException(Exception e) {
+  public void propagateException(final Exception e) {
     this.isFailed.set(true);
     this.exceptionAtomicReference.set(e);
   }

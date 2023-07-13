@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.destination_async;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
@@ -30,7 +34,7 @@ public class FlushWorkersTest {
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
     when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
-    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, mock(GlobalMemoryManager.class), mock(GlobalAsyncStateManager.class)));
     when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
     when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
       if (hasThrownError.get()) {
@@ -51,52 +55,57 @@ public class FlushWorkersTest {
 
   @Test
   void testErrorHandlingFlushSchedulerWhileReading() throws Exception {
-    final AtomicBoolean hasThrownError = new AtomicBoolean(false);
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
-    when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
-    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.getBufferedStreams()).thenThrow(RuntimeException.class);
+    when(dequeue.take(any(), anyLong())).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, mock(GlobalMemoryManager.class), mock(GlobalAsyncStateManager.class)));
     when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
-    when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
-      if (hasThrownError.get()) {
-        return Optional.of(0L);
-      } else {
-        return Optional.of(1L);
-      }
-    });
+    when(dequeue.getQueueSizeInRecords(desc)).thenReturn(Optional.of(1L));
 
     final var flushFailure = new FlushFailure();
-    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
+    final var workers = new FlushWorkers(dequeue, mock(DestinationFlushFunction.class), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
     workers.start();
-    workers.close();
+    Thread.sleep(1000);
 
     Assertions.assertTrue(flushFailure.isFailed());
-    Assertions.assertEquals(IOException.class, flushFailure.getException().getClass());
+    Assertions.assertEquals(RuntimeException.class, flushFailure.getException().getClass());
   }
 
   @Test
-  void testErrorHandlingOnClose() throws Exception {
-    final AtomicBoolean hasThrownError = new AtomicBoolean(false);
+  void testErrorHandlingFlushSchedulerOnClose() throws Exception {
+    final AtomicBoolean hasClosed = new AtomicBoolean(false);
+
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
     when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
-    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+
+    when(dequeue.take(any(), anyLong())).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, mock(GlobalMemoryManager.class), mock(GlobalAsyncStateManager.class)));
     when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
-    when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
-      if (hasThrownError.get()) {
-        return Optional.of(0L);
-      } else {
-        return Optional.of(1L);
-      }
+    when(dequeue.getQueueSizeInRecords(desc)).thenReturn(Optional.of(1L));
+
+    when(dequeue.getTimeOfLastRecord(desc)).thenAnswer(
+            ignored -> {
+              if (hasClosed.get()) {
+                throw new RuntimeException();
+              } else {
+                return Optional.empty();
+              }
+            });
+
+    // Rely on the fact that flushfailure is only called in the close loop
+    // to know when to signal the scheduler to throw an error.
+    final var flushFailure = spy(new FlushFailure());
+    when(flushFailure.isFailed()).thenAnswer(original -> {
+      hasClosed.set(true);
+      return original.callRealMethod();
     });
 
-    final var flushFailure = new FlushFailure();
-    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
+    final var workers = new FlushWorkers(dequeue, mock(DestinationFlushFunction.class), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
     workers.start();
     workers.close();
 
     Assertions.assertTrue(flushFailure.isFailed());
-    Assertions.assertEquals(IOException.class, flushFailure.getException().getClass());
+    Assertions.assertEquals(RuntimeException.class, flushFailure.getException().getClass());
   }
 
   private static class ErrorOnFlush implements DestinationFlushFunction {
