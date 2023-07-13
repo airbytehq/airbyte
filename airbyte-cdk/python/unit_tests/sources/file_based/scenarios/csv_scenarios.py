@@ -46,9 +46,7 @@ single_csv_scenario = (
                 "properties": {
                     "streams": {
                         "title": "The list of streams to sync",
-                        "description": "Streams defines the behavior for grouping files together that will be synced to the downstream "
-                                       "destination. Each stream has it own independent configuration to handle which files to sync, "
-                                       "how files should be parsed, and the validation of records against the schema.",
+                        "description": "Each instance of this configuration defines a <a href=\"https://docs.airbyte.com/cloud/core-concepts#stream\">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.",
                         "order": 10,
                         "type": "array",
                         "items": {
@@ -57,14 +55,17 @@ single_csv_scenario = (
                             "properties": {
                                 "name": {
                                     "title": "Name",
+                                    "description": "The name of the stream.",
                                     "type": "string"
                                 },
                                 "file_type": {
                                     "title": "File Type",
+                                    "description": "The data file type that is being extracted for a stream.",
                                     "type": "string"
                                 },
                                 "globs": {
                                     "title": "Globs",
+                                    "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
                                     "type": "array",
                                     "items": {
                                         "type": "string"
@@ -72,23 +73,27 @@ single_csv_scenario = (
                                 },
                                 "schemaless": {
                                     "title": "Schemaless",
+                                    "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
                                     "default": False,
                                     "type": "boolean"
                                 },
                                 "validation_policy": {
                                     "title": "Validation Policy",
+                                    "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
                                     "type": "string"
                                 },
-                                'input_schema': {
-                                    'title': 'Input Schema',
-                                    'anyOf': [
-                                        {'type': 'object'},
-                                        {'type': 'string'},
+                                "input_schema": {
+                                    "title": "Input Schema",
+                                    "description": "The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
+                                    "oneOf": [
+                                        {"type": "object"},
+                                        {"type": "string"},
                                     ],
                                 },
                                 "primary_key": {
                                     "title": "Primary Key",
-                                    "anyOf": [
+                                    "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
+                                    "oneOf": [
                                         {
                                             "type": "string"
                                         },
@@ -97,27 +102,20 @@ single_csv_scenario = (
                                             "items": {
                                                 "type": "string"
                                             }
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
                                         }
                                     ]
                                 },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",
+                                    "description": "When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
                                     "default": 3,
                                     "type": "integer"
                                 },
                                 "format": {
-                                    "anyOf": [
+                                    "oneOf": [
                                         {
                                             "title": "Format",
+                                            "description": "The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
                                             "type": "object",
                                             "additionalProperties": {
                                                 "title": "CsvFormat",
@@ -125,37 +123,52 @@ single_csv_scenario = (
                                                 "properties": {
                                                     "delimiter": {
                                                         "title": "Delimiter",
+                                                        "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
                                                         "default": ",",
                                                         "type": "string"
                                                     },
                                                     "quote_char": {
-                                                        "title": "Quote Char",
+                                                        "title": "Quote Character",
+                                                        "description": "The character used for quoting CSV values. To disallow quoting, make this field blank.",
                                                         "default": "\"",
                                                         "type": "string"
                                                     },
                                                     "escape_char": {
-                                                        "title": "Escape Char",
+                                                        "title": "Escape Character",
+                                                        "description": "The character used for escaping special characters. To disallow escaping, leave this field blank.",
                                                         "type": "string"
                                                     },
                                                     "encoding": {
                                                         "title": "Encoding",
+                                                        "description": "The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a> for allowable options.",
                                                         "default": "utf8",
                                                         "type": "string"
                                                     },
                                                     "double_quote": {
                                                         "title": "Double Quote",
+                                                        "description": "Whether two quotes in a quoted CSV value denote a single quote in the data.",
+                                                        "default": True,
                                                         "type": "boolean"
                                                     },
                                                     "quoting_behavior": {
+                                                        "title": "Quoting Behavior",
+                                                        "description": "The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
                                                         "default": "Quote Special Characters",
                                                         "enum": ["Quote All", "Quote Special Characters", "Quote Non-numeric", "Quote None"]
                                                     }
                                                 },
-                                                "required": ["double_quote"]
                                             }
                                         },
                                         {
-                                            "type": "object"
+                                            "title": "Legacy Format",
+                                            "required": ["filetype"],
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {
+                                                    "title": "Filetype",
+                                                    "type": "string"
+                                                }
+                                            },
                                         }
                                     ]
                                 }
