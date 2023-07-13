@@ -301,7 +301,7 @@ class Media(InstagramStream):
     so they are excluded when trying to get child objects to avoid the error
     """
 
-    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
+    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
 
     def read_records(
         self,
@@ -366,7 +366,7 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
-        if item.get("media_product_type") == "REELS":
+        if item.get("media_product_type"):
             metrics = self.REELS_METRICS
         elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
