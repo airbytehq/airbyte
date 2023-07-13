@@ -3,6 +3,8 @@ data:
     hosts:
       - api.aptrinsic.com/v1
   registries:
+    cloud:
+      enabled: false
     oss:
       enabled: true
   connectorSubtype: api
