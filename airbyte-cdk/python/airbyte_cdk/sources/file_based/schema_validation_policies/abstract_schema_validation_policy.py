@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 
 class AbstractSchemaValidationPolicy(ABC):
@@ -11,8 +11,8 @@ class AbstractSchemaValidationPolicy(ABC):
     validate_schema_before_sync = False  # Whether to verify that records conform to the schema during the stream's availabilty check
 
     @abstractmethod
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
+    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
         """
         Return True if the record passes the user's validation policy.
         """
-        ...
+        raise NotImplementedError()

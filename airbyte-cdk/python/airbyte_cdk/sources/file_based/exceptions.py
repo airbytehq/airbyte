@@ -37,7 +37,7 @@ class FileBasedSourceError(Enum):
 
 
 class BaseFileBasedSourceError(Exception):
-    def __init__(self, error: FileBasedSourceError, **kwargs):
+    def __init__(self, error: FileBasedSourceError, **kwargs):  # type: ignore # noqa
         super().__init__(
             f"{FileBasedSourceError(error).value} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
         )
