@@ -275,6 +275,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .map(PostgresCatalogHelper::overrideSyncModes)
           .map(PostgresCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
+          .map(PostgresCatalogHelper::setDefaultCursorFieldForCdc)
           .map(PostgresCatalogHelper::addCdcMetadataColumns)
           // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync
           // this in FULL_REFRESH mode

@@ -4,8 +4,9 @@
 
 import codecs
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
+from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
@@ -92,7 +93,7 @@ class FileBasedStreamConfig(BaseModel):
         title="Validation Policy",
         description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
     )
-    input_schema: Optional[Dict[str, Any]] = Field(
+    input_schema: Optional[Union[str, Mapping[str, Any]]] = Field(
         title="Input Schema",
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
@@ -129,3 +130,8 @@ class FileBasedStreamConfig(BaseModel):
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
                 return {file_type: {key: val for key, val in v.items()}}
         return v
+
+    @validator("input_schema", pre=True)
+    def transform_input_schema(cls, v):
+        if v:
+            return type_mapping_to_jsonschema(v)

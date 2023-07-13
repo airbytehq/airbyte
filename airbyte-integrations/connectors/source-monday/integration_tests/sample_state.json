@@ -1,5 +1,41 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_descriptor" : {
+        "name" : "items"
+      },
+      "stream_state" : {
+          "updated_at_int" : 1677263687,
+          "activity_logs" : {
+            "created_at_int" : 1677263687
+          }
+      }
+    }
+  },
+    {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_descriptor" : {
+        "name" : "boards"
+      },
+      "stream_state" : {
+          "updated_at_int" : 1677263687,
+          "activity_logs" : {
+            "created_at_int" : 1677263687
+          }
+      }
+    }
+  },
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_descriptor" : {
+        "name" : "activity_logs"
+      },
+      "stream_state" : {
+        "created_at_int" : 1677263687
+      }
+    }
   }
-}
+]
