@@ -109,7 +109,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
     assert retriever.cache_filename == "stream_name.yml"
-    assert retriever.use_cache == False
+    assert not retriever.use_cache
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
