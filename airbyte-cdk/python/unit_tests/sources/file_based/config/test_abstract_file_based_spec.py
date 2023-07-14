@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Type
 
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, ParquetFormat
-from jsonschema import validate
 import pytest
-from jsonschema import ValidationError
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, ParquetFormat
+from jsonschema import ValidationError, validate
 from pydantic import BaseModel
 
 
