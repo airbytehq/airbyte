@@ -173,7 +173,7 @@ def config_fixture():
         (InvoiceLineItems, {"stream_slice": {"invoice_id": "I1"}}, "invoices/I1/lines"),
         (InvoiceItems, {}, "invoiceitems"),
         (Payouts, {}, "payouts"),
-        (Persons, {}, "persons"),
+        (Persons, {"stream_slice": {"id": "C1"}}, "accounts/C1/persons"),
         (Plans, {}, "plans"),
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),

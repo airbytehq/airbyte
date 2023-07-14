@@ -811,9 +811,10 @@ class Persons(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/persons/list
     """
+
     name = "persons"
     cursor_field = "created"
-    
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['id']}/persons"
 
@@ -910,7 +911,6 @@ class SetupAttempts(IncrementalStripeStream, HttpSubStream):
     def path(self, **kwargs) -> str:
         return "setup_attempts"
 
-
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -987,4 +987,3 @@ class Transactions(IncrementalStripeStream):
 
     def path(self, **kwargs) -> str:
         return "issuing/transactions"
-
