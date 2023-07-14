@@ -4,44 +4,31 @@
 
 import csv
 import io
-import logging
 import tempfile
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-
-
-class MockSource(AbstractSource):
-
-    def __init__(self):
-        pass
-
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        pass
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        pass
+from pydantic import AnyUrl, Field
 
 
 class InMemoryFilesSource(FileBasedSource):
     def __init__(
             self,
-            files: Mapping[str, Any],
+            files: Mapping[str, Any] ,
             file_type: str,
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
@@ -50,6 +37,7 @@ class InMemoryFilesSource(FileBasedSource):
             stream_reader: Optional[AbstractFileBasedStreamReader],
             catalog: Optional[Mapping[str, Any]],
             file_write_options: Mapping[str, Any],
+            max_history_size: int,
     ):
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
         availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
@@ -57,9 +45,11 @@ class InMemoryFilesSource(FileBasedSource):
             stream_reader,
             catalog=ConfiguredAirbyteCatalog(streams=catalog["streams"]) if catalog else None,
             availability_strategy=availability_strategy,
+            spec_class=InMemorySpec,
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
+            max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE
         )
 
         # Attributes required for test purposes
@@ -103,15 +93,30 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         return fh.getvalue()
 
 
+class InMemorySpec(AbstractFileBasedSpec):
+    @classmethod
+    def documentation_url(cls) -> AnyUrl:
+        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
+
+    start_date: Optional[str] = Field(
+        title="Start Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+        examples=["2021-01-01T00:00:00Z"],
+        format="date-time",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        order=1,
+    )
+
+
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     """
     A file reader that writes RemoteFiles to a temporary file and then reads them back.
     """
 
     def open_file(self, file: RemoteFile) -> IOBase:
-        return io.BytesIO(self._make_file_contents(file.uri))
+        return io.BytesIO(self._create_file(file.uri))
 
-    def _make_file_contents(self, file_name: str) -> bytes:
+    def _create_file(self, file_name: str) -> bytes:
         contents = self.files[file_name]["contents"]
         schema = self.files[file_name].get("schema")
 

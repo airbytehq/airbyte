@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
 from io import IOBase
 from typing import Any, Dict, List, Mapping, Optional
@@ -16,7 +17,7 @@ from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSt
 
 
 class EmptySchemaParser(CsvParser):
-    async def infer_schema(self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Dict[str, Any]:
+    async def infer_schema(self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger) -> Dict[str, Any]:
         return {}
 
 
@@ -42,8 +43,9 @@ class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
 
 class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):
     ALWAYS_FAIL = "always_fail"
+    validate_schema_before_sync = True
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
+    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
         return False
 
 

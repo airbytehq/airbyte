@@ -223,18 +223,18 @@ skip_record_scenario_single_stream = (
             {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
-                "level": "INFO",
+                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a.csv n_skipped=2 validation_policy=skip_record",
             },
             {
-                "level": "INFO",
+                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=c.csv n_skipped=1 validation_policy=skip_record",
             },
         ]
-    )
+    })
 ).build()
 
 
@@ -278,22 +278,22 @@ skip_record_scenario_multi_stream = (
             {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
-                "level": "INFO",
+                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a/a1.csv n_skipped=2 validation_policy=skip_record",
             },
             {
-                "level": "INFO",
+                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a/a3.csv n_skipped=1 validation_policy=skip_record",
             },
             {
-                "level": "INFO",
+                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream2 file=b/b2.csv n_skipped=2 validation_policy=skip_record",
             },
         ]
-    )
+    })
 ).build()
 
 
@@ -320,18 +320,18 @@ emit_record_scenario_single_stream = (
             {"data": {"col1": "val_b_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this file are emitted after we hit a parse error
-            {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
+            # {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
         ]
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
                 "level": "ERROR",
                 "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
             },
         ]
-    )
+    })
 ).build()
 
 
@@ -365,8 +365,8 @@ emit_record_scenario_multi_stream = (
             {"data": {"col1": "val_aa2_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
             # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # No more records from this file are emitted after we hit a parse error
-            {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
+            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
+            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb1_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
@@ -375,14 +375,14 @@ emit_record_scenario_multi_stream = (
             {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
                 "level": "ERROR",
                 "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
             },
         ]
-    )
+    })
 ).build()
 
 
@@ -404,14 +404,16 @@ wait_for_rediscovery_scenario_single_stream = (
     .set_expected_records(
         []  # No records are expected because the very first file did not conform to the schema
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
-                "level": "INFO",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=wait_for_discover n_skipped=0",
+                # For this stream, the record that we check during the availability check does conform to the schema, but during the sync
+                # we encounter a record that does not, so stop the in-progress sync.
+                "level": "WARNING",
+                "message": "Skipped syncing stream 'stream1' because it was unavailable.",
             },
         ]
-    )
+    })
 ).build()
 
 
@@ -455,18 +457,22 @@ wait_for_rediscovery_scenario_multi_stream = (
             # {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
         ]
     )
-    .set_expected_logs(
-        [
+    .set_expected_logs({
+        "read": [
             {
-                "level": "INFO",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=wait_for_discover n_skipped=0",
-            },
-            {
-                "level": "INFO",
+                # For this stream, the record that we check during the availability check does not conform to the schema so we do not proceed
+                # with the sync for that stream.
+                "level": "WARN",
                 "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=wait_for_discover n_skipped=0",
             },
+            {
+                # For this stream, the record that we check during the availability check does conform to the schema, but during the sync
+                # we encounter a record that does not, so stop the in-progress sync.
+                "level": "WARNING",
+                "message": "Skipped syncing stream 'stream1' because it was unavailable.",
+            },
         ]
-    )
+    })
 ).build()
 
 

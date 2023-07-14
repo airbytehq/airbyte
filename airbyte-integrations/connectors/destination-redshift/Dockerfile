@@ -43,7 +43,7 @@ ENV APPLICATION destination-redshift
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.5.0
+LABEL io.airbyte.version=0.6.0
 LABEL io.airbyte.name=airbyte/destination-redshift
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
