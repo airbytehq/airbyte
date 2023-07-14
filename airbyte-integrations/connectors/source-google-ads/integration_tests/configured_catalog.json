@@ -264,6 +264,89 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["label.id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["label.id"]]
+    },
+    {
+      "stream": {
+        "name": "account_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["customer_label.resource_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["customer_label.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "campaign_bidding_strategies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
+      "cursor_field": ["segments.date"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_bidding_strategies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
+      "cursor_field": ["segments.date"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_criterions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+    },
+    {
+      "stream": {
+        "name": "ad_listing_group_criterions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+    },
+    {
+      "stream": {
+        "name": "ad_group_criterion_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_group_criterion_label.resource_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group_criterion_label.resource_name"]]
     }
   ]
 }

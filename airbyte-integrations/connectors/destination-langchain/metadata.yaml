@@ -1,7 +1,9 @@
 data:
   registries:
-    oss:
+    cloud:
       enabled: false
+    oss:
+      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
