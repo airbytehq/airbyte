@@ -12,7 +12,6 @@ from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
-from freezegun import freeze_time
 
 from airbyte_cdk.testing.scenario_builder import TestScenario
 
@@ -55,7 +54,6 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
 
 
 def assert_expected_records_match_output(output: List[Mapping[str, Any]], expected_output: List[Mapping[str, Any]]) -> None:
-    mismatch = []
     for actual, expected in zip(output, expected_output):
         for key, value in actual["record"]["data"].items():
             if isinstance(value, float):

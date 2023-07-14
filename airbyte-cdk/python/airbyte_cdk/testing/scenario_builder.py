@@ -45,7 +45,7 @@ class TestScenario:
             expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
-            source: Source,
+            source: AbstractSource,
     ):
         self.name = name
         self.config = config
@@ -64,10 +64,9 @@ class TestScenario:
         assert self.name
         if not self.expected_catalog:
             return
-        streams = {s["name"] for s in self.config["streams"]} # FIXME I think this should come from the source.streams()
+        streams = {s.name for s in self.source.streams(self.config)} # FIXME I think this should come from the source.streams()
         expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
-        #FIXME
-        #assert expected_streams <= streams
+        assert expected_streams <= streams
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
         if not self.expected_catalog:
@@ -171,12 +170,11 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
 
         def streams(self, config: Mapping[str, Any]) -> List[Stream]:
             streams = old_streams(config)
-            HttpStream._actually_send_request = mock_http_request
             for stream in streams:
                 if isinstance(stream, HttpStream):
                     stream._actually_send_request = mock_http_request.__get__(stream, HttpStream)
-                    if hasattr(stream, "parent"):
-                        stream.parent._actually_send_request = mock_http_request.__get__(stream.parent, HttpStream)
+                    #if hasattr(stream, "parent"):
+                    #    stream.parent._actually_send_request = mock_http_request.__get__(stream.parent, HttpStream)
                 elif isinstance(stream, DeclarativeStream):
                     stream.retriever._actually_send_request = mock_http_request.__get__(stream, HttpStream)
                 else:
