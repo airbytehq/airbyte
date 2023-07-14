@@ -21,4 +21,6 @@ class RemoteFile(BaseModel):
         extensions = self.uri.split(".")[1:]
         if not extensions:
             return True
+        if not self.file_type:
+            return True
         return any(self.file_type.casefold() in e.casefold() for e in extensions)
