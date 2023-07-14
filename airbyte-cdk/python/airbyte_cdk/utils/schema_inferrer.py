@@ -38,7 +38,7 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 
 
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
-InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
+InferredSchema = Dict[str, Union[str, Any, List[Any], List[Dict[str, Union[Any, List]]]]]
 
 
 class SchemaInferrer:
@@ -84,11 +84,12 @@ class SchemaInferrer:
                     node["type"] = [node["type"], "null"]
                     node.pop("anyOf")
             if "properties" in node:
-                for key, value in list(node["properties"].items()):
-                    if isinstance(value, dict) and value.get("type", None) == "null":
-                        node["properties"].pop(key)
-                    else:
-                        self._clean(value)
+                if isinstance(node["properties"], dict):
+                    for key, value in list(node["properties"].items()):
+                        if isinstance(value, dict) and value.get("type", None) == "null":
+                            node["properties"].pop(key)
+                        else:
+                            self._clean(value)
             if "items" in node:
                 self._clean(node["items"])
         return node
