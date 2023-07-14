@@ -101,7 +101,8 @@ class SourceApifyDataset(Source):
             "type": "object",
             "properties": {
                 # as datasets are not typed and we only know the field name, each field is defined as oneOf of all possible types
-                field: {"type": ["array", "object", "boolean", "number", "integer", "string"]} for field in fields
+                field: {"type": ["array", "object", "boolean", "number", "integer", "string"]}
+                for field in fields
             },
             "additionalProperties": True,
         }
