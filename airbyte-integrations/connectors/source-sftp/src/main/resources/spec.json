@@ -8,21 +8,21 @@
     "additionalProperties": true,
     "properties": {
       "user": {
-        "title": "User Name",
-        "description": "The server user",
+        "title": "Username",
+        "description": "The username associated with the remote server.",
         "type": "string",
         "order": 0
       },
       "host": {
         "title": "Host Address",
-        "description": "The server host address",
+        "description": "The remote server's host address",
         "type": "string",
         "examples": ["www.host.com", "192.0.2.1"],
         "order": 1
       },
       "port": {
         "title": "Port",
-        "description": "The server port",
+        "description": "The port number used by the remote server for SFTP connections.",
         "type": "integer",
         "default": 22,
         "examples": ["22"],
@@ -46,7 +46,7 @@
               },
               "auth_user_password": {
                 "title": "Password",
-                "description": "OS-level password for logging into the jump server host",
+                "description": "The password used for authentication when logging into the remote server.",
                 "type": "string",
                 "airbyte_secret": true,
                 "order": 1
@@ -77,7 +77,7 @@
       },
       "file_types": {
         "title": "File types",
-        "description": "Coma separated file types. Currently only 'csv' and 'json' types are supported.",
+        "description": "The comma-separated list of file types to replicate. Currently, only CSV and JSON formats are supported.",
         "type": "string",
         "default": "csv,json",
         "order": 4,
@@ -85,7 +85,7 @@
       },
       "folder_path": {
         "title": "Folder Path",
-        "description": "The directory to search files for sync",
+        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp#setup-guide'>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": ["/logs/2022"],
@@ -93,7 +93,7 @@
       },
       "file_pattern": {
         "title": "File Pattern",
-        "description": "The regular expression to specify files for sync in a chosen Folder Path",
+        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp#setup-guide`>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": [
