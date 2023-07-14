@@ -2,7 +2,18 @@
 
 This page contains the setup guide and reference information for the Notion source connector.
 
+## Prerequisites
+- Access to a Notion workspace
+
 ## Setup guide​
+
+To authenticate the Notion source connector, you must choose _one_ of the following two methods:
+- OAuth2.0 authorization (recommended for **Airbyte Cloud**)
+- Access Token (recommended for **Airbyte Open Source**)
+
+<!-- env:cloud -->
+**For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion. This method is more secure and significantly simplifies the setup process. If you use OAuth2.0 authorization, you do _not_ need to create a new integration in Notion. Instead, you can authenticate your Notion account directly in Airbyte Cloud.
+<!-- /env:cloud -->
 
 ### Step 1: Set up Notion​
 
@@ -10,7 +21,7 @@ This page contains the setup guide and reference information for the Notion sour
 
 :::note
 
-You must be the owner of a Notion workspace to create a new integration.
+You must be the owner of the Notion workspace to create a new integration associated with it.
 
 :::
 
@@ -24,34 +35,24 @@ You must be the owner of a Notion workspace to create a new integration.
 
 ### Step 2: Set up the Notion connector in Airbyte
 
-<!-- env:cloud -->
-**For Airbyte Cloud:**
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Notion** from the list of available sources.
+4. Enter a **Source name** of your choosing.
+5. Choose the method of authentication from the dropdown menu:
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
-4. Enter a name for your source.
-5. Choose the method of authentication:
-      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-      * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
-          * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
-6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. Click **Set up source**.
-<!-- /env:cloud -->
+**For Airbyte Cloud users**
+- (Recommended) If you select **OAuth2.0** , click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
+- If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
 
-<!-- env:oss -->
-**For Airbyte Open Source:**
 
-1. Log in to your Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
-4. Enter a name for your source.
-5. Choose the method of authentication:
-      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-      * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
-6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. Click **Set up source**.
-<!-- /env:oss -->
+**For Airbyte Open Source users**
+- If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+- If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
+
+
+6. Enter the **Start Date** in `YYYY-MM-DDTHH:mm:ssZ` format. All data generated after this date will be replicated.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
