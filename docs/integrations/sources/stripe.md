@@ -1,8 +1,8 @@
-# Stripe
-
 :::warning
 Stripe API Restriction: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). Using the full-refresh-overwrite sync from Airbyte will delete the events data older than 30 days from your target destination.
 :::
+
+# Stripe
 
 This page guides you through the process of setting up the Stripe source connector.
 
@@ -76,7 +76,6 @@ The Stripe source connector supports the following streams:
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
-- [ShippingRates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
@@ -101,8 +100,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.12.0  | 2023-07-09 | [27217](https://github.com/airbytehq/airbyte/pull/27217) | Add `ShippingRates` stream                                                                                                                           |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.11.0  | 2023-06-26 | [27734](https://github.com/airbytehq/airbyte/pull/27734) | License Update: Elv2 stream                                                                                                                          |
 | 3.10.0  | 2023-06-22 | [27132](https://github.com/airbytehq/airbyte/pull/27132) | Add `CreditNotes` stream                                                                                                                             |
 | 3.9.1   | 2023-06-20 | [27522](https://github.com/airbytehq/airbyte/pull/27522) | Fix formatting                                                                                                                                       |
