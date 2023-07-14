@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch, Mock
 
 import pytest
 
-from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
 from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from airbyte_cdk.models import (

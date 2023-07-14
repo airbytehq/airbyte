@@ -240,7 +240,7 @@ class MessageGrouper:
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            return json.loads(log_message.message) # type: ignore
+            return json.loads(log_message.message)  # type: ignore
         except JSONDecodeError:
             return None
 
@@ -280,7 +280,7 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1)) # type: ignore
+        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))  # type: ignore
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:

@@ -3,7 +3,7 @@
 #
 
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union, Mapping
+from typing import Any, Dict, Optional, Mapping
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from genson import SchemaBuilder, SchemaNode
