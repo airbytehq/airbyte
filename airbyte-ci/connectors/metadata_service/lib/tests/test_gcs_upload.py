@@ -84,6 +84,9 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
 def test_upload_metadata_to_gcs_valid_metadata(
     mocker, valid_metadata_upload_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash
 ):
+    mocker.spy(gcs_upload, "_prerelease_upload")
+    mocker.spy(gcs_upload, "_latest_upload")
+
     for valid_metadata_upload_file in valid_metadata_upload_files:
         mocks = setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash)
 
@@ -103,6 +106,9 @@ def test_upload_metadata_to_gcs_valid_metadata(
         )
 
         # Assertions
+
+        gcs_upload._prerelease_upload.assert_not_called()
+        gcs_upload._latest_upload.assert_called()
 
         gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
         mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
@@ -124,6 +130,10 @@ def test_upload_metadata_to_gcs_valid_metadata(
         if latest_blob_md5_hash != local_file_md5_hash:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
             assert uploaded
+
+        # clear the call count
+        gcs_upload._latest_upload.reset_mock()
+        gcs_upload._prerelease_upload.assert_not_called()
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
@@ -191,6 +201,7 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         # verify that the metadata is overrode
         tmp_metadata, error = gcs_upload.validate_and_load(expected_tmp_metadata_file_path, [])
         tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
+        assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
         for registry in get(tmp_metadata_dict, "data.registries", {}).values():
             if "dockerImageTag" in registry:
                 assert registry["dockerImageTag"] == prerelease_image_tag
