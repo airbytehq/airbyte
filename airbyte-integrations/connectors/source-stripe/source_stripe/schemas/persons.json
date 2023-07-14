@@ -79,13 +79,13 @@
       "type": ["null", "object"],
       "properties": {
         "day": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "month": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "year": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         }
       }
     },
@@ -108,6 +108,18 @@
               },
               "up_to": {
                 "type": ["null", "integer"]
+              },
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
               }
             }
           }
@@ -252,6 +264,18 @@
               },
               "up_to": {
                 "type": ["null", "integer"]
+              },
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
               }
             }
           }
