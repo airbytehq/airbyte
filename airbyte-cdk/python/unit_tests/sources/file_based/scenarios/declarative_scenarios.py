@@ -3,7 +3,7 @@
 #
 
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from unit_tests.sources.file_based.scenarios.scenario_builder import MockedHttpRequestsSourceBuilder, TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import MockedHttpRequestsSourceBuilder, TestScenarioBuilder
 
 _MANIFEST = {
     "version": "0.30.0",

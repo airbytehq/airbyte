@@ -6,7 +6,7 @@ import datetime
 
 import pyarrow as pa
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import TestScenarioBuilder
 
 _single_parquet_file = {
     "a.parquet": {

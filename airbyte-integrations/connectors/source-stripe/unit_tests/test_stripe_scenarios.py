@@ -1,16 +1,30 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import List, Tuple
-
-from airbyte_cdk.source_stripe import SourceStripe
-from airbyte_cdk.testing.scenario_builder import (
-    MockedHttpRequestsSourceBuilder,
-    RequestDescriptor,
-    ResponseDescriptor,
-    TestScenarioBuilder,
-)
 import json
+from dataclasses import dataclass
+from typing import List, Tuple, Optional, Mapping, Any
+from freezegun import freeze_time
+
+from source_stripe import SourceStripe
+from airbyte_cdk.testing.scenario_builder import TestScenario, TestScenarioBuilder, MockedHttpRequestsSourceBuilder
+from airbyte_cdk.testing import scenario_utils
+
+@dataclass(eq=True, frozen=True)
+class RequestDescriptor:
+    url: str
+    headers: Optional[Mapping[str, str]]
+    body: Optional[Mapping[str, Any]]
+
+
+@dataclass(eq=True, frozen=True)
+class ResponseDescriptor:
+    status_code: int
+    body: Any # FIXME obviously this is not the right type
+    headers: Any
+
+#def test_stripe():
+#    assert False
 
 
 def read_request_response_mapping_from_file(file_path: str):
@@ -54,7 +68,7 @@ stripe_scenario = (
         "start_date": "2020-05-01T00:00:00Z",
         "streams": [
             {"name": "accounts"},
-                    ], # FIXME we shouldn't need this
+        ], # FIXME we shouldn't need this
     })
     .source_builder.set_request_response_mapping(read_request_response_mapping_from_file("/Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe/mapping_2.txt"))
     #.source_builder.set_now("2023-07-14 11:08:02.751182")
@@ -63,3 +77,7 @@ stripe_scenario = (
     )
     .set_expected_records(read_records_from_read_output_file("/Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe/read_output_with_now.jsonl", ["accounts"]))
 ).build()
+
+@freeze_time("2023-06-09T00:00:00Z")
+def test_stripe(capsys, tmp_path, json_spec):
+    scenario_utils.test_read(capsys, tmp_path, json_spec, stripe_scenario)

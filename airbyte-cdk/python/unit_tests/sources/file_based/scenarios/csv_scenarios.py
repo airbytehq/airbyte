@@ -4,7 +4,7 @@
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import TestScenarioBuilder
 
 single_csv_scenario = (
     TestScenarioBuilder()

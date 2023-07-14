@@ -3,7 +3,7 @@
 #
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import TestScenarioBuilder
 
 _base_single_stream_scenario = (
     TestScenarioBuilder()

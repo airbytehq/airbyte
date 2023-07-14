@@ -8,7 +8,7 @@ from unit_tests.sources.file_based.helpers import (
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
     TestErrorOpenFileInMemoryFilesStreamReader,
 )
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import TestScenarioBuilder
 
 _base_success_scenario = (
     TestScenarioBuilder()
