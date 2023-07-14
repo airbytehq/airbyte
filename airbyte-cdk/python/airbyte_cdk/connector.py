@@ -77,11 +77,7 @@ class BaseConnector(ABC, Generic[TConfig]):
         required to run this integration. By default, this will be loaded from a "spec.yaml" or a "spec.json" in the package root.
         """
 
-        packages = self.__class__.__module__.split(".")
-        if "stripe" in self.__class__.__module__:
-            package = "airbyte_cdk." + [p for p in packages if p.startswith("source_") or p.startswith("destination_")][0]
-        else:
-            package = packages[0]
+        package = self.__class__.__module__.split(".")[0]
 
         yaml_spec = load_optional_package_file(package, "spec.yaml")
         json_spec = load_optional_package_file(package, "spec.json")
