@@ -44,7 +44,7 @@ class AbstractFileBasedSpec(BaseModel):
         return transformed_schema
 
     @staticmethod
-    def replace_enum_allOf_and_anyOf(schema: dict) -> dict:
+    def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
         Unpacks the enums under allOf and moves them up a level under the enum key
@@ -70,7 +70,7 @@ class AbstractFileBasedSpec(BaseModel):
         return schema
 
     @staticmethod
-    def add_legacy_format(schema: dict) -> dict:
+    def add_legacy_format(schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         Because we still need to allow for configs using the legacy format (like source-s3) where file format options
         are at the top level and not mapped from file_type -> format options, the json schema used to validate the

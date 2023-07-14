@@ -17,7 +17,11 @@ from pyarrow import Scalar
 
 class ParquetParser(FileTypeParser):
     async def infer_schema(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger,
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Dict[str, Any]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
@@ -31,7 +35,11 @@ class ParquetParser(FileTypeParser):
         return schema
 
     def parse_records(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger,
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):

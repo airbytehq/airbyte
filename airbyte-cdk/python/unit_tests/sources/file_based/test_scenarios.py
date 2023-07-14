@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 import pytest
 from _pytest.capture import CaptureFixture
+from _pytest.logging import LogCaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
@@ -60,11 +61,11 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
+    parquet_file_with_decimal_as_float_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
-    parquet_file_with_decimal_no_config_scenario,
-    parquet_file_with_decimal_as_string_scenario,
-    parquet_file_with_decimal_as_float_scenario
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
@@ -148,10 +149,10 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
         output = discover(capsys, tmp_path, scenario)
         catalog, logs = output["catalog"], output["logs"]
         assert catalog == scenario.expected_catalog
-        if expected_logs:
-            expected_logs = expected_logs.get("discover", [])
+        if expected_logs is not None:
+            expected_discover_logs = expected_logs.get("discover", [])
             logs = [log for log in logs if log.get("log", {}).get("level") in ("ERROR", "WARN")]
-            _verify_expected_logs(logs, expected_logs)
+            _verify_expected_logs(logs, expected_discover_logs)
 
 
 read_scenarios = discover_scenarios + [
@@ -168,14 +169,14 @@ read_scenarios = discover_scenarios + [
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario):
+def test_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
     else:
         run_test_read_full_refresh(capsys, caplog, tmp_path, scenario)
 
 
-def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:  # noqa
@@ -187,7 +188,7 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: CaptureFixtu
         _verify_read_output(output, scenario)
 
 
-def run_test_read_incremental(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc):
@@ -197,7 +198,7 @@ def run_test_read_incremental(capsys: CaptureFixture[str], caplog: CaptureFixtur
         _verify_read_output(output, scenario)
 
 
-def _verify_read_output(output, scenario):
+def _verify_read_output(output: Dict[str, List[Any]], scenario: TestScenario) -> None:
     records, logs = output["records"], output["logs"]
     logs = [log for log in logs if log.get("level") in ("ERROR", "WARN", "WARNING")]
     expected_records = scenario.expected_records
@@ -219,7 +220,7 @@ def _verify_read_output(output, scenario):
         _verify_expected_logs(logs, expected_logs)
 
 
-def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]):
+def _verify_expected_logs(logs: List[Mapping[str, Any]], expected_logs: List[Mapping[str, Any]]) -> None:
     for actual, expected in zip(logs, expected_logs):
         actual_level, actual_message = actual["level"], actual["message"]
         expected_level, expected_message = expected["level"], expected["message"]
@@ -233,7 +234,7 @@ spec_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
-def test_spec(capsys, scenario):
+def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
     assert spec(capsys, scenario) == scenario.expected_spec
 
 
@@ -271,13 +272,13 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestS
         assert output["status"] == scenario.expected_check_status
 
 
-def spec(capsys, scenario):
+def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Mapping[str, Any]:
     launch(
         scenario.source,
         ["spec"],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["spec"]
+    return json.loads(captured.out.splitlines()[0])["spec"]  # type: ignore
 
 
 def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
@@ -302,7 +303,7 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
         }
 
 
-def read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
+def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
     launch(
         scenario.source,
         [
@@ -329,7 +330,7 @@ def read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: Pos
     }
 
 
-def read_with_state(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, List[Any]]:
+def read_with_state(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, List[Any]]:
     launch(
         scenario.source,
         [

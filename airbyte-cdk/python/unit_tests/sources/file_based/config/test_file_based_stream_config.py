@@ -84,7 +84,8 @@ def test_legacy_format() -> None:
     else:
         assert False, "Expected format to be set"
 
-def test_multiple_file_formats():
+
+def test_multiple_file_formats_are_not_supported() -> None:
     formats = {
         "csv": {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL},
         "parquet": {"filetype": "parquet", "decimal_as_float": True}

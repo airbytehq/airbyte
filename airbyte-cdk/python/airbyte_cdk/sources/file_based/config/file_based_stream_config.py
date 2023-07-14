@@ -5,10 +5,10 @@
 import codecs
 from enum import Enum
 from typing import Any, List, Mapping, Optional, Union
-from typing_extensions import Literal
 
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
+from typing_extensions import Literal
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
@@ -29,7 +29,7 @@ class ParquetFormat(BaseModel):
     decimal_as_float: bool = Field(
         title="Convert Decimal Fields to Floats",
         description="Whether to convert decimal fields to floats. This is the legacy behavior of the S3 source."
-                    "There is a loss of precision when converting decimals to floats, so this is not recommended.",
+        "There is a loss of precision when converting decimals to floats, so this is not recommended.",
         default=False,
     )
 
@@ -152,7 +152,9 @@ class FileBasedStreamConfig(BaseModel):
                 return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
             else:
                 if len(v) > 1:
-                    raise ValueError(f"Format can only have one file type specified, got {v}") # FIXME: remove this check when we support multiple file types for a single stream
+                    raise ValueError(
+                        f"Format can only have one file type specified, got {v}"
+                    )  # FIXME: remove this check when we support multiple file types for a single stream
                 try:
                     return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
                 except KeyError as e:

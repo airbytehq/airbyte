@@ -32,7 +32,7 @@ class TestScenario:
             expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
-            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
+            expected_logs: Optional[Mapping[str, List[Mapping[str, Any]]]],
             expected_records: List[Mapping[str, Any]],
             availability_strategy: Optional[AvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
