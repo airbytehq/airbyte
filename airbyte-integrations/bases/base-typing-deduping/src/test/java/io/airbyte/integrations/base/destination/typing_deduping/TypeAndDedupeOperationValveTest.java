@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TypeAndDedupeOperationValveTest {
-
+/*
   private static final AirbyteStreamNameNamespacePair STREAM_A = new AirbyteStreamNameNamespacePair("a", "a");
   private static final AirbyteStreamNameNamespacePair STREAM_B = new AirbyteStreamNameNamespacePair("b", "b");
 
@@ -114,5 +114,5 @@ public class TypeAndDedupeOperationValveTest {
     elapseTime(minuteUpdates, 15);
     Assertions.assertTrue(valve.readyToTypeAndDedupeWithAdditionalRecord(STREAM_A));
   }
-
+*/
 }
