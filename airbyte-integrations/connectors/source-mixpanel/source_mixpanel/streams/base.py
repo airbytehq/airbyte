@@ -98,7 +98,7 @@ class MixpanelStream(HttpStream, ABC):
         if self.reqs_per_hour_limit > 0:
             # we skip this block, if self.reqs_per_hour_limit = 0,
             # in all other cases wait for X seconds to match API limitations
-            self.logger.info("Sleep for %s seconds to match API limitations", 3600 / self.reqs_per_hour_limit)
+            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
             time.sleep(3600 / self.reqs_per_hour_limit)
 
     def backoff_time(self, response: requests.Response) -> float:
@@ -109,6 +109,7 @@ class MixpanelStream(HttpStream, ABC):
 
         retry_after = response.headers.get("Retry-After")
         if retry_after:
+            self.logger.debug(f"API responded with `Retry-After` header: {retry_after}")
             return float(retry_after)
 
         self.retries += 1
@@ -124,7 +125,12 @@ class MixpanelStream(HttpStream, ABC):
         """
         Fetch required parameters in a given stream. Used to create sub-streams
         """
-        params = {"authenticator": self.authenticator, "region": self.region, "project_timezone": self.project_timezone}
+        params = {
+            "authenticator": self.authenticator,
+            "region": self.region,
+            "project_timezone": self.project_timezone,
+            "reqs_per_hour_limit": self.reqs_per_hour_limit,
+        }
         if self.project_id:
             params["project_id"] = self.project_id
         return params
