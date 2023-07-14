@@ -422,6 +422,7 @@ def test_read():
                 state=None,
             )
         ],
+        auxiliary_requests=[],
         test_read_limit_reached=False,
         inferred_schema=None,
         inferred_datetime_formats=None,
@@ -438,6 +439,7 @@ def test_read():
                     {"pages": [{"records": [real_record], "request": None, "response": None}], "slice_descriptor": None, "state": None}
                 ],
                 "test_read_limit_reached": False,
+                "auxiliary_requests": [],
                 "inferred_schema": None,
                 "inferred_datetime_formats": None,
                 "latest_config_update": {}
@@ -512,6 +514,7 @@ def test_read_returns_error_response(mock_from_exception):
                                           pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
+                                      auxiliary_requests=[],
                                       inferred_schema=None,
                                       inferred_datetime_formats={},
                                       latest_config_update=None)
@@ -690,16 +693,18 @@ def _create_request():
     return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
 
 
-def _create_response(body):
+def _create_response(body, request):
     response = requests.Response()
     response.status_code = 200
     response._content = bytes(json.dumps(body), "utf-8")
     response.headers["Content-Type"] = "application/json"
+    response.request = request
     return response
 
 
 def _create_page(response_body):
-    return _create_request(), _create_response(response_body)
+    request = _create_request()
+    return request, _create_response(response_body, request)
 
 
 @patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
