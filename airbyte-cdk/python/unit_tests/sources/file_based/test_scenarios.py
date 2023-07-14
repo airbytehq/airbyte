@@ -75,6 +75,7 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 )
 
 from unit_tests.sources.file_based.scenarios.declarative_scenarios import declarative_scenario
+from unit_tests.sources.file_based.scenarios.stripe_scenarios import stripe_scenario
 
 discover_scenarios = [
     csv_multi_stream_scenario,
@@ -108,7 +109,7 @@ discover_scenarios = [
     schemaless_csv_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
-    declarative_scenario
+    declarative_scenario,
 ]
 
 
@@ -133,6 +134,7 @@ read_scenarios = discover_scenarios + [
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
+    stripe_scenario
 ]
 
 

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import json
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -13,7 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
+from airbyte_cdk.source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
 STRIPE_ERROR_CODES: List = [
     # stream requires additional permissions
@@ -62,6 +62,8 @@ class StripeStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        if isinstance(response_json, str):
+            response_json = json.loads(response_json)
         yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
     def read_records(
