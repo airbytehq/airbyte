@@ -97,6 +97,152 @@
     },
     "epic_issue_id": {
       "type": ["null", "integer"]
+    },
+    "merge_requests_count": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "task_status": {
+      "type": ["null", "string"]
+    },
+    "moved_to_id": {
+      "type": ["null", "integer"]
+    },
+    "iteration": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "sequence": {
+          "type": ["null", "integer"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "start_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "due_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "has_tasks": {
+      "type": ["null", "boolean"]
+    },
+    "blocking_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "closed_by": {
+      "type": ["null", "object"],
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "references": {
+      "type": ["null", "object"],
+      "properties": {
+        "full": {
+          "type": ["null", "string"]
+        },
+        "relative": {
+          "type": ["null", "string"]
+        },
+        "short": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "epic": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "issue_type": {
+      "type": ["null", "string"]
+    },
+    "severity": {
+      "type": ["null", "string"]
+    },
+    "service_desk_reply_to": {
+      "type": ["null", "string"]
+    },
+    "task_completion_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "count": {
+          "type": ["null", "integer"]
+        },
+        "completed_count": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "relative_position": {
+      "type": ["null", "integer"]
+    },
+    "epic_iid": {
+      "type": ["null", "integer"]
     }
   }
 }

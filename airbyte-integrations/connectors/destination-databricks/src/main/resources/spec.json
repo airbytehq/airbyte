@@ -67,12 +67,19 @@
         "default": "default",
         "order": 7
       },
+      "enable_schema_evolution": {
+        "title": "Support schema evolution for all streams.",
+        "type": "boolean",
+        "description": "Support schema evolution for all streams. If \"false\", the connector might fail when a stream's schema changes.",
+        "default": false,
+        "order": 8
+      }, 
       "data_source": {
         "title": "Data Source",
         "type": "object",
         "description": "Storage on which the delta lake is built.",
         "default": "MANAGED_TABLES_STORAGE",
-        "order": 8,
+        "order": 9,
         "oneOf": [
           {
             "title": "[Recommended] Managed tables",
@@ -236,7 +243,7 @@
         "type": "boolean",
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
-        "order": 9
+        "order": 10
       }
     }
   }

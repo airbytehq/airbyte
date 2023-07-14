@@ -27,7 +27,7 @@ class GoogleSearchConsole(HttpStream, ABC):
         site_urls: list,
         start_date: str,
         end_date: str,
-        data_state: str = "final"
+        data_state: str = "final",
     ):
         super().__init__(authenticator=authenticator)
         self._site_urls = self.sanitize_urls_list(site_urls)

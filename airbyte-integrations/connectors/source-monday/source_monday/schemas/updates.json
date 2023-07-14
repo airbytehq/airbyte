@@ -4,8 +4,12 @@
   "properties": {
     "assets": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
       }
     },
     "body": { "type": ["null", "string"] },
@@ -15,13 +19,17 @@
     "item_id": { "type": ["null", "string"] },
     "replies": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] },
-        "creator_id": { "type": ["null", "integer"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "text_body": { "type": ["null", "string"] },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-        "body": { "type": ["null", "string"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "creator_id": { "type": ["null", "string"] },
+          "created_at": { "type": ["null", "string"], "format": "date-time" },
+          "text_body": { "type": ["null", "string"] },
+          "updated_at": { "type": ["null", "string"], "format": "date-time" },
+          "body": { "type": ["null", "string"] }
+        }
       }
     },
     "text_body": { "type": ["null", "string"] },

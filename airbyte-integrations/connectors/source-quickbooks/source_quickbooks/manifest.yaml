@@ -21,8 +21,12 @@ definitions:
       "Accept": "application/json"
       "User-Agent": "airbyte-connector"
     authenticator:
-      type: SingleUseRefreshTokenOAuthAuthenticator
+      type: OAuthAuthenticator
       token_refresh_endpoint: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      refresh_token: "{{ config['credentials']['refresh_token'] }}"
+      refresh_token_updater: {}
   retriever:
     type: SimpleRetriever
     record_selector:

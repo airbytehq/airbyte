@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/teradata
   tags:
     - language:java
 metadataSpecVersion: "1.0"

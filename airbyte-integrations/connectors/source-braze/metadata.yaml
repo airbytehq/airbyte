@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/sources/braze
+  documentationUrl: https://docs.airbyte.com/integrations/sources/braze
   tags:
     - language:low-code
     - language:python

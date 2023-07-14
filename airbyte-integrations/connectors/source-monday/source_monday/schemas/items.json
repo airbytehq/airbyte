@@ -4,8 +4,12 @@
   "properties": {
     "assets": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
       }
     },
     "board": {
@@ -16,13 +20,17 @@
     },
     "column_values": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] },
-        "value": { "type": ["null", "object"] },
-        "additional_info": { "type": ["null", "object"] },
-        "text": { "type": ["null", "string"] },
-        "title": { "type": ["null", "string"] },
-        "type": { "type": ["null", "string"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "value": { "type": ["null", "string"] },
+          "additional_info": { "type": ["null", "string"] },
+          "text": { "type": ["null", "string"] },
+          "title": { "type": ["null", "string"] },
+          "type": { "type": ["null", "string"] }
+        }
       }
     },
     "created_at": { "type": ["null", "string"], "format": "date-time" },
@@ -44,15 +52,23 @@
     "state": { "type": ["null", "string"] },
     "subscribers": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
       }
     },
     "updated_at": { "type": ["null", "string"], "format": "date-time" },
     "updates": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] }
+        }
       }
     }
   }

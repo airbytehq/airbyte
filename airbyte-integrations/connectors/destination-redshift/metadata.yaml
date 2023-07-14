@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
-  dockerImageTag: 0.4.8
+  dockerImageTag: 0.4.9
   dockerRepository: airbyte/destination-redshift
   githubIssueLabel: destination-redshift
   icon: redshift.svg

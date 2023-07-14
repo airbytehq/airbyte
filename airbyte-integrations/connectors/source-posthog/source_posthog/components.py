@@ -47,6 +47,7 @@ class EventsSimpleRetriever(SimpleRetriever):
             self.requester.get_request_params,
             self.paginator.get_request_params,
             self.stream_slicer.get_request_params,
+            self.requester.get_authenticator().get_request_body_json,
         )
 
 
