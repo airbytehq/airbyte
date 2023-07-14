@@ -139,6 +139,8 @@ class FileBasedStreamConfig(BaseModel):
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
+        # The difference between legacy and new format is that the new format is a mapping of file type to format
+        # This allows us to support multiple file types for a single stream
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
