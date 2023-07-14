@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime, timedelta
+from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
@@ -92,7 +93,7 @@ from freezegun import freeze_time
             id="test_files_are_sorted_by_timestamp_and_by_name"),
     ],
 )
-def test_add_file(files_to_add, expected_start_time, expected_state_dict):
+def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[datetime], expected_state_dict: Mapping[str, Any]) -> None:
     cursor = DefaultFileBasedCursor(3, 3)
     assert cursor._compute_start_time() == datetime.min
 
@@ -148,7 +149,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
 
     ], 2, True, id="test_sync_more_files_than_history_size"),
 ])
-def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_partial):
+def test_get_files_to_sync(files: List[RemoteFile], expected_files_to_sync: List[RemoteFile], max_history_size: int, history_is_partial: bool) -> None:
     logger = MagicMock()
     cursor = DefaultFileBasedCursor(max_history_size, 3)
 
@@ -161,7 +162,7 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 
 
 @freeze_time("2023-06-16T00:00:00Z")
-def test_only_recent_files_are_synced_if_history_is_full():
+def test_only_recent_files_are_synced_if_history_is_full() -> None:
     logger = MagicMock()
     cursor = DefaultFileBasedCursor(2, 3)
 
@@ -198,7 +199,7 @@ def test_only_recent_files_are_synced_if_history_is_full():
     pytest.param(timedelta(days=0), False, id="test_modified_at_is_equal"),
     pytest.param(timedelta(days=1), True, id="test_modified_at_is_more_recent"),
 ])
-def test_sync_file_already_present_in_history(modified_at_delta, should_sync_file):
+def test_sync_file_already_present_in_history(modified_at_delta: timedelta, should_sync_file: bool) -> None:
     logger = MagicMock()
     cursor = DefaultFileBasedCursor(2, 3)
     original_modified_at = datetime(2021, 1, 2)
@@ -233,7 +234,7 @@ def test_sync_file_already_present_in_history(modified_at_delta, should_sync_fil
         pytest.param("c.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), True, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_greater"),
     ]
 )
-def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, should_sync_file):
+def test_should_sync_file(file_name: str, last_modified: datetime, earliest_dt_in_history: datetime, should_sync_file: bool) -> None:
     logger = MagicMock()
     cursor = DefaultFileBasedCursor(1, 3)
 
@@ -244,12 +245,12 @@ def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, shou
     assert bool(list(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")], logger))) == should_sync_file
 
 
-def test_set_initial_state_no_history():
+def test_set_initial_state_no_history() -> None:
     cursor = DefaultFileBasedCursor(1, 3)
     cursor.set_initial_state({})
 
 
-def test_instantiate_with_negative_values():
+def test_instantiate_with_negative_values() -> None:
     with pytest.raises(ValueError):
         DefaultFileBasedCursor(-1, 3)
 

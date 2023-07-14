@@ -42,6 +42,8 @@ from source_twilio.streams import (
     Trunks,
     UsageRecords,
     UsageTriggers,
+    UserConversations,
+    Users,
     VerifyServices,
 )
 
@@ -120,6 +122,8 @@ class SourceTwilio(AbstractSource):
             Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
+            Users(**full_refresh_stream_kwargs),
+            UserConversations(**full_refresh_stream_kwargs),
             VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams
