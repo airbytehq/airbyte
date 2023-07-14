@@ -193,33 +193,6 @@ def test_check_start_time_param():
     assert output == expected
 
 
-def test_parse_next_page_number(requests_mock):
-    expected = dict(parse_qsl(urlparse(TICKET_EVENTS_STREAM_RESPONSE.get("next_page")).query)).get("page")
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
-    test_response = requests.get(STREAM_URL)
-    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
-    assert output == expected
-
-
-def test_parse_next_page_number_from_empty_json(requests_mock):
-    requests_mock.get(STREAM_URL, text="", status_code=403)
-    test_response = requests.get(STREAM_URL)
-    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
-    assert output is None
-
-
-def test_next_page_token(requests_mock):
-    # mocking the logic of next_page_token
-    if TICKET_EVENTS_STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
-        expected = {"created_at": 1122334455}
-    else:
-        expected = None
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
-    test_response = requests.get(STREAM_URL)
-    output = TicketComments(**STREAM_ARGS).next_page_token(test_response)
-    assert expected == output
-
-
 @pytest.mark.parametrize(
     "stream_state, expected",
     [
@@ -235,17 +208,6 @@ def test_next_page_token(requests_mock):
 def test_check_stream_state(stream_state, expected):
     result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
     assert result == expected
-
-
-def test_request_params(requests_mock):
-    expected = {"start_time": calendar.timegm(pendulum.parse(STREAM_ARGS.get("start_date")).utctimetuple()), "include": "comment_events"}
-    stream_state = None
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
-    test_response = requests.get(STREAM_URL)
-    next_page_token = TicketComments(**STREAM_ARGS).next_page_token(test_response)
-    output = TicketComments(**STREAM_ARGS).request_params(stream_state, None)
-    assert next_page_token is not None
-    assert expected == output
 
 
 def test_parse_response_from_empty_json(requests_mock):
@@ -530,7 +492,7 @@ class TestSourceZendeskSupportStream:
     )
     def test_request_params(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.request_params()
+        result = stream.request_params(stream_state={})
         assert expected == result
 
 
@@ -595,16 +557,16 @@ class TestSourceZendeskSupportFullRefreshStream:
         assert output is None
 
     @pytest.mark.parametrize(
-        "stream_cls",
+        "stream_cls, expected_params",
         [
-            (Tags),
-            (SlaPolicies),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-            (UserSettingsStream),
-            (AccountAttributes),
-            (AttributeDefinitions),
+            (Tags, {"page[size]": 100}),
+            (SlaPolicies, {}),
+            (Brands, {"page[size]": 100}),
+            (CustomRoles, {}),
+            (Schedules, {"page[size]": 100}),
+            (UserSettingsStream, {}),
+            (AccountAttributes, {}),
+            (AttributeDefinitions, {}),
         ],
         ids=[
             "Tags",
@@ -617,11 +579,10 @@ class TestSourceZendeskSupportFullRefreshStream:
             "AttributeDefinitions",
         ],
     )
-    def test_request_params(self, stream_cls):
-        expected = {"page": 1, "per_page": 100}
+    def test_request_params(self, stream_cls, expected_params):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(next_page_token=None, stream_state=None)
-        assert expected == result
+        assert expected_params == result
 
 
 class TestSourceZendeskSupportCursorPaginationStream:
@@ -665,7 +626,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
                         "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
                     },
                 },
-                "<after_cursor>",
+                {"page[after]": "<after_cursor>"},
             ),
             (SatisfactionRatings, {}, None),
             (
@@ -677,7 +638,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
                         "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
                     },
                 },
-                "<after_cursor>",
+                {"page[after]": "<after_cursor>"},
             ),
             (
                     TicketSkips,
@@ -688,7 +649,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
                             "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
                         },
                     },
-                    "<after_cursor>",
+                    {"page[after]": "<after_cursor>"},
             ),
 
         ],
@@ -738,11 +699,11 @@ class TestSourceZendeskSupportCursorPaginationStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (GroupMemberships, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
+            (GroupMemberships, {"sort_by": "asc", "start_time": 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
             (TicketMetricEvents, {"start_time": 1622505600}),
             (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
-            (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
+            (SatisfactionRatings, {"sort_by": "asc", "start_time": 1622505600}),
             (TicketMetrics, {"page[size]": 100, "start_time": 1622505600}),
             (OrganizationMemberships, {"page[size]": 100, "start_time": 1622505600}),
             (TicketSkips, {"page[size]": 100, "start_time": 1622505600}),
