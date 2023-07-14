@@ -13,7 +13,6 @@
         "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME'.",
         "pattern": "^(?!https:\/\/)(?!http:\/\/).*",
         "examples": ["my-store", "my-store.myshopify.com"],
-        "always_show": true,
         "order": 1
       },
       "credentials": {
