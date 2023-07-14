@@ -17,7 +17,7 @@ from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
 
 DIALECT_NAME = "_config_dialect"
 
-config_to_quoting: [QuotingBehavior, int] = {
+config_to_quoting: Mapping[QuotingBehavior, int] = {
     QuotingBehavior.QUOTE_ALL: csv.QUOTE_ALL,
     QuotingBehavior.QUOTE_SPECIAL_CHARACTERS: csv.QUOTE_MINIMAL,
     QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
@@ -47,13 +47,13 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
                 schema = {field.strip(): {"type": "string"} for field in next(reader)}
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)
+                reader = csv.DictReader(fp)  # type: ignore
                 return {field.strip(): {"type": "string"} for field in next(reader)}
 
     def parse_records(
@@ -63,7 +63,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema = config.input_schema
+        schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
@@ -80,16 +80,16 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
                 yield from self._read_and_cast_types(reader, schema, logger)
         else:
             with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)
+                reader = csv.DictReader(fp)  # type: ignore
                 yield from self._read_and_cast_types(reader, schema, logger)
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, str]], logger: logging.Logger
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], logger: logging.Logger  # type: ignore
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -120,9 +120,9 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
 
     for key, value in row.items():
         prop_type = property_types.get(key)
-        cast_value = value
+        cast_value: Any = value
 
-        if prop_type in TYPE_PYTHON_MAPPING:
+        if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
             _, python_type = TYPE_PYTHON_MAPPING[prop_type]
 
             if python_type is None:
@@ -169,5 +169,5 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
     return result
 
 
-def _format_warning(key: str, value: str, expected_type: str) -> str:
+def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
     return f"{key}: value={value},expected_type={expected_type}"
