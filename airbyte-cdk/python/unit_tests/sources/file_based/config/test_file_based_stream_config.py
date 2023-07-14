@@ -83,3 +83,18 @@ def test_legacy_format() -> None:
             assert getattr(actual_config.format["csv"], expected_format_field) == expected_format_value
     else:
         assert False, "Expected format to be set"
+
+def test_multiple_file_formats():
+    formats = {
+        "csv": {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL},
+        "parquet": {"filetype": "parquet", "decimal_as_float": True}
+    }
+    stream_config = {
+        "name": "stream1",
+        "file_type": "csv",
+        "globs": ["*"],
+        "validation_policy": "emit_record_on_schema_mismatch",
+        "format": formats
+    }
+    with pytest.raises(ValidationError):
+        FileBasedStreamConfig(**stream_config)
