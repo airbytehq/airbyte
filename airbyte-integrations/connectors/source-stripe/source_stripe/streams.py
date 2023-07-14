@@ -101,7 +101,6 @@ class BasePaginationStripeStream(StripeStream, ABC):
 
     def chunk_dates(self, start_date_ts: int) -> Iterable[Tuple[int, int]]:
         now = pendulum.now().int_timestamp
-        print(now)
         step = int(pendulum.duration(days=self.slice_range).total_seconds())
         after_ts = start_date_ts
         while after_ts < now:
