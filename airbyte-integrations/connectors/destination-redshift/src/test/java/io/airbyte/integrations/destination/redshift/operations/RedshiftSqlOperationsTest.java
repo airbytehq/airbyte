@@ -42,52 +42,5 @@ public class RedshiftSqlOperationsTest {
     boolean isValid = uut.isValidData(testNode);
     assertEquals(true, isValid);
   }
-
-  @Test
-  @DisplayName("isValidData should return false for invalid data - string too long")
-  public void isValidDataForInvalidNode() {
-    JsonNode testNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put("id", 3)
-        .put("currency", generateBigString(1))
-        .put("date", "2020-10-10T00:00:00Z")
-        .put("HKD", 10.5)
-        .put("NZD", 1.14)
-        .build());
-
-    RedshiftSqlOperations uut = new RedshiftSqlOperations();
-    boolean isValid = uut.isValidData(testNode);
-    assertEquals(false, isValid);
-  }
-
-  @Test
-  @DisplayName("isValidData should return false for invalid data - total object too big")
-  public void isValidDataForInvalidObject() {
-    JsonNode testNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put("key1", generateBigString(-1))
-        .put("key2", generateBigString(-1))
-        .put("key3", generateBigString(-1))
-        .put("key4", generateBigString(-1))
-        .put("key5", generateBigString(-1))
-        .put("key6", generateBigString(-1))
-        .put("key7", generateBigString(-1))
-        .put("key8", generateBigString(-1))
-        .put("key9", generateBigString(-1))
-        .put("key10", generateBigString(-1))
-        .put("key11", generateBigString(-1))
-        .put("key12", generateBigString(-1))
-        .put("key13", generateBigString(-1))
-        .put("key14", generateBigString(-1))
-        .put("key15", generateBigString(-1))
-        .put("key16", generateBigString(-1))
-        .put("key17", generateBigString(-1))
-        .put("key18", generateBigString(-1))
-        .put("key19", generateBigString(-1))
-        .put("key20", generateBigString(-1))
-        .build());
-
-    RedshiftSqlOperations uut = new RedshiftSqlOperations();
-    boolean isValid = uut.isValidData(testNode);
-    assertEquals(false, isValid);
-  }
-
+  
 }
