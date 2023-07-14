@@ -158,17 +158,19 @@ public class PostgresQueryUtils {
             name);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        final JsonNode result = jsonNodes.get(0);
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
-
         cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
         cursorBasedStatus.setVersion(2L);
-        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
-        cursorBasedStatus.setCursor(result.get(cursorField).asText());
-        cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
         cursorBasedStatus.setStreamName(name);
         cursorBasedStatus.setStreamNamespace(namespace);
+        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
 
+        if (!jsonNodes.isEmpty()) {
+          final JsonNode result = jsonNodes.get(0);
+          cursorBasedStatus.setCursor(result.get(cursorField).asText());
+          cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
+        }
+        
         cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
