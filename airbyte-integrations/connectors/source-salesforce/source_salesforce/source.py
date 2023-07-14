@@ -67,9 +67,10 @@ class SourceSalesforce(AbstractSource):
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
         logger.info(f"{stream_name=}, object-like and binary properties {properties_not_supported_by_bulk=}")
-        rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        if rest_required:
-            return "rest"
+        ####### Mark all streams as bulk for test
+        # rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
+        # if rest_required:
+        #     return "rest"
         return "bulk"
 
     @classmethod

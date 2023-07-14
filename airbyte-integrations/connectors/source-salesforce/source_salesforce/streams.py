@@ -495,7 +495,9 @@ class BulkSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
 
-        selected_properties = self.get_json_schema().get("properties", {})
+        selected_properties = ", ".join({
+            key: value for key, value in self.get_json_schema().get("properties", {}).items() if value.get("format") != "base64" and "object" not in value["type"]
+        })
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
             query += next_page_token["next_token"]
@@ -692,7 +694,9 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         )
         end_date = stream_slice["end_date"]
 
-        select_fields = ", ".join(self.get_json_schema().get("properties", {}).keys())
+        select_fields = ", ".join({
+            key: value for key, value in self.get_json_schema().get("properties", {}).items() if value.get("format") != "base64" and "object" not in value["type"]
+        })
         table_name = self.name
         where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
         order_by_clause = ""
