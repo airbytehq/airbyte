@@ -83,8 +83,10 @@ class MessageGrouper:
                     latest_config_update = message_group
             elif isinstance(message_group, AuxiliaryRequest):
                 auxiliary_requests.append(message_group)
-            else:
+            elif isinstance(message_group, StreamReadSlices):
                 slices.append(message_group)
+            else:
+                raise ValueError(f"Unknown message group type: {type(message_group)}")
 
         return StreamRead(
             logs=log_messages,
@@ -118,9 +120,9 @@ class MessageGrouper:
         """
         records_count = 0
         at_least_one_page_in_group = False
-        current_page_records = []
-        current_slice_descriptor: Dict[str, Any] = None
-        current_slice_pages = []
+        current_page_records: List[Mapping[str, Any]] = []
+        current_slice_descriptor: Dict[str, Any] = {}
+        current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
         had_error = False
@@ -141,7 +143,7 @@ class MessageGrouper:
                 # parsing the first slice
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
-                if self._is_http_log(json_message):
+                if json_message is not None and self._is_http_log(json_message):
                     if self._is_auxiliary_http_request(json_message):
                         title_prefix = (
                            "Parent stream: " if json_message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False) else ""
@@ -176,7 +178,7 @@ class MessageGrouper:
             yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
 
     @staticmethod
-    def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[dict]) -> bool:
+    def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
@@ -184,15 +186,18 @@ class MessageGrouper:
         )
 
     @staticmethod
-    def _is_page_http_request(json_message):
-        return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_auxiliary_http_request(json_message)
+    def _is_page_http_request(json_message: Optional[Dict[str, Any]]) -> bool:
+        if not json_message:
+            return False
+        else:
+            return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_auxiliary_http_request(json_message)
 
     @staticmethod
-    def _is_http_log(message: Optional[dict]) -> bool:
-        return message and bool(message.get("http", False))
+    def _is_http_log(message: Dict[str, Any]) -> bool:
+        return bool(message.get("http", False))
 
     @staticmethod
-    def _is_auxiliary_http_request(message: Optional[dict]) -> bool:
+    def _is_auxiliary_http_request(message: Optional[Dict[str, Any]]) -> bool:
         """
         A auxiliary request is a request that is performed and will not directly lead to record for the specific stream it is being queried.
         A couple of examples are:
@@ -206,7 +211,7 @@ class MessageGrouper:
         return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
-    def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete: bool):
+    def _close_page(current_page_request: Optional[HttpRequest], current_page_response: Optional[HttpResponse], current_slice_pages: List[StreamReadPages], current_page_records: List[Mapping[str, Any]], validate_page_complete: bool) -> None:
         """
         Close a page when parsing message groups
         @param validate_page_complete: in some cases, we expect the CDK to not return a response. As of today, this will only happen before
@@ -216,7 +221,7 @@ class MessageGrouper:
             raise ValueError("Every message grouping should have at least one request and response")
 
         current_slice_pages.append(
-            StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))
+            StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))  # type: ignore
         )
         current_page_records.clear()
 
@@ -230,17 +235,17 @@ class MessageGrouper:
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()
 
     @staticmethod
-    def _parse_json(log_message: AirbyteLogMessage):
+    def _parse_json(log_message: AirbyteLogMessage) -> Optional[Dict[str, Any]]:
         # TODO: As a temporary stopgap, the CDK emits request/response data as a log message string. Ideally this should come in the
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            return json.loads(log_message.message)
+            return json.loads(log_message.message) # type: ignore
         except JSONDecodeError:
             return None
 
     @staticmethod
-    def _create_request_from_log_message(json_http_message: dict) -> HttpRequest:
+    def _create_request_from_log_message(json_http_message: Dict[str, Any]) -> HttpRequest:
         url = urlparse(json_http_message.get("url", {}).get("full", ""))
         full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
         request = json_http_message.get("http", {}).get("request", {})
@@ -254,12 +259,12 @@ class MessageGrouper:
         )
 
     @staticmethod
-    def _create_response_from_log_message(json_http_message: dict) -> HttpResponse:
+    def _create_response_from_log_message(json_http_message: Dict[str, Any]) -> HttpResponse:
         response = json_http_message.get("http", {}).get("response", {})
         body = response.get("body", {}).get("content", "")
         return HttpResponse(status=response.get("status_code"), body=body, headers=response.get("headers"))
 
-    def _has_reached_limit(self, slices: List[StreamReadPages]):
+    def _has_reached_limit(self, slices: List[StreamReadSlices]) -> bool:
         if len(slices) >= self._max_slices:
             return True
 
@@ -274,11 +279,11 @@ class MessageGrouper:
                     return True
         return False
 
-    def _parse_slice_description(self, log_message):
-        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))
+    def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
+        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1)) # type: ignore
 
     @staticmethod
-    def _clean_config(config: Mapping[str, Any]):
+    def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:
         cleaned_config = deepcopy(config)
         for key in config.keys():
             if key.startswith("__"):

@@ -3,7 +3,7 @@
 #
 
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Mapping
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from genson import SchemaBuilder
@@ -17,7 +17,7 @@ class NoRequiredObj(Object):
     every time it parses object. So we dont add unnecessary extra field.
     """
 
-    def to_schema(self):
+    def to_schema(self) -> Mapping[str, Any]:
         schema = super(NoRequiredObj, self).to_schema()
         schema.pop("required", None)
         return schema
@@ -53,10 +53,10 @@ class SchemaInferrer:
 
     stream_to_builder: Dict[str, SchemaBuilder]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.stream_to_builder = defaultdict(NoRequiredSchemaBuilder)
 
-    def accumulate(self, record: AirbyteRecordMessage):
+    def accumulate(self, record: AirbyteRecordMessage) -> None:
         """Uses the input record to add to the inferred schemas maintained by this object"""
         self.stream_to_builder[record.stream].add_object(record.data)
 
