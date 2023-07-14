@@ -5,9 +5,12 @@ import json
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
+from datetime import datetime
 
+import pendulum
 import requests
 from typing import Any, List, Mapping, Optional, Tuple, Type, TypeVar, Generic
+import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source, AbstractSource
@@ -70,6 +73,7 @@ class TestScenario:
         if not self.expected_catalog:
             return None
         catalog: Mapping[str, Any] = {"streams": []}
+        # FIXME: there should be an input catalog in addition to the expected catalog.
         for stream in self.expected_catalog["streams"]:
             catalog["streams"].append(
                 {
@@ -121,15 +125,25 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
     def __init__(self, owner, source: AbstractSource):
         self._owner = owner
         self._source = source
+        self._now = None
         self._request_response_mapping: Mapping[RequestDescriptor, ResponseDescriptor] = {}
 
     def set_request_response_mapping(self, request_response_mapping: Mapping[str, Any]) -> "MockedHttpRequestsSourceBuilder":
         self._request_response_mapping = request_response_mapping
         return self._owner
 
+    def set_now(self, now):
+        self._now = now
+        return self._owner
+
     def build(self, configured_catalog) -> SourceType:
 
         old_streams = self._source.streams
+
+        if self._now:
+            # FIXME: we need a way to scope the freezetime
+            print(f"self.now: {self._now}")
+            freezegun.freeze_time(self._now).start()
 
         # FIXME: We want to assert a request is sent X time so we probably want a Mapping[req, List[Optiona[Response]]]
         # and remove the responses from the list as we get them

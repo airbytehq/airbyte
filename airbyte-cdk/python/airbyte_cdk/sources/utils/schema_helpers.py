@@ -105,7 +105,9 @@ class ResourceSchemaLoader:
     """JSONSchema loader from package resources"""
 
     def __init__(self, package_name: str):
-        self.package_name = package_name + ".source_stripe"
+        self.package_name = package_name
+        if "stripe" not in package_name:
+            self.package_name = package_name + ".source_stripe"
 
     def get_schema(self, name: str) -> dict:
         """

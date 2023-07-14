@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
 import json
 import math
 from abc import ABC, abstractmethod
@@ -103,6 +104,7 @@ class BasePaginationStripeStream(StripeStream, ABC):
 
     def chunk_dates(self, start_date_ts: int) -> Iterable[Tuple[int, int]]:
         now = pendulum.now().int_timestamp
+        now_dt = datetime.datetime.now()
         step = int(pendulum.duration(days=self.slice_range).total_seconds())
         after_ts = start_date_ts
         while after_ts < now:
