@@ -62,7 +62,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     parquet_various_types_scenario,
     single_parquet_scenario,
 )
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario, freeze
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
@@ -166,17 +166,13 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
 
 
 def assert_expected_records_match_output(output: List[Mapping[str, Any]], expected_output: List[Mapping[str, Any]]) -> None:
+    mismatch = []
     for actual, expected in zip(output, expected_output):
         for key, value in actual["record"]["data"].items():
             if isinstance(value, float):
                 assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
             else:
-                if value != expected["data"][key]:
-                    print(actual)
-
-                    print()
-                    print(expected)
-                    print()
+                assert value == expected["data"][key]
 
         assert actual["record"]["stream"] == expected["stream"]
 

@@ -25,10 +25,15 @@ def read_request_response_mapping_from_file(file_path: str):
 
 def read_records_from_read_output_file(file_path):
     all_records = []
+    replace = {
+        "acct_1JwnoiEcXtiJtvvh": "my_stripe_account_id",
+    }
     with open(file_path) as f:
         lines = f.readlines()
 
         for line in lines:
+            for before, after in replace.items():
+                line = line.replace(before, after)
             try:
                 obj = json.loads(line)
                 if obj["type"] == "RECORD":

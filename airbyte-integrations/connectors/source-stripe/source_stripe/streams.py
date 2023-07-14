@@ -62,6 +62,7 @@ class StripeStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        s = str(response_json)
         yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
     def read_records(
