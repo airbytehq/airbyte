@@ -58,7 +58,7 @@ public final class PostgresCatalogHelper {
    * @return will return list of sync modes
    */
   public static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH));
   }
 
   /*
@@ -123,17 +123,6 @@ public final class PostgresCatalogHelper {
         publicizedTables.stream().map(pair -> pair.getNamespace() + "." + pair.getName()).toList());
 
     return publicizedTables;
-  }
-
-  /**
-   * This method is used for xmin syncs in order to overwrite sync modes for cursor fields. For xmin, we want streams to only have incremental mode
-   * enabled.
-   *
-   * @param stream - airbyte stream
-   * @return will return list of sync modes
-   */
-  public static AirbyteStream overrideSyncModesForXmin(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL));
   }
 
   /*
