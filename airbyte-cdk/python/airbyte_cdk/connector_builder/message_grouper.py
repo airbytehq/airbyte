@@ -121,7 +121,7 @@ class MessageGrouper:
         records_count = 0
         at_least_one_page_in_group = False
         current_page_records: List[Mapping[str, Any]] = []
-        current_slice_descriptor: Dict[str, Any] = {}
+        current_slice_descriptor: Optional[Dict[str, Any]] = None
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
