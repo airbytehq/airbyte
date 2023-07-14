@@ -42,6 +42,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
+    log.info("==== davin's local image! ====");
     log.info("destination class: {}", getClass());
     final var useAsyncSnowflake = useAsyncSnowflake(config);
     log.info("using async snowflake: {}", useAsyncSnowflake);
