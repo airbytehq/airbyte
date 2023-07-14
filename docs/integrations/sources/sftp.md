@@ -3,6 +3,7 @@ This page contains the setup guide and reference information for the SFTP source
 
 ## Prerequisites
 
+* Access to a remote server that supports SFTP
 * Host address
 * Valid username and password associated with the host server
 
