@@ -12,7 +12,7 @@ data:
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   maxSecondsBetweenMessages: 7200
-  dockerImageTag: 2.1.1
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-postgres-strict-encrypt
   githubIssueLabel: source-postgres
   icon: postgresql.svg
