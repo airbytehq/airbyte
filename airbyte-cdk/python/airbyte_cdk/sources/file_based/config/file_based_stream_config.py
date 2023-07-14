@@ -151,6 +151,8 @@ class FileBasedStreamConfig(BaseModel):
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
                 return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
             else:
+                if len(v) > 1:
+                    raise ValueError(f"Format can only have one file type specified, got {v}") # FIXME: remove this check when we support multiple file types for a single stream
                 try:
                     return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
                 except KeyError as e:
