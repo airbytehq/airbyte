@@ -191,8 +191,10 @@ public class PostgresQueryUtils {
       try {
         final AirbyteStreamNameNamespacePair namespacePair =
             new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-        final long l = fileNodeForStreams(database, namespacePair, quoteString);
-        fileNodes.put(namespacePair, l);
+        final Optional<Long> fileNode = fileNodeForStreams(database, namespacePair, quoteString);
+        fileNode.ifPresentOrElse(
+            l -> fileNodes.put(namespacePair, l),
+            () -> failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
       } catch (final Exception e) {
         LOGGER.warn("Failed to fetch relation node for {}.{} .", stream.getStream().getNamespace(), stream.getStream().getName(), e);
         failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
@@ -201,7 +203,7 @@ public class PostgresQueryUtils {
     return new ResultWithFailed<>(fileNodes, failedToQuery);
   }
 
-  public static long fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
+  public static Optional<Long> fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
       throws SQLException {
     final String streamName = stream.getName();
     final String schemaName = stream.getNamespace();
@@ -211,9 +213,14 @@ public class PostgresQueryUtils {
         conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
-    final long relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
-    LOGGER.info("Relation filenode is for stream {} is {}", fullTableName, relationFilenode);
-    return relationFilenode;
+    Long relationFilenode = null;
+    if (!jsonNodes.get(0).isEmpty()) {
+      relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
+      LOGGER.info("Relation filenode is for stream {} is {}", fullTableName, relationFilenode);
+    } else {
+      LOGGER.debug("No filenode found for {}", fullTableName);
+    }
+    return Optional.ofNullable(relationFilenode);
   }
 
   public static ResultWithFailed<List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair>> streamsUnderVacuum(final JdbcDatabase database,

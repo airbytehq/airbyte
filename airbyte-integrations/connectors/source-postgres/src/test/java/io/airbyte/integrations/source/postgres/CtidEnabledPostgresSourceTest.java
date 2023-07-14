@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CURSOR_VIA_CTID;
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractSpecificFieldFromCombinedMessages;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
@@ -152,9 +153,9 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     // The expected state type should be 2 ctid's and the last one being standard
     final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "cursor_based");
     final List<String> stateTypeOfStreamOneStatesFromFirstSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, STATE_TYPE_KEY);
     final List<String> stateTypeOfStreamTwoStatesFromFirstSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamTwoName, STATE_TYPE_KEY);
     // It should be the same for stream1 and stream2
     assertEquals(stateTypeOfStreamOneStatesFromFirstSync, expectedStateTypesFromFirstSync);
     assertEquals(stateTypeOfStreamTwoStatesFromFirstSync, expectedStateTypesFromFirstSync);
@@ -208,12 +209,12 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     final List<AirbyteStateMessage> streamOneStateMessagesFromSecondSync =
         extractStateMessage(messagesFromSecondSyncWithMixedStates, streamOneName);
     final List<String> stateTypeOfStreamOneStatesFromSecondSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamOneName, STATE_TYPE_KEY);
 
     final List<AirbyteStateMessage> streamTwoStateMessagesFromSecondSync =
         extractStateMessage(messagesFromSecondSyncWithMixedStates, streamTwoName);
     final List<String> stateTypeOfStreamTwoStatesFromSecondSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, STATE_TYPE_KEY);
 
     // Stream One states after the second sync are expected to have 2 stream states
     // - 1 with Ctid state_type and 1 state that is of cursorBased state type
@@ -248,14 +249,14 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     final List<AirbyteStateMessage> streamOneStateMessagesFromThirdSync =
         extractStateMessage(messagesFromThirdSync, streamOneName);
     final List<String> stateTypeOfStreamOneStatesFromThirdSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, STATE_TYPE_KEY);
     final List<String> cursorOfStreamOneStatesFromThirdSync =
         extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, "cursor");
 
     final List<AirbyteStateMessage> streamTwoStateMessagesFromThirdSync =
         extractStateMessage(messagesFromThirdSync, streamTwoName);
     final List<String> stateTypeOfStreamTwoStatesFromThirdSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, STATE_TYPE_KEY);
     final List<String> cursorOfStreamTwoStatesFromThirdSync =
         extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "cursor");
 
