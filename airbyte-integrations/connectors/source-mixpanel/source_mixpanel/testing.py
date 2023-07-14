@@ -22,16 +22,9 @@ def adapt_streams_if_testing(func):
     # Patch Funnels, so we download data only for one Funnel entity
     @wraps(func)
     def wrapper(self, config):
-        if not bool(os.environ.get("PATCH_FUNNEL_SLICES", "")):
-            return func(self, config)
-
-        streams = func(self, config)
-        for stream in streams:
-            if isinstance(stream, Funnels):
-                stream.funnel_slices = funnel_slices_patched
-                break
-        return streams
-
+        if bool(os.environ.get("PATCH_FUNNEL_SLICES", "")):
+            Funnels.funnel_slices = funnel_slices_patched
+        return func(self, config)
     return wrapper
 
 
