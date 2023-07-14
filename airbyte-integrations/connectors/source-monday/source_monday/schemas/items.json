@@ -76,6 +76,7 @@
       }
     },
     "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "updated_at_int": { "type": ["null", "integer"] },
     "updates": {
       "type": ["null", "array"],
       "items": {
