@@ -542,16 +542,9 @@ class PublishConnectorContext(ConnectorContext):
         else:
             return metadata_tag
 
-    @property
-    def docker_image_name(self):
-        if self.pre_release:
-            return f"{self.docker_image}-dev.{self.git_revision[:10]}"
-        else:
-            return self.docker_image
-
     def create_slack_message(self) -> str:
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
-        message = f"*Publish <{docker_hub_url}|{self.docker_image_name}>*\n"
+        message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
             message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"
         else:
