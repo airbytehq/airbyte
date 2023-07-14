@@ -8,7 +8,7 @@ import logging
 from distutils.util import strtobool
 from typing import Any, Dict, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.file_based.config.csv_format import QuotingBehavior, CsvFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader

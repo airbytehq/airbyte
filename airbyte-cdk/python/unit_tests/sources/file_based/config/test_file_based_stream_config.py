@@ -5,7 +5,6 @@
 from typing import Any, Mapping, Type
 
 import pytest as pytest
-
 from airbyte_cdk.sources.file_based.config.csv_format import QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig
 from pydantic import ValidationError
