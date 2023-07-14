@@ -5,6 +5,7 @@
 import codecs
 from enum import Enum
 from typing import Any, List, Mapping, Optional, Union
+from typing_extensions import Literal
 
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
@@ -18,17 +19,21 @@ class QuotingBehavior(Enum):
     QUOTE_NONNUMERIC = "Quote Non-numeric"
     QUOTE_NONE = "Quote None"
 
+
 class JsonlFormat(BaseModel):
     pass
+
 
 class ParquetFormat(BaseModel):
     # Legacy S3 source converted decimal columns to floats, which is not ideal because it loses precision.
     # We default to keeping decimals as strings, but allow users to opt into the legacy behavior.
-    #FIXME: make this afield
+    # FIXME: makes this afield
+    filetype: Literal["parquet"] = "parquet"
     decimal_as_float: bool = False
 
 
 class CsvFormat(BaseModel):
+    filetype: Literal["csv"] = "csv"
     delimiter: str = Field(
         title="Delimiter",
         description="The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -56,6 +61,7 @@ class CsvFormat(BaseModel):
         default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
         description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
     )
+
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
     # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks
     # of using pyarrow
@@ -88,7 +94,9 @@ class CsvFormat(BaseModel):
             raise ValueError(f"invalid encoding format: {v}")
         return v
 
+
 VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
+
 
 class FileBasedStreamConfig(BaseModel):
     name: str = Field(title="Name", description="The name of the stream.")
@@ -113,10 +121,10 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Mapping[str, CsvFormat]] = Field(
+    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat]]] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
-    )  # this will eventually be a Union once we have more than one format type
+    )
     schemaless: bool = Field(
         title="Schemaless",
         description="When enabled, syncs will not validate or structure records against the stream's schema.",

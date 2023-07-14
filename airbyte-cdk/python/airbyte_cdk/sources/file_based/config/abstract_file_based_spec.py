@@ -54,11 +54,13 @@ class AbstractFileBasedSpec(BaseModel):
         # this will need to add ["anyOf"] once we have more than one format type and loop over the list of elements
         objects_to_check = schema["properties"]["streams"]["items"]["properties"]["format"]
         if "additionalProperties" in objects_to_check:
-            for key in objects_to_check["additionalProperties"]["properties"]:
-                object_property = objects_to_check["additionalProperties"]["properties"][key]
-                if "allOf" in object_property and "enum" in object_property["allOf"][0]:
-                    object_property["enum"] = object_property["allOf"][0]["enum"]
-                    object_property.pop("allOf")
+            objects_to_check["additionalProperties"]["oneOf"] = objects_to_check["additionalProperties"].pop("anyOf")
+            for format in objects_to_check["additionalProperties"]["oneOf"]:
+                for key in format["properties"]:
+                    object_property = format["properties"][key]
+                    if "allOf" in object_property and "enum" in object_property["allOf"][0]:
+                        object_property["enum"] = object_property["allOf"][0]["enum"]
+                        object_property.pop("allOf")
 
         properties_to_change = ["primary_key", "input_schema"]
         for property_to_change in properties_to_change:

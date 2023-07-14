@@ -531,6 +531,7 @@ parquet_file_with_decimal_as_float_scenario = (
                     "validation_policy": "emit_record",
                     "format": {
                         "parquet": {
+                            "filetype": "parquet",
                             "decimal_as_float": True
                         }
                     }
