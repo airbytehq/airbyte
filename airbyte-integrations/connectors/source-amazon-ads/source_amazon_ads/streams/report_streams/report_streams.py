@@ -171,9 +171,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    recordId=metric_object.get(self.metrics_type_to_id_map[report_info.record_type], str(uuid.uuid4())),
+                    recordId=self.get_record_id(metric_object, report_info.record_type),
                     metric=metric_object,
                 ).dict()
+
+    def get_record_id(self, metric_object: dict, record_type: str) -> str:
+        return metric_object.get(self.metrics_type_to_id_map[record_type]) or str(uuid.uuid4())
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
