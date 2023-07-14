@@ -29,7 +29,7 @@ Download a Service account json key that has access to Google Secrets Manager.
 * Click on "ADD KEY -> Create new key" and select JSON. This will download a file on your computer
 
 ### Setup ci_credentials
-* In your .zshrc, add: `export GCP_GSM_CREDENTIALS=cat $(<path to JSON file>)`
+* In your .zshrc, add: `export GCP_GSM_CREDENTIALS=$(cat <path to JSON file>)`
 * Follow README.md under `tools/ci_credentials`
 
 After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./tools/ci_*`

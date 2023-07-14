@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-tidb
   githubIssueLabel: source-tidb
   icon: tidb.svg

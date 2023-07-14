@@ -12,8 +12,11 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -42,7 +45,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
+    return nameTransformer.applyDefaultCase(String.join(".",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }
@@ -163,7 +166,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -193,7 +196,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -214,7 +217,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }

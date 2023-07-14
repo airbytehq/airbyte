@@ -17,7 +17,7 @@ setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.40.3",
+    version="0.44.4",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -62,17 +62,20 @@ setup(
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "cachetools",
+        "wcmatch==8.4",
+        "pyarrow==12.0.1",
     ],
     python_requires=">=3.8",
     extras_require={
         "dev": [
             "freezegun",
-            "MyPy~=0.812",
+            "mypy",
             "pytest",
             "pytest-cov",
             "pytest-mock",
             "requests-mock",
             "pytest-httpserver",
+            "pandas==2.0.3",
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",

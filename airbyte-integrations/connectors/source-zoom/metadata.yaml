@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/sources/zoom
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   tags:
     - language:low-code
     - language:python

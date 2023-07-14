@@ -162,6 +162,9 @@
           }
         }
       }
+    },
+    "payment_options": {
+      "type": ["null", "array"]
     }
   }
 }
