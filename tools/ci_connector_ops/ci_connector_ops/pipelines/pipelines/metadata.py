@@ -99,8 +99,7 @@ class MetadataUpload(PoetryRun):
         upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
 
         if self.pre_release:
-            pre_release_flag = ["--prerelease", self.pre_release_tag]
-            upload_command = upload_command + pre_release_flag
+            upload_command += ["--prerelease", self.pre_release_tag]
 
         return await super()._run(upload_command)
 
