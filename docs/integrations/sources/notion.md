@@ -17,7 +17,6 @@ To authenticate the Notion source connector, you must choose **one** of the foll
 
 ### Step 1: Create an integration in Notion​
 
-
 1. Log in to your Notion workspace and navigate to the [My integrations](https://www.notion.so/my-integrations) page. Select **+ New integration**.
 
 :::note
@@ -25,11 +24,13 @@ You must be the owner of the Notion workspace to create a new integration associ
 :::
 
 2. Enter a **Name** for your Airbyte integration. Make sure you have selected the workspace containing your data to replicate from the **Asociated workspace** dropdown menu, and click **Submit**.
-3. In the navbar, select **Capabilities** and make sure to check the **Read content** and any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+3. In the navbar, select **Capabilities** and make sure to check **Read content**, as well as any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
 
 #### Acquire the Access Token
 4. If you are authenticating with an Access Token, you can copy the token from the **Secrets** section of your Notion integration's page.
-4. In the navbar, select **Distribution**, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
+
+#### Acquire the OAuth2.0 credentials (Open Source only)
+5. If you are authenticating through OAuth2In the navbar, select **Distribution**, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
 6. If you select **Public integration**, fill out the fields in the **OAuth Domain & URIs** section.
 7. Click **Save changes**.
 8. Copy the Internal Access Token if you are using the [internal integration](https://developers.notion.com/docs/authorization#authorizing-internal-integrations), or copy the `access_token`, `client_id`, and `client_secret` if you are using the [public integration](https://developers.notion.com/docs/authorization#authorizing-public-integrations).
@@ -53,7 +54,7 @@ For more information on creating an integration in Notion, refer to the
 - If you select **Access Token**, copy and paste the Access Token found in the **Secrets** section of your Notion integration's page.
 - If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
 
-6. Enter the **Start Date** in `YYYY-MM-DDTHH:mm:ssZ` format. All data generated after this date will be replicated.
+6. Enter the **Start Date** using the provided datepicker, or by programmatically entering a UTC timestamp in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
