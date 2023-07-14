@@ -106,13 +106,18 @@ The Google Ads source connector can sync the following tables. It can also sync 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 ### Report Tables
-
+ 
+- [ad_groups](https://developers.google.com/google-ads/api/fields/v14/ad_group)
+- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+- [ad_group_criterion_labels](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
 - [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
 - [campaign budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
+- [customer_labels](https://developers.google.com/google-ads/api/fields/v14/customer_label)
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 - [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+- [labels](https://developers.google.com/google-ads/api/fields/v14/label)
 - [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 - [user_location_report](https://developers.google.com/google-ads/api/fields/v11/user_location_view)
 
@@ -162,6 +167,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.7.0`  | 2023-07-12 | [28246](https://github.com/airbytehq/airbyte/pull/28246) | Add new streams: labels, criterions, biddig strategies                                                                               |
 | `0.6.1`  | 2023-07-12 | [28230](https://github.com/airbytehq/airbyte/pull/28230) | Reduce amount of logs produced by the connector while working with big amount of data                                                |
 | `0.6.0`  | 2023-07-10 | [28078](https://github.com/airbytehq/airbyte/pull/28078) | Add new stream `Campaign Budget`                                                                                                     |
 | `0.5.0`  | 2023-07-07 | [28042](https://github.com/airbytehq/airbyte/pull/28042) | Add metrics & segment to `Campaigns` stream                                                                                          |
