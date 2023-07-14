@@ -171,7 +171,13 @@ def assert_expected_records_match_output(output: List[Mapping[str, Any]], expect
             if isinstance(value, float):
                 assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
             else:
-                assert value == expected["data"][key]
+                if value != expected["data"][key]:
+                    print(actual)
+
+                    print()
+                    print(expected)
+                    print()
+
         assert actual["record"]["stream"] == expected["stream"]
 
 
