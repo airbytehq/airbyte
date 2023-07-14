@@ -237,28 +237,28 @@ def build(ctx: click.Context) -> bool:
     "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="SPEC_CACHE_GCS_CREDENTIALS",
 )
 @click.option(
     "--spec-cache-bucket-name",
     help="The name of the GCS bucket where specs will be cached.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
 @click.option(
     "--metadata-service-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting the metadata files.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="METADATA_SERVICE_GCS_CREDENTIALS",
 )
 @click.option(
     "--metadata-service-bucket-name",
     help="The name of the GCS bucket where metadata files will be uploaded.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
 @click.option(
