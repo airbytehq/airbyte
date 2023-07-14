@@ -3,11 +3,10 @@
 #
 
 import json
-from typing import Iterator, Mapping, Any, List
-from unittest.mock import MagicMock, patch, Mock
+from typing import Any, Iterator, List, Mapping
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
 from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from airbyte_cdk.models import (
