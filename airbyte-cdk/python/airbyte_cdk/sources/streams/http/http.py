@@ -284,7 +284,6 @@ class HttpStream(Stream, ABC):
         return urljoin(url_base, path)
     
     def _actually_send_request(self, request: requests.PreparedRequest, **request_kwargs: Mapping[str, Any]) -> requests.Response:
-        raise ValueError("This method should be overridden by subclasses")
         return self._session.send(request, **request_kwargs)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
