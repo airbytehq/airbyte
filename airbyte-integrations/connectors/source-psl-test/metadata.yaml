@@ -1,0 +1,20 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 085ea7b0-2117-48a1-ac7d-20e9cd995a0d
+  dockerImageTag: 0.1.5
+  dockerRepository: airbyte/source-psl-test
+  githubIssueLabel: source-psl-test
+  icon: pokeapi.svg
+  license: MIT
+  name: PSL Test Source
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
