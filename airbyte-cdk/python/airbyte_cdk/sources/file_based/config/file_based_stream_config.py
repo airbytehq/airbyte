@@ -21,15 +21,17 @@ class QuotingBehavior(Enum):
 
 
 class JsonlFormat(BaseModel):
-    pass
+    filetype: Literal["jsonl"] = "jsonl"
 
 
 class ParquetFormat(BaseModel):
-    # Legacy S3 source converted decimal columns to floats, which is not ideal because it loses precision.
-    # We default to keeping decimals as strings, but allow users to opt into the legacy behavior.
-    # FIXME: makes this afield
     filetype: Literal["parquet"] = "parquet"
-    decimal_as_float: bool = False
+    decimal_as_float: bool = Field(
+        title="Convert Decimal Fields to Floats",
+        description="Whether to convert decimal fields to floats. This is the legacy behavior of the S3 source."
+                    "There is a loss of precision when converting decimals to floats, so this is not recommended.",
+        default=False,
+    )
 
 
 class CsvFormat(BaseModel):
