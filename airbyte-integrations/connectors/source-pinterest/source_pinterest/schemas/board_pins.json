@@ -1,11 +1,34 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
     },
     "created_at": {
+      "type": ["null", "string"]
+    },
+    "creative_type": {
+      "type": ["null", "string"],
+      "enum": ["REGULAR", "VIDEO", "CAROUSEL", "MAX_VIDEO", "SHOP_THE_PIN", "IDEA"]
+    },
+    "is_standard": {
+      "type": ["null", "boolean"]
+    },
+    "is_owner": {
+      "type": ["null", "boolean"]
+    },
+    "product_tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "dominant_color": {
+      "type": ["null", "string"]
+    },
+    "parent_pin_id": {
       "type": ["null", "string"]
     },
     "link": {
@@ -20,6 +43,9 @@
     "alt_text": {
       "type": ["null", "string"]
     },
+    "note": {
+      "type": ["null", "string"]
+    },
     "board_id": {
       "type": ["null", "string"]
     },
@@ -28,6 +54,7 @@
     },
     "board_owner": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "username": {
           "type": ["null", "string"]
@@ -36,6 +63,7 @@
     },
     "media": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "media_type": {
           "type": ["null", "string"]

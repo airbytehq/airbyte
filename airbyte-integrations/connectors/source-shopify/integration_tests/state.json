@@ -1,83 +1,183 @@
 {
   "customers": {
-    "updated_at": "2022-06-22T03:50:13-07:00"
+      "updated_at": "2022-10-11T08:40:51-07:00"
   },
   "orders": {
-    "updated_at": "2022-10-10T06:21:53-07:00"
+      "updated_at": "2022-10-12T11:15:27-07:00"
   },
   "draft_orders": {
-    "updated_at": "2022-10-08T05:07:29-07:00"
+      "updated_at": "2022-10-08T05:07:29-07:00"
   },
   "products": {
-    "updated_at": "2022-10-10T06:21:56-07:00"
+      "updated_at": "2023-03-20T06:08:51-07:00"
   },
   "products_graph_ql": {
-    "updated_at": "2022-11-16T16:00:00-07:00"
+      "updatedAt": "2023-03-20T13:08:51Z"
   },
   "abandoned_checkouts": {},
   "metafields": {
-    "updated_at": "2022-05-30T23:42:02-07:00"
+      "updated_at": "2022-05-30T23:42:02-07:00"
   },
   "collects": {
-    "id": 29427031703740
+      "id": 29427031703741
   },
   "custom_collections": {
-    "updated_at": "2022-10-08T04:44:51-07:00"
+      "updated_at": "2023-03-20T06:08:12-07:00"
   },
   "order_refunds": {
-    "created_at": "2022-10-10T06:21:53-07:00",
-    "orders": {
-      "updated_at": "2022-10-10T06:21:53-07:00"
-    }
+      "orders": {
+          "updated_at": "2022-10-12T11:15:27-07:00"
+      },
+      "created_at": "2022-10-10T06:21:53-07:00"
   },
   "order_risks": {
-    "id": 6446736474301,
-    "orders": {
-      "updated_at": "2022-03-07T02:09:04-08:00"
-    }
+      "orders": {
+          "updated_at": "2022-03-07T02:09:04-08:00"
+      },
+      "id": 6446736474301
   },
   "transactions": {
-    "created_at": "2022-10-10T06:21:52-07:00",
-    "orders": {
-      "updated_at": "2022-10-10T06:21:53-07:00"
-    }
+      "orders": {
+          "updated_at": "2022-10-12T11:15:27-07:00"
+      },
+      "created_at": "2022-10-10T06:21:52-07:00"
   },
   "tender_transactions": {
-    "processed_at": "2022-10-10T06:21:52-07:00"
+      "processed_at": "2022-10-10T06:21:52-07:00"
   },
   "pages": {
-    "updated_at": "2022-10-08T08:07:00-07:00"
+      "updated_at": "2022-10-08T08:07:00-07:00"
   },
   "price_rules": {
-    "updated_at": "2021-09-10T06:48:10-07:00"
+      "updated_at": "2022-10-14T10:19:39-07:00"
   },
   "discount_codes": {
-    "price_rules": {
-      "updated_at": "2021-09-10T06:48:10-07:00"
-    },
-    "updated_at": "2021-09-10T06:48:10-07:00"
+      "price_rules": {
+          "updated_at": "2022-10-14T10:10:25-07:00"
+      },
+      "updated_at": "2022-10-14T10:10:25-07:00"
   },
   "inventory_items": {
-    "products": {
-      "updated_at": "2022-03-17T03:10:35-07:00"
-    },
-    "updated_at": "2022-03-06T14:12:20-08:00"
+      "products": {
+          "updated_at": "2023-03-20T06:08:51-07:00"
+      },
+      "updated_at": "2023-01-06T10:35:26-08:00"
   },
   "inventory_levels": {
-    "locations": {},
-    "updated_at": "2022-10-10T06:21:56-07:00"
+      "locations": {},
+      "updated_at": "2023-01-06T10:35:27-08:00"
   },
   "fulfillment_orders": {
-    "id": 5567724486845,
-    "orders": {
-      "updated_at": "2022-10-10T06:05:29-07:00"
-    }
+      "orders": {
+          "updated_at": "2022-10-10T06:05:29-07:00"
+      },
+      "id": 5567724486845
   },
   "fulfillments": {
-    "updated_at": "2022-06-22T03:50:14-07:00",
-    "orders": {
-      "updated_at": "2022-10-10T06:05:29-07:00"
-    }
+      "orders": {
+          "updated_at": "2022-10-10T06:05:29-07:00"
+      },
+      "updated_at": "2022-06-22T03:50:14-07:00"
   },
-  "balance_transactions": {}
+  "balance_transactions": {},
+  "articles": {
+      "id": 558137508029
+  },
+  "metafield_articles": {
+      "articles": {
+          "id": 558137508029
+      },
+      "updated_at": "2022-10-07T16:09:02-07:00"
+  },
+  "blogs": {
+      "id": 80417685693
+  },
+  "metafield_blogs": {
+      "blogs": {
+          "id": 80417685693
+      },
+      "updated_at": "2022-10-07T06:05:23-07:00"
+  },
+  "metafield_customers": {
+      "customers": {
+          "updated_at": "2022-10-11T08:40:51-07:00"
+      },
+      "updated_at": "2022-10-11T08:40:51-07:00"
+  },
+  "metafield_orders": {
+      "orders": {
+          "updated_at": "2022-10-12T11:15:27-07:00"
+      },
+      "updated_at": "2022-10-12T11:15:27-07:00"
+  },
+  "metafield_draft_orders": {
+      "draft_orders": {
+          "updated_at": "2022-10-08T05:07:29-07:00"
+      },
+      "updated_at": "2022-10-08T05:07:29-07:00"
+  },
+  "metafield_products": {
+      "products": {
+          "updated_at": "2023-03-20T06:08:32-07:00"
+      },
+      "updated_at": "2022-10-08T08:45:01-07:00"
+  },
+  "product_images": {
+      "products": {
+          "updated_at": "2023-03-20T06:08:51-07:00"
+      },
+      "id": 32940458868925
+  },
+  "metafield_product_images": {
+      "products": {
+          "updated_at": "2023-03-20T06:08:51-07:00"
+      },
+      "updated_at": "2022-10-13T04:01:00-07:00"
+  },
+  "product_variants": {
+      "products": {
+          "updated_at": "2023-03-20T06:08:51-07:00"
+      },
+      "id": 42595864019133
+  },
+  "metafield_product_variants": {
+      "products": {
+          "updated_at": "2023-03-20T06:08:51-07:00"
+      },
+      "updated_at": "2022-10-14T10:16:04-07:00"
+  },
+  "collections": {
+      "updated_at": "2023-03-20T06:08:12-07:00",
+      "collects": {
+          "id": 29427031703741
+      }
+  },
+  "metafield_collections": {
+      "updated_at": "2022-10-08T04:44:51-07:00",
+      "collects": {
+          "id": 29427031703741
+      }
+  },
+  "smart_collections": {
+      "updated_at": "2023-03-20T06:08:12-07:00"
+  },
+  "metafield_smart_collections": {
+      "smart_collections": {
+          "updated_at": "2023-03-20T06:08:12-07:00"
+      },
+      "updated_at": "2022-10-12T13:36:55-07:00"
+  },
+  "metafield_pages": {
+      "pages": {
+          "updated_at": "2022-10-08T08:07:00-07:00"
+      },
+      "updated_at": "2022-10-08T08:07:00-07:00"
+  },
+  "metafield_shops": {
+      "updated_at": "2022-05-30T23:42:02-07:00"
+  },
+  "metafield_locations": {
+      "locations": {},
+      "updated_at": "2022-10-12T02:21:35-07:00"
+  }
 }

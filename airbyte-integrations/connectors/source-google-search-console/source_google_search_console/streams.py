@@ -3,6 +3,7 @@
 #
 
 from abc import ABC
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
@@ -16,6 +17,12 @@ BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
 
 
+class QueryAggregationType(Enum):
+    auto = "auto"
+    by_page = "byPage"
+    by_property = "byProperty"
+
+
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
     primary_key = None
@@ -27,11 +34,13 @@ class GoogleSearchConsole(HttpStream, ABC):
         site_urls: list,
         start_date: str,
         end_date: str,
+        data_state: str = "final",
     ):
         super().__init__(authenticator=authenticator)
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
+        self._data_state = data_state
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:
@@ -92,6 +101,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     """
 
     data_field = "rows"
+    aggregation_type = QueryAggregationType.auto
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
@@ -119,7 +129,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         """
         The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
-        searchType` value from [` web`, `news `,` image`, `video`]. It's just a double nested loop with a yield statement.
+        searchType` value from [` web`, `news `,` image`, `video`,  `discover`, `googleNews`].
+        It's just a double nested loop with a yield statement.
         """
 
         for site_url in self._site_urls:
@@ -139,6 +150,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                         "search_type": search_type,
                         "start_date": next_start.to_date_string(),
                         "end_date": next_end.to_date_string(),
+                        "data_state": self._data_state,
                     }
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
                     next_start = next_end + pendulum.Duration(days=1)
@@ -173,7 +185,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         2. The `endDate` is retrieved from the `config.json`.
         3. The `sizes` parameter is used to group the result by some dimension.
         The following dimensions are available: `date`, `country`, `page`, `device`, `query`.
-        4. For the `searchType` check the paragraph stream_slices method.
+        4. For the `type` check the paragraph stream_slices method.
+         Filter results to the following type ["web", "news", "image", "video", "discover", "googleNews"]
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
@@ -181,10 +194,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "startDate": stream_slice["start_date"],
             "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
-            "searchType": stream_slice.get("search_type"),
-            "aggregationType": "auto",
+            "type": stream_slice.get("search_type"),
+            "aggregationType": self.aggregation_type.value,
             "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
+            "dataState": stream_slice.get("data_state"),
         }
         return data
 
@@ -274,18 +288,22 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date"]
 
 
 class SearchAnalyticsByCountry(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "page"]
 
 
@@ -295,6 +313,68 @@ class SearchAnalyticsByQuery(SearchAnalytics):
 
 class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
+
+
+class SearchAppearance(SearchAnalytics):
+    """
+    Dimension searchAppearance can't be used with other dimension.
+    search appearance data (AMP, blue link, rich result, and so on) must be queried using a two-step process.
+    https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+    """
+
+    dimensions = ["searchAppearance"]
+
+
+class SearchByKeyword(SearchAnalytics):
+    """
+    Adds searchAppearance value to dimensionFilterGroups in json body
+    https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+    """
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
+        keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
+        keywords = {record["searchAppearance"] for record in keywords_records}
+
+        filters = []
+        for keyword in keywords:
+            filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
+
+        data["dimensionFilterGroups"] = [{"filters": filters}]
+
+        return data
+
+
+class SearchAnalyticsKeywordPageReport(SearchByKeyword):
+    dimensions = ["date", "country", "device", "query", "page"]
+
+
+class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
+    dimensions = ["date", "country", "device", "query"]
+    aggregation_type = QueryAggregationType.by_page
+
+
+class SearchAnalyticsSiteReportBySite(SearchAnalytics):
+    dimensions = ["date", "country", "device"]
+    aggregation_type = QueryAggregationType.by_property
+
+
+class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
+    dimensions = ["date", "country", "device"]
+    aggregation_type = QueryAggregationType.by_page
+
+
+class SearchAnalyticsPageReport(SearchAnalytics):
+    search_types = ["web", "news", "image", "video", "googleNews"]
+    dimensions = ["date", "country", "device", "page"]
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
@@ -315,7 +395,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
         except FileNotFoundError:
             schema: Mapping[str, Any] = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "additionalProperties": True,
                 "properties": {

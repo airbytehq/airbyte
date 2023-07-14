@@ -37,6 +37,11 @@ def config_fixture():
     return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
 
 
+@pytest.fixture(name="config_invalid_date")
+def config_invalid_date_fixture():
+    return {"start_date": "2000-00-00T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
+
+
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
     return {"credentials_title": "Private App Credentials", "access_token": "wrong token"}

@@ -12,7 +12,8 @@
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for Recharge API, in the format YYYY-MM-DDT00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2021-05-14T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "format": "date-time"
       },
       "access_token": {
         "type": "string",

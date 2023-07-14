@@ -19,7 +19,7 @@ class BrandsCampaign(CatalogModel):
     state: str
     servingStatus: str
     brandEntityId: str
-    portfolioId: Decimal
+    portfolioId: int
     bidOptimization: bool = None
     bidMultiplier: Decimal = None
     adFormat: str

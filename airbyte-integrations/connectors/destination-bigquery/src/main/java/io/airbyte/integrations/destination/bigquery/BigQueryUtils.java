@@ -37,10 +37,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -200,16 +199,18 @@ public class BigQueryUtils {
    * @param tableId equivalent to table name
    * @param schema representation for table schema
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
-   * was not successfully created
+   *         was not successfully created
    */
   static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
+      final var chunkingColumn =
+          TypingAndDedupingFlag.isDestinationV2() ? JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-          .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+          .setField(chunkingColumn)
           .build();
 
       final Clustering clustering = Clustering.newBuilder()
-          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .setFields(ImmutableList.of(chunkingColumn))
           .build();
 
       final StandardTableDefinition tableDefinition =
@@ -222,6 +223,7 @@ public class BigQueryUtils {
 
       final Table table = bigquery.getTable(tableInfo.getTableId());
       if (table != null && table.exists()) {
+        // TODO: Handle migration from v1 -> v2
         LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
       } else {
         bigquery.create(tableInfo);
@@ -354,15 +356,6 @@ public class BigQueryUtils {
         : null);
   }
 
-  /**
-   * @return BigQuery dataset ID
-   */
-  public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String srcNamespace = stream.getStream().getNamespace();
-    final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
-    return sanitizeDatasetId(schemaName);
-  }
-
   public static String sanitizeDatasetId(final String datasetId) {
     return NAME_TRANSFORMER.getNamespace(datasetId);
   }
@@ -458,7 +451,7 @@ public class BigQueryUtils {
   }
 
   private static String getConnectorNameOrDefault() {
-    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+    return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
   }

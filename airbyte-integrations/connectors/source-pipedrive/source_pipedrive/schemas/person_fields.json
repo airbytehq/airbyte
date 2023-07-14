@@ -21,7 +21,9 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "last_updated_by_user_id": {
       "type": ["null", "integer"]

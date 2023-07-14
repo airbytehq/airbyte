@@ -86,3 +86,4 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 | Version | Date       | Pull Request                                                  | Subject                          |
 |:--------|:-----------|:--------------------------------------------------------------|:---------------------------------|
 | 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428			   | New Destination Teradata Vantage |
+| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760			   | Added SSL support                |

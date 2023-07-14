@@ -1,78 +1,48 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "title": "Creatives",
+  "additionalProperties": true,
   "properties": {
-    "campaign": {
-      "type": ["null", "string"]
+    "servingHoldReasons": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
     },
-    "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "lastModified": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "id": {
+    "lastModifiedAt": {
       "type": ["null", "integer"]
     },
-    "reference": {
+    "lastModifiedBy": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "object"]
+    },
+    "createdAt": {
+      "type": ["null", "integer"]
+    },
+    "isTest": {
+      "type": ["null", "boolean"]
+    },
+    "createdBy": {
       "type": ["null", "string"]
     },
     "review": {
-      "type": ["null", "object"],
-      "properties": {
-        "reviewStatus": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": ["null", "object"]
     },
-    "status": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
-    "variables": {
-      "type": ["null", "object"],
-      "properties": {
-        "click_uri": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "string"]
-        },
-        "values": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "object"],
-            "properties": {
-              "key": {
-                "type": ["null", "string"]
-              },
-              "value": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "version": {
-      "type": ["null", "object"],
-      "properties": {
-        "versionTag": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "test": {
+    "isServing": {
       "type": ["null", "boolean"]
     },
-    "servingStatuses": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "intendedStatus": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": ["null", "string"]
     }
   }
 }

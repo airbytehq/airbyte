@@ -63,7 +63,9 @@ class AdCreatives(FBMarketingStream):
         """Read with super method and append thumbnail_data_url if enabled"""
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
-                record["thumbnail_data_url"] = fetch_thumbnail_data_url(record.get("thumbnail_url"))
+                thumbnail_url = record.get("thumbnail_url")
+                if thumbnail_url:
+                    record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
@@ -225,4 +227,65 @@ class AdsInsightsPlatformAndDevice(AdsInsights):
 
 class AdsInsightsActionType(AdsInsights):
     breakdowns = []
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionCarouselCard(AdsInsights):
+    action_breakdowns = ["action_carousel_card_id", "action_carousel_card_name"]
+
+
+class AdsInsightsActionConversionDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionProductID(AdsInsights):
+    breakdowns = ["product_id"]
+    action_breakdowns = []
+
+
+class AdsInsightsActionReaction(AdsInsights):
+    action_breakdowns = ["action_reaction"]
+
+
+class AdsInsightsActionVideoSound(AdsInsights):
+    action_breakdowns = ["action_video_sound"]
+
+
+class AdsInsightsActionVideoType(AdsInsights):
+    action_breakdowns = ["action_video_type"]
+
+
+class AdsInsightsDeliveryDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatform(AdsInsights):
+    breakdowns = ["publisher_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatformAndDevicePlatform(AdsInsights):
+    breakdowns = ["publisher_platform", "device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsAge(AdsInsights):
+    breakdowns = ["age"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsCountry(AdsInsights):
+    breakdowns = ["country"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsDMARegion(AdsInsights):
+    breakdowns = ["dma"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsGender(AdsInsights):
+    breakdowns = ["gender"]
     action_breakdowns = ["action_type"]

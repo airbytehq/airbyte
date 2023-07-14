@@ -29,18 +29,15 @@
     "defined": { "type": "boolean", "description": "Deprecated." },
     "numberOfSeats": {
       "type": "integer",
-      "description": "The maximum count of users on your license.",
-      "format": "int32"
+      "description": "The maximum count of users on your license."
     },
     "remainingSeats": {
       "type": "integer",
-      "description": "The count of users remaining on your license.",
-      "format": "int32"
+      "description": "The count of users remaining on your license."
     },
     "userCount": {
       "type": "integer",
-      "description": "The number of users counting against your license.",
-      "format": "int32"
+      "description": "The number of users counting against your license."
     },
     "userCountDescription": {
       "type": "string",

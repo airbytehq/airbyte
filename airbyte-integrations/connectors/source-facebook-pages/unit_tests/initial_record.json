@@ -1,0 +1,294 @@
+{
+  "id": "112704783733939",
+  "about": "The new open-source standard for data integration platform that syncs data from applications, APIs &",
+  "birthday": "02/10/1986",
+  "can_checkin": true,
+  "can_post": true,
+  "category": "Software Company",
+  "category_list": [
+    {
+      "id": "1065597503495311",
+      "name": "Software Company"
+    }
+  ],
+  "checkins": 0,
+  "display_subtext": "350 29th avenue\u30fbSan Francisco, CA",
+  "displayed_message_response_time": "AUTOMATIC",
+  "emails": ["marketing@airbyte.io"],
+  "fan_count": 270,
+  "followers_count": 320,
+  "global_brand_page_name": "Airbyte",
+  "has_transitioned_to_new_page_experience": true,
+  "is_always_open": false,
+  "is_community_page": false,
+  "is_eligible_for_branded_content": true,
+  "is_messenger_bot_get_started_enabled": false,
+  "is_messenger_platform_bot": false,
+  "is_owned": true,
+  "is_permanently_closed": false,
+  "is_published": true,
+  "is_unclaimed": false,
+  "is_webhooks_subscribed": false,
+  "leadgen_tos_acceptance_time": "2022-04-29T20:33:56+0000",
+  "leadgen_tos_accepted": true,
+  "link": "https://www.facebook.com/112704783733939",
+  "location": {
+    "city": "San Francisco",
+    "country": "United States",
+    "latitude": 37.78273,
+    "longitude": -122.48906,
+    "state": "CA",
+    "street": "350 29th avenue",
+    "zip": "94121"
+  },
+  "merchant_review_status": "default",
+  "messenger_ads_default_icebreakers": ["Can I learn more about your business?", "Can you tell me more about your ad?", "Is anyone available to chat?"],
+  "messenger_ads_quick_replies_type": "UNKNOWN",
+  "name": "Airbyte",
+  "name_with_location_descriptor": "Airbyte",
+  "overall_star_rating": 5,
+  "page_token": "AirbyteHQ",
+  "place_type": "PLACE",
+  "promotion_eligible": true,
+  "rating_count": 22,
+  "single_line_address": "350 29th avenue, San Francisco, CA 94121",
+  "supports_donate_button_in_live_video": false,
+  "talking_about_count": 2,
+  "unread_message_count": 0,
+  "unread_notif_count": 5,
+  "unseen_message_count": 0,
+  "username": "AirbyteHQ",
+  "verification_status": "not_verified",
+  "voip_info": {
+    "has_permission": false,
+    "has_mobile_app": false,
+    "is_pushable": false,
+    "is_callable": false,
+    "is_callable_webrtc": false,
+    "reason_code": 1356044,
+    "reason_description": "This person isn't available right now."
+  },
+  "website": "http://airbyte.com/",
+  "were_here_count": 0,
+  "albums": {
+    "data": [
+      {
+        "created_time": "2022-05-03T22:39:06+0000",
+        "name": "Timeline photos",
+        "id": "123"
+      }, {
+        "created_time": "2022-05-03T22:39:06+0000",
+        "name": "Profile pictures",
+        "id": "123"
+      }, {
+        "created_time": "2022-05-03T22:39:06+0000",
+        "name": "Cover photos",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  },
+  "feed": {
+    "data": [
+      {
+        "created_time": "2023-01-26T17:42:27+0000",
+        "message": "wow - Airbyte is on the HN front page today! Thanks for your support!\n\n(we're at the bottom right now... but it's just 1hr in!)",
+        "id": "123"
+      }, {
+        "created_time": "2023-01-17T20:24:38+0000",
+        "message": "\u2763\ufe0f Interested in better data quality, ultra reliable data pipelines, and a modern alternative to Airflow?\n\nOur community call with Dagster's Ben Pankow starts in 30 mins\n\nSignup here:  \n\nAnd learn all about Dagster and how it works swimmingly with Airbyte! \ud83d\udc19",
+        "id": "123"
+      }, {
+        "created_time": "2023-01-03T13:51:59+0000",
+        "message": "the top 10 good data reads of 2022, from the dbt newsletter:  (we're quite happy about #3!)",
+        "id": "123"
+      }, {
+        "created_time": "2022-12-26T01:29:43+0000",
+        "message": "May the magic of Christmas bring you peace, happiness, and abundance in the coming year. Happy Holidays from all of us at Airbyte!",
+        "id": "123"
+      }, {
+        "created_time": "2022-12-21T17:28:01+0000",
+        "message": "\ud83d\udc18  Meet the hottest new Data community: Mastodon!\n\n \n\nYour guide to a federated social media future, and how to join the burgeoning new Data Folks on the platform that *cannot be bought*!",
+        "id": "123"
+      }, {
+        "created_time": "2022-12-19T06:46:17+0000",
+        "id": "123"
+      }, {
+        "created_time": "2022-12-07T17:57:52+0000",
+        "message": "Thousands of attendees are already streaming in for Day 1 of move(data) conf!\n\nJoin us: https://hopin.com/events/movedata\n\nand all these amazing speakers! Starting now!",
+        "id": "123"
+      }, {
+        "created_time": "2022-12-02T16:59:20+0000",
+        "message": "What are the best Data Engineering newsletters?\n\nWe asked ~900 data engineers, and the people have spoken!\n\nPresenting the first preview of the State of Data Engineering survey results, ahead of our Move(data) Conference next week!",
+        "id": "123"
+      }, {
+        "created_time": "2022-11-29T14:14:15+0000",
+        "message": "\ud83d\udc19  The biggest Data Engineering conference of the year starts in 1 week!\n\n\ud83d\uddfa\ufe0f The entire Modern Data Landscape in one conf\n\u270c\ufe0f Dual tracked for maximum pleasure\n\u26a1 Lightning talks only      \n\nSee the incredible lineup here:\n\nhttps://airbyte.com/blog/move-data-2022-speakers \n\nHave you registered yet?",
+        "id": "123"
+      }, {
+        "created_time": "2022-11-28T18:00:01+0000",
+        "message": "\ud83c\udf82 It's the 10 year anniversary of #AmazonRedshift today!\n\nWhat do you think were the key highlights of AWS' fastest growing service?\n\nHow did it revolutionize the data engineering industry, and where is it going in the next decade?\n\nWe did a full retrospective + interviewed people inside and out for their opinions:",
+        "id": "123"
+      }, {
+        "created_time": "2022-11-22T16:00:56+0000",
+        "message": "Tristan Handy on the latest Analytics Engineering Roundup: \n\n\"Thalia Barrera writes perhaps the best overview of the state of data engineering since Max B\u2019s canonical post.\" \n\nSo honored for the shoutout!",
+        "id": "123"
+      }, {
+        "created_time": "2022-10-24T17:16:32+0000",
+        "message": "What's that? Airbyte's on the Hacker News front page! \ud83c\udf89 \n\nhttps://news.ycombinator.com/ \n\nWe're discussing @Thalia Barrera's excellent overview of the Past, Present & Future of the Data Engineer role.\n\nIs Data Eng too complex? What's next in adopting Software Eng Best Practices? Join in \ud83d\udc47",
+        "id": "123"
+      }, {
+        "created_time": "2022-10-20T14:16:53+0000",
+        "message": "\ud83e\udd16  Data Nets: The Rise of the AI-first Data Stack\n\n \n\nConfused about the hottest new debate arising from #dbtCoalesce this year? We extracted, loaded, and transformed your favorite thought leadership to explain:\n\n- What are Data Nets?\n- Data Nets vs Data Mesh vs Data Contract\n- When do you need Data Nets?\n- What is a Data Net architecture?\n- What has been dbt and Databricks' response?\n- WHY are we doing this?!?",
+        "id": "123"
+      }, {
+        "created_time": "2022-10-18T15:55:53+0000",
+        "message": "Most surprising result so far from our State of Data Engineering Survey (https://forms.gle/nxZM6XftVYC7yzqW7):\n\n\ud83d\uded1  20% of data teams are in a hiring freeze! \ud83d\uded1\n\nWe're conducting the biggest survey of Data Engineers ever. BigQuery vs Snowflake? Monte Carlo vs Great Expectations? Battle of the Data Engineering Substacks? \n\nCome have your voice heard! (and get special Octavia swag!)",
+        "id": "123"
+      }, {
+        "created_time": "2022-10-13T13:22:00+0000",
+        "message": "It took just 4 months for Get In Data to implement a Modern Data Platform w/ data ingestion (Airbyte), transformation (dbt), orchestration (Amazon Managed Workflows - Apache Airflow), warehouse (Snowflake)   https://getindata.com/blog/how-we-built-modern-data-platform-for-fintech-scale-up/",
+        "id": "123"
+      }, {
+        "created_time": "2022-10-11T13:14:00+0000",
+        "message": "Great intro to Airbyte by Kahan Data Solutions: \"Airbyte is incredibly powerful and sufficient for most use cases.\" \ud83d\ude80",
+        "id": "123"
+      }, {
+        "created_time": "2022-09-28T22:56:54+0000",
+        "message": "We've nearly doubled our Sales team over the last several months, and have welcomed onboard @Grace Stern, Growth Account Executive and @Ryan Bernstein, Solutions Engineer.",
+        "id": "123"
+      }, {
+        "created_time": "2022-09-21T12:12:00+0000",
+        "message": "We're excited to share Anecdote's success story about how using Airbyte helped their team grow by freeing up time to focus on building their awesome AI engine \ud83d\ude80  https://airbyte.com/blog/how-airbytes-reliable-ready-to-use-data-pipelines-sped-up-anecdotes-launch-and-growth #OpenSource #DataIntegration #ModernDataStack",
+        "id": "112704783733939_504211088376678"
+      }, {
+        "created_time": "2022-09-07T15:08:27+0000",
+        "message": "Learn how to build a Data Ingestion Pipeline from Microsoft SQL Server to Snowflake as part of your data integration strategy.",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-31T20:14:18+0000",
+        "message": "Consider these key questions before moving data to stay on top of #DataSecurity \n  https://airbyte.com/blog/4-questions-data-security-experts-ask-before-moving-data",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-24T19:55:40+0000",
+        "message": "We're proud to announce our inaugural Data Podcast awards:\n\n\ud83c\udfc6  The Best Data Podcasts in 2022!\n\n \n\n(Basically we listened to a ton of podcasts and chose our top 5 favorites each, and why you should check them out!)\n\nDid we miss any? What are your faves?",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-18T18:35:23+0000",
+        "message": "An Airbyte user self-hosting an unsecured instance had their connector credentials stolen. \n\nTransparency is a core value at Airbyte, so we are choosing to highlight this to our community and discuss the steps we will take to improve Airbyte's security defaults.",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-11T15:36:53+0000",
+        "message": "Tuesday was a big day for @dagsterio at the #dagsterday. Huge congrats on the v1.0 release and the General Availability of Dagster Cloud!\n\nWe wrote a short recap about the announcements and newest features, one big called #branchdeployments.\n\nhttps://airbyte.com/blog/dagster-1-0-launch",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-05T15:01:03+0000",
+        "message": "We suggest keeping #Airflow to schedule and monitor #ELT pipelines, but use other #opensource projects that are better suited for the extract, load, and transform steps.",
+        "id": "123"
+      }, {
+        "created_time": "2022-08-04T15:00:37+0000",
+        "message": "Raw data can be very messy as the great saying \"garbage in, garbage out\" \n\n\ud83d\uddd1 But how can we solve it?              #SQL #stringfunctions #cleandata",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      },
+      "next": "https://graph.facebook.com/v15.0/"
+    }
+  },
+  "indexed_videos": {
+    "data": [
+      {
+        "description": "Our developer advocate, Abhi Vaidyanatha, will be giving a talk for the upcoming installment of the Data on Kubernetes meetups! He'll go over Airbyte's journey toward bringing the ELT/ETL world to the cloud-native landscape and describe the learnings made along the way.",
+        "updated_time": "2021-11-05T00:44:18+0000",
+        "id": "123"
+      }, {
+        "description": "Michel Tricot\n\nMichel Tricot is the CEO and Co-Founder of Airbyte.",
+        "updated_time": "2022-12-23T03:44:55+0000",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  },
+  "live_videos": {
+    "data": [
+      {
+        "title": "Michel Tricot",
+        "status": "VOD",
+        "embed_html": "<iframe allow=\"autoplay;></iframe>",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  },
+  "photos": {
+    "data": [
+      {
+        "created_time": "2022-05-03T22:39:13+0000",
+        "id": "123"
+      }, {
+        "created_time": "2020-11-04T20:11:02+0000",
+        "id": "123"
+      }, {
+        "created_time": "2020-09-19T07:53:49+0000",
+        "id": "123"
+      }, {
+        "created_time": "2020-04-14T04:31:39+0000",
+        "id": "123"
+      }, {
+        "created_time": "2020-04-14T01:24:21+0000",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  },
+  "rtb_dynamic_posts": {
+    "data": [
+      {
+        "id": "123"
+      }
+    ]
+  },
+  "videos": {
+    "data": [
+      {
+        "description": "Our developer advocate, Abhi Vaidyanatha, will be giving a talk for the upcoming installment of the Data on Kubernetes meetups! He'll go over Airbyte's journey toward bringing the ELT/ETL world to the cloud-native landscape and describe the learnings made along the way.",
+        "updated_time": "2021-11-05T00:44:18+0000",
+        "id": "123"
+      }, {
+        "description": "Michel Tricot\n\nMichel Tricot is the CEO and Co-Founder of Airbyte.",
+        "updated_time": "2022-12-23T03:44:55+0000",
+        "id": "12344"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  }
+}

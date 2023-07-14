@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
@@ -112,7 +113,7 @@ public class DynamodbSource extends BaseConnector implements Source {
           })
           .toList();
 
-      return AutoCloseableIterators.concatWithEagerClose(streamIterators);
+      return AutoCloseableIterators.concatWithEagerClose(streamIterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
 
     }
   }

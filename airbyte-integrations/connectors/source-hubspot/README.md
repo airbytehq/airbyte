@@ -18,6 +18,7 @@ The primary key for the following streams is `id`:
 - engagements_notes
 - engagements_tasks
 - forms
+- goals
 - line_items
 - marketing_emails
 - owners
@@ -91,7 +92,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog sample_files/basic_read_catalog.json
+python main.py read --config secrets/config_oauth.json --catalog sample_files/basic_read_catalog.json
 ```
 
 ## Testing

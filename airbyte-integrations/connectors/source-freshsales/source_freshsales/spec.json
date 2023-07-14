@@ -5,7 +5,7 @@
     "title": "Freshsales Spec",
     "type": "object",
     "required": ["domain_name", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain_name": {
         "type": "string",

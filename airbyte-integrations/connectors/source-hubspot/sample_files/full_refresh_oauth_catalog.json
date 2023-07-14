@@ -77,6 +77,15 @@
     },
     {
       "stream": {
+        "name": "email_subscriptions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "engagements",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -105,6 +114,15 @@
     {
       "stream": {
         "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "goals",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

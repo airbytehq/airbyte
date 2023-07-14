@@ -20,6 +20,118 @@
         "items": {
           "type": "string"
         }
+      },
+      "cohortSpec": {
+        "type": ["null", "object"],
+        "properties": {
+          "cohorts": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "dimension": {
+                  "type": "string",
+                  "enum": ["firstSessionDate"]
+                },
+                "dateRange": {
+                  "type": "object",
+                  "properties": {
+                    "startDate": {
+                      "type": ["null", "string"]
+                    },
+                    "endDate": {
+                      "type": ["null", "string"]
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "cohortsRange": {
+            "type": "object",
+            "required": ["granularity", "endOffset"],
+            "properties": {
+              "granularity": {
+                "type": "string",
+                "enum": ["DAILY", "WEEKLY", "MONTHLY"]
+              },
+              "startOffset": {
+                "type": ["null", "integer"]
+              },
+              "endOffset": {
+                "type": "integer"
+              }
+            }
+          },
+          "cohortReportSettings": {
+            "type": ["null", "object"],
+            "properties": {
+              "accumulate": {
+                "type": ["null", "boolean"]
+              }
+            }
+          }
+        }
+      },
+      "pivots": {
+        "type": ["null", "array"],
+        "items": {
+          "type": "object",
+          "required": ["limit"],
+          "properties": {
+            "fieldNames": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "orderBys": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "desc": {
+                    "type": ["null", "boolean"]
+                  },
+                  "pivot": {
+                    "type": "object",
+                    "properties": {
+                      "metricName": {
+                        "type": "string"
+                      },
+                      "pivotSelections": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dimensionName": {
+                              "type": "string"
+                            },
+                            "dimensionValue": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "offset": {"type": ["null", "string", "integer"]},
+            "limit": {"type":  ["string", "integer"]},
+            "metricAggregations": {
+              "type": ["null", "string"],
+              "enum": ["COUNT", "TOTAL", "MAXIMUM", "MINIMUM"]
+            }
+          }
+        }
       }
     }
   }

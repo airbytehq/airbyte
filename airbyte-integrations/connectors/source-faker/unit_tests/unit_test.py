@@ -62,6 +62,18 @@ def test_source_streams():
         "height": {"type": "string"},
         "blood_type": {"type": "string"},
         "weight": {"type": "integer"},
+        'address': {
+            'type': 'object',
+            'properties': {
+                'city': {'type': 'string'},
+                'country_code': {'type': 'string'},
+                'postal_code': {'type': 'string'},
+                'province': {'type': 'string'},
+                'state': {'type': 'string'},
+                'street_name': {'type': 'string'},
+                'street_number': {'type': 'string'}
+            }
+        }
     }
 
 
@@ -83,7 +95,6 @@ def test_read_small_random_data():
     estimate_row_count = 0
     record_rows_count = 0
     state_rows_count = 0
-    latest_state = {}
     for row in iterator:
         if row.type is Type.TRACE:
             estimate_row_count = estimate_row_count + 1
@@ -91,17 +102,15 @@ def test_read_small_random_data():
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
-            latest_state = row
 
-    assert estimate_row_count == 1
+    assert estimate_row_count == 4
     assert record_rows_count == 10
     assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
 
 
-def test_no_read_limit_hit():
+def test_read_always_updated():
     source = SourceFaker()
-    config = {"count": 10, "parallelism": 1}
+    config = {"count": 10, "parallelism": 1, "always_updated": False}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -111,27 +120,61 @@ def test_no_read_limit_hit():
             }
         ]
     )
-    state = {"users": {"id": 10}}
+    state = {}
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
-    state_rows_count = 0
-    latest_state = {}
     for row in iterator:
+        if row.type is Type.RECORD:
+            record_rows_count = record_rows_count + 1
+
+    assert record_rows_count == 10
+
+    state = {"users": {"updated_at": "something"}}
+    iterator = source.read(logger, config, catalog, state)
+
+    record_rows_count = 0
+    for row in iterator:
+        if row.type is Type.RECORD:
+            record_rows_count = record_rows_count + 1
+
+    assert record_rows_count == 0
+
+
+def test_read_products():
+    source = SourceFaker()
+    config = {"count": 999, "parallelism": 1}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            {
+                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    )
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+
+    estimate_row_count = 0
+    record_rows_count = 0
+    state_rows_count = 0
+    for row in iterator:
+        if row.type is Type.TRACE:
+            estimate_row_count = estimate_row_count + 1
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
-            latest_state = row
 
-    assert record_rows_count == 0
-    assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
+    assert estimate_row_count == 4
+    assert record_rows_count == 100  # only 100 products, no matter the count
+    assert state_rows_count == 2
 
 
 def test_read_big_random_data():
     source = SourceFaker()
-    config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000, "parallelism": 1}
+    config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -151,22 +194,19 @@ def test_read_big_random_data():
 
     record_rows_count = 0
     state_rows_count = 0
-    latest_state = {}
     for row in iterator:
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
-            latest_state = row
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {'id': 100, 'seed': None}}
     assert state_rows_count == 10 + 1 + 1 + 1
 
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "records_per_sync": 1000, "parallelism": 1}
+    config = {"count": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -191,49 +231,14 @@ def test_with_purchases():
 
     record_rows_count = 0
     state_rows_count = 0
-    latest_state = {}
     for row in iterator:
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
-            latest_state = row
 
     assert record_rows_count > 1000 + 100  # should be greater than 1000 users, and 100 products
     assert state_rows_count > 10 + 1  # should be greater than 1000/100, and one state for the products
-    assert latest_state.state.data["users"] == {"id": 1000, "seed": None}
-    assert latest_state.state.data["products"] == {'id': 100, 'seed': None}
-    assert latest_state.state.data["purchases"]["user_id"] > 0
-
-
-def test_sync_ends_with_limit():
-    source = SourceFaker()
-    config = {"count": 100, "records_per_sync": 5, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    )
-    state = {}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    latest_state = {}
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-            latest_state = row
-
-    assert record_rows_count == 5
-    assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 5, "seed": None}}
 
 
 def test_read_with_seed():
@@ -256,8 +261,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Sheriff Principal"
+    assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
 def test_ensure_no_purchases_without_users():

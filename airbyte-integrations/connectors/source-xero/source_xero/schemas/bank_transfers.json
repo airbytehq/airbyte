@@ -8,9 +8,7 @@
       "$ref": "accounts.json"
     },
     "Amount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Date": {
       "type": ["null", "string"],
@@ -24,9 +22,7 @@
       "type": ["string"]
     },
     "CurrencyRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "FromBankTransactionID": {
       "type": ["null", "string"]

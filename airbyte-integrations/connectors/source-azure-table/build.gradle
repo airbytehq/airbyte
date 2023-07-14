@@ -7,8 +7,3 @@ plugins {
 airbytePython {
     moduleDirectory 'source_azure_table_singer'
 }
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
-}
-

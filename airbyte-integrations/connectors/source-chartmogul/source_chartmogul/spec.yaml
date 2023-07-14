@@ -21,6 +21,7 @@ connectionSpecification:
       description: "UTC date and time in the format 2017-01-25T00:00:00Z. When feasible, any data before this date will not be replicated."
       examples: ["2017-01-25T00:00:00Z"]
       order: 1
+      format: date-time
     interval:
       type: string
       title: "Interval"

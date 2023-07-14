@@ -38,12 +38,12 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         "PGDATE": {"type": "string", "format": "date"},
         "TIMESTAMP": {
             "type": "string",
-            "format": "datetime",
+            "format": "date-time",
             "airbyte_type": "timestamp_without_timezone",
         },
         "DATETIME": {
             "type": "string",
-            "format": "datetime",
+            "format": "date-time",
             "airbyte_type": "timestamp_without_timezone",
         },
         "TIMESTAMPNTZ": {

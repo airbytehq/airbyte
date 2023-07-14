@@ -1,0 +1,433 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "DefaultTaxCodeRef": {
+      "properties": {
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "SalesTermRef": {
+      "properties": {
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "PaymentMethodRef": {
+      "properties": {
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "ResaleNum": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CurrencyRef": {
+      "properties": {
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "MiddleName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "BillAddr": {
+      "properties": {
+        "Lat": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "CountrySubDivisionCode": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Country": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "City": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Long": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "PostalCode": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Line1": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "PrimaryEmailAddr": {
+      "properties": {
+        "Address": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "Balance": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "CompanyName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FamilyName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FullyQualifiedName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "PrimaryPhone": {
+      "properties": {
+        "FreeFormNumber": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "BalanceWithJobs": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "BillWithParent": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "Level": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "ParentRef": {
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "PrintOnCheckName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Job": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "Mobile": {
+      "properties": {
+        "FreeFormNumber": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "PreferredDeliveryMethod": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "SyncToken": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Taxable": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "DisplayName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "MetaData": {
+      "properties": {
+        "CreateTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "LastUpdatedTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "WebAddr": {
+      "properties": {
+        "URI": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "Id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domain": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Active": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "GivenName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ShipAddr": {
+      "properties": {
+        "Lat": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "CountrySubDivisionCode": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Country": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "City": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Long": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "PostalCode": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Line1": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "Fax": {
+      "properties": {
+        "FreeFormNumber": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "sparse": {
+      "type":  [
+        "null",
+        "boolean"
+      ]
+    },
+    "airbyte_cursor": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

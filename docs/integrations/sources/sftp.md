@@ -24,7 +24,7 @@ Server will now allow access to anyone who can prove they have the corresponding
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **`Sources`**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the SFTP connector and select **SFTP** from the Source type dropdown.
 4. Enter your `User Name`, `Host Address`, `Port`

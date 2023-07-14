@@ -1,0 +1,15 @@
+{
+  "_airbyte_ab_id" : "varchar",
+  "_airbyte_emitted_at" : "timestamp(6) with time zone",
+  "string_type" : "varchar",
+  "integer_type" : "bigint",
+  "number_type" : "double",
+  "boolean_type" : "boolean",
+  "binary_type" : "varbinary",
+  "date_type" : "date",
+  "timestamp_with_tz_type" : "timestamp(6) with time zone",
+  "timestamp_without_tz_type" : "timestamp(6) with time zone",
+  "time_with_tz_type" : "varchar",
+  "time_without_tz_type" : "time(6)",
+  "_airbyte_additional_properties" : "map(varchar, varchar)"
+}

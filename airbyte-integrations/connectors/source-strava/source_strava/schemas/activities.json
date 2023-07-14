@@ -1,6 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "integer"
@@ -10,6 +11,7 @@
     },
     "athlete": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -87,6 +89,7 @@
     },
     "map": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]
