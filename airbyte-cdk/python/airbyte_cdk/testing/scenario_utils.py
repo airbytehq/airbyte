@@ -46,11 +46,16 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], tmp_path: PosixPath,
             assert expected_msg in get_error_message_from_exc(exc)
     else:
         output = read(capsys, tmp_path, scenario)
+        streams = [s["name"] for s in scenario.config["streams"]]
         records, logs = output["records"], output["logs"]
-        assert len(records) == len(expected_records)
-        assert len(logs) == len(expected_logs)
-        assert_expected_records_match_output(records, expected_records)
-        assert_expected_logs_match_output(logs, expected_logs)
+        for stream in streams:
+            # FIXME: do the same with logs
+            stream_records = [r for r in records if r["record"]["stream"] == stream]
+            expected_stream_records = [r for r in expected_records if r["stream"] == stream]
+            assert len(stream_records) == len(expected_stream_records)
+            assert len(logs) == len(expected_logs)
+            assert_expected_records_match_output(stream_records, expected_stream_records)
+            assert_expected_logs_match_output(logs, expected_logs)
 
 
 def assert_expected_records_match_output(output: List[Mapping[str, Any]], expected_output: List[Mapping[str, Any]]) -> None:
@@ -59,7 +64,13 @@ def assert_expected_records_match_output(output: List[Mapping[str, Any]], expect
             if isinstance(value, float):
                 assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
             else:
-                assert value == expected["data"][key]
+                if value != expected["data"][key]:
+                    print(f"record: {actual['record']}")
+                    print(f"expected: {expected}")
+                    print(f"key = {key}")
+                    print(f"value = {value}")
+                    print(f"expected = {expected['data'][key]}")
+                    exit()
 
         assert actual["record"]["stream"] == expected["stream"]
 

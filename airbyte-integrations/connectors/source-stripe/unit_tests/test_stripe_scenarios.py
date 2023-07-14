@@ -68,10 +68,10 @@ stripe_scenario = (
         "start_date": "2020-05-01T00:00:00Z",
         "streams": [
             {"name": "accounts"},
-            #"name": "customers"},
-            #{"name": "charges"},
-            #{"name": "balance_transactions"},
-            #{"name": "products"},
+            {"name": "customers"},
+            {"name": "charges"},
+            {"name": "balance_transactions"},
+            {"name": "products"},
         ], # FIXME we shouldn't need this
     })
     .source_builder.set_request_response_mapping(read_request_response_mapping_from_file("/Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe/mapping_2.txt"))
@@ -82,10 +82,10 @@ stripe_scenario = (
     .set_expected_records(read_records_from_read_output_file("/Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe/read_output_with_now.jsonl",
                                                              [
                                                                  "accounts",
-                                                              #   "customers",
-                                                              #   "charges",
-                                                              #   "balance_transactions",
-                                                              #   "products"
+                                                              "customers",
+                                                                "charges",
+                                                                "balance_transactions",
+                                                                 "products"
                                                               ]))
 ).build()
 
