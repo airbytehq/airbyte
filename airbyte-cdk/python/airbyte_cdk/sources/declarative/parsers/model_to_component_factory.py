@@ -273,9 +273,9 @@ class ModelToComponentFactory:
         )
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, **kwargs
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
-        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name="login_requester")
+        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
@@ -653,7 +653,7 @@ class ModelToComponentFactory:
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
             if model.authenticator
             else None
         )
