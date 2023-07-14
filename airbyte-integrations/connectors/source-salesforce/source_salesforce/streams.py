@@ -94,6 +94,15 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
+    @default_backoff_handler(max_tries=5, factor=15)
+    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
+        headers = self.authenticator.get_auth_header()
+        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
+        if response.status_code not in [200, 204]:
+            self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
+        response.raise_for_status()
+        return response
+
 
 class PropertyChunk:
     """
@@ -153,7 +162,7 @@ class RestSalesforceStream(SalesforceStream):
         query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC"
+            query += f"ORDER BY {self.primary_key}"
         logger.info(f"{query=}")
         return {"q": query}
 
@@ -296,15 +305,6 @@ class BulkSalesforceStream(SalesforceStream):
         return f"/services/data/{self.sf_api.version}/jobs/query"
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
-
-    @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
-        headers = self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
-        if response.status_code not in [200, 204]:
-            self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
-        response.raise_for_status()
-        return response
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
@@ -501,7 +501,7 @@ class BulkSalesforceStream(SalesforceStream):
             query += next_page_token["next_token"]
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+            query += f"ORDER BY {self.primary_key} LIMIT {self.page_size}"
         logger.info(f"{query=}")
         return {"q": query}
 
@@ -609,11 +609,20 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
 
         slice_number = 1
+        self.total_records_count()
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
+
+    def total_records_count(self):
+        query = f"q=SELECT+COUNT(Id)+FROM+{self.name}"
+        url = f"{self.url_base}/services/data/{self.sf_api.version}/queryAll"
+        req = requests.PreparedRequest()
+        req.prepare_url(url, query)
+        res = self._send_http_request(method="GET", url=req.url)
+        logger.info(f'total count for stream {self.name=} ====== {res.json().get("records")[0]["expr0"]}')
 
     def request_params(
         self,
@@ -647,7 +656,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         if end_date:
             where_conditions.append(f"{self.cursor_field} < {end_date}")
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_clause = f"ORDER BY {self.cursor_field} ASC"
+            order_by_clause = f"ORDER BY {self.cursor_field}"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
@@ -690,7 +699,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
-            order_by_clause = f"ORDER BY {order_by_fields} ASC"
+            order_by_clause = f"ORDER BY {order_by_fields}"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
