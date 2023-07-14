@@ -97,7 +97,7 @@
         "type": "string",
         "default": "",
         "examples": [
-          "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
+          "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter for files matching the naming convention log-YYYYMMDD"
         ],
         "order": 6
       }
