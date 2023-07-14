@@ -90,7 +90,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'
             pip 'black:22.3.0'
-            pip 'mypy:0.930'
+            pip 'mypy:1.4.1'
             pip 'isort:5.6.4'
             pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
