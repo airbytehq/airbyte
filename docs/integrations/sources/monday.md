@@ -31,7 +31,7 @@ The Monday supports full refresh syncs
 | Feature           | Supported? |
 |:------------------|:-----------|
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 | SSL connection    | No         |
 | Namespaces        | No         |
 
@@ -39,6 +39,7 @@ The Monday supports full refresh syncs
 
 Several output streams are available from this source:
 
+* [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
 * [Items](https://developer.monday.com/api-reference/docs/items-queries)
 * [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
 * [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
@@ -53,9 +54,12 @@ The typical name of the table depends on the `destination` you use like `boards.
 
 * `Column Values` are  available from the `Items` stream. By syncing  the `Items` stream you will get the `Column Values` for each `Item` (row) of the board.
 The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
-
-
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+
+* Incremental sync for `Items` and `Boards` streams is done using the `Activity logs` stream.
+Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
+Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
+Check your Monday plan at https://monday.com/pricing.
 
 
 ## Performance considerations
@@ -65,18 +69,19 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 1.0.0   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410) | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
-| 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244) | Added http error handling for `403` and `500` HTTP errors               |  
+| Version | Date       | Pull Request                                              | Subject                                                                 |
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 1.1.0   | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items and Boards streams                       |
+| 1.0.0   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410)  | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
+| 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244)  | Added http error handling for `403` and `500` HTTP errors               |  
 | 0.2.5   | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                     |  
-| 0.2.4   | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277) | Increase row limit to 100                                               |
-| 0.2.3   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                 |
-| 0.2.2   | 2023-01-04 | [20996](https://github.com/airbytehq/airbyte/pull/20996) | Fix json schema loader                                                  |
-| 0.2.1   | 2022-12-15 | [20533](https://github.com/airbytehq/airbyte/pull/20533) | Bump CDK version                                                        |
-| 0.2.0   | 2022-12-13 | [19586](https://github.com/airbytehq/airbyte/pull/19586) | Migrate to low-code                                                     |
-| 0.1.4   | 2022-06-06 | [14443](https://github.com/airbytehq/airbyte/pull/14443) | Increase retry_factor for Items stream                                  |
-| 0.1.3   | 2021-12-23 | [8172](https://github.com/airbytehq/airbyte/pull/8172)   | Add oauth2.0 support                                                    |
-| 0.1.2   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                                          |
-| 0.1.1   | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016)   | 🐛 Source Monday: fix pagination and schema bug                         |
-| 0.1.0   | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168)   | 🎉 New Source: Monday                                                   |
+| 0.2.4   | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277)  | Increase row limit to 100                                               |
+| 0.2.3   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231)  | Publish using low-code CDK Beta version                                 |
+| 0.2.2   | 2023-01-04 | [20996](https://github.com/airbytehq/airbyte/pull/20996)  | Fix json schema loader                                                  |
+| 0.2.1   | 2022-12-15 | [20533](https://github.com/airbytehq/airbyte/pull/20533)  | Bump CDK version                                                        |
+| 0.2.0   | 2022-12-13 | [19586](https://github.com/airbytehq/airbyte/pull/19586)  | Migrate to low-code                                                     |
+| 0.1.4   | 2022-06-06 | [14443](https://github.com/airbytehq/airbyte/pull/14443)  | Increase retry_factor for Items stream                                  |
+| 0.1.3   | 2021-12-23 | [8172](https://github.com/airbytehq/airbyte/pull/8172)    | Add oauth2.0 support                                                    |
+| 0.1.2   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)    | Update titles and descriptions                                          |
+| 0.1.1   | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016)    | 🐛 Source Monday: fix pagination and schema bug                         |
+| 0.1.0   | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168)    | 🎉 New Source: Monday                                                   |

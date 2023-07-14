@@ -4,72 +4,97 @@ This page contains the setup guide and reference information for the Files sourc
 
 ## Prerequisites
 
-- URL to access the file
-- Format
-- Reader options
-- Storage Providers
+- A file hosted on AWS S3, GCS, HTTPS, or an SFTP server
 
 ## Setup guide
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
-
-Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
+**For Airbyte Cloud users:** Please note that locally stored files cannot be used as a source in Airbyte Cloud.
 
 <!-- /env:cloud -->
 
+### Step 1: Set up the connector in Airbyte
+
+1. From the Airbyte UI, click the **Sources** tab, then click **+ New source** and select **Files (CSV, JSON, Excel, Feather, Parquet)** from the list of available sources.
+2. Enter a **Source name** of your choosing.
+3. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+4. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+
+### Step 2: Select the provider and set provider-specific configurations:
+
+1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
+
+#### HTTPS: Public Web [Default]
+- `User-Agent` (Optional)
+
+Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
+
+#### GCS: Google Cloud Storage
+- `Service Account JSON` (Required for **private** buckets) 
+
+To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
+
+#### S3: Amazon Web Services
+- `AWS Access Key ID` (Required for **private** buckets)
+- `AWS Secret Access Key` (Required for **private** buckets)
+
+To access **private** buckets stored on AWS S3, this connector requires valid credentials with the necessary permissions. To access these keys, refer to the 
+[AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+More information on setting permissions in AWS can be found 
+[here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
+
+#### AzBlob: Azure Blob Storage
+- `Storage Account` (Required)
+
+This is the globally unique name of the storage account that the desired blob sits within. See the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for more details.
+
+**If you are accessing private storage**, you must also provide _one_ of the following security credentials with the necessary permissions:
+
+- `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+- `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
+  
+#### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
+- `Host` (Required)
+  
+Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
+- `User` (Required)
+  
+Enter the _username_ associated with your account on the remote server.
+- `Password` (Optional) 
+  
+**If required by the remote server**, enter the _password_ associated with your user account. Otherwise, leave this field blank.
+- `Port` (Optional) 
+
+Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
+
 <!-- env:oss -->
+#### Local Filesystem (Airbyte Open Source only)
+- `Storage`
 
-**For Airbyte Open Source:**
+:::caution 
+Currently, the local storage URL for reading must start with the local mount "/local/".
+:::
 
-1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
-2. Depending on the provider choice and privacy of the data, you will have to configure more options.
+Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for: 
+- `LOCAL_ROOT` 
+- `LOCAL_DOCKER_MOUNT`
+- `HACK_LOCAL_ROOT_PARENT` 
+
+Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
 <!-- /env:oss -->
 
-### Fields description
+### Step 3: Complete the connector setup
+1. For **URL**, enter the _URL path_ of the file to be replicated.
 
-- For `Dataset Name` use the _name_ of the final table to replicate this file into (should include letters, numbers dash and underscores only).
-- For `File Format` use the _format_ of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs).
-- For `Reader Options` use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
-- For `URL` use the _URL_ path to access the file which should be replicated.
-- For `Storage Provider` use the _storage Provider_ or _Location_ of the file(s) which should be replicated.
-  - [Default] _Public Web_
-    - `User-Agent` set to active if you want to add User-Agent to requests
-  - _GCS: Google Cloud Storage_
-    - `Service Account JSON` In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href="https://cloud.google.com/iam/docs/service-accounts" target="_blank">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary.
-  - _S3: Amazon Web Services_
-    - `AWS Access Key ID` In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
-    - `AWS Secret Access Key`In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
-  - _AzBlob: Azure Blob Storage_
-    - `Storage Account` The globally unique name of the storage account that the desired blob sits within. See <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview" target="_blank">here</a> for more details.
-    - `SAS Token` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a SAS (Shared Access Signature) token. If accessing publicly available data, this field is not necessary.
-    - `Shared Key` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a storage account shared key (aka account key or access key). If accessing publicly available data, this field is not necessary.
-  - _SSH: Secure Shell_
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
-  - _SCP: Secure copy protocol_
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
-  - _SFTP: Secure File Transfer Protocol_
-    - `User` use _username_.
-    - `Password` use _password_.
-    - `Host` use a _host_.
-    - `Port` use a _port_ for your host.
-  - _Local Filesystem (limited)_
-    - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
+:::note
+When connecting to a file located in **Google Drive**, please note that you need to utilize the Download URL format: `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. `[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to Google Drive. You can find the Share URL by visiting `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
 
-#### Provider Specific Information
+When connecting to a file using **Azure Blob Storage**, please note that we account for the base URL. Therefore, you should only need to include the path to your specific file (eg `container/file.csv`).
+:::
 
-- In case of Google Drive, it is necesary to use the Download URL, the format for that is `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]` where `[DRIVE_FILE_ID]` is the string found in the Share URL here `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`
-- In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
-- In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
-- In case of AzBlob, we account for the base URL, you should only need to include the path to your file(eg. `container/file.csv`). It is also necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
-- In case of a locally stored file on a Windows OS, it's necessary to change the values for `LOCAL_ROOT`, `LOCAL_DOCKER_MOUNT` and `HACK_LOCAL_ROOT_PARENT` in the `.env` file to an existing absolute path on your machine (colons in the path need to be replaced with a double forward slash, //). `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be the same value, and `HACK_LOCAL_ROOT_PARENT` should be the parent directory of the other two.
+2. For **Reader Options** (Optional), you may choose to enter a _string_ in JSON format. Depending on the file format of your source, this will provide additional options and tune the Reader's behavior. Please refer to the [next section](#reader-options) for a breakdown of the possible inputs. This field may be left blank if you do not wish to configure custom Reader options.
+3. Click **Set up source** and wait for the tests to complete.
 
 ### Reader Options
 
@@ -94,9 +119,9 @@ For example, you can use the `{"orient" : "records"}` to change how orientation 
 
 If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
 
-    :::warning
-    This connector does not support syncing unstructured data files such as raw text, audio, or videos.
-    :::
+:::caution
+This connector does not support syncing unstructured data files such as raw text, audio, or videos.
+:::
 
 ## Supported sync modes
 
@@ -108,9 +133,9 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 | Replicate Folders (multiple Files)       | No         |
 | Replicate Glob Patterns (multiple Files) | No         |
 
-    :::info
-    This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
-    :::
+:::note
+This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
+:::
 
 ## File / Stream Compression
 
@@ -139,7 +164,7 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 | Format                | Supported? |
 | --------------------- | ---------- |
 | CSV                   | Yes        |
-| JSON                  | Yes        |
+| JSON/JSONL            | Yes        |
 | HTML                  | No         |
 | XML                   | No         |
 | Excel                 | Yes        |
