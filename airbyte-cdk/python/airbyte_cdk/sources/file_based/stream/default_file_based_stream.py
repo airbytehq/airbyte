@@ -6,9 +6,11 @@ import asyncio
 import itertools
 import traceback
 from functools import cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
@@ -36,7 +38,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: FileBasedCursor, **kwargs):
+    def __init__(self, cursor: FileBasedCursor, **kwargs: Any):
         super().__init__(**kwargs)
         self._cursor = cursor
 
@@ -45,12 +47,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self._cursor.get_state()
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> PrimaryKeyType:
         return self.config.primary_key
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -93,7 +95,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
             except StopSyncPerValidationPolicy:
                 yield AirbyteMessage(
-                    type=Type.LOG,
+                    type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.WARN,
                         message=f"Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream={self.name} file={file.uri} validation_policy={self.config.validation_policy} n_skipped={n_skipped}",
@@ -103,7 +105,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
             except Exception:
                 yield AirbyteMessage(
-                    type=Type.LOG,
+                    type=MessageType.LOG,
                     log=AirbyteLogMessage(
                         level=Level.ERROR,
                         message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
@@ -115,7 +117,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             else:
                 if n_skipped:
                     yield AirbyteMessage(
-                        type=Type.LOG,
+                        type=MessageType.LOG,
                         log=AirbyteLogMessage(
                             level=Level.WARN,
                             message=f"Records in file did not pass validation policy. stream={self.name} file={file.uri} n_skipped={n_skipped} validation_policy={self.validation_policy.name}",
@@ -141,12 +143,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
-            schema["properties"] = {**extra_fields, **schema["properties"]}
-            return schema
+            return {"type": "object", "properties": {**extra_fields, **schema["properties"]}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema
+            return self.config.input_schema  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:
@@ -180,7 +181,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs))
+        return list(self._stream_reader.get_matching_files(self.config.globs or []))
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
@@ -193,13 +194,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
-        base_schema: Dict[str, str] = {}
-        pending_tasks = set()
+        base_schema: Dict[str, Any] = {}
+        pending_tasks: Set[asyncio.tasks.Task[Dict[str, Any]]] = set()
 
         n_started, n_files = 0, len(files)
-        files = iter(files)
+        files_iterator = iter(files)
         while pending_tasks or n_started < n_files:
-            while len(pending_tasks) <= self._discovery_policy.n_concurrent_requests and (file := next(files, None)):
+            while len(pending_tasks) <= self._discovery_policy.n_concurrent_requests and (file := next(files_iterator, None)):
                 pending_tasks.add(asyncio.create_task(self._infer_file_schema(file)))
                 n_started += 1
             # Return when the first task is completed so that we can enqueue a new task as soon as the
@@ -210,7 +211,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return base_schema
 
-    async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
+    async def _infer_file_schema(self, file: RemoteFile) -> Dict[str, Any]:
         try:
             return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader, self.logger)
         except Exception as exc:
