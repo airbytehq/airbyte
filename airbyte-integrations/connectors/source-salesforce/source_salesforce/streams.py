@@ -95,9 +95,9 @@ class SalesforceStream(HttpStream, ABC):
         return super().get_error_display_message(exception)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
+    def _send_http_request(self, method: str, url: str, params=None, json: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
+        response = self._session.request(method, url=url, headers=headers, params=params, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
         response.raise_for_status()
@@ -611,19 +611,18 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
 
         slice_number = 1
-        self.total_records_count()
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
+            self.total_records_count(start, end)
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
 
-    def total_records_count(self):
-        query = f"q=SELECT+COUNT(Id)+FROM+{self.name}"
+    def total_records_count(self, start_date: pendulum.DateTime, end_date: pendulum.DateTime):
+        query = {'q': f"SELECT COUNT(Id) FROM {self.name} WHERE {self.cursor_field} >= {start_date.isoformat(timespec='milliseconds')} AND {self.cursor_field} < {end_date.isoformat(timespec='milliseconds')}"}
+        logger.info(f'TOTAL RECORDS_COUNT {query=}')
         url = f"{self.url_base}/services/data/{self.sf_api.version}/queryAll"
-        req = requests.PreparedRequest()
-        req.prepare_url(url, query)
-        res = self._send_http_request(method="GET", url=req.url)
+        res = self._send_http_request(method="GET", url=url, params=query)
         logger.info(f'total count for stream {self.name=} ====== {res.json().get("records")[0]["expr0"]}')
 
     def request_params(
