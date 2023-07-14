@@ -23,6 +23,7 @@ streams:
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
+          request_source: fleetio_airbyte_connector
         authenticator:
           type: NoAuth
         request_body_json: {}
@@ -57,6 +58,7 @@ streams:
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
+          request_source: fleetio_airbyte_connector
         authenticator:
           type: NoAuth
         request_body_json: {}
@@ -91,6 +93,7 @@ streams:
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
+          request_source: fleetio_airbyte_connector
         authenticator:
           type: NoAuth
         request_body_json: {}
@@ -125,6 +128,7 @@ streams:
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
+          request_source: fleetio_airbyte_connector
         authenticator:
           type: NoAuth
         request_body_json: {}
