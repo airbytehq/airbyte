@@ -49,9 +49,10 @@ public class BigQueryDestinationHandler {
     job = job.waitFor();
 
     JobStatistics.QueryStatistics statistics = job.getStatistics();
-    LOGGER.info("Completed sql {} in {} ms; processed {} bytes",
+    LOGGER.info("Completed sql {} in {} ms; processed {} bytes; billed for {} bytes",
         queryId,
         statistics.getEndTime() - statistics.getStartTime(),
+        statistics.getTotalBytesProcessed(),
         statistics.getTotalBytesBilled());
   }
 
