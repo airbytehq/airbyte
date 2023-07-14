@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 import pyarrow as pa
 import pytest
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import ParquetFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 from pyarrow import Scalar
 
