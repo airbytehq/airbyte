@@ -73,30 +73,16 @@ class TestScenario:
         if not self.expected_catalog:
             return None
         catalog: Mapping[str, Any] = {"streams": []}
-        # FIXME: there should be an input catalog in addition to the expected catalog.
+        streams_to_sync = set([s["name"] for s in self.config["streams"]])
         for stream in self.expected_catalog["streams"]:
-            catalog["streams"].append(
-                {
-                    "stream": stream,
-                    "sync_mode": sync_mode.value,
-                    "destination_sync_mode": "append",
-                }
-            )
-
-        return {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "accounts",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"]
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite"
-                }
-            ]
-        }
-
+            if stream["name"] in streams_to_sync:
+                catalog["streams"].append(
+                    {
+                        "stream": stream,
+                        "sync_mode": sync_mode.value,
+                        "destination_sync_mode": "append",
+                    }
+                )
 
         return catalog
 
