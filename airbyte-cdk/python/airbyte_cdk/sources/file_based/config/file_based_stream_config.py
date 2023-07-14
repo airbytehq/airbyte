@@ -11,14 +11,21 @@ from pydantic import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
-VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
-
 
 class QuotingBehavior(Enum):
     QUOTE_ALL = "Quote All"
     QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
     QUOTE_NONNUMERIC = "Quote Non-numeric"
     QUOTE_NONE = "Quote None"
+
+class JsonlFormat(BaseModel):
+    pass
+
+class ParquetFormat(BaseModel):
+    # Legacy S3 source converted decimal columns to floats, which is not ideal because it loses precision.
+    # We default to keeping decimals as strings, but allow users to opt into the legacy behavior.
+    #FIXME: make this afield
+    decimal_as_float: bool = False
 
 
 class CsvFormat(BaseModel):
@@ -81,6 +88,7 @@ class CsvFormat(BaseModel):
             raise ValueError(f"invalid encoding format: {v}")
         return v
 
+VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
 
 class FileBasedStreamConfig(BaseModel):
     name: str = Field(title="Name", description="The name of the stream.")
@@ -126,9 +134,15 @@ class FileBasedStreamConfig(BaseModel):
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
+                # legacy case
                 if file_type.casefold() not in VALID_FILE_TYPES:
                     raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                return {file_type: {key: val for key, val in v.items()}}
+                return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
+            else:
+                try:
+                    return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
+                except KeyError as e:
+                    raise ValueError(f"Format filetype {e.args[0]} is not a supported file type")
         return v
 
     @validator("input_schema", pre=True)
