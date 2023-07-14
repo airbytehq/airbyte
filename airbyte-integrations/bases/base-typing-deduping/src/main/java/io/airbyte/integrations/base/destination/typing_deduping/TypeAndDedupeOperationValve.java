@@ -94,14 +94,15 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    */
   public boolean readyToTypeAndDedupeWithAdditionalRecord(final AirbyteStreamNameNamespacePair key) {
     return false;
-//    if (!containsKey(key)) {
-//      return false;
-//    }
-//    recordCounts.put(key, recordCounts.get(key) + 1);
-//    if (recordCounts.get(key) % MINIMUM_RECORD_INTERVAL == 0) {
-//      return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
-//    }
-//    return false;
+    // if (!containsKey(key)) {
+    // return false;
+    // }
+    // recordCounts.put(key, recordCounts.get(key) + 1);
+    // if (recordCounts.get(key) % MINIMUM_RECORD_INTERVAL == 0) {
+    // return nowness.get() - get(key) >
+    // typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
+    // }
+    // return false;
   }
 
   /**
