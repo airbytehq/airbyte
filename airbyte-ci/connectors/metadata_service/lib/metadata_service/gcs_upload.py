@@ -98,8 +98,8 @@ def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.buck
     (
         version_uploaded,
         version_blob_id,
-    ) = upload_file_if_changed(metadata_file_path, bucket, version_path)
-    latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path)
+    ) = upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
+    latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
     # Replace metadata file name with icon file name
     local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
