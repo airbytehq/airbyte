@@ -23,7 +23,7 @@ public class CtidFeatureFlags {
   }
 
   public boolean isCursorSyncEnabled() {
-    return getFlagValue(CURSOR_VIA_CTID);
+    return true; //TEMP
   }
 
   private boolean getFlagValue(final String flag) {
