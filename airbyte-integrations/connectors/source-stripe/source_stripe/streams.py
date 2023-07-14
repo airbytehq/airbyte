@@ -910,7 +910,6 @@ class SetupAttempts(IncrementalStripeStream, HttpSubStream):
     def path(self, **kwargs) -> str:
         return "setup_attempts"
 
-
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -987,4 +986,3 @@ class Transactions(IncrementalStripeStream):
 
     def path(self, **kwargs) -> str:
         return "issuing/transactions"
-
