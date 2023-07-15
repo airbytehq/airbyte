@@ -152,18 +152,13 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
         count = {}
         def mock_http_request(self, request: requests.PreparedRequest, **request_kwargs) -> requests.Response:
             request_headers = dict(request.headers)
-            request_headers["Stripe-Account"] = "acct_1JwnoiEcXtiJtvvh"
-            request_headers["Authorization"] = "Bearer ****"
+            #request_headers["Stripe-Account"] = "acct_1JwnoiEcXtiJtvvh"
+            #request_headers["Authorization"] = "Bearer ****"
             request_headers = dict(request_headers)
             request_body = None
             request_descriptor = RequestDescriptor(url=request.url, headers=None, body=None)
             count.setdefault(request_descriptor, 0)
             count[request_descriptor] += 1
-            logging.info("traceback")
-            logging.info(traceback.format_stack())
-            logging.info("here")
-            logging.info(f"count: {count}")
-            logging.info(f"hello requesting for {request_descriptor.url}")
             if request_response_mapping.get(request_descriptor) is None:
                 raise Exception(f"Unexpected request {request_descriptor}\nExpected one of {request_response_mapping.keys()} {self.name}\n")
             else:
