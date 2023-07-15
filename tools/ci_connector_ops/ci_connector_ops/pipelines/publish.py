@@ -23,6 +23,7 @@ class CheckConnectorImageDoesNotExist(Step):
 
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image_name.split(":")
+        print(f"will run crane ls for {docker_repository}")
         crane_ls = (
             environments.with_crane(
                 self.context,
@@ -30,11 +31,17 @@ class CheckConnectorImageDoesNotExist(Step):
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["ls", docker_repository])
         )
+        print("after crane ls")
         crane_ls_exit_code = await with_exit_code(crane_ls)
+        print(f"crane ls exit code: {crane_ls_exit_code}")
         crane_ls_stderr = await with_stderr(crane_ls)
+        print(f"crane ls stderr: {crane_ls_stderr}")
         crane_ls_stdout = await with_stdout(crane_ls)
+        print(f"crane ls stdout: {crane_ls_stdout}")
+
         if crane_ls_exit_code != 0:
             if "NAME_UNKNOWN" in crane_ls_stderr:
+                print(f"got name_unknown for {docker_repository}")
                 return StepResult(self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
             else:
                 return StepResult(self, status=StepStatus.FAILURE, stderr=crane_ls_stderr, stdout=crane_ls_stdout)
