@@ -123,6 +123,7 @@ async def with_stdout(container: Container) -> str:
     try:
         return await container.stdout()
     except QueryError as e:
+        print(f"Unexpected error while reading container stdout {str(e)}")
         return str(e)
 
 

@@ -44,6 +44,7 @@ class CheckConnectorImageDoesNotExist(Step):
                 print(f"got name_unknown for {docker_repository}")
                 return StepResult(self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
             else:
+                print("not name_unknown")
                 return StepResult(self, status=StepStatus.FAILURE, stderr=crane_ls_stderr, stdout=crane_ls_stdout)
         else:  # The docker repo exists and ls was successful
             existing_tags = crane_ls_stdout.split("\n")
