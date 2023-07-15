@@ -68,11 +68,11 @@ def read_catalog_from_file(file_path):
 
 
 streams = [
-    #"accounts",
-    #"customers",
-    #"charges",
-    #"balance_transactions",
-    #"products",
+    "accounts",
+    "customers",
+    "charges",
+    "balance_transactions",
+    "products",
     "invoices",
     "invoice_line_items",
 ]
