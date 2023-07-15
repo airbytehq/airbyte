@@ -854,3 +854,4 @@ class UserFields(SourceZendeskSupportFullRefreshStream):
 
     def path(self, *args, **kwargs) -> str:
         return "user_fields"
+    
