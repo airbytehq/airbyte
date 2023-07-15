@@ -3,11 +3,11 @@
 #
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from airbyte_cdk.testing.scenario_builder import TestScenarioBuilder
 
 _base_single_stream_scenario = (
     TestScenarioBuilder()
-    .set_files(
+    .source_builder.set_files(
         {
             "a.csv": {  # The records in this file do not conform to the schema
                 "contents": [
@@ -43,7 +43,7 @@ _base_single_stream_scenario = (
             },
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -78,7 +78,7 @@ _base_single_stream_scenario = (
 
 _base_multi_stream_scenario = (
     TestScenarioBuilder()
-    .set_files(
+    .source_builder.set_files(
         {
             "a/a1.csv": {  # The records in this file do not conform to the schema
                 "contents": [
@@ -140,7 +140,7 @@ _base_multi_stream_scenario = (
 
         }
     )
-    .set_file_type("csv")
+    .source_builder.set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
