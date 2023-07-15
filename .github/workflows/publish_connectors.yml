@@ -39,7 +39,7 @@ jobs:
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified --language=python --language=low-code publish --main-release"
 
       - name: Publish connectors [manual]
         id: publish-connectors
