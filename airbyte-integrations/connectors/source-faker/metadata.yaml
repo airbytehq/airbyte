@@ -4,7 +4,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 3.0.1
+  dockerImageTag: 3.0.2
   dockerRepository: airbyte/source-faker
   githubIssueLabel: source-faker
   icon: faker.svg

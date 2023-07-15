@@ -48,6 +48,7 @@ The Zendesk Support source connector supports the following streams:
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
 - [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
@@ -65,6 +66,9 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields) \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/)
+- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
 
 ## Performance considerations
 
@@ -76,7 +80,11 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------| :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0.9.0`  | 2023-07-16 | [20000](https://github.com/airbytehq/airbyte/pull/20000) | Add stream `UserFields`                                                                                                                                                                                                                 |
+| `0.11.0` | 2023-07-16 | [28346](https://github.com/airbytehq/airbyte/pull/28346) | Add stream `UserFields`                                                                                                                                                                                                                 |
+| `0.10.1` | 2023-07-10 | [28096](https://github.com/airbytehq/airbyte/pull/28096) | Replace `offset` pagination with `cursor` pagination                                                                                                                                                                               |
+| `0.10.0` | 2023-07-06 | [27991](https://github.com/airbytehq/airbyte/pull/27991) | add streams: `PostVotes`, `PostCommentVotes`                                                                                                                                                                                       |
+| `0.9.0`  | 2023-07-05 | [27961](https://github.com/airbytehq/airbyte/pull/27961) | Add stream: `Post Comments`                                                                                                                                                                                                        |
+| `0.8.1`  | 2023-06-27 | [27765](https://github.com/airbytehq/airbyte/pull/27765) | Bugfix: Nonetype error while syncing more then 100000 organizations                                                                                                                                                                |
 | `0.8.0`  | 2023-06-09 | [27156](https://github.com/airbytehq/airbyte/pull/27156) | Add stream `Posts`                                                                                                                                                                                                                 |
 | `0.7.0`  | 2023-06-27 | [27436](https://github.com/airbytehq/airbyte/pull/27436) | Add Ticket Skips stream                                                                                                                                                                                                            |
 | `0.6.0`  | 2023-06-27 | [27450](https://github.com/airbytehq/airbyte/pull/27450) | Add Skill Based Routing streams                                                                                                                                                                                                    |

@@ -73,6 +73,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "persons" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "invoices" }
     }
   },

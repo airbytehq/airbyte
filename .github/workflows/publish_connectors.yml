@@ -9,15 +9,19 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group"
+        description: "Options to pass to the 'airbyte-ci connectors' command group."
         default: "--name=source-pokeapi"
       publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish' command"
+        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
+      runs-on:
+        type: string
+        default: conn-prod-xlarge-runner
+        required: true
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: conn-prod-xlarge-runner
+    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -35,7 +39,7 @@ jobs:
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified --language=python --language=low-code publish --main-release"
 
       - name: Publish connectors [manual]
         id: publish-connectors

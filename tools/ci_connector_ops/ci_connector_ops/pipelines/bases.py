@@ -19,10 +19,10 @@ import anyio
 import asyncer
 from anyio import Path
 from ci_connector_ops.pipelines.actions import remote_storage
-from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, format_duration, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
-from dagger import Container, QueryError
+from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group
 from rich.panel import Panel
@@ -164,9 +164,9 @@ class Step(ABC):
             self.stopped_at = datetime.utcnow()
             self.log_step_result(result)
             return result
-        except QueryError as e:
+        except (DaggerError, QueryError) as e:
             self.stopped_at = datetime.utcnow()
-            self.logger.error(f"QueryError on step {self.title}: {e}")
+            self.logger.error(f"Dagger error on step {self.title}: {e}")
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     def log_step_result(self, result: StepResult) -> None:
@@ -404,7 +404,7 @@ class Report:
             flags=gcs_cp_flags,
         )
         gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
-        public_url = f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{remote_key}"
+        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
         if report_upload_exit_code != 0:
             self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
         else:
@@ -502,7 +502,7 @@ class ConnectorReport(Report):
 
     @property
     def html_report_url(self) -> str:  # noqa D102
-        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102

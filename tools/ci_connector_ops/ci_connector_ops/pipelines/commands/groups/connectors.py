@@ -96,10 +96,15 @@ def connectors(
 
     all_connectors = get_all_released_connectors()
 
+    # We get the modified connectors and downstream connector deps, and files
     modified_connectors_and_files = get_modified_connectors(ctx.obj["modified_files"])
+
     # We select all connectors by default
+    # and attach modified files to them
     selected_connectors_and_files = {connector: modified_connectors_and_files.get(connector, []) for connector in all_connectors}
 
+    if modified:
+        selected_connectors_and_files = modified_connectors_and_files
     if names:
         selected_connectors_and_files = {
             connector: selected_connectors_and_files[connector]
@@ -117,10 +122,6 @@ def connectors(
             connector: selected_connectors_and_files[connector]
             for connector in selected_connectors_and_files
             if connector.release_stage in release_stages
-        }
-    if modified:
-        selected_connectors_and_files = {
-            connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
         }
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
@@ -311,12 +312,9 @@ def publish(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
             abort=True,
         )
-    if ctx.obj["modified"]:
-        selected_connectors_and_files = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files"]))
-        selected_connectors_names = [connector.technical_name for connector in selected_connectors_and_files.keys()]
-    else:
-        selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
-        selected_connectors_names = ctx.obj["selected_connectors_names"]
+
+    selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
+    selected_connectors_names = ctx.obj["selected_connectors_names"]
 
     main_logger.info(f"Will publish the following connectors: {', '.join(selected_connectors_names)}")
     publish_connector_contexts = reorder_contexts(

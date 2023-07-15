@@ -110,6 +110,7 @@ class AbstractSource(Source, ABC):
                         f"The requested stream {configured_stream.stream.name} was not found in the source."
                         f" Available streams: {stream_instances.keys()}"
                     )
+
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
