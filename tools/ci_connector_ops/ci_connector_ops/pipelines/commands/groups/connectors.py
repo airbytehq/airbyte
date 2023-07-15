@@ -105,7 +105,6 @@ def connectors(
 
     if modified:
         selected_connectors_and_files = modified_connectors_and_files
-
     if names:
         selected_connectors_and_files = {
             connector: selected_connectors_and_files[connector]
