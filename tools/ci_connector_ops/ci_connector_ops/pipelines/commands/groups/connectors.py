@@ -103,6 +103,9 @@ def connectors(
     # and attach modified files to them
     selected_connectors_and_files = {connector: modified_connectors_and_files.get(connector, []) for connector in all_connectors}
 
+    if modified:
+        selected_connectors_and_files = modified_connectors_and_files
+
     if names:
         selected_connectors_and_files = {
             connector: selected_connectors_and_files[connector]
@@ -121,8 +124,6 @@ def connectors(
             for connector in selected_connectors_and_files
             if connector.release_stage in release_stages
         }
-    if modified:
-        selected_connectors_and_files = modified_connectors_and_files
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
