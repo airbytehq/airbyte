@@ -848,3 +848,9 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+class UserFields(SourceZendeskSupportFullRefreshStream):
+    """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "user_fields"

@@ -46,6 +46,7 @@ from source_zendesk_support.streams import (
     Tickets,
     TicketSkips,
     Users,
+    UserFields,
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
@@ -292,6 +293,7 @@ class TestAllStreams:
             (Schedules),
             (AccountAttributes),
             (AttributeDefinitions),
+            (UserFields)
         ],
         ids=[
             "AuditLogs",
@@ -318,6 +320,7 @@ class TestAllStreams:
             "Schedules",
             "AccountAttributes",
             "AttributeDefinitions",
+            "UserFields"
         ],
     )
     def test_streams(self, expected_stream_cls):
@@ -355,6 +358,7 @@ class TestAllStreams:
             (Schedules, "business_hours/schedules.json"),
             (AccountAttributes, "routing/attributes"),
             (AttributeDefinitions, "routing/attributes/definitions"),
+            (UserFields, "user_fields")
         ],
         ids=[
             "AuditLogs",
@@ -381,6 +385,7 @@ class TestAllStreams:
             "Schedules",
             "AccountAttributes",
             "AttributeDefinitions",
+            "UserFields"
         ],
     )
     def test_path(self, stream_cls, expected):
