@@ -19,13 +19,14 @@ class DatetimeFormatInferrer:
         self._formats = [
             "%Y-%m-%d",
             "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ",
             "%Y-%m-%d %H:%M:%S.%f%z",
             "%Y-%m-%dT%H:%M:%S.%f%z",
             "%s",
             "%d/%m/%Y %H:%M",
             "%Y-%m",
             "%d-%m-%Y",
-            "%Y-%m-%dT%H:%M:%SZ",
         ]
         self._timestamp_heuristic_range = range(1_000_000_000, 2_000_000_000)
 

@@ -5,6 +5,7 @@
 import datetime
 
 import pytest
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
@@ -199,8 +200,8 @@ spec:
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
 
-    assert len(stream.transformations) == 1
-    add_fields = stream.transformations[0]
+    assert len(stream.retriever.record_selector.transformations) == 1
+    add_fields = stream.retriever.record_selector.transformations[0]
     assert isinstance(add_fields, AddFields)
     assert add_fields.fields[0].path == ["extra"]
     assert add_fields.fields[0].value.string == "{{ response.to_add }}"
@@ -704,7 +705,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
-    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, config=input_config)
+    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config)
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
@@ -1245,7 +1246,7 @@ class TestCreateTransformations:
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
-        assert [] == stream.transformations
+        assert [] == stream.retriever.record_selector.transformations
 
     def test_remove_fields(self):
         content = f"""
@@ -1268,7 +1269,7 @@ class TestCreateTransformations:
 
         assert isinstance(stream, DeclarativeStream)
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
-        assert stream.transformations == expected
+        assert stream.retriever.record_selector.transformations == expected
 
     def test_add_fields(self):
         content = f"""
@@ -1302,7 +1303,7 @@ class TestCreateTransformations:
                 parameters={},
             )
         ]
-        assert stream.transformations == expected
+        assert stream.retriever.record_selector.transformations == expected
 
     def test_default_schema_loader(self):
         component_definition = {
@@ -1474,9 +1475,11 @@ def test_simple_retriever_emit_log_messages():
         name="Test",
         primary_key="id",
         stream_slicer=None,
+        transformations=[],
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
+    assert connector_builder_factory._message_repository._log_level == Level.DEBUG
 
 
 def test_ignore_retry():
@@ -1500,6 +1503,7 @@ def test_ignore_retry():
         name="Test",
         primary_key="id",
         stream_slicer=None,
+        transformations=[]
     )
 
     assert retriever.max_retries == 0
