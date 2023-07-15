@@ -54,4 +54,6 @@ if request is not None:
     mapping.append((request, response))
     request = None
     response = None
-print(json.dumps([(dataclasses.astuple(req), dataclasses.astuple(res)) for req, res in mapping]))
+tuples = [(dataclasses.astuple(req), dataclasses.astuple(res)) for req, res in mapping]
+for t in tuples:
+    print(json.dumps(t))

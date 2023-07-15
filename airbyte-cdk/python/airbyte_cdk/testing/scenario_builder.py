@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
+import logging
+import traceback
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from datetime import datetime
-
-import pendulum
-import requests
 from typing import Any, List, Mapping, Optional, Tuple, Type, TypeVar, Generic
+
 import freezegun
+import requests
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source, AbstractSource
@@ -126,7 +126,7 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
         self._owner = owner
         self._source = source
         self._now = None
-        self._request_response_mapping: Mapping[RequestDescriptor, ResponseDescriptor] = {}
+        self._request_response_mapping: Mapping[RequestDescriptor, List[ResponseDescriptor]] = {}
 
     def set_request_response_mapping(self, request_response_mapping: Mapping[str, Any]) -> "MockedHttpRequestsSourceBuilder":
         self._request_response_mapping = request_response_mapping
@@ -145,12 +145,11 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
             print(f"self.now: {self._now}")
             freezegun.freeze_time(self._now).start()
 
-        # FIXME: We want to assert a request is sent X time so we probably want a Mapping[req, List[Optiona[Response]]]
-        # and remove the responses from the list as we get them
         request_response_mapping = {RequestDescriptor(url=req.url, headers=None, body=None):
-                                        ResponseDescriptor(status_code=res.status_code, body=res.body, headers=None)
-                                    for req, res in self._request_response_mapping.items()}
+                                        [ResponseDescriptor(status_code=res.status_code, body=res.body, headers=None) for res in responses]
+                                    for req, responses in self._request_response_mapping.items()}
 
+        count = {}
         def mock_http_request(self, request: requests.PreparedRequest, **request_kwargs) -> requests.Response:
             request_headers = dict(request.headers)
             request_headers["Stripe-Account"] = "acct_1JwnoiEcXtiJtvvh"
@@ -158,10 +157,21 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
             request_headers = dict(request_headers)
             request_body = None
             request_descriptor = RequestDescriptor(url=request.url, headers=None, body=None)
-            if request_descriptor not in request_response_mapping:
-                raise Exception(f"Unexpected request {request_descriptor}\nExpected one of {request_response_mapping.keys()}")
+            count.setdefault(request_descriptor, 0)
+            count[request_descriptor] += 1
+            logging.info("traceback")
+            logging.info(traceback.format_stack())
+            logging.info("here")
+            logging.info(f"count: {count}")
+            logging.info(f"hello requesting for {request_descriptor.url}")
+            if request_response_mapping.get(request_descriptor) is None:
+                raise Exception(f"Unexpected request {request_descriptor}\nExpected one of {request_response_mapping.keys()} {self.name}\n")
             else:
-                response_descriptor = request_response_mapping[request_descriptor]
+                response_descriptor = request_response_mapping[request_descriptor][0]
+                request_response_mapping[request_descriptor].pop(0)
+                logging.info("hello poped for {request_descriptor.url}")
+                if request_response_mapping[request_descriptor] == []:
+                    del request_response_mapping[request_descriptor]
                 response = requests.Response()
                 response.status_code = response_descriptor.status_code
                 response._content = json.dumps(json.loads(response_descriptor.body)).encode()
@@ -173,8 +183,6 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
             for stream in streams:
                 if isinstance(stream, HttpStream):
                     stream._actually_send_request = mock_http_request.__get__(stream, HttpStream)
-                    #if hasattr(stream, "parent"):
-                    #    stream.parent._actually_send_request = mock_http_request.__get__(stream.parent, HttpStream)
                 elif isinstance(stream, DeclarativeStream):
                     stream.retriever._actually_send_request = mock_http_request.__get__(stream, HttpStream)
                 else:

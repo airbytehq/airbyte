@@ -65,6 +65,11 @@ def assert_expected_records_match_output(output: List[Mapping[str, Any]], expect
                 assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
             else:
                 if value != expected["data"][key]:
+                    print(f"output: {[r['record']['data']['id'] for r in output]}")
+                    print()
+                    #print(f"expected_output: {expected_output}")
+                    print(f"expectedoutput: {[r['data']['id'] for r in expected_output]}")
+                    print()
                     print(f"record: {actual['record']}")
                     print(f"expected: {expected}")
                     print(f"key = {key}")

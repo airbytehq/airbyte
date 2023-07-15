@@ -113,6 +113,7 @@ class AbstractSource(Source, ABC):
 
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                    self._apply_log_level_to_stream_logger(logger, stream_instance)
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
                     if not stream_is_available:
                         logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")

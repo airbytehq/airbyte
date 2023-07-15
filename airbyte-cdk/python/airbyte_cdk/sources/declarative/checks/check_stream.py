@@ -7,6 +7,7 @@ import traceback
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -37,6 +38,8 @@ class CheckStream(ConnectionChecker):
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
 
             stream = stream_name_to_stream[stream_name]
+            source._apply_log_level_to_stream_logger(source.logger, stream)
+
             availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()
             try:
                 stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
