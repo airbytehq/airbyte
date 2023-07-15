@@ -164,7 +164,7 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
             else:
                 response_descriptor = request_response_mapping[request_descriptor][0]
                 request_response_mapping[request_descriptor].pop(0)
-                logging.info("hello poped for {request_descriptor.url}")
+                logging.info(f"hello poped for {request_descriptor.url}")
                 if request_response_mapping[request_descriptor] == []:
                     del request_response_mapping[request_descriptor]
                 response = requests.Response()
@@ -177,6 +177,14 @@ class MockedHttpRequestsSourceBuilder(SourceBuilder[AbstractSource]):
             streams = old_streams(config)
             for stream in streams:
                 if isinstance(stream, HttpStream):
+                    if hasattr(stream, "parent"):
+                        parent = stream.parent
+                        if isinstance(parent, HttpStream):
+                            parent._actually_send_request = mock_http_request.__get__(parent, HttpStream)
+                        else:
+                            copy_of_parent_type = copy_class(parent)
+                            copy_of_parent_type._actually_send_request = mock_http_request
+                            stream.parent = copy_of_parent_type
                     stream._actually_send_request = mock_http_request.__get__(stream, HttpStream)
                 elif isinstance(stream, DeclarativeStream):
                     stream.retriever._actually_send_request = mock_http_request.__get__(stream, HttpStream)
@@ -196,6 +204,16 @@ def freeze(obj):
     else:
         return obj
 
+def copy_class(cls):
+    copy_cls = type(f'{cls.__name__}Copy', cls.__bases__, dict(cls.__dict__))
+    for name, attr in cls.__dict__.items():
+        try:
+            hash(attr)
+        except TypeError:
+            # Assume lack of __hash__ implies mutability. This is NOT
+            # a bullet proof assumption but good in many cases.
+            setattr(copy_cls, name, deepcopy(attr))
+    return copy_cls
 
 class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
     def __init__(self, owner):
