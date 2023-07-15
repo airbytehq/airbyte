@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/destination-gcs
   githubIssueLabel: destination-gcs
   icon: googlecloudstorage.svg
