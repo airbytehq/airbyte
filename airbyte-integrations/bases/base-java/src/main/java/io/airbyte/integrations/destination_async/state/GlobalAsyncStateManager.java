@@ -148,9 +148,9 @@ public class GlobalAsyncStateManager {
       // remove all states with 0 counters.
       final LinkedList<Long> stateIdQueue = entry.getValue();
       while (true) {
-//        if (stateIdQueue.isEmpty()) {
-//          break;
-//        }
+        // if (stateIdQueue.isEmpty()) {
+        // break;
+        // }
         final Long oldestState = stateIdQueue.peek();
         if (oldestState == null) {
           break;
