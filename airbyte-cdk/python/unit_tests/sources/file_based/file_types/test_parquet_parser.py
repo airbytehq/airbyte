@@ -2,14 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
 import datetime
 import math
 from typing import Any, Mapping
+from unittest.mock import Mock
 
 import pyarrow as pa
 import pytest
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pyarrow import Scalar
 
 _default_parquet_format = ParquetFormat()
@@ -140,3 +145,21 @@ def test_value_dictionary() -> None:
     dictionary = pa.DictionaryArray.from_arrays(indices_array, dictionary_values)
     py_value = ParquetParser._to_output_value(dictionary, _default_parquet_format)
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}
+
+
+def test_wrong_file_format() -> None:
+    parser = ParquetParser()
+    csv_format = CsvFormat(
+        filetype="csv",
+        delimiter=",",
+        escape_char="\\",
+        quote_char='"',
+    )
+    config = FileBasedStreamConfig(name="test.parquet", file_type="csv", format={"csv": csv_format}, validation_policy="a_validtion_policy")
+    file = RemoteFile(uri="s3://mybucket/test.parquet", last_modified=datetime.datetime.now())
+    stream_reader = Mock()
+    logger = Mock()
+    with pytest.raises(ValueError):
+        asyncio.get_event_loop().run_until_complete(
+            parser.infer_schema(config, file, stream_reader, logger)
+        )
