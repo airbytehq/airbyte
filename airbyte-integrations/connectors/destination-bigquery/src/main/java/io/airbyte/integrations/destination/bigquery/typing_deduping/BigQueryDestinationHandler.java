@@ -5,6 +5,9 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.JobStatistics;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
@@ -41,9 +44,16 @@ public class BigQueryDestinationHandler {
     }
     final UUID queryId = UUID.randomUUID();
     LOGGER.info("Executing sql {}: {}", queryId, sql);
-    long start = System.currentTimeMillis();
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
-    LOGGER.info("Completed sql {} in {} ms", queryId, System.currentTimeMillis() - start);
+
+    Job job = bq.create(JobInfo.of(QueryJobConfiguration.newBuilder(sql).build()));
+    job = job.waitFor();
+
+    JobStatistics.QueryStatistics statistics = job.getStatistics();
+    LOGGER.info("Completed sql {} in {} ms; processed {} bytes; billed for {} bytes",
+        queryId,
+        statistics.getEndTime() - statistics.getStartTime(),
+        statistics.getTotalBytesProcessed(),
+        statistics.getTotalBytesBilled());
   }
 
 }
