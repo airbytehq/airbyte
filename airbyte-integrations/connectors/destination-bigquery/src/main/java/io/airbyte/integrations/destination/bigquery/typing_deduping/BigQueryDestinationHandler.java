@@ -13,9 +13,9 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class BigQueryDestinationHandler {
         statistics.getTotalBytesBilled());
   }
 
-  public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final CatalogParser.StreamConfig stream, final TableDefinition existingTable) {
+  public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
     try {
       if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
         attemptSoftReset(sqlGenerator, stream, existingTable);
@@ -71,7 +71,7 @@ public class BigQueryDestinationHandler {
     }
   }
 
-  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final CatalogParser.StreamConfig stream, final TableDefinition existingTable) {
+  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
     LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
     sqlGenerator.softReset(stream, existingTable).forEach(sql -> {
       try {

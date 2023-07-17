@@ -23,8 +23,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneO
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
@@ -61,7 +63,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
         nameTransformer.getNamespace(rawNamespaceOverride),
-        nameTransformer.convertStreamName(namespace + "_" + name),
+        nameTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
         name);
   }
