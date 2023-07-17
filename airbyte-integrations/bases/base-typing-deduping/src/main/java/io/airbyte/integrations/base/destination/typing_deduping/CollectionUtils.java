@@ -20,6 +20,16 @@ public class CollectionUtils {
     }
 
     /**
+     * Convenience method for when you need to check an entire collection for membership in another collection.
+     * @param searchCollection the collection you want to check membership in
+     * @param searchTerms the keys you're looking for
+     * @return whether all searchTerms are in the searchCollection
+     */
+    public static boolean containsAllIgnoreCase(final Collection<String> searchCollection, final Collection<String> searchTerms) {
+        return searchTerms.stream().allMatch(term -> containsIgnoreCase(searchCollection, term));
+    }
+
+    /**
      * From a collection of strings, return an entry which matches the search term ignoring case
      * @param collection the collection to search
      * @param search the key you're looking for

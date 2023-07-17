@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
 import static java.util.function.Predicate.not;
@@ -177,7 +178,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String createTable(final StreamConfig stream, final String suffix) {
     final String columnDeclarations = columnsAndTypes(stream);
-    final String clusterConfig = String.join(", ", clusteringColumns(stream));
+    final String clusterConfig = clusteringColumns(stream).stream()
+            .map(c -> StringUtils.wrap(c, QUOTE))
+            .collect(joining(", "));
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
@@ -187,7 +190,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """
             CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
-            CREATE TABLE ${final_table_id} (
+            CREATE OR REPLACE TABLE ${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
@@ -204,7 +207,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // We're doing deduping, therefore we have a primary key.
       // Cluster on all the PK columns
       stream.primaryKey().forEach(columnId -> {
-        clusterColumns.add(columnId.name(QUOTE));
+        clusterColumns.add(columnId.name());
       });
     }
     clusterColumns.add("_airbyte_extracted_at");
@@ -236,15 +239,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             alterTableReport.columnsToAdd(),
             alterTableReport.columnsToRemove(),
             alterTableReport.columnsToChangeType(),
-            alterTableReport.isDestinationV2Format());
+            alterTableReport.isDestinationV2Format(),
+            tableClusteringMatches,
+            tablePartitioningMatches);
     return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
   }
 
   private boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
-    return existingTable.getClustering() == null ? false : existingTable.getClustering().getFields().stream()
-            .map(String::toLowerCase)
-            .collect(Collectors.toSet())
-            .containsAll(clusteringColumns(stream));
+    return existingTable.getClustering() == null ? false : containsAllIgnoreCase(
+            existingTable.getClustering().getFields().stream().collect(Collectors.toSet()),
+            clusteringColumns(stream));
   }
 
   private boolean partitioningMatches(StandardTableDefinition existingTable) {
@@ -306,7 +310,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private String clearLoadedAt(StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
             .replace("""
-            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL;
+            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
             """);
   }
 
