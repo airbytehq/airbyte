@@ -109,6 +109,10 @@ public class GlobalAsyncStateManager {
     closeState(message, sizeInBytes);
   }
 
+  public LinkedList<Long> getStreamToStateIdQ(final StreamDescriptor streamDescriptor) {
+    return streamToStateIdQ.get(streamDescriptor);
+  }
+
   /**
    * Identical to {@link #getStateId(StreamDescriptor)} except this increments the associated counter
    * by 1. Intended to be called whenever a record is ingested.
@@ -152,6 +156,7 @@ public class GlobalAsyncStateManager {
         // break;
         // }
         final Long oldestState = stateIdQueue.peek();
+        System.out.println("oldest state: " + oldestState);
         if (oldestState == null) {
           break;
         }
@@ -159,13 +164,17 @@ public class GlobalAsyncStateManager {
         // technically possible this map hasn't been updated yet.
         final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
         if (noCorrespondingStateMsg) {
+          log.info("------ no state msg");
           break;
         }
 
         final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
         final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
+        System.out.println("no prev recs: {}, all recs emitted: {} " + noPrevRecs + ", " + allRecsEmitted);
         if (noPrevRecs || allRecsEmitted) {
-          entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
+          var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
+          log.info("flushing state: {}, no prev rec: {}, all recs emitted: {}",
+                  stateIdToState.get(oldestState).getLeft(), noPrevRecs, allRecsEmitted);
           output.add(stateIdToState.get(oldestState).getLeft());
           bytesFlushed += stateIdToState.get(oldestState).getRight();
         } else {
@@ -180,11 +189,11 @@ public class GlobalAsyncStateManager {
 
   private Long getStateIdAndIncrement(final StreamDescriptor streamDescriptor, final long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
-    if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
+    if (streamToStateIdQ.get(resolvedDescriptor) == null) { // as iterating over the collection can present a false value, use GET.
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();
-    final var update = stateIdToCounter.get(stateId).addAndGet(increment);
+    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast(); // how is this returning a null?
+    final var update = stateIdToCounter.get(stateId).addAndGet(increment);     // stateId is null, something else removes the state id from the queue?
     log.trace("State id: {}, count: {}", stateId, update);
     return stateId;
   }
@@ -327,6 +336,7 @@ public class GlobalAsyncStateManager {
     private static long pk = 0;
 
     public static long getNextId() {
+      log.info("======== who is calling this?");
       return pk++;
     }
 
