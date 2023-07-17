@@ -35,6 +35,20 @@
     "metadata": {
       "type": ["object", "null"],
       "properties": {
+        "respondent": {
+          "type": ["object", "null"],
+          "properties": {
+            "language": {
+              "type": ["object", "null"],
+              "properties": {
+                "type": {
+                  "type": ["string", "null"],
+                  "value": ["string", "null"]
+                }
+              }
+            }
+          }
+        },
         "contact": {
           "type": ["object", "null"]
         }
