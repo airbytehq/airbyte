@@ -10,7 +10,7 @@ RUN apk --no-cache upgrade \
 # https://github.com/pallets/markupsafe/blob/main/CHANGES.rst
 # thus this version is pinned
 # RUN  pip install --prefix=/install markupsafe==2.0.1
-RUN  pip install --prefix=/install black==22.1.0 datamodel_code_generator==0.11.19
+RUN  pip install --prefix=/install black==22.1.0 datamodel_code_generator==0.11.19 pyyaml==5.4.1
 
 FROM base
 COPY --from=builder /install /usr/local
