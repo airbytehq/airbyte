@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.2           | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                |
 | 1.2.1           | 2023-07-14 | [\#28315](https://github.com/airbytehq/airbyte/pull/28315) | Pull in async framework minor bug fix to avoid Snowflake hanging on close                                                                           |
 | 1.2.0           | 2023-07-5  | [\#27935](https://github.com/airbytehq/airbyte/pull/27935) | Enable Faster Snowflake Syncs with Asynchronous writes                                                                                              |
 | 1.1.0           | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                                                |
