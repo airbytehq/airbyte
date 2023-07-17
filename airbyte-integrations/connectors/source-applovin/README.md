@@ -35,16 +35,16 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-applovin2:build
+./gradlew :airbyte-integrations:connectors:source-applovin:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/applovin2)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_applovin2/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/applovin)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_applovin/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source applovin2 test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source applovin test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
