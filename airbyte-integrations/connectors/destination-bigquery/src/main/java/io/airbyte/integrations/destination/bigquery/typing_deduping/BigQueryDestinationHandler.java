@@ -12,7 +12,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
