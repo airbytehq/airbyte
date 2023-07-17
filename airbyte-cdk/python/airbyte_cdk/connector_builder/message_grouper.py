@@ -36,6 +36,8 @@ from airbyte_protocol.models.airbyte_protocol import (
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
 
+JsonType = Optional[Union[str, int, float, bool, Dict[str, "JsonType"], List["JsonType"]]]
+
 
 class MessageGrouper:
     logger = logging.getLogger("airbyte.connector-builder")
@@ -128,7 +130,10 @@ class MessageGrouper:
         had_error = False
 
         while records_count < limit and (message := next(messages, None)):
-            json_message = self._parse_json(message.log) if message.type == MessageType.LOG else None
+            json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None
+            if json_object is not None and not isinstance(json_object, dict):
+                raise ValueError(f"Expected log message to be a dict, got {json_object} of type {type(json_object)}")
+            json_message: Optional[Dict[str, JsonType]] = json_object
             if self._need_to_close_page(at_least_one_page_in_group, message, json_message):
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, True)
                 current_page_request = None
@@ -145,12 +150,21 @@ class MessageGrouper:
             elif message.type == MessageType.LOG:
                 if json_message is not None and self._is_http_log(json_message):
                     if self._is_auxiliary_http_request(json_message):
+                        airbyte_cdk = json_message.get("airbyte_cdk", {})
+                        if not isinstance(airbyte_cdk, dict):
+                            raise ValueError(f"Expected airbyte_cdk to be a dict, got {airbyte_cdk} of type {type(airbyte_cdk)}")
+                        stream = airbyte_cdk.get("stream", {})
+                        if not isinstance(stream, dict):
+                            raise ValueError(f"Expected stream to be a dict, got {stream} of type {type(stream)}")
                         title_prefix = (
-                           "Parent stream: " if json_message.get("airbyte_cdk", {}).get("stream", {}).get("is_substream", False) else ""
+                           "Parent stream: " if stream.get("is_substream", False) else ""
                         )
+                        http = json_message.get("http", {})
+                        if not isinstance(http, dict):
+                            raise ValueError(f"Expected http to be a dict, got {http} of type {type(http)}")
                         yield AuxiliaryRequest(
-                            title=title_prefix + json_message.get("http", {}).get("title", None),
-                            description=json_message.get("http", {}).get("description", None),
+                            title=title_prefix + str(http.get("title", None)),
+                            description=str(http.get("description", None)),
                             request=self._create_request_from_log_message(json_message),
                             response=self._create_response_from_log_message(json_message),
                         )
@@ -193,7 +207,7 @@ class MessageGrouper:
             return MessageGrouper._is_http_log(json_message) and not MessageGrouper._is_auxiliary_http_request(json_message)
 
     @staticmethod
-    def _is_http_log(message: Dict[str, Any]) -> bool:
+    def _is_http_log(message: Dict[str, JsonType]) -> bool:
         return bool(message.get("http", False))
 
     @staticmethod
@@ -235,12 +249,13 @@ class MessageGrouper:
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()
 
     @staticmethod
-    def _parse_json(log_message: AirbyteLogMessage) -> Optional[Dict[str, Any]]:
+    def _parse_json(log_message: AirbyteLogMessage) -> JsonType:
         # TODO: As a temporary stopgap, the CDK emits request/response data as a log message string. Ideally this should come in the
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            return json.loads(log_message.message)  # type: ignore
+            json_object: JsonType = json.loads(log_message.message)
+            return json_object
         except JSONDecodeError:
             return None
 
