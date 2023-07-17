@@ -2,7 +2,7 @@
 
 You can specify for each connection how Airbyte should handle any change of schema in the source. This process helps ensure accurate and efficient data syncs, minimizing errors and saving you time and effort in managing your data pipelines.
 
-Airbyte checks for any changes in your source schema before every sync or once every 24 hours, whichever is more frequent.
+Airbyte checks for any changes in your source schema once every 24 hours.
 
 Based on your configured settings for "Detect and propagate schema changes", Airbyte can automatically sync those changes or ignore them: 
 * **Propagate all changes** automatically propagates stream changes (additions or deletions) or column changes (additions or deletions) detected in the source
