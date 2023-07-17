@@ -80,10 +80,10 @@ single_csv_scenario = (
                                     "description": "The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
                                     "oneOf": [
                                         {
-                                            "type": "object"
+                                            "type": "string"
                                         },
                                         {
-                                            "type": "string"
+                                            "type": "object"
                                         }
                                     ]
                                 },
@@ -187,6 +187,20 @@ single_csv_scenario = (
                                                                 "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
                                                                 "default": False,
                                                                 "type": "boolean"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "title": "JsonlFormat",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "filetype": {
+                                                                "title": "Filetype",
+                                                                "default": "jsonl",
+                                                                "enum": [
+                                                                    "jsonl"
+                                                                ],
+                                                                "type": "string"
                                                             }
                                                         }
                                                     }
