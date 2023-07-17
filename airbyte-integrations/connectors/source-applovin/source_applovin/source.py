@@ -23,22 +23,21 @@ from airbyte_cdk.sources import Source, AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from source_applovin.streams import Campaigns
+from source_applovin.streams import CampaignsStream
 
 
 class SourceApplovin(AbstractSource):
 
-    base_url = f"https://o.applovin.com/campaign_management/v1/"
-
+    base_url = f"https://oauth.applovin.com/oauth/v1/"
     def get_access_token(self, config) -> Tuple[any, any]:
         body = {
-            "grant_type": "client_credantials",
+            "grant_type": "client_credentials",
             "scope" : "campaigns:read source_bids:read creatives:read",
             "client_id" : config["client_id"],
             "client_secret" : config["client_secret"]
         }
 
-        url = f"{self.base_url}access_token"
+        url = f"https://oauth.applovin.com/oauth/v1/access_token"
 
         try:
             response = requests.post(url, data=body)
@@ -59,7 +58,7 @@ class SourceApplovin(AbstractSource):
         if token_value:
             auth = TokenAuthenticator(token=token_value).get_auth_header()
             try:
-                response = requests.get(f"{self.base_url}campaigns", headers=auth)
+                response = requests.get(f"https://o.applovin.com/campaign_management/v1/campaigns", headers=auth)
                 response.raise_for_status()
                 return True, None
             except requests.exceptions.RequestException as e:
@@ -73,6 +72,6 @@ class SourceApplovin(AbstractSource):
         args = {
             "authenticator": auth
         }
-        return [Campaigns(**args)]
+        return [CampaignsStream(**args)]
 
 
