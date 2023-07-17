@@ -12,23 +12,22 @@ import json
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import AuthBase
 from sgqlc.endpoint.http import HTTPEndpoint
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
 
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
-"""
-
+stream_json_schema = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": True,
+    "properties": {
+        "id": {
+            "type": [
+                "number",
+            ]
+        }
+    },
+}
 
 # Basic full refresh stream
 class GlificStream(HttpStream, ABC):
@@ -59,13 +58,14 @@ class GlificStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    def __init__(self, stream_name: str, url_base: str, pagination_limit: int, credentials: dict, **kwargs):
+    def __init__(self, stream_name: str, url_base: str, pagination_limit: int, credentials: dict, config: dict, **kwargs):
         super().__init__(**kwargs)
 
         self.stream_name = stream_name
         self.api_url = url_base
         self.credentials = credentials
         self.pagination_limit = pagination_limit
+        self.start_time = config['start_time']
         self.offset = 0
 
     @property
@@ -80,6 +80,10 @@ class GlificStream(HttpStream, ABC):
     def http_method(self) -> str:
         """All requests in the glific stream are posts with body"""
         return "POST"
+    
+    def get_json_schema(self) -> dict:
+        """Return json schema of each stream"""
+        return stream_json_schema
     
     def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         return ""
@@ -101,14 +105,15 @@ class GlificStream(HttpStream, ABC):
         """
 
         json_resp = response.json()
-        records_str = json_resp['data']['organizationExportData']['data']
-        records_obj = json.loads(records_str)
-        if self.stream_name in records_obj['data']:
-            records = json.loads(records_str)['data'][f'{self.stream_name}']
-            # more records need to be fetched
-            if len(records) == (self.pagination_limit + 1):
-                self.offset += 1
-                return {"offset": self.offset, "limit": self.pagination_limit}
+        if json_resp['data']['organizationExportData'] is not None:
+            records_str = json_resp['data']['organizationExportData']['data']
+            records_obj = json.loads(records_str)
+            if self.stream_name in records_obj['data']:
+                records = json.loads(records_str)['data'][f'{self.stream_name}']
+                # more records need to be fetched
+                if len(records) == (self.pagination_limit + 1):
+                    self.offset += 1
+                    return {"offset": self.offset, "limit": self.pagination_limit}
 
         return None
 
@@ -116,31 +121,14 @@ class GlificStream(HttpStream, ABC):
         """Add the authorization token in the headers"""
         return {'authorization': self.credentials['access_token'], 'Content-Type': 'application/json'}
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
     
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping | None:
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping:
         """Request body to post"""
 
-        query = "query organizationExportData($filter: ExportFilter) {\n \
-                        organizationExportData(filter: $filter) {\n \
-                            data \n \
-                            errors { \n \
-                                key \n \
-                                message \n \
-                            } \n \
-                        } \n \
-                } \n"
+        query = "query organizationExportData($filter: ExportFilter) { organizationExportData(filter: $filter) {data errors { key message } } }"
         
         filter_obj = {
-            "startTime": "2023-01-26T11:11:11Z",
-            "endTime": "2023-07-04T13:13:13Z", # TODO: need to remove this once its made optional in the API
+            "startTime": self.start_time,
             "offset": self.offset,
             "limit": self.pagination_limit,
             "tables": [self.stream_name]
@@ -150,24 +138,27 @@ class GlificStream(HttpStream, ABC):
             filter_obj["offset"] = next_page_token["offset"]
             filter_obj["limit"] = next_page_token["limit"]
 
-        return {"query":  query, "varaiables": {"filter": filter_obj}}
+        return {"query":  query, "variables": {"filter": filter_obj}}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
+        Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         json_resp = response.json()
-        records_str = json_resp['data']['organizationExportData']['data']
-        records_obj = json.loads(records_str)
-        if self.stream_name in records_obj['data']:
-            records = json.loads(records_str)['data'][f'{self.stream_name}']
-            col_names = records[0].split(',')
-            for i in range(1, len(records)): # each record
-                record = {}
-                for j, col_val in enumerate(records[i].split(',')): # each col_val
-                    record[col_names[j]] = col_val
-                yield record
+        if json_resp['data']['organizationExportData'] is not None:
+            records_str = json_resp['data']['organizationExportData']['data']
+            records_obj = json.loads(records_str)
+            if self.stream_name in records_obj['data']:
+                records = json.loads(records_str)['data'][f'{self.stream_name}']
+                col_names = records[0].split(',')
+                print("NOOO OFFF COOLLLSS", len(col_names))
+                for i in range(1, len(records)): # each record
+                    record = {}
+                    print("RECORD NOO OOFFF VALLLSS",i, len(records[i].split(',')))
+                    for j, col_val in enumerate(records[i].split(',')): # each col_val
+                        record[col_names[j]] = col_val
+                    yield record
 
 # Source
 class SourceGlific(AbstractSource):
@@ -247,12 +238,12 @@ class SourceGlific(AbstractSource):
         except requests.exceptions.HTTPError:
             # return empty zero streams since config could not be fetched
             return []
-
+        
         # construct streams
-        config = json.loads(data['data']['organizationExportConfig']['data'])
+        export_config = json.loads(data['data']['organizationExportConfig']['data'])
         streams = []
-        for table in config['tables']:
-            stream_obj = GlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials)
+        for table in export_config['tables']:
+            stream_obj = GlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials, config)
             streams.append(stream_obj)
 
         return streams
