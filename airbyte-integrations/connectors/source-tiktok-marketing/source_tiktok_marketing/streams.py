@@ -482,7 +482,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     schema_name = "basic_reports"
     report_granularity = None
-    include_deleted = False
 
     spec_id_dimensions = {
         ReportLevel.ADVERTISER: "advertiser_id",
