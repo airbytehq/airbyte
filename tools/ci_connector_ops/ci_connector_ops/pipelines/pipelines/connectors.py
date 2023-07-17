@@ -3,97 +3,104 @@
 #
 """This module groups the functions to run full pipelines for connector testing."""
 
-import itertools
-from typing import List
+import sys
+from pathlib import Path
+from typing import Callable, List, Optional
 
 import anyio
-import asyncer
 import dagger
-from ci_connector_ops.pipelines import builds, tests
-from ci_connector_ops.pipelines.bases import ConnectorReport
-from ci_connector_ops.pipelines.contexts import ConnectorContext
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG
-
-# CONSTANTS
+from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.bases import NoOpStep, Report, StepResult, StepStatus
+from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState
+from ci_connector_ops.utils import ConnectorLanguage
+from dagger import Config
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
+CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING = {
+    # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
+    # See https://github.com/airbytehq/airbyte/issues/27168
+    ConnectorLanguage.JAVA: anyio.Semaphore(1),
+}
 
-# DAGGER PIPELINES
+
+async def context_to_step_result(context: ConnectorContext) -> StepResult:
+    if context.state == ContextState.SUCCESSFUL:
+        return await NoOpStep(context, StepStatus.SUCCESS).run()
+
+    if context.state == ContextState.FAILURE:
+        return await NoOpStep(context, StepStatus.FAILURE).run()
+
+    if context.state == ContextState.ERROR:
+        return await NoOpStep(context, StepStatus.FAILURE).run()
+
+    raise ValueError(f"Could not convert context state: {context.state} to step status")
 
 
-async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
-    """Run a test pipeline for a single connector.
+# HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
+# TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline once Steps are refactored
+async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: List[ConnectorContext]) -> List[ConnectorContext]:
+    """Create and Save a report representing the run of the encompassing pipeline.
 
-    A visual DAG can be found on the README.md file of the pipelines modules.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-
-    Returns:
-        ConnectorReport: The test reports holding tests results.
+    This is to denote when the pipeline is complete, useful for long running pipelines like nightlies.
     """
-    async with semaphore:
-        async with context:
-            async with asyncer.create_task_group() as task_group:
-                tasks = [
-                    task_group.soonify(tests.run_qa_checks)(context),
-                    task_group.soonify(tests.run_code_format_checks)(context),
-                    task_group.soonify(tests.run_all_tests)(context),
-                ]
-            results = list(itertools.chain(*(task.value for task in tasks)))
-            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
-        return context.report
+    if not contexts:
+        return []
 
+    # Repurpose the first context to be the pipeline upload context to preserve timestamps
+    first_connector_context = contexts[0]
 
-async def run_connectors_test_pipelines(contexts: List[ConnectorContext], concurrency: int = 5):
-    """Run a CI pipeline for all the connectors passed.
+    pipeline_name = f"Report upload {first_connector_context.report_output_prefix}"
+    first_connector_context.pipeline_name = pipeline_name
 
-    Args:
-        contexts (List[ConnectorContext]): List of connector contexts for which a CI pipeline needs to be run.
-        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
-    """
-    semaphore = anyio.Semaphore(concurrency)
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        async with anyio.create_task_group() as tg:
-            for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run_connector_test_pipeline, context, semaphore)
+    # Transform contexts into a list of steps
+    steps_results = [await context_to_step_result(context) for context in contexts]
+
+    report = Report(
+        name=pipeline_name,
+        pipeline_context=first_connector_context,
+        steps_results=steps_results,
+        filename="complete",
+    )
+
+    return await report.save()
 
 
-async def run_connector_build_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
-    """Run a build pipeline for a single connector.
+async def run_connectors_pipelines(
+    contexts: List[ConnectorContext],
+    connector_pipeline: Callable,
+    pipeline_name: str,
+    concurrency: int,
+    dagger_logs_path: Optional[Path],
+    execute_timeout: Optional[int],
+    *args,
+) -> List[ConnectorContext]:
+    """Run a connector pipeline for all the connector contexts."""
 
-    Args:
-        context (ConnectorContext): The initialized connector context.
+    default_connectors_semaphore = anyio.Semaphore(concurrency)
+    dagger_logs_output = sys.stderr if not dagger_logs_path else open(dagger_logs_path, "w")
+    async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
+        # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
+        # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
+        # See https://github.com/airbytehq/airbyte/issues/27233
+        dockerd_service = environments.with_global_dockerd_service(dagger_client)
+        async with anyio.create_task_group() as tg_main:
+            tg_main.start_soon(dockerd_service.exit_code)
+            await anyio.sleep(10)  # Wait for the docker service to be ready
+            async with anyio.create_task_group() as tg_connectors:
+                for context in contexts:
+                    context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
+                    context.dockerd_service = dockerd_service
+                    tg_connectors.start_soon(
+                        connector_pipeline,
+                        context,
+                        CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
+                        *args,
+                    )
+            # When the connectors pipelines are done, we can stop the dockerd service
+            tg_main.cancel_scope.cancel()
+        await run_report_complete_pipeline(dagger_client, contexts)
 
-    Returns:
-        ConnectorReport: The reports holding builds results.
-    """
-    async with semaphore:
-        async with context:
-            build_results_per_platform = await builds.run_connector_build(context)
-            step_results = [value[0] for value in build_results_per_platform.values()]
-            if context.is_local:
-                _, connector_container = build_results_per_platform[builds.LOCAL_BUILD_PLATFORM]
-                load_image_result = await builds.common.LoadContainerToLocalDockerHost(context, connector_container).run()
-                step_results.append(load_image_result)
-            context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
-        return context.report
-
-
-async def run_connectors_build_pipelines(contexts: List[ConnectorContext], concurrency: int = 5):
-    """Run a build pipeline for all the connector contexts.
-
-    Args:
-        contexts (List[ConnectorContext]): List of connector contexts for which a build pipeline needs to be run.
-        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
-    """
-    semaphore = anyio.Semaphore(concurrency)
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        async with anyio.create_task_group() as tg:
-            for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Build Pipeline")
-                tg.start_soon(run_connector_build_pipeline, context, semaphore)
+    return contexts

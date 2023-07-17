@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
@@ -13,6 +8,13 @@ data:
   icon: mailgun.svg
   license: MIT
   name: Mailgun
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mailgun
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

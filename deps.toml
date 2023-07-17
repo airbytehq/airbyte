@@ -1,5 +1,5 @@
 [versions]
-airbyte-protocol = "1.0.0"
+airbyte-protocol = "0.3.6"
 commons_io = "2.7"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
@@ -32,7 +32,7 @@ reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "1.7.36"
 temporal = "1.17.0"
-debezium = "2.1.2.Final"
+debezium = "2.2.0.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }

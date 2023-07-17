@@ -11,6 +11,8 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Setup guide
 
+<!-- env:oss -->
+
 ### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 :::note
@@ -30,7 +32,9 @@ When you apply for a token, make sure to mention:
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
+<!-- /env:oss -->
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 To set up Google Ads as a source in Airbyte Cloud:
@@ -50,6 +54,7 @@ To set up Google Ads as a source in Airbyte Cloud:
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 To set up Google Ads as a source in Airbyte Open Source:
@@ -67,7 +72,6 @@ To set up Google Ads as a source in Airbyte Open Source:
 11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
-<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -102,12 +106,18 @@ The Google Ads source connector can sync the following tables. It can also sync 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 ### Report Tables
-
+ 
+- [ad_groups](https://developers.google.com/google-ads/api/fields/v14/ad_group)
+- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+- [ad_group_criterion_labels](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
 - [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
+- [campaign budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
+- [customer_labels](https://developers.google.com/google-ads/api/fields/v14/customer_label)
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 - [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+- [labels](https://developers.google.com/google-ads/api/fields/v14/label)
 - [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 - [user_location_report](https://developers.google.com/google-ads/api/fields/v11/user_location_view)
 
@@ -117,17 +127,35 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
+<!-- /env:oss -->
+
 ## Custom Query: Understanding Google Ads Query Language
 
-:::warning
-Additional streams for Google Ads are dynamically created based on the specified Custom GAQL Queries. For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
-:::
+Additional streams for Google Ads can be dynamically created using custom queries.
 
-The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v13/query_validator). You can add these as custom queries when configuring the Google Ads source.
+The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v13/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
 
-Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
+Example GAQL Custom Query:
+
+```
+SELECT
+    campaign.name,
+    metrics.conversions,
+    metrics.conversions_by_conversion_date
+FROM ad_group
+```
+
+Note the segments.date is automatically added to the output, and does not need to be specified in the custom query. All custom reports will by synced by day.
+
+Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
 Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
+
+:::info
+For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
+:::
+
+<!-- env:oss -->
 
 ## Performance considerations
 
@@ -139,7 +167,25 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `0.2.14` | 2023-03-21 | [24945](https://github.com/airbytehq/airbyte/pull/24945) | for custom google query fixed schema type for "data_type: ENUM" and "is_repeated: true" to array of strings                          |
+| `0.7.0`  | 2023-07-12 | [28246](https://github.com/airbytehq/airbyte/pull/28246) | Add new streams: labels, criterions, biddig strategies                                                                               |
+| `0.6.1`  | 2023-07-12 | [28230](https://github.com/airbytehq/airbyte/pull/28230) | Reduce amount of logs produced by the connector while working with big amount of data                                                |
+| `0.6.0`  | 2023-07-10 | [28078](https://github.com/airbytehq/airbyte/pull/28078) | Add new stream `Campaign Budget`                                                                                                     |
+| `0.5.0`  | 2023-07-07 | [28042](https://github.com/airbytehq/airbyte/pull/28042) | Add metrics & segment to `Campaigns` stream                                                                                          |
+| `0.4.3`  | 2023-07-05 | [27959](https://github.com/airbytehq/airbyte/pull/27959) | Add `audience` and `user_interest` streams                                                                                           |
+| `0.3.3`  | 2023-07-03 | [27913](https://github.com/airbytehq/airbyte/pull/27913) | Improve Google Ads exception handling (wrong customer ID)                                                                            |
+| `0.3.2`  | 2023-06-29 | [27835](https://github.com/airbytehq/airbyte/pull/27835) | Fix bug introduced in 0.3.1: update query template                                                                                   |
+| `0.3.1`  | 2023-06-26 | [27711](https://github.com/airbytehq/airbyte/pull/27711) | Refactor date slicing; make start date inclusive                                                                                     |
+| `0.3.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                                                                 |
+| `0.2.24` | 2023-06-06 | [27608](https://github.com/airbytehq/airbyte/pull/27608) | Improve Google Ads exception handling                                                                                                |
+| `0.2.23` | 2023-06-06 | [26905](https://github.com/airbytehq/airbyte/pull/26905) | Replace deprecated `authSpecification` in the connector specification with `advancedAuth`                                            |
+| `0.2.22` | 2023-06-02 | [26948](https://github.com/airbytehq/airbyte/pull/26948) | Refactor error messages; add `pattern_descriptor` for fields in spec                                                                 |
+| `0.2.21` | 2023-05-30 | [25314](https://github.com/airbytehq/airbyte/pull/25314) | Add full refresh custom table `asset_group_listing_group_filter`                                                                     |
+| `0.2.20` | 2023-05-30 | [25624](https://github.com/airbytehq/airbyte/pull/25624) | Add `asset` Resource to full refresh custom tables (GAQL Queries)                                                                    |
+| `0.2.19` | 2023-05-15 | [26209](https://github.com/airbytehq/airbyte/pull/26209) | Handle Token Refresh errors as `config_error`                                                                                        |
+| `0.2.18` | 2023-05-15 | [25947](https://github.com/airbytehq/airbyte/pull/25947) | Improve GAQL parser error message if multiple resources provided                                                                     |
+| `0.2.17` | 2023-05-11 | [25987](https://github.com/airbytehq/airbyte/pull/25987) | Categorized Config Errors Accurately                                                                                                 |
+| `0.2.16` | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                     |
+| `0.2.14` | 2023-03-21 | [24945](https://github.com/airbytehq/airbyte/pull/24945) | For custom google query fixed schema type for "data_type: ENUM" and "is_repeated: true" to array of strings                          |
 | `0.2.13` | 2023-03-21 | [24338](https://github.com/airbytehq/airbyte/pull/24338) | Migrate to v13                                                                                                                       |
 | `0.2.12` | 2023-03-17 | [22985](https://github.com/airbytehq/airbyte/pull/22985) | Specified date formatting in specification                                                                                           |
 | `0.2.11` | 2023-03-13 | [23999](https://github.com/airbytehq/airbyte/pull/23999) | Fix incremental sync for Campaigns stream                                                                                            |
@@ -181,18 +227,20 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071)   | Fix: Keyword schema enum                                                                                                             |
 | `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431)   | Add new streams: Geographic and Keyword                                                                                              |
 | `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225)   | Include time_zone to sync. Remove streams for manager account.                                                                       |
-| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178)   | clarify setup fields                                                                                                                 |
+| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178)   | Clarify setup fields                                                                                                                 |
 | `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684)   | Add new stream `click_view`                                                                                                          |
 | `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565)   | Fix OAuth Spec File                                                                                                                  |
 | `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458)   | Update OAuth Spec File                                                                                                               |
 | `0.1.11` | 2021-09-22 | [6373](https://github.com/airbytehq/airbyte/pull/6373)   | Fix inconsistent segments.date field type across all streams                                                                         |
 | `0.1.10` | 2021-09-13 | [6022](https://github.com/airbytehq/airbyte/pull/6022)   | Annotate Oauth2 flow initialization parameters in connector spec                                                                     |
 | `0.1.9`  | 2021-09-07 | [5302](https://github.com/airbytehq/airbyte/pull/5302)   | Add custom query stream support                                                                                                      |
-| `0.1.8`  | 2021-08-03 | [5509](https://github.com/airbytehq/airbyte/pull/5509)   | allow additionalProperties in spec.json                                                                                              |
+| `0.1.8`  | 2021-08-03 | [5509](https://github.com/airbytehq/airbyte/pull/5509)   | Allow additionalProperties in spec.json                                                                                              |
 | `0.1.7`  | 2021-08-03 | [5422](https://github.com/airbytehq/airbyte/pull/5422)   | Correct query to not skip dates                                                                                                      |
 | `0.1.6`  | 2021-08-03 | [5423](https://github.com/airbytehq/airbyte/pull/5423)   | Added new stream UserLocationReport                                                                                                  |
 | `0.1.5`  | 2021-08-03 | [5159](https://github.com/airbytehq/airbyte/pull/5159)   | Add field `login_customer_id` to spec                                                                                                |
 | `0.1.4`  | 2021-07-28 | [4962](https://github.com/airbytehq/airbyte/pull/4962)   | Support new Report streams                                                                                                           |
 | `0.1.3`  | 2021-07-23 | [4788](https://github.com/airbytehq/airbyte/pull/4788)   | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams                                         |
 | `0.1.2`  | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                      |
-| `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | `Bugfix: Correctly declare required parameters`                                                                                      |
+| `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fix `Bugfix: Correctly declare required parameters`                                                                                  |
+
+<!-- /env:oss -->

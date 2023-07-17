@@ -15,10 +15,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
+from . import constants
 from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
-
-DEFAULT_PAGE_SIZE = 100
 
 
 class GithubStream(HttpStream, ABC):
@@ -31,12 +30,14 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+        self.access_token_type = access_token_type
 
         # GitHub pagination could be from 1 to 100.
-        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
+        self.page_size = page_size_for_large_streams if self.large_stream else constants.DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
@@ -164,6 +165,11 @@ class GithubStream(HttpStream, ABC):
                     error_msg = (
                         f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
                     )
+            elif e.response.status_code == requests.codes.UNAUTHORIZED:
+                if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
+                    error_msg = str(e.response.json().get("message"))
+                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                raise e
             elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
@@ -372,9 +378,10 @@ class Organizations(GithubStream):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    def __init__(self, organizations: List[str], **kwargs):
+    def __init__(self, organizations: List[str], access_token_type: str = "", **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
+        self.access_token_type = access_token_type
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:

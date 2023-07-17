@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
@@ -13,6 +8,13 @@ data:
   icon: webflow.svg
   license: MIT
   name: Webflow
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/webflow
+  documentationUrl: https://docs.airbyte.com/integrations/sources/webflow
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

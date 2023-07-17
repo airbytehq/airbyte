@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "integer" },
     "name": { "type": ["null", "string"] },
@@ -13,6 +14,10 @@
     "country": { "type": ["null", "string"] },
     "zipcode": { "type": ["null", "string"] },
     "created_at": { "type": ["null", "string"] },
-    "updated_at": { "type": ["null", "string"] }
+    "updated_at": { "type": ["null", "string"] },
+    "email": {"type": ["null", "string"] },
+    "phone": {"type": ["null", "string"] },
+    "address": {"type": ["null", "string"] }, 
+    "contact_name": {"type": ["null", "string"] }
   }
 }

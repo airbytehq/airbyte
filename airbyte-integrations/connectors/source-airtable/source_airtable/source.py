@@ -4,12 +4,13 @@
 
 
 import logging
-from typing import Any, Iterable, List, Mapping, Tuple
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 from .auth import AirtableAuth
 from .schema_helpers import SchemaHelpers
@@ -34,6 +35,35 @@ class SourceAirtable(AbstractSource):
             return True, None
         except Exception as e:
             return False, str(e)
+
+    def _remove_missed_streams_from_catalog(
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog
+    ) -> ConfiguredAirbyteCatalog:
+        config, _ = split_config(config)
+        stream_instances = {s.name: s for s in self.streams(config)}
+        for index, configured_stream in enumerate(catalog.streams):
+            stream_instance = stream_instances.get(configured_stream.stream.name)
+            if not stream_instance:
+                table_id = configured_stream.stream.name.split("/")[2]
+                similar_streams = [s for s in stream_instances if s.endswith(table_id)]
+                logger.warn(
+                    f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, removing from catalog for this sync run. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names-and-deleted-tables"
+                    f" Similar streams: {similar_streams}"
+                    f" Available streams: {stream_instances.keys()}"
+                )
+                del catalog.streams[index]
+        return catalog
+
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        """Override to provide filtering of catalog in case if streams were renamed/removed previously"""
+        catalog = self._remove_missed_streams_from_catalog(logger, config, catalog)
+        return super().read(logger, config, catalog, state)
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
         """

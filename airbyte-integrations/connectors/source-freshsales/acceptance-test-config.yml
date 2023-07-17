@@ -26,6 +26,11 @@ acceptance_tests:
               bypass_reason: "Frequently changed data"
             - name: rotten_days
               bypass_reason: "Frequently changed data"
+          won_deals:
+            - name: age
+              bypass_reason: "Frequently changed data"
+            - name: rotten_days
+              bypass_reason: "Frequently changed data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

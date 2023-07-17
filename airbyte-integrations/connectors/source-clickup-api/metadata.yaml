@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
@@ -13,6 +8,14 @@ data:
   icon: clickup.svg
   license: MIT
   name: ClickUp
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/click-up
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clickup-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

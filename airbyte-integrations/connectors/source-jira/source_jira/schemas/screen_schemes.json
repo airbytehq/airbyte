@@ -4,8 +4,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "description": "The ID of the screen scheme.",
-      "format": "int64"
+      "description": "The ID of the screen scheme."
     },
     "name": {
       "type": "string",
@@ -21,23 +20,19 @@
       "properties": {
         "edit": {
           "type": "integer",
-          "description": "The ID of the edit screen.",
-          "format": "int64"
+          "description": "The ID of the edit screen."
         },
         "create": {
           "type": "integer",
-          "description": "The ID of the create screen.",
-          "format": "int64"
+          "description": "The ID of the create screen."
         },
         "view": {
           "type": "integer",
-          "description": "The ID of the view screen.",
-          "format": "int64"
+          "description": "The ID of the view screen."
         },
         "default": {
           "type": "integer",
-          "description": "The ID of the default screen. Required when creating a screen scheme.",
-          "format": "int64"
+          "description": "The ID of the default screen. Required when creating a screen scheme."
         }
       }
     },

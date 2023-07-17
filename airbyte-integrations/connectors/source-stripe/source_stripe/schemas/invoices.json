@@ -20,6 +20,21 @@
     "description": {
       "type": ["null", "string"]
     },
+    "customer_tax_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "receipt_number": {
       "type": ["null", "string"]
     },
@@ -68,10 +83,7 @@
     "discounts": {
       "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       }
     },
     "discount": {
@@ -231,28 +243,16 @@
       "type": "object",
       "properties": {
         "finalized_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "marked_uncollectible_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "paid_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "voided_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         }
       }
     }

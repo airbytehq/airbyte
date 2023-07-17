@@ -76,11 +76,17 @@ class RetentlyStream(HttpStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-
         data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
+        yield from stream_data
+
+    @staticmethod
+    def convert_empty_string_to_null(record: MutableMapping[str, Any], parent_key: str, field_key: str):
+        """
+        Converts empty strings to null in the specified field of the record.
+        """
+        if record.get(parent_key, {}).get(field_key, "") == "":
+            record[parent_key][field_key] = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
@@ -112,6 +118,18 @@ class Campaigns(RetentlyStream):
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for d in stream_data:
+            yield d
 
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -157,6 +175,18 @@ class Outbox(RetentlyStream):
     ) -> str:
         return "nps/outbox"
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        data = response.json().get("data")
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for record in stream_data:
+            self.convert_empty_string_to_null(record, "detailedStatus", "openedDate")
+            self.convert_empty_string_to_null(record, "detailedStatus", "respondedDate")
+            yield record
+
 
 class Reports(RetentlyStream):
     json_path = None
@@ -166,9 +196,11 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
@@ -181,6 +213,21 @@ class Nps(RetentlyStream):
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield response.json().get("data")
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
 
 
 class Templates(RetentlyStream):
@@ -195,38 +242,8 @@ class Templates(RetentlyStream):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json().get("data")
-        yield data
-
-class Campaigns(RetentlyStream):
-    json_path = "campaigns"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "campaigns"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping]:
         data = response.json()
         stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
-
-class Feedback(RetentlyStream):
-    json_path = "responses"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "feedback"
-
+        yield from stream_data

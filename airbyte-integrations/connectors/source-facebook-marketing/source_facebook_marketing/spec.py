@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import List, Optional
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -52,6 +52,17 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
+    action_report_time: str = Field(
+        title="Action Report Time",
+        description=(
+            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st "
+            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+        ),
+        default="mixed",
+        enum=["conversion", "impression", "mixed"],
+    )
+
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description=(
@@ -94,10 +105,6 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-        @staticmethod
-        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
-            schema["properties"]["end_date"].pop("format")
-
     account_id: str = Field(
         title="Account ID",
         order=0,
@@ -106,6 +113,8 @@ class ConnectorConfig(BaseConfig):
             " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
+        pattern="^[0-9]+$",
+        pattern_descriptor="1234567890",
         examples=["111111111111111"],
     )
 

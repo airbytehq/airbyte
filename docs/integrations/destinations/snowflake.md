@@ -1,13 +1,13 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, Google Cloud Storage bucket, or Azure Blob Storage), and configuring the Snowflake destination connector using the Airbyte UI.
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, or Google Cloud Storage bucket), and configuring the Snowflake destination connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 ## Prerequisites
 
 - A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
-- (Optional) An AWS, Google Cloud Storage, or Azure account.
+- (Optional) An AWS, or Google Cloud Storage.
 
 ### Network policies
 
@@ -35,8 +35,8 @@ To set up the Snowflake destination connector, you first need to create Airbyte-
 
 You can use the following script in a new [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the entities:
 
-1. [Log into your Snowflake account](https://www.snowflake.com/login/).
-2. Edit the following script to change the password to a more secure password and to change the names of other resources if you so desire.
+1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
+2.  Edit the following script to change the password to a more secure password and to change the names of other resources if you so desire.
 
     **Note:** Make sure you follow the [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html) while renaming the resources.
 
@@ -109,19 +109,17 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
         commit;
 
-
-3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
+3.  Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
 
 ### Step 2: Set up a data loading method
 
-By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
+By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), or [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
 
 Make sure the database and schema have the `USAGE` privilege.
 
 #### Using an Amazon S3 bucket
 
 To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake.
-
 
 #### Using a Google Cloud Storage bucket
 
@@ -130,38 +128,36 @@ To use a Google Cloud Storage bucket:
 1. Navigate to the Google Cloud Console and [create a new bucket](https://cloud.google.com/storage/docs/creating-buckets) with read/write access for Airbyte to stage data to Snowflake.
 2. [Generate a JSON key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for your service account.
 3. Edit the following script to replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration and `YOURBUCKETNAME` with your bucket name.
-    ```text
-    create storage INTEGRATION gcs_airbyte_integration
-      TYPE = EXTERNAL_STAGE
-      STORAGE_PROVIDER = GCS
-      ENABLED = TRUE
-      STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
 
-    create stage gcs_airbyte_stage
-      url = 'gcs://YOURBUCKETNAME'
-      storage_integration = gcs_airbyte_integration;
+   ```text
+   create storage INTEGRATION gcs_airbyte_integration
+     TYPE = EXTERNAL_STAGE
+     STORAGE_PROVIDER = GCS
+     ENABLED = TRUE
+     STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
 
-    GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
-    GRANT USAGE ON stage gcs_airbyte_stage TO ROLE AIRBYTE_ROLE;
+   create stage gcs_airbyte_stage
+     url = 'gcs://YOURBUCKETNAME'
+     storage_integration = gcs_airbyte_integration;
 
-    DESC STORAGE INTEGRATION gcs_airbyte_integration;
-    ```
-    The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
+   GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
+   GRANT USAGE ON stage gcs_airbyte_stage TO ROLE AIRBYTE_ROLE;
+
+   DESC STORAGE INTEGRATION gcs_airbyte_integration;
+   ```
+
+   The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
 
 4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
-
-#### Using Azure Blob Storage
-
-To use Azure Blob Storage, [create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) and [container](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container), and provide a [SAS Token](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to access the container. We recommend creating a dedicated container for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
-
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using username/password or OAuth 2.0:
 
 ### Login and Password
+
 | Field                                                                                                 | Description                                                                                                                                                                                       |
-|-------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
@@ -171,21 +167,21 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 | Password                                                                                              | The password associated with the username.                                                                                                                                                        |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
-
 ### OAuth 2.0
-| Field                                                                                                  | Description                                                                                                                                                                                        |
-|:-------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                         | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`  |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)           | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                            |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)  | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                    |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)    | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                      |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)      | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                           |
-| Username                                                                                               | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                |
-| OAuth2                                                                                                 | The Login name and password to obtain auth token.                                                                                                                                                  |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)            | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`    |
 
+| Field                                                                                                 | Description                                                                                                                                                                                       |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                          |
+| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
+| OAuth2                                                                                                | The Login name and password to obtain auth token.                                                                                                                                                 |
+| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
 ### Key pair authentication
+
     In order to configure key pair authentication you will need a private/public key pair.
     If you do not have the key pair yet, you can generate one using openssl command line tool
     Use this command in order to generate an unencrypted private key file:
@@ -208,16 +204,14 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
     and replace <user_name> with your user name and <public_key_value> with your public key.
 
-
-
 To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
 
 | Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | S3 Bucket Name                 | The name of the staging S3 bucket (Example: `airbyte.staging`). Airbyte will write files to this bucket and read them via statements on Snowflake.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | S3 Bucket Region               | The S3 staging bucket region used.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| S3 Key Id *                    | The Access Key ID granting access to the S3 staging bucket. Airbyte requires Read and Write permissions for the bucket.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| S3 Access Key *                | The corresponding secret to the S3 Key ID.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| S3 Key Id \*                   | The Access Key ID granting access to the S3 staging bucket. Airbyte requires Read and Write permissions for the bucket.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| S3 Access Key \*               | The corresponding secret to the S3 Key ID.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Stream Part Size (Optional)    | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 5MB by default, resulting in a default limit of 100GB tables. <br/>Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5)                                                                     |
 | Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false.                                                                                                                                                  |
 | Encryption                     | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
@@ -226,33 +220,22 @@ To use AWS S3 as the cloud storage, enter the information for the S3 bucket you 
 To use a Google Cloud Storage bucket, enter the information for the bucket you created in Step 2:
 
 | Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                          |
-|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GCP Project ID                 | The name of the GCP project ID for your credentials. (Example: `my-project`)                                                                                                                                                                                                                                                                                                                         |
 | GCP Bucket Name                | The name of the staging bucket. Airbyte will write files to this bucket and read them via statements on Snowflake. (Example: `airbyte-staging`)                                                                                                                                                                                                                                                      |
 | Google Application Credentials | The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the [Google Cloud docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for more information on how to generate a JSON key for your service account. |
-
-To use Azure Blob storage, enter the information for the storage you created in Step 2:
-
-| Field                                      | Description                                                                                                                                                                                                |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Endpoint Domain Name                       | Leave default value `blob.core.windows.net` or [map a custom domain](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-custom-domain-name?tabs=azure-portal) to an Azure Blob Storage endpoint. |
-| Azure Blob Storage Account Name            | The Azure storage account you created in Step 2.                                                                                                                                                           |
-| Azure blob storage container (Bucket) Name | The Azure blob storage container you created in Step 2.                                                                                                                                                    |
-| SAS Token                                  | The SAS Token you provided in Step 2.                                                                                                                                                                      |
-
 
 ## Output schema
 
 Airbyte outputs each stream into its own table with the following columns in Snowflake:
 
-| Airbyte field       | Description                                                    | Column type              |
-|---------------------|----------------------------------------------------------------|--------------------------|
-| _airbyte_ab_id      | A UUID assigned to each processed event                        | VARCHAR                  |
-| _airbyte_emitted_at | A timestamp for when the event was pulled from the data source | TIMESTAMP WITH TIME ZONE |
-| _airbyte_data       | A JSON blob with the event data.                               | VARIANT                  |
+| Airbyte field        | Description                                                    | Column type              |
+| -------------------- | -------------------------------------------------------------- | ------------------------ |
+| \_airbyte_ab_id      | A UUID assigned to each processed event                        | VARCHAR                  |
+| \_airbyte_emitted_at | A timestamp for when the event was pulled from the data source | TIMESTAMP WITH TIME ZONE |
+| \_airbyte_data       | A JSON blob with the event data.                               | VARIANT                  |
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
-
 
 ## Supported sync modes
 
@@ -275,6 +258,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 ## Troubleshooting
 
 ### 'Current role does not have permissions on the target schema'
+
 If you receive an error stating `Current role does not have permissions on the target schema` make sure that the
 Snowflake destination `SCHEMA` is one that the role you've provided has permissions on. When creating a connection,
 it may allow you to select `Mirror source structure` for the `Destination namespace`, which if you have followed
@@ -287,12 +271,24 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.61          | 2023-03-30 | [#24736](https://github.com/airbytehq/airbyte/pull/24736)  | Improve behavior when throttled by AWS API                                                                                                          |
-| 0.4.60          | 2023-03-30 | [#24698](https://github.com/airbytehq/airbyte/pull/24698)  | Add option in spec to allow increasing the stream buffer size to 50                                                                                 |
-| 0.4.59          | 2023-03-23 | [#23904](https://github.com/airbytehq/airbyte/pull/24405)  | Fail faster in certain error cases                                                                                                                  |
-| 0.4.58          | 2023-03-27 | [#24615](https://github.com/airbytehq/airbyte/pull/24615)  | Fixed host validation by pattern on UI                                                                                                              |
-| 0.4.56 (broken) | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
-| 0.4.54          | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                          |
+| 1.2.2           | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                |
+| 1.2.1           | 2023-07-14 | [\#28315](https://github.com/airbytehq/airbyte/pull/28315) | Pull in async framework minor bug fix to avoid Snowflake hanging on close                                                                           |
+| 1.2.0           | 2023-07-5  | [\#27935](https://github.com/airbytehq/airbyte/pull/27935) | Enable Faster Snowflake Syncs with Asynchronous writes                                                                                              |
+| 1.1.0           | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                                                |
+| 1.0.6           | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                                                                   |
+| 1.0.5           | 2023-05-31 | [\#25782](https://github.com/airbytehq/airbyte/pull/25782) | Internal scaffolding for future development                                                                                                         |
+| 1.0.4           | 2023-05-19 | [\#26323](https://github.com/airbytehq/airbyte/pull/26323) | Prevent infinite retry loop under specific circumstances                                                                                            |
+| 1.0.3           | 2023-05-15 | [\#26081](https://github.com/airbytehq/airbyte/pull/26081) | Reverts splits bases                                                                                                                                |
+| 1.0.2           | 2023-05-05 | [\#25649](https://github.com/airbytehq/airbyte/pull/25649) | Splits bases (reverted)                                                                                                                             |
+| 1.0.1           | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update                                                                                                                             |
+| 1.0.0           | 2023-05-02 | [\#25739](https://github.com/airbytehq/airbyte/pull/25739) | Removed Azure Blob Storage as a loading method                                                                                                      |
+| 0.4.63          | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Added FlushBufferFunction interface                                                                                                                 |
+| 0.4.61          | 2023-03-30 | [\#24736](https://github.com/airbytehq/airbyte/pull/24736) | Improve behavior when throttled by AWS API                                                                                                          |
+| 0.4.60          | 2023-03-30 | [\#24698](https://github.com/airbytehq/airbyte/pull/24698) | Add option in spec to allow increasing the stream buffer size to 50                                                                                 |
+| 0.4.59          | 2023-03-23 | [\#23904](https://github.com/airbytehq/airbyte/pull/24405) | Fail faster in certain error cases                                                                                                                  |
+| 0.4.58          | 2023-03-27 | [\#24615](https://github.com/airbytehq/airbyte/pull/24615) | Fixed host validation by pattern on UI                                                                                                              |
+| 0.4.56 (broken) | 2023-03-22 | [\#23904](https://github.com/airbytehq/airbyte/pull/23904) | Added host validation by pattern on UI                                                                                                              |
+| 0.4.54          | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                                                          |
 | 0.4.53          | 2023-03-15 | [\#24058](https://github.com/airbytehq/airbyte/pull/24058) | added write attempt to internal staging Check method                                                                                                |
 | 0.4.52          | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                             |
 | 0.4.51          | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                                               |

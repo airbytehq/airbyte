@@ -7,23 +7,34 @@ import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
+    AccountLabels,
     AccountPerformanceReport,
     Accounts,
     AdGroupAdLabels,
     AdGroupAdReport,
     AdGroupAds,
+    AdGroupBiddingStrategies,
+    AdGroupCriterionLabels,
+    AdGroupCriterions,
     AdGroupLabels,
     AdGroups,
+    AdListingGroupCriterions,
+    Audience,
+    CampaignBiddingStrategies,
+    CampaignBudget,
     CampaignLabels,
     Campaigns,
     ClickView,
@@ -31,13 +42,15 @@ from .streams import (
     DisplayTopicsPerformanceReport,
     GeographicReport,
     KeywordReport,
+    Labels,
     ServiceAccounts,
     ShoppingPerformanceReport,
+    UserInterest,
     UserLocationReport,
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -46,7 +59,11 @@ class SourceGoogleAds(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries", []):
-            query["query"] = GAQL.parse(query["query"])
+            try:
+                query["query"] = GAQL.parse(query["query"])
+            except ValueError:
+                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
         return config
 
     @staticmethod
@@ -116,6 +133,13 @@ class SourceGoogleAds(AbstractSource):
                         pass
             return True, None
         except GoogleAdsException as exception:
+            if AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED in (
+                x.error_code.authorization_error for x in exception.failure.errors
+            ) or AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND in (
+                x.error_code.authentication_error for x in exception.failure.errors
+            ):
+                message = f"Failed to access the customer '{exception.customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
@@ -132,10 +156,20 @@ class SourceGoogleAds(AbstractSource):
             AdGroupAds(**incremental_config),
             AdGroupAdLabels(google_api, customers=customers),
             AdGroups(**incremental_config),
+            AdGroupBiddingStrategies(**incremental_config),
+            AdGroupCriterions(google_api, customers=customers),
+            AdGroupCriterionLabels(google_api, customers=customers),
             AdGroupLabels(google_api, customers=customers),
+            AdListingGroupCriterions(google_api, customers=customers),
             Accounts(**incremental_config),
+            AccountLabels(google_api, customers=customers),
+            Audience(google_api, customers=customers),
+            CampaignBiddingStrategies(**incremental_config),
+            CampaignBudget(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
+            Labels(google_api, customers=customers),
+            UserInterest(google_api, customers=customers),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:

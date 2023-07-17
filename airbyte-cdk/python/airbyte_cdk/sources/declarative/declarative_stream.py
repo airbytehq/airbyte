@@ -5,13 +5,12 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -27,7 +26,6 @@ class DeclarativeStream(Stream):
         retriever (Retriever): The retriever
         config (Config): The user-provided configuration as specified by the source's spec
         stream_cursor_field (Optional[Union[InterpolatedString, str]]): The cursor field
-        transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
         stream. Transformations are applied in the order in which they are defined.
     """
 
@@ -41,11 +39,9 @@ class DeclarativeStream(Stream):
     _primary_key: str = field(init=False, repr=False, default="")
     _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
     stream_cursor_field: Optional[Union[InterpolatedString, str]] = None
-    transformations: List[RecordTransformation] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.stream_cursor_field = InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
-        self.transformations = self.transformations or []
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
     @property
@@ -97,24 +93,10 @@ class DeclarativeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            yield self._apply_transformations(record, self.config, stream_slice)
-
-    def _apply_transformations(
-        self,
-        message_or_record_data: Union[AirbyteMessage, AirbyteLogMessage, AirbyteTraceMessage, Mapping[str, Any]],
-        config: Config,
-        stream_slice: StreamSlice,
-    ):
-        # If the input is an AirbyteRecord, transform the record's data
-        # If the input is another type of Airbyte Message, return it as is
-        # If the input is a dict, transform it
-        if isinstance(message_or_record_data, AirbyteLogMessage) or isinstance(message_or_record_data, AirbyteTraceMessage):
-            return message_or_record_data
-        for transformation in self.transformations:
-            transformation.transform(message_or_record_data, config=config, stream_state=self.state, stream_slice=stream_slice)
-
-        return message_or_record_data
+        """
+        :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
+        """
+        yield from self.retriever.read_records(sync_mode, cursor_field, stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -133,8 +115,18 @@ class DeclarativeStream(Stream):
 
         :param sync_mode:
         :param cursor_field:
-        :param stream_state:
+        :param stream_state: we knowingly avoid using stream_state as we want cursors to manage their own state
         :return:
         """
-        # this is not passing the cursor field because it is known at init time
-        return self.retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+        return self.retriever.stream_slices()
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        We explicitly disable checkpointing here. There are a couple reasons for that and not all are documented here but:
+        * In the case where records are not ordered, the granularity of what is ordered is the slice. Therefore, we will only update the
+            cursor value once at the end of every slice.
+        * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs where the
+            important state is the one at the beginning of the slice
+        """
+        return None

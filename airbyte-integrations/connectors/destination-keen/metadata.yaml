@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: destination
   definitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
@@ -13,6 +8,13 @@ data:
   icon: chargify.svg
   license: MIT
   name: Chargify (Keen)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/keen
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/keen
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

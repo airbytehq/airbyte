@@ -8,6 +8,12 @@
     "run_id": {
       "type": "integer"
     },
+    "workflow_name": {
+      "type": ["null", "string"]
+    },
+    "head_branch": {
+      "type": ["null", "string"]
+    },
     "run_url": {
       "type": "string"
     },
@@ -24,21 +30,25 @@
       "type": "string"
     },
     "html_url": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "status": {
       "type": "string"
     },
     "conclusion": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "started_at": {
-      "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "completed_at": {
-      "format": "date-time",
-      "type": ["string", "null"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "name": {
       "type": "string"
@@ -52,7 +62,7 @@
             "type": "string"
           },
           "conclusion": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "name": {
             "type": "string"
@@ -61,12 +71,12 @@
             "type": "integer"
           },
           "started_at": {
-            "format": "date-time",
-            "type": ["string", "null"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "completed_at": {
-            "format": "date-time",
-            "type": ["string", "null"]
+            "type": ["null", "string"],
+            "format": "date-time"
           }
         }
       }
@@ -84,13 +94,16 @@
       "type": ["integer", "null"]
     },
     "runner_name": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "runner_group_id": {
       "type": ["integer", "null"]
     },
     "runner_group_name": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "type": "string"
     }
   }
 }

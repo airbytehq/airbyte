@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
@@ -13,6 +8,14 @@ data:
   icon: gocardless.svg
   license: MIT
   name: GoCardless
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gocardless
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gocardless
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,18 +1,21 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-google-pagespeed-insights
   githubIssueLabel: source-google-pagespeed-insights
   icon: google-pagespeed-insights.svg
   license: MIT
   name: Google PageSpeed Insights
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

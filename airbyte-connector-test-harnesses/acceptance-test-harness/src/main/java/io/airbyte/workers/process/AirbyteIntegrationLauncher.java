@@ -82,6 +82,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
+        Collections.emptyMap(),
         "spec");
   }
 
@@ -101,6 +102,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         allowedHosts,
         Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
+        Collections.emptyMap(),
         Collections.emptyMap(),
         "check",
         CONFIG, configFilename);
@@ -122,6 +124,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         allowedHosts,
         Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         getWorkerMetadata(),
+        Collections.emptyMap(),
         Collections.emptyMap(),
         "discover",
         CONFIG, configFilename);
@@ -168,6 +171,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
+        Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
   }
 
@@ -176,7 +180,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                        final String configFilename,
                        final String configContents,
                        final String catalogFilename,
-                       final String catalogContents)
+                       final String catalogContents,
+                       final Map<String, String> additionalEnvironmentVariables)
       throws TestHarnessException {
     final Map<String, String> files = ImmutableMap.of(
         configFilename, configContents,
@@ -197,6 +202,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
+        additionalEnvironmentVariables,
         "write",
         CONFIG, configFilename,
         "--catalog", catalogFilename);

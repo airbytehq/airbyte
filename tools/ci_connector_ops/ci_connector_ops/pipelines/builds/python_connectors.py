@@ -2,24 +2,39 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Tuple
-
+from ci_connector_ops.pipelines.actions.environments import with_airbyte_python_connector
 from ci_connector_ops.pipelines.bases import StepResult, StepStatus
-from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase
-from dagger import Container, QueryError
+from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
+from ci_connector_ops.pipelines.contexts import ConnectorContext
+from dagger import QueryError
 
 
 class BuildConnectorImage(BuildConnectorImageBase):
     """
-    A step to build a Python connector image using its Dockerfile.
+    A step to build a Python connector image.
     A spec command is run on the container to validate it was built successfully.
     """
 
-    async def _run(self) -> Tuple[StepResult, Optional[Container]]:
-        connector_dir = self.context.get_connector_dir()
-        connector = connector_dir.docker_build(platform=self.build_platform)
+    async def _run(self) -> StepResult:
+        connector = await with_airbyte_python_connector(self.context, self.build_platform)
         try:
-            build_result = await self.get_step_result(connector.with_exec(["spec"]))
-            return build_result, connector
+            return await self.get_step_result(connector.with_exec(["spec"]))
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+
+
+class BuildConnectorImageForAllPlatforms(BuildConnectorImageForAllPlatformsBase):
+    """Build a Python connector image for all platforms."""
+
+    async def _run(self) -> StepResult:
+        build_results_per_platform = {}
+        for platform in self.ALL_PLATFORMS:
+            build_connector_step_result = await BuildConnectorImage(self.context, platform).run()
+            if build_connector_step_result.status is not StepStatus.SUCCESS:
+                return build_connector_step_result
+            build_results_per_platform[platform] = build_connector_step_result.output_artifact
+        return self.get_success_result(build_results_per_platform)
+
+
+async def run_connector_build(context: ConnectorContext) -> StepResult:
+    return await BuildConnectorImageForAllPlatforms(context).run()

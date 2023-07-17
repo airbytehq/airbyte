@@ -111,6 +111,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),
+              Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);

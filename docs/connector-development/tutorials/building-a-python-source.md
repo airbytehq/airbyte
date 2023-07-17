@@ -19,8 +19,8 @@ All the commands below assume that `python` points to a version of python &gt;3.
 ### Creating a Source
 
 * Step 1: Create the source using template
-* Step 2: Build the newly generated source 
-* Step 3: Set up your Airbyte development environment 
+* Step 2: Build the newly generated source
+* Step 3: Set up your Airbyte development environment
 * Step 4: Implement `spec` \(and define the specification for the source `airbyte-integrations/connectors/source-<source-name>/spec.yaml`\)
 * Step 5: Implement `check`
 * Step 6: Implement `discover`
@@ -28,7 +28,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 8: Set up Standard Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`\)
+* Step 11: Update the `metadata.yaml` file with accurate information about your connector. These metadata will be used to add the connector to Airbyte's connector registry.
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
@@ -45,7 +45,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 
 ### Submitting a Source to Airbyte
 
-* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
+* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have.
 * Submit a PR.
 * To run integration tests, Airbyte needs access to a test account/environment. Coordinate with an Airbyte engineer \(via the PR\) to add test credentials so that we can run tests for the integration in the CI. \(We will create our own test account once you let us know what source we need to create it for.\)
 * Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` and `.github/workflows/publish-command.yml` to inject the config into the build environment.
@@ -230,10 +230,7 @@ Run integration tests using `python -m pytest -s integration_tests`.
 The template fills in most of the information for the readme for you. Unless there is a special case, the only piece of information you need to add is how one can get the credentials required to run the source. e.g. Where one can find the relevant API key, etc.
 
 ### Step 11: Add the connector to the API/UI
-
-Open the following file: `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
-
-Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
+# TODO ben link to metadata doc and create generator
 
 ### Step 12: Add docs
 
@@ -242,4 +239,4 @@ Each connector has its own documentation page. By convention, that page should h
 ## Related tutorials
 For additional examples of how to use the Python CDK to build an Airbyte source connector, see the following tutorials:
 - [Python CDK Speedrun: Creating a Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
-- [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api) 
+- [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)

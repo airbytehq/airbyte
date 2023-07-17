@@ -1,10 +1,16 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "title": "Accounts",
+  "additionalProperties": true,
   "properties": {
     "test": {
       "type": ["null", "boolean"]
     },
     "notifiedOnCreativeRejection": {
+      "type": ["null", "boolean"]
+    },
+    "notifiedOnNewFeaturesEnabled": {
       "type": ["null", "boolean"]
     },
     "notifiedOnEndOfCampaign": {

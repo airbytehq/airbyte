@@ -3,11 +3,6 @@ data:
     hosts:
       - ${subdomain}.apilayer.com
       - apilayer.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
@@ -17,6 +12,13 @@ data:
   icon: exchangeratesapi.svg
   license: MIT
   name: Exchange Rates Api
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
+  documentationUrl: https://docs.airbyte.com/integrations/sources/exchange-rates
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

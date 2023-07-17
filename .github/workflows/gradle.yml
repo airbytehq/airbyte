@@ -28,17 +28,6 @@ on:
 permissions: write-all
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
@@ -52,16 +41,19 @@ jobs:
       build: ${{ steps.filter.outputs.build }}
       cdk: ${{ steps.filter.outputs.cdk }}
       cli: ${{ steps.filter.outputs.cli }}
-      connectors: ${{ steps.filter.outputs.connectors }}
+      connectors_base: ${{ steps.filter.outputs.connectors_base }}
       db: ${{ steps.filter.outputs.db }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      any_change: ${{ steps.filter.outputs.any_change }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          # Note, the following glob expression within a filters are ORs.
+          # Note: The following glob expression within a filters are ORs.
+          # Note: If no filters match, the steps are all skipped WITHOUT reported their status check back to github.
+          #       This can cause required checks to go unreported blocking PRs from being merged
+          #       and this is why we have the any_change filter.
           filters: |
             build:
               - '.github/**'
@@ -75,11 +67,14 @@ jobs:
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
-            connectors:
-              - 'airbyte-integrations/**'
+            connectors_base:
+              - 'airbyte-integrations/bases/**'
+              - 'airbyte-integrations/connectors-templates/**'
               - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
+            any_change:
+              - '**/*'
 
   # Uncomment to debug.
   #  changes-output:
@@ -105,11 +100,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}
+      #     cache-python: "false"
 
       - uses: actions/setup-java@v3
         with:
@@ -119,6 +114,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -135,7 +131,7 @@ jobs:
           EOF
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
@@ -145,14 +141,14 @@ jobs:
         run: ./tools/bin/check_for_file_changes
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Run integration tests
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: ./tools/bin/integration_tests_octavia.sh
           attempt_limit: 3
@@ -166,6 +162,13 @@ jobs:
     name: "Airbyte CDK: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
@@ -198,7 +201,7 @@ jobs:
           EOF
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
@@ -212,12 +215,11 @@ jobs:
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CDK ./gradlew build --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
-
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
@@ -227,7 +229,7 @@ jobs:
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
+      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors_base == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -256,15 +258,22 @@ jobs:
     name: "Connectors Base: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
@@ -280,10 +289,10 @@ jobs:
           python-version: "3.9"
 
       - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+        run: python3 -m pip install virtualenv --user
 
       - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |
@@ -300,7 +309,7 @@ jobs:
           EOF
 
       - name: Generate Template scaffold
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
           attempt_limit: 3
@@ -311,30 +320,34 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Process Resources
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      # This is helpful in the case that we change a previously commited generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Automated Change
+          commit_message: Automated Commit - Format and Process Resources Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 

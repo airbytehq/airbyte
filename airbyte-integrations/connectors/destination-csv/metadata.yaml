@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: destination
   definitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
@@ -13,6 +8,13 @@ data:
   icon: file-csv.svg
   license: MIT
   name: Local CSV
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/local-csv
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/csv
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

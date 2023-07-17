@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
@@ -13,6 +8,11 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   resourceRequirements:
     jobSpecific:
@@ -20,5 +20,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  supportUrl: https://docs.airbyte.com/integrations/destinations/azureblobstorage
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

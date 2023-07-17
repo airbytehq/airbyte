@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e7f0c5e2-4815-48c4-90cf-f47124209835
@@ -13,6 +8,14 @@ data:
   icon: omnisend.svg
   license: MIT
   name: Omnisend
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/omnisend
+  documentationUrl: https://docs.airbyte.com/integrations/sources/omnisend
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

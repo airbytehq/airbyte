@@ -15,16 +15,6 @@ This file contains macros that can be evaluated by a `JinjaInterpolation` object
 """
 
 
-def now_local() -> datetime.datetime:
-    """
-    Current local date and time.
-
-    Usage:
-    `"{{ now_local() }}"
-    """
-    return datetime.datetime.now()
-
-
 def now_utc():
     """
     Current local date and time in UTC timezone
@@ -127,5 +117,5 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     return _str_to_datetime(dt).strftime(format)
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
 macros = {f.__name__: f for f in _macros_list}

@@ -34,7 +34,6 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -435,6 +434,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
+  }
+
+  @Override
+  protected void addCdcDefaultCursorField(final AirbyteStream stream) {
+    // Leaving empty until cdc default cursor is implemented for MSSQL
   }
 
   @Override

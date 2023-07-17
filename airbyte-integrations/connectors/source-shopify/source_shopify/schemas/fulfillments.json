@@ -2,6 +2,9 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -78,6 +81,12 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "tracking_url": {
+      "type": ["null", "string"]
+    },
+    "tracking_number": {
+      "type": ["null", "string"]
     },
     "updated_at": {
       "type": ["null", "string"],
