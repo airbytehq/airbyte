@@ -43,7 +43,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
         nameTransformer.getNamespace(rawNamespaceOverride),
-        nameTransformer.convertStreamName(namespace + "_" + name),
+        nameTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
         name);
   }
