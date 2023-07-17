@@ -1,21 +1,17 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {
@@ -42,7 +38,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + streamNamespace + "_" + streamName));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + streamNamespace + "_ab__ab_" + streamName));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
