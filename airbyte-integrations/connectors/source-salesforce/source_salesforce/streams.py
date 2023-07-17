@@ -24,6 +24,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
+from requests.models import PreparedRequest
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
@@ -81,7 +82,7 @@ class SalesforceStream(HttpStream, ABC):
         return properties_length > self.max_properties_length
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        logger.info(f"{response.json().get('total_size')}")
+        self.logger.info(f"{response.json().get('total_size')}")
         yield from response.json()["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -138,8 +139,8 @@ class RestSalesforceStream(SalesforceStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
         next_token = response_data.get("nextRecordsUrl")
-        logger.info(f"{response_data.keys()=}")
-        logger.info(f"{next_token=}")
+        self.logger.info(f"{response_data.keys()=}")
+        self.logger.info(f"{next_token=}")
         return {"next_token": next_token} if next_token else None
 
     def request_params(
@@ -163,7 +164,7 @@ class RestSalesforceStream(SalesforceStream):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key}"
-        logger.info(f"{query=}")
+        self.logger.info(f"{query=}")
         return {"q": query}
 
     def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
@@ -290,13 +291,12 @@ class RestSalesforceStream(SalesforceStream):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        logger.info(f"{request.url=}")
+        self.logger.info(f"{request.url=}")
         response = self._send_request(request, request_kwargs)
         return request, response
 
 
 class BulkSalesforceStream(SalesforceStream):
-    page_size = 15000
     DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
@@ -429,7 +429,7 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
-    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str]:
+    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
         @ url: string - the url of the `executed_job`
@@ -438,13 +438,16 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
-        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
+        with closing(self._send_http_request("GET", url, stream=True)) as response, open(tmp_file, "wb") as data_file:
             response_encoding = response.encoding or self.encoding
+            response_headers = response.headers
+            logger.info(f"job with {url=} download_data {response.headers=}")
+            self.logger.info(f"job with {url=} download_data {response.headers=}")
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
-            return tmp_file, response_encoding
+            return tmp_file, response_encoding, response_headers
         else:
             raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
 
@@ -484,8 +487,6 @@ class BulkSalesforceStream(SalesforceStream):
         return None
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
         return None
 
     def request_params(
@@ -495,16 +496,20 @@ class BulkSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
 
-        selected_properties = ", ".join({
-            key: value for key, value in self.get_json_schema().get("properties", {}).items() if value.get("format") != "base64" and "object" not in value["type"]
-        })
+        selected_properties = ", ".join(
+            {
+                key: value
+                for key, value in self.get_json_schema().get("properties", {}).items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+        )
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
             query += next_page_token["next_token"]
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} LIMIT {self.page_size}"
-        logger.info(f"{query=}")
+            query += f"ORDER BY {self.primary_key}"
+        self.logger.info(f"{query=}")
         return {"q": query}
 
     def read_records(
@@ -539,18 +544,19 @@ class BulkSalesforceStream(SalesforceStream):
                     return
                 raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
 
-            count = 0
             record: Mapping[str, Any] = {}
-            for record in self.read_with_chunks(*self.download_data(url=job_full_url)):
-                count += 1
-                yield record
-            self.delete_job(url=job_full_url)
+            salesforce_bulk_api_locator = None
+            while True:
+                req = PreparedRequest()
+                req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator}) # 'maxRecords': 5
+                tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+                for record in self.read_with_chunks(tmp_file, response_encoding):
+                    yield record
 
-            if count < self.page_size:
-                # Salesforce doesn't give a next token or something to know the request was
-                # the last page. The connectors will sync batches in `page_size` and
-                # considers that batch is smaller than the `page_size` it must be the last page.
-                break
+                if response_headers.get("Sforce-Locator") == "null":
+                    break
+                salesforce_bulk_api_locator = response_headers.get("Sforce-Locator")
+            self.delete_job(url=job_full_url)
 
             next_page_token = self.next_page_token(record)
             if not next_page_token:
@@ -614,16 +620,8 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
-            self.total_records_count(start, end)
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
-
-    def total_records_count(self, start_date: pendulum.DateTime, end_date: pendulum.DateTime):
-        query = {'q': f"SELECT COUNT(Id) FROM {self.name} WHERE {self.cursor_field} >= {start_date.isoformat(timespec='milliseconds')} AND {self.cursor_field} < {end_date.isoformat(timespec='milliseconds')}"}
-        logger.info(f'TOTAL RECORDS_COUNT {query=}')
-        url = f"{self.url_base}/services/data/{self.sf_api.version}/queryAll"
-        res = self._send_http_request(method="GET", url=url, params=query)
-        logger.info(f'total count for stream {self.name=} ====== {res.json().get("records")[0]["expr0"]}')
 
     def request_params(
         self,
@@ -661,6 +659,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        self.logger.info(f"{query=}")
         logger.info(f"{query=}")
         return {"q": query}
 
@@ -686,16 +685,16 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = max(
-            (stream_state or {}).get(self.cursor_field, ""),
-            (stream_slice or {}).get("start_date", ""),
-            (next_page_token or {}).get("start_date", ""),
-        )
+        start_date = max((stream_state or {}).get(self.cursor_field, ""), (stream_slice or {}).get("start_date", ""))
         end_date = stream_slice["end_date"]
 
-        select_fields = ", ".join({
-            key: value for key, value in self.get_json_schema().get("properties", {}).items() if value.get("format") != "base64" and "object" not in value["type"]
-        })
+        select_fields = ", ".join(
+            {
+                key: value
+                for key, value in self.get_json_schema().get("properties", {}).items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+        )
         table_name = self.name
         where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
         order_by_clause = ""
@@ -706,7 +705,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
-        logger.info(f"{query=}")
+        self.logger.info(f"{query=}")
         return {"q": query}
 
 
