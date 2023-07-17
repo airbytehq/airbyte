@@ -145,7 +145,7 @@ public class GlobalAsyncStateManager {
    *
    * @return list of state messages with no more inflight records.
    */
-  public List<PartialAirbyteMessage> flushStates() {
+  public synchronized List<PartialAirbyteMessage> flushStates() {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
@@ -156,7 +156,6 @@ public class GlobalAsyncStateManager {
         // break;
         // }
         final Long oldestState = stateIdQueue.peek();
-        System.out.println("oldest state: " + oldestState);
         if (oldestState == null) {
           break;
         }
@@ -164,13 +163,12 @@ public class GlobalAsyncStateManager {
         // technically possible this map hasn't been updated yet.
         final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
         if (noCorrespondingStateMsg) {
-          log.info("------ no state msg");
           break;
         }
 
         final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
         final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
-        System.out.println("no prev recs: {}, all recs emitted: {} " + noPrevRecs + ", " + allRecsEmitted);
+        log.info("no prev recs: {}, all recs emitted: {} " + noPrevRecs + ", " + allRecsEmitted);
         if (noPrevRecs || allRecsEmitted) {
           var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
           log.info("flushing state: {}, no prev rec: {}, all recs emitted: {}",
