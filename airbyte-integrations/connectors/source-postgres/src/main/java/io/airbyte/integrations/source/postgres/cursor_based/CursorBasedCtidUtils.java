@@ -80,8 +80,8 @@ public class CursorBasedCtidUtils {
     }
 
     final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
-    final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);
-    final List<ConfiguredAirbyteStream> streamsForCursorBasedOrFullRefreshSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs);
+    final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCursorBasedOrFullRefreshSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
     streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),

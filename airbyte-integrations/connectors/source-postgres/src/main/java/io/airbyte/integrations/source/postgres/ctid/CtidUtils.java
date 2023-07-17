@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 public class CtidUtils {
 
   public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams, final SyncMode syncMode) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
+                                                                        final SyncMode syncMode) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(fullCatalog);
 
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));
@@ -32,9 +33,11 @@ public class CtidUtils {
   }
 
   public static List<ConfiguredAirbyteStream> getStreamsFromStreamPairs(final ConfiguredAirbyteCatalog catalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> streamPairs) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> streamPairs,
+                                                                        final SyncMode syncMode) {
 
     return catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == syncMode)
         .filter(stream -> streamPairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
