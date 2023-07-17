@@ -7,13 +7,17 @@ This page contains the setup guide and reference information for the Notion sour
 
 ## Setup guide​
 
-To authenticate the Notion source connector, you must choose **one** of the following two methods:
-- OAuth2.0 authorization (**recommended for Airbyte Cloud**)
+To authenticate the Notion source connector, you need to use **one** of the following two methods:
+- OAuth2.0 authorization (recommended for Airbyte Cloud)
 - Access Token
 
 :::note
-**For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion. This method significantly simplifies the setup process. If you use OAuth2.0 authorization, you do **not** need to create a new integration in Notion. Instead, you can proceed straight to [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+**For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to 
+[setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
 :::
+
+We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the 
+[official Notion documentation](https://developers.notion.com/docs).
 
 ### Step 1: Create an integration in Notion​
 
@@ -23,22 +27,27 @@ To authenticate the Notion source connector, you must choose **one** of the foll
 You must be the owner of the Notion workspace to create a new integration associated with it.
 :::
 
-2. Enter a **Name** for your Airbyte integration. Make sure you have selected the workspace containing your data to replicate from the **Asociated workspace** dropdown menu, and click **Submit**.
+2. Enter a **Name** for your integration. Make sure you have selected the workspace containing your data to replicate from the **Associated workspace** dropdown menu, and click **Submit**.
 3. In the navbar, select **Capabilities** and make sure to check **Read content**, as well as any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
 
-#### Acquire the Access Token
-4. If you are authenticating with an Access Token, you can copy the token from the **Secrets** section of your Notion integration's page.
+### Step 2: Set permissions and acquire authorization credentials
 
-#### Acquire the OAuth2.0 credentials (Open Source only)
-5. If you are authenticating through OAuth2In the navbar, select **Distribution**, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
-6. If you select **Public integration**, fill out the fields in the **OAuth Domain & URIs** section.
-7. Click **Save changes**.
-8. Copy the Internal Access Token if you are using the [internal integration](https://developers.notion.com/docs/authorization#authorizing-internal-integrations), or copy the `access_token`, `client_id`, and `client_secret` if you are using the [public integration](https://developers.notion.com/docs/authorization#authorizing-public-integrations).
+#### Access Token (Cloud and Open Source)
+If you are authenticating via Access Token, you will need to manually set permissions for each page you want to share with Airbyte.
 
-For more information on creating an integration in Notion, refer to the 
-[official documentation](https://developers.notion.com/docs/create-a-notion-integration).
+1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1. 
+2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to 
+[setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
 
-### Step 2: Set up the Notion connector in Airbyte
+#### OAuth2.0 (Open Source only)
+If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to make your integration public and acquire your Client ID, Client Secret and Access Token.
+
+1. Navigate to the **Distribution** tab in your integration page, and toggle the switch to make the integration public.
+2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs** section, then click **Submit**.
+3. Navigate to the **Secrets** tab to find your Client ID and Client Secret.
+4. You will need to use your authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
+
+### Step 3: Set up the Notion connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -47,14 +56,14 @@ For more information on creating an integration in Notion, refer to the
 5. Choose the method of authentication from the dropdown menu:
 
 #### Authentication for Airbyte Cloud
-- (Recommended) If you select **OAuth2.0**, click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
-- If you select **Access Token**, copy and paste the Access Token found in the **Secrets** section of your Notion integration's page.
+- **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
+- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your Notion integration's page.
 
 #### Authentication for Airbyte Open Source
-- If you select **Access Token**, copy and paste the Access Token found in the **Secrets** section of your Notion integration's page.
-- If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
+- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your Notion integration's page.
+- **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired.
 
-6. Enter the **Start Date** using the provided datepicker, or by programmatically entering a UTC timestamp in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated.
+6. Enter the **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes

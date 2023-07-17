@@ -9,7 +9,7 @@
 
 <!-- env:cloud -->
 :::note
-We highly recommend using OAuth2.0 authorization to connect to Notion. This method is more secure and significantly simplifies the setup process. If you use OAuth2.0 authorization, you do _not_ need to create a new integration in Notion. Instead, you can authenticate your Notion account directly in Airbyte Cloud.
+We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization, you do _not_ need to create a new integration in Notion. Instead, you can authenticate your Notion account directly in Airbyte Cloud.
 :::
 
 * To use OAuth2.0 authorization, select **OAuth2.0** from the dropdown menu, then click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
