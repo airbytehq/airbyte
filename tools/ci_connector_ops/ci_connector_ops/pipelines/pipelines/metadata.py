@@ -76,10 +76,10 @@ class MetadataUpload(PoetryRun):
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
 
         # Ensure the icon file is included in the upload
-        base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
+        base_container = self.poetry_run_container.with_new_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
         metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
         if metadata_icon_path.exists():
-            base_container = base_container.with_file(
+            base_container = base_container.with_new_file(
                 METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path)
             )
 
