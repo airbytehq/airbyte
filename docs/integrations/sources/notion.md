@@ -45,7 +45,7 @@ If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to
 1. Navigate to the **Distribution** tab in your integration page, and toggle the switch to make the integration public.
 2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs** section, then click **Submit**.
 3. Navigate to the **Secrets** tab to find your Client ID and Client Secret.
-4. You will need to use your authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
+4. You need to use your integration's authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
 
 ### Step 3: Set up the Notion connector in Airbyte
 
