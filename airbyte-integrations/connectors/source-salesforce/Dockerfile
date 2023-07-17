@@ -20,6 +20,9 @@ COPY source_salesforce ./source_salesforce
 COPY setup.py ./
 COPY main.py ./
 
+# Workaround for https://github.com/yaml/pyyaml/issues/601
+RUN pip install "Cython<3.0" "pyyaml~=5.4" --no-build-isolation
+
 # Fixing https://nvd.nist.gov/vuln/detail/CVE-2022-40897
 # calling this twice as one upgrades the system pip /usr/local/bin/pip the
 # seconf time upgrades the under for the venv /opt/.venv/bin/pip
