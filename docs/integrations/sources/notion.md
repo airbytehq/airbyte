@@ -13,7 +13,7 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 
 :::note
 **For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to 
-[setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+[setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 :::
 
 We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the 
