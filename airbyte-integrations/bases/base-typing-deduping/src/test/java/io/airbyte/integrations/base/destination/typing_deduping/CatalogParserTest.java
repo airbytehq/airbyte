@@ -11,9 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
