@@ -62,10 +62,7 @@ class FileBasedStreamConfig(BaseModel):
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
-                # legacy case
-                if file_type.casefold() not in VALID_FILE_TYPES:
-                    raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in v.items()})}
+                return cls._transform_legacy_config(v, file_type)
             else:
                 if len(v) > 1:
                     raise ValueError(
@@ -76,6 +73,23 @@ class FileBasedStreamConfig(BaseModel):
                 except KeyError as e:
                     raise ValueError(f"Format filetype {e.args[0]} is not a supported file type")
         return v
+
+    @classmethod
+    def _transform_legacy_config(cls, legacy_config: Mapping[str, Any], file_type: str) -> Mapping[str, Any]:
+        if file_type.casefold() not in VALID_FILE_TYPES:
+            raise ValueError(f"Format filetype {file_type} is not a supported file type")
+        if file_type.casefold() == "parquet":
+            legacy_config = cls._transform_legacy_parquet_config(legacy_config)
+        return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in legacy_config.items()})}
+
+
+    @classmethod
+    def _transform_legacy_parquet_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        if config.get("filetype") != "parquet":
+            raise ValueError(f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support.")
+        if config.get("decimal_as_float"):
+            raise ValueError(f"Received legacy parquert file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support.")
+        return {**config, **{"decimal_as_float": True}}
 
     @validator("input_schema", pre=True)
     def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:

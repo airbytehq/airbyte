@@ -66,6 +66,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
+    parquet_file_with_decimal_legacy_config_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
@@ -133,6 +134,7 @@ discover_scenarios = [
     multi_stream_user_input_schema_scenario_schema_is_invalid,
     valid_multi_stream_user_input_schema_scenario,
     valid_single_stream_user_input_schema_scenario,
+    parquet_file_with_decimal_legacy_config_scenario,
 ]
 
 
