@@ -5,12 +5,8 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,30 +27,6 @@ public class CatalogParser {
   public CatalogParser(final SqlGenerator<?> sqlGenerator, String rawNamespaceOverride) {
     this.sqlGenerator = sqlGenerator;
     this.rawNamespaceOverride = rawNamespaceOverride;
-  }
-
-  public record ParsedCatalog(List<StreamConfig> streams) {
-
-    public StreamConfig getStream(String namespace, String name) {
-      return streams.stream()
-          .filter(s -> s.id().originalNamespace().equals(namespace) && s.id().originalName().equals(name))
-          .findFirst()
-          .orElseThrow(() -> new IllegalArgumentException(String.format(
-              "Could not find stream %s.%s out of streams %s",
-              namespace,
-              name,
-              streams.stream().map(stream -> stream.id().originalNamespace() + "." + stream.id().originalName()).toList())));
-    }
-
-  }
-
-  public record StreamConfig(StreamId id,
-                             SyncMode syncMode,
-                             DestinationSyncMode destinationSyncMode,
-                             List<ColumnId> primaryKey,
-                             Optional<ColumnId> cursor,
-                             LinkedHashMap<ColumnId, AirbyteType> columns) {
-
   }
 
   public ParsedCatalog parseCatalog(ConfiguredAirbyteCatalog catalog) {
