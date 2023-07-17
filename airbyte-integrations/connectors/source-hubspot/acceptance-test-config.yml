@@ -95,7 +95,6 @@ acceptance_tests:
           goals:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
-        fail_on_extra_columns: false
   full_refresh:
     tests:
       - config_path: secrets/config.json
