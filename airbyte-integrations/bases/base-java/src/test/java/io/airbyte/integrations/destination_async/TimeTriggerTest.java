@@ -30,6 +30,7 @@ public class TimeTriggerTest {
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(NOW))
         .thenReturn(Optional.of(FIVE_MIN_AGO));
+
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, null, null);
     assertEquals(false, detect.isTimeTriggered(DESC1).getLeft());
     assertEquals(false, detect.isTimeTriggered(DESC1).getLeft());

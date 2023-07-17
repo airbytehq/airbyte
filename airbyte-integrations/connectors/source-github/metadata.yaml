@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   maxSecondsBetweenMessages: 5400
   dockerRepository: airbyte/source-github
   githubIssueLabel: source-github
