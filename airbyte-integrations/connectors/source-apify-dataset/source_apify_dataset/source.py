@@ -30,12 +30,6 @@ BATCH_SIZE = 50000
 
 
 class SourceApifyDataset(Source):
-    def _get_dataset_client(self, config):
-        dataset_id = config["datasetId"]
-
-        client = ApifyClient()
-        return client.dataset(dataset_id)
-
     def _apify_get_dataset_items(self, dataset_client, clean, offset):
         """
         Wrapper around Apify dataset client that returns a single page with dataset items.
@@ -63,10 +57,9 @@ class SourceApifyDataset(Source):
         """
 
         try:
-            dataset_client = self._get_dataset_client(config)
-            dataset = dataset_client.get()
+            dataset_id = config["datasetId"]
+            dataset = ApifyClient().dataset(dataset_id).get()
             if dataset is None:
-                dataset_id = config["datasetId"]
                 raise ValueError(f"Dataset {dataset_id} does not exist")
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -90,21 +83,16 @@ class SourceApifyDataset(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        dataset_client = self._get_dataset_client(config)
-
-        # Get total number of items in dataset. This will be used in pagination
-        dataset = dataset_client.get()
-        fields = dataset["fields"]
         stream_name = DATASET_ITEMS_STREAM_NAME
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
-                # as datasets are not typed and we only know the field name, each field is defined as oneOf of all possible types
-                field: {"type": ["array", "object", "boolean", "number", "integer", "string"]}
-                for field in fields
+                "data": {
+                    "type": "object",
+                    "additionalProperties": True,
+                }
             },
-            "additionalProperties": True,
         }
 
         return AirbyteCatalog(
@@ -135,9 +123,11 @@ class SourceApifyDataset(Source):
         """
         logger.info("Reading data from Apify dataset")
 
+        dataset_id = config["datasetId"]
         clean = config.get("clean", False)
 
-        dataset_client = self._get_dataset_client(config)
+        client = ApifyClient()
+        dataset_client = client.dataset(dataset_id)
 
         # Get total number of items in dataset. This will be used in pagination
         dataset = dataset_client.get()
@@ -149,6 +139,6 @@ class SourceApifyDataset(Source):
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(
-                            stream=DATASET_ITEMS_STREAM_NAME, data=data, emitted_at=int(datetime.now().timestamp()) * 1000
+                            stream=DATASET_ITEMS_STREAM_NAME, data={"data": data}, emitted_at=int(datetime.now().timestamp()) * 1000
                         ),
                     )

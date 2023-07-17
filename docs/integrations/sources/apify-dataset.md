@@ -20,7 +20,7 @@ When your Apify job \(aka [actor run](https://docs.apify.com/actors/running)\) f
 
 ### Output schema
 
-Since the dataset items do not have strongly typed schema, they are synced as objects, without any assumption on their content.
+Since the dataset items do not have strongly typed schema, they are synced as objects stored in the `data` field, without any assumption on their content.
 
 ### Features
 
