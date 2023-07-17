@@ -29,4 +29,5 @@ To obtain the necessary authorization credentials, you need to create and config
 4. Click **Set up source** and wait for the tests to complete.
 ​
 
-For detailed information on supported sync modes, supported streams, performance considerations, refer to the [full documentation](https://docs.airbyte.com/integrations/sources/notion).
+For detailed information on supported sync modes, supported streams, performance considerations, refer to the 
+[full documentation for Notion](https://docs.airbyte.com/integrations/sources/notion).
