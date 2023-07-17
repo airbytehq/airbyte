@@ -110,7 +110,7 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from pydantic import BaseModel
 
-ComponentDefinition: Union[Literal, Mapping, List]
+ComponentDefinition = Mapping[str, Any]
 
 
 DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
@@ -130,12 +130,12 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
-        self._message_repository = message_repository or InMemoryMessageRepository(
+        self._message_repository = message_repository or InMemoryMessageRepository( # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
 
-    def _init_mappings(self):
-        self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
+    def _init_mappings(self) -> None:
+        self.PYDANTIC_MODEL_TO_CONSTRUCTOR: Mapping[Type[BaseModel], Callable[..., Any]] = {
             AddedFieldDefinitionModel: self.create_added_field_definition,
             AddFieldsModel: self.create_add_fields,
             ApiKeyAuthenticatorModel: self.create_api_key_authenticator,
@@ -190,7 +190,7 @@ class ModelToComponentFactory:
         # Needed for the case where we need to perform a second parse on the fields of a custom component
         self.TYPE_NAME_TO_MODEL = {cls.__name__: cls for cls in self.PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
-    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs) -> type:
+    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs: dict[str, Any]) -> Any:
         """
         Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
         subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
@@ -213,26 +213,28 @@ class ModelToComponentFactory:
 
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
-    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:
+    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: dict[str, Any]) -> Any:
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
+        if not component_constructor:
+            raise ValueError(f"Could not find constructor for {model.__class__}")
         return component_constructor(model=model, config=config, **kwargs)
 
     @staticmethod
-    def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs) -> AddedFieldDefinition:
-        interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters)
-        return AddedFieldDefinition(path=model.path, value=interpolated_value, parameters=model.parameters)
+    def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: dict[str, Any]) -> AddedFieldDefinition:
+        interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
+        return AddedFieldDefinition(path=model.path, value=interpolated_value, parameters=model.parameters or {})
 
-    def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs) -> AddFields:
+    def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: dict[str, Any]) -> AddFields:
         added_field_definitions = [
             self._create_component_from_model(model=added_field_definition_model, config=config)
             for added_field_definition_model in model.fields
         ]
-        return AddFields(fields=added_field_definitions, parameters=model.parameters)
+        return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
     @staticmethod
-    def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs) -> ApiKeyAuthenticator:
+    def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs: dict[str, Any]) -> ApiKeyAuthenticator:
         if model.inject_into is None and model.header is None:
             raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
 
@@ -243,52 +245,52 @@ class ModelToComponentFactory:
             RequestOption(
                 inject_into=RequestOptionType(model.inject_into.inject_into.value),
                 field_name=model.inject_into.field_name,
-                parameters=model.parameters,
+                parameters=model.parameters or {},
             )
             if model.inject_into
             else RequestOption(
                 inject_into=RequestOptionType.header,
-                field_name=model.header,
-                parameters=model.parameters,
+                field_name=model.header or "",
+                parameters=model.parameters or {},
             )
         )
-        return ApiKeyAuthenticator(api_token=model.api_token, request_option=request_option, config=config, parameters=model.parameters)
+        return ApiKeyAuthenticator(api_token=model.api_token or "", request_option=request_option, config=config, parameters=model.parameters or {})
 
     @staticmethod
-    def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:
-        return BasicHttpAuthenticator(password=model.password, username=model.username, config=config, parameters=model.parameters)
+    def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: dict[str, Any]) -> BasicHttpAuthenticator:
+        return BasicHttpAuthenticator(password=model.password or "", username=model.username, config=config, parameters=model.parameters or {})
 
     @staticmethod
-    def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, **kwargs) -> BearerAuthenticator:
+    def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, **kwargs: dict[str, Any]) -> BearerAuthenticator:
         return BearerAuthenticator(
             api_token=model.api_token,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_check_stream(model: CheckStreamModel, config: Config, **kwargs):
+    def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: dict[str, Any]) -> CheckStream:
         return CheckStream(stream_names=model.stream_names, parameters={})
 
-    def create_composite_error_handler(self, model: CompositeErrorHandlerModel, config: Config, **kwargs) -> CompositeErrorHandler:
+    def create_composite_error_handler(self, model: CompositeErrorHandlerModel, config: Config, **kwargs: dict[str, Any]) -> CompositeErrorHandler:
         error_handlers = [
             self._create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers
         ]
-        return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters)
+        return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
 
     @staticmethod
-    def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs) -> ConstantBackoffStrategy:
+    def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: dict[str, Any]) -> ConstantBackoffStrategy:
         return ConstantBackoffStrategy(
             backoff_time_in_seconds=model.backoff_time_in_seconds,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
-    def create_cursor_pagination(self, model: CursorPaginationModel, config: Config, **kwargs) -> CursorPaginationStrategy:
+    def create_cursor_pagination(self, model: CursorPaginationModel, config: Config, **kwargs: dict[str, Any]) -> CursorPaginationStrategy:
         if model.decoder:
             decoder = self._create_component_from_model(model=model.decoder, config=config)
         else:
-            decoder = JsonDecoder(parameters=model.parameters)
+            decoder = JsonDecoder(parameters=model.parameters or {})
 
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
@@ -296,10 +298,10 @@ class ModelToComponentFactory:
             page_size=model.page_size,
             stop_condition=model.stop_condition,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
-    def create_custom_component(self, model, config: Config, **kwargs) -> type:
+    def create_custom_component(self, model: Any, config: Config, **kwargs: dict[str, Any]) -> Any:
         """
         Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
         instantiated. Only the model's additional properties that match the custom class definition are passed to the constructor
@@ -324,7 +326,7 @@ class ModelToComponentFactory:
         for model_field, model_value in model_args.items():
             # If a custom component field doesn't have a type set, we try to use the type hints to infer the type
             if isinstance(model_value, dict) and "type" not in model_value and model_field in component_fields:
-                derived_type = self._derive_component_type_from_type_hints(component_fields.get(model_field))
+                derived_type = self._derive_component_type_from_type_hints(str(component_fields.get(model_field) or ""))
                 if derived_type:
                     model_value["type"] = derived_type
 
@@ -334,7 +336,7 @@ class ModelToComponentFactory:
                 vals = []
                 for v in model_value:
                     if isinstance(v, dict) and "type" not in v and model_field in component_fields:
-                        derived_type = self._derive_component_type_from_type_hints(component_fields.get(model_field))
+                        derived_type = self._derive_component_type_from_type_hints(str(component_fields.get(model_field) or ""))
                         if derived_type:
                             v["type"] = derived_type
                     if self._is_component(v):
@@ -347,7 +349,7 @@ class ModelToComponentFactory:
         return custom_component_class(**kwargs)
 
     @staticmethod
-    def _get_class_from_fully_qualified_class_name(class_name: str) -> type:
+    def _get_class_from_fully_qualified_class_name(class_name: str) -> Any:
         split = class_name.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
@@ -371,7 +373,7 @@ class ModelToComponentFactory:
         return None
 
     @staticmethod
-    def is_builtin_type(cls) -> bool:
+    def is_builtin_type(cls: Optional[Type[Any]]) -> bool:
         if not cls:
             return False
         return cls.__module__ == "builtins"
@@ -384,7 +386,7 @@ class ModelToComponentFactory:
         else:
             return []
 
-    def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
+    def _create_nested_component(self, model: Any, model_field: str, model_value: Any, config: Config) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
             # If no type is specified, we can assume this is a dictionary object which can be returned instead of a subcomponent
@@ -420,9 +422,9 @@ class ModelToComponentFactory:
 
     @staticmethod
     def _is_component(model_value: Any) -> bool:
-        return isinstance(model_value, dict) and model_value.get("type")
+        return isinstance(model_value, dict) and model_value.get("type") is not None
 
-    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, **kwargs) -> DatetimeBasedCursor:
+    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, **kwargs: dict[str, Any]) -> DatetimeBasedCursor:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
@@ -438,7 +440,7 @@ class ModelToComponentFactory:
             RequestOption(
                 inject_into=RequestOptionType(model.end_time_option.inject_into.value),
                 field_name=model.end_time_option.field_name,
-                parameters=model.parameters,
+                parameters=model.parameters or {},
             )
             if model.end_time_option
             else None
@@ -447,7 +449,7 @@ class ModelToComponentFactory:
             RequestOption(
                 inject_into=RequestOptionType(model.start_time_option.inject_into.value),
                 field_name=model.start_time_option.field_name,
-                parameters=model.parameters,
+                parameters=model.parameters or {},
             )
             if model.start_time_option
             else None
@@ -467,10 +469,10 @@ class ModelToComponentFactory:
             partition_field_start=model.partition_field_start,
             message_repository=self._message_repository,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
-    def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
+    def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs: dict[str, Any]) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
         # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
@@ -511,7 +513,7 @@ class ModelToComponentFactory:
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
@@ -540,13 +542,13 @@ class ModelToComponentFactory:
         else:
             return None
 
-    def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs) -> DefaultErrorHandler:
+    def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs: dict[str, Any]) -> DefaultErrorHandler:
         backoff_strategies = []
         if model.backoff_strategies:
             for backoff_strategy_model in model.backoff_strategies:
                 backoff_strategies.append(self._create_component_from_model(model=backoff_strategy_model, config=config))
         else:
-            backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, parameters=model.parameters))
+            backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, parameters=model.parameters or {}))
 
         response_filters = []
         if model.response_filters:
@@ -555,17 +557,17 @@ class ModelToComponentFactory:
         else:
             response_filters.append(
                 HttpResponseFilter(
-                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=config, parameters=model.parameters
+                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=config, parameters=model.parameters or {}
                 )
             )
-            response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, parameters=model.parameters))
+            response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, parameters=model.parameters or {}))
 
         return DefaultErrorHandler(
             backoff_strategies=backoff_strategies,
             max_retries=model.max_retries,
             response_filters=response_filters,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     def create_default_paginator(
@@ -591,19 +593,19 @@ class ModelToComponentFactory:
             pagination_strategy=pagination_strategy,
             url_base=url_base,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
         if self._limit_pages_fetched_per_slice:
             return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
-    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs) -> DpathExtractor:
+    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs: dict[str, Any]) -> DpathExtractor:
         decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        return DpathExtractor(decoder=decoder, field_path=model.field_path, config=config, parameters=model.parameters)
+        return DpathExtractor(decoder=decoder, field_path=model.field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
-        return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
+        return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters or {}, config=config)
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
@@ -614,7 +616,7 @@ class ModelToComponentFactory:
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
             if model.error_handler
-            else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, parameters=model.parameters)
+            else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, parameters=model.parameters or {})
         )
 
         request_options_provider = InterpolatedRequestOptionsProvider(
@@ -623,7 +625,7 @@ class ModelToComponentFactory:
             request_headers=model.request_headers,
             request_parameters=model.request_parameters,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
         return HttpRequester(
@@ -635,11 +637,11 @@ class ModelToComponentFactory:
             http_method=model.http_method,
             request_options_provider=request_options_provider,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs) -> HttpResponseFilter:
+    def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: dict[str, Any]) -> HttpResponseFilter:
         action = ResponseAction(model.action.value)
         http_codes = (
             set(model.http_codes) if model.http_codes else set()
@@ -652,28 +654,28 @@ class ModelToComponentFactory:
             http_codes=http_codes,
             predicate=model.predicate or "",
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs) -> InlineSchemaLoader:
+    def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: dict[str, Any]) -> InlineSchemaLoader:
         return InlineSchemaLoader(schema=model.schema_, parameters={})
 
     @staticmethod
-    def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs) -> JsonDecoder:
+    def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: dict[str, Any]) -> JsonDecoder:
         return JsonDecoder(parameters={})
 
     @staticmethod
-    def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs) -> JsonFileSchemaLoader:
-        return JsonFileSchemaLoader(file_path=model.file_path, config=config, parameters=model.parameters)
+    def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: dict[str, Any]) -> JsonFileSchemaLoader:
+        return JsonFileSchemaLoader(file_path=model.file_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
-    def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs) -> ListPartitionRouter:
+    def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs: dict[str, Any]) -> ListPartitionRouter:
         request_option = (
             RequestOption(
                 inject_into=RequestOptionType(model.request_option.inject_into.value),
                 field_name=model.request_option.field_name,
-                parameters=model.parameters,
+                parameters=model.parameters or {},
             )
             if model.request_option
             else None
@@ -683,42 +685,42 @@ class ModelToComponentFactory:
             request_option=request_option,
             values=model.values,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config, **kwargs) -> MinMaxDatetime:
+    def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config, **kwargs: dict[str, Any]) -> MinMaxDatetime:
         return MinMaxDatetime(
             datetime=model.datetime,
             datetime_format=model.datetime_format,
             max_datetime=model.max_datetime,
             min_datetime=model.min_datetime,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_no_auth(model: NoAuthModel, config: Config, **kwargs) -> NoAuth:
-        return NoAuth(parameters=model.parameters)
+    def create_no_auth(model: NoAuthModel, config: Config, **kwargs: dict[str, Any]) -> NoAuth:
+        return NoAuth(parameters=model.parameters or {})
 
     @staticmethod
-    def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
+    def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs: dict[str, Any]) -> NoPagination:
         return NoPagination(parameters={})
 
-    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: dict[str, Any]) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
-                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
-                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
+                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
+                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters or {}).eval(config),
                 refresh_token_name=model.refresh_token_updater.refresh_token_name,
-                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters).eval(config),
-                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters).eval(config),
-                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters).eval(config),
+                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters or {}).eval(config),
+                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
+                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
                 access_token_config_path=model.refresh_token_updater.access_token_config_path,
                 refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
                 token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
-                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters).eval(config),
-                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
+                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters or {}).eval(config),
+                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters or {}).eval(config),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
@@ -736,19 +738,19 @@ class ModelToComponentFactory:
             token_expiry_date_format=model.token_expiry_date_format,
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
             message_repository=self._message_repository,
         )
 
     @staticmethod
-    def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs) -> OffsetIncrement:
-        return OffsetIncrement(page_size=model.page_size, config=config, parameters=model.parameters)
+    def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs: dict[str, Any]) -> OffsetIncrement:
+        return OffsetIncrement(page_size=model.page_size, config=config, parameters=model.parameters or {})
 
     @staticmethod
-    def create_page_increment(model: PageIncrementModel, config: Config, **kwargs) -> PageIncrement:
-        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, parameters=model.parameters)
+    def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: dict[str, Any]) -> PageIncrement:
+        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, parameters=model.parameters or {})
 
-    def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs) -> ParentStreamConfig:
+    def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: dict[str, Any]) -> ParentStreamConfig:
         declarative_stream = self._create_component_from_model(model.stream, config=config)
         request_option = self._create_component_from_model(model.request_option, config=config) if model.request_option else None
         return ParentStreamConfig(
@@ -757,19 +759,19 @@ class ModelToComponentFactory:
             stream=declarative_stream,
             partition_field=model.partition_field,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
-    def create_record_filter(model: RecordFilterModel, config: Config, **kwargs) -> RecordFilter:
-        return RecordFilter(condition=model.condition, config=config, parameters=model.parameters)
+    def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: dict[str, Any]) -> RecordFilter:
+        return RecordFilter(condition=model.condition, config=config, parameters=model.parameters or {})
 
     @staticmethod
-    def create_request_path(model: RequestPathModel, config: Config, **kwargs) -> RequestPath:
+    def create_request_path(model: RequestPathModel, config: Config, **kwargs: dict[str, Any]) -> RequestPath:
         return RequestPath(parameters={})
 
     @staticmethod
-    def create_request_option(model: RequestOptionModel, config: Config, **kwargs) -> RequestOption:
+    def create_request_option(model: RequestOptionModel, config: Config, **kwargs: dict[str, Any]) -> RequestOption:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
@@ -780,11 +782,11 @@ class ModelToComponentFactory:
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
         return RecordSelector(
-            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters
+            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters or {}
         )
 
     @staticmethod
-    def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:
+    def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: dict[str, Any]) -> RemoveFields:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
 
     @staticmethod
@@ -801,7 +803,7 @@ class ModelToComponentFactory:
             username=model.username,
             validate_session_url=model.validate_session_url,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     def create_simple_retriever(
@@ -841,7 +843,7 @@ class ModelToComponentFactory:
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
-                parameters=model.parameters,
+                parameters=model.parameters or {},
                 disable_retries=self._disable_retries,
                 message_repository=self._message_repository,
             )
@@ -854,13 +856,13 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer,
             cursor=cursor,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
             disable_retries=self._disable_retries,
             message_repository=self._message_repository,
         )
 
     @staticmethod
-    def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
+    def create_spec(model: SpecModel, config: Config, **kwargs: dict[str, Any]) -> Spec:
         return Spec(
             connection_specification=model.connection_specification,
             documentation_url=model.documentation_url,
@@ -868,7 +870,7 @@ class ModelToComponentFactory:
             parameters={},
         )
 
-    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
+    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: dict[str, Any]) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
             parent_stream_configs.extend(
@@ -878,7 +880,7 @@ class ModelToComponentFactory:
                 ]
             )
 
-        return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
+        return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters or {}, config=config)
 
     def _create_message_repository_substream_wrapper(self, model, config):
         substream_factory = ModelToComponentFactory(
@@ -895,15 +897,15 @@ class ModelToComponentFactory:
         return substream_factory._create_component_from_model(model=model, config=config)
 
     @staticmethod
-    def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:
-        return WaitTimeFromHeaderBackoffStrategy(header=model.header, parameters=model.parameters, config=config, regex=model.regex)
+    def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: dict[str, Any]) -> WaitTimeFromHeaderBackoffStrategy:
+        return WaitTimeFromHeaderBackoffStrategy(header=model.header, parameters=model.parameters or {}, config=config, regex=model.regex)
 
     @staticmethod
     def create_wait_until_time_from_header(
         model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs
     ) -> WaitUntilTimeFromHeaderBackoffStrategy:
         return WaitUntilTimeFromHeaderBackoffStrategy(
-            header=model.header, parameters=model.parameters, config=config, min_wait=model.min_wait, regex=model.regex
+            header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
         )
 
     def get_message_repository(self):
