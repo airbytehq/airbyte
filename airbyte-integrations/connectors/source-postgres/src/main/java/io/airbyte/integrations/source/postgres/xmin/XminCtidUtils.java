@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -84,14 +85,15 @@ public class XminCtidUtils {
         .map(Jsons::clone)
         .forEach(streamsForCtidSync::add);
 
-    streamsForCtidSync.addAll(newlyAddedStreams);
+    //When FULL_REFRESH streams are enabled in xmin, ctid will only go over INCREMENTAL ones for now
+    newlyAddedStreams.stream().filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL).forEach(streamsForCtidSync::add);
 
-    final List<ConfiguredAirbyteStream> streamsForXminSync = fullCatalog.getStreams().stream()
+    final List<ConfiguredAirbyteStream> streamsForXminOrFullRefreshSync = fullCatalog.getStreams().stream()
         .filter(stream -> !streamsForCtidSync.contains(stream))
         .map(Jsons::clone)
         .toList();
 
-    return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
+    return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminOrFullRefreshSync, statesFromXminSync));
   }
 
   public record XminStreams(List<ConfiguredAirbyteStream> streamsForXminSync,
