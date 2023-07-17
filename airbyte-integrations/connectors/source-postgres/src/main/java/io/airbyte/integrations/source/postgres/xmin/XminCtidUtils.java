@@ -78,17 +78,17 @@ public class XminCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForCtidSync::add);
 
-    //When FULL_REFRESH streams are enabled in xmin, ctid will only go over INCREMENTAL ones for now
-    newlyAddedStreams.stream().filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL).forEach(streamsForCtidSync::add);
+    streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     final List<ConfiguredAirbyteStream> streamsForXminOrFullRefreshSync = fullCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !streamsForCtidSync.contains(stream))
         .map(Jsons::clone)
         .toList();

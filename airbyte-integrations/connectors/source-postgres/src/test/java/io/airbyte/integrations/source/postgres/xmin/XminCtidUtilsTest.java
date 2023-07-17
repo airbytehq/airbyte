@@ -126,9 +126,8 @@ public class XminCtidUtilsTest {
     final StreamStateManager streamStateManager = new StreamStateManager(Arrays.asList(xminState, ctidState), configuredCatalog);
     final StreamsCategorised<XminStreams> streamsCategorised = XminCtidUtils.categoriseStreams(streamStateManager, configuredCatalog, xminStatus);
 
-    assertEquals(2, streamsCategorised.remainingStreams().streamsForXminSync().size());
+    assertEquals(1, streamsCategorised.remainingStreams().streamsForXminSync().size());
     assertEquals(MODELS_STREAM, streamsCategorised.remainingStreams().streamsForXminSync().get(0));
-    assertEquals(MODELS_STREAM_3_FULL_REFRESH, streamsCategorised.remainingStreams().streamsForXminSync().get(1));
     assertEquals(1, streamsCategorised.remainingStreams().statesFromXminSync().size());
     assertEquals(xminState, streamsCategorised.remainingStreams().statesFromXminSync().get(0));
 

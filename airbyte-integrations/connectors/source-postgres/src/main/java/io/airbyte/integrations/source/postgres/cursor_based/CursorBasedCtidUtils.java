@@ -79,17 +79,10 @@ public class CursorBasedCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs);
     final List<ConfiguredAirbyteStream> streamsForCursorBasedOrFullRefreshSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs);
-    newlyAddedStreams.forEach(c -> {
-      if (c.getSyncMode() == SyncMode.INCREMENTAL) {
-        streamsForCtidSync.add(c);
-      } else {
-        // FULL_REFRESH streams don't go through ctid yet
-        streamsForCursorBasedOrFullRefreshSync.add(c);
-      }
-    });
+    streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),
         new CursorBasedStreams(streamsForCursorBasedOrFullRefreshSync, statesFromCursorBasedSync));
