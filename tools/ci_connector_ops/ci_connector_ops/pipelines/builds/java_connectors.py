@@ -51,7 +51,9 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
     async def _run(self, distribution_tar: File) -> StepResult:
         try:
-            java_connector = await environments.with_airbyte_java_connector(self.context, distribution_tar, self.build_platform)
+            java_connector = await environments.with_airbyte_java_connector(
+                self.context, distribution_tar, self.build_platform, bust_cache=True
+            )
             spec_exit_code = await with_exit_code(java_connector.with_exec(["spec"]))
             if spec_exit_code != 0:
                 return StepResult(

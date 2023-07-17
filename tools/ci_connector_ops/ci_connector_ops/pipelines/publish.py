@@ -279,6 +279,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 return create_connector_report(results)
 
             built_connector_platform_variants = list(build_connector_results.output_artifact.values())
+
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
             results.append(push_connector_image_results)
 

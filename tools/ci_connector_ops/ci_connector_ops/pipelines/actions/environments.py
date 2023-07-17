@@ -24,7 +24,7 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -512,8 +512,8 @@ def with_gradle(
 
     if sources_to_include:
         include += sources_to_include
-    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
@@ -527,10 +527,10 @@ def with_gradle(
         .with_workdir("/airbyte")
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        # TODO (ben)
+        #  disable gradle caching for now, might lead to abusive usage of the cache
         # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
         # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
-        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
+        # .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
 
     if bind_to_docker_host:
@@ -776,14 +776,16 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
+async def with_airbyte_java_connector(
+    context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform, bust_cache: bool = False
+) -> Container:
     application = context.connector.technical_name
-
     build_stage = (
         with_integration_base_java(context, build_platform)
         .with_workdir("/airbyte")
         .with_env_variable("APPLICATION", context.connector.technical_name)
-        .with_file(f"{application}.tar", connector_java_tar_file)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()) if bust_cache else "")
+        .with_new_file(f"{application}.tar", connector_java_tar_file)
         .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
         .with_exec(["rm", "-rf", f"{application}.tar"])
     )
