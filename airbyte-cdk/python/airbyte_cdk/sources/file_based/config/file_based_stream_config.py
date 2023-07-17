@@ -85,6 +85,10 @@ class FileBasedStreamConfig(BaseModel):
 
     @classmethod
     def _transform_legacy_parquet_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        The legacy parquet parser converts decimal fields to numbers. This isn't desirable because it can lead to precision loss.
+        To avoid introducing a breaking change with the new default, we will set decimal_as_float to True in the legacy configs.
+        """
         if config.get("filetype") != "parquet":
             raise ValueError(f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support.")
         if config.get("decimal_as_float"):
