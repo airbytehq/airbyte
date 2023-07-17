@@ -334,7 +334,6 @@ public class GlobalAsyncStateManager {
     private static long pk = 0;
 
     public static long getNextId() {
-      log.info("======== who is calling this?");
       return pk++;
     }
 
