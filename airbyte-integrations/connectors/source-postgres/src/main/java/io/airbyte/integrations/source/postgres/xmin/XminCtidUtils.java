@@ -87,13 +87,13 @@ public class XminCtidUtils {
 
     streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
-    final List<ConfiguredAirbyteStream> streamsForXminOrFullRefreshSync = fullCatalog.getStreams().stream()
+    final List<ConfiguredAirbyteStream> streamsForXminSync = fullCatalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !streamsForCtidSync.contains(stream))
         .map(Jsons::clone)
         .toList();
 
-    return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminOrFullRefreshSync, statesFromXminSync));
+    return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
   }
 
   public record XminStreams(List<ConfiguredAirbyteStream> streamsForXminSync,
