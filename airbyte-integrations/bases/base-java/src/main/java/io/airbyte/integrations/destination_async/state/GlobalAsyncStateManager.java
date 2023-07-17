@@ -172,7 +172,7 @@ public class GlobalAsyncStateManager {
         if (noPrevRecs || allRecsEmitted) {
           var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
           log.info("flushing state: {}, no prev rec: {}, all recs emitted: {}",
-                  stateIdToState.get(oldestState).getLeft(), noPrevRecs, allRecsEmitted);
+              stateIdToState.get(oldestState).getLeft(), noPrevRecs, allRecsEmitted);
           output.add(stateIdToState.get(oldestState).getLeft());
           bytesFlushed += stateIdToState.get(oldestState).getRight();
         } else {
@@ -191,7 +191,7 @@ public class GlobalAsyncStateManager {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
     final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast(); // how is this returning a null?
-    final var update = stateIdToCounter.get(stateId).addAndGet(increment);     // stateId is null, something else removes the state id from the queue?
+    final var update = stateIdToCounter.get(stateId).addAndGet(increment); // stateId is null, something else removes the state id from the queue?
     log.trace("State id: {}, count: {}", stateId, update);
     return stateId;
   }

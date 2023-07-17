@@ -77,8 +77,8 @@ class GlobalAsyncStateManagerTest {
   void testBasic1() {
     final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
-//    final var firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
-//    System.out.println(stateManager.getStreamToStateIdQ(STREAM1_DESC).size());
+    // final var firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
+    // System.out.println(stateManager.getStreamToStateIdQ(STREAM1_DESC).size());
 
     stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE);
     var flushed = stateManager.flushStates();
