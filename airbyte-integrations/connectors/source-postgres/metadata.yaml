@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.0.1
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-postgres
   githubIssueLabel: source-postgres
