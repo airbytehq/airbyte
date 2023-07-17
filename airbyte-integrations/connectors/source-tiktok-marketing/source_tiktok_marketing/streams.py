@@ -513,14 +513,14 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     @property
     def filters(self) -> List[MutableMapping[str, Any]]:
-        if self.include_deleted :
+        if self.include_deleted:
             return [
                 {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
                 {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
                 {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
             ]
         return []
-    
+
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
