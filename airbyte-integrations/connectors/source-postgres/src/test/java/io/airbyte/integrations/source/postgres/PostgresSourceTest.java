@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CURSOR_VIA_CTID;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
@@ -224,7 +223,6 @@ class PostgresSourceTest {
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
-        .put(CURSOR_VIA_CTID, true)
         .build());
   }
 

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CURSOR_VIA_CTID;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractSpecificFieldFromCombinedMessages;
@@ -110,7 +109,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
-        .put(CURSOR_VIA_CTID, true)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
