@@ -14,7 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Arra
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
@@ -45,12 +45,12 @@ public class BigQuerySqlGeneratorTest {
   public void testBuildColumnId() {
     // Uninteresting names are unchanged
     assertEquals(
-        new SqlGenerator.ColumnId("foo", "foo", "foo"),
+        new ColumnId("foo", "foo", "foo"),
         generator.buildColumnId("foo"));
     // Certain strings can't be the start of a column name, so we prepend an underscore
     // Also, downcase the canonical name
     assertEquals(
-        new SqlGenerator.ColumnId("__TABLE_foo_bar", "_TABLE_foo_bar", "__table_foo_bar"),
+        new ColumnId("__TABLE_foo_bar", "_TABLE_foo_bar", "__table_foo_bar"),
         generator.buildColumnId("_TABLE_foo_bar"));
   }
 
