@@ -6,7 +6,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
-from updater.catalog import CatalogAssembler, CatalogMerger
+from updater.catalog import ConfiguredCatalogAssembler, CatalogMerger
 from updater.config import Config
 from updater.source import SourceRepository
 
@@ -17,9 +17,9 @@ A_CONFIG = Config("a config", {})
 NO_STREAMS = []
 
 
-class CalatogAssemblerTest(unittest.TestCase):
+class ConfiguredCatalogAssemblerTest(unittest.TestCase):
     def setUp(self) -> None:
-        self._assembler = CatalogAssembler()
+        self._assembler = ConfiguredCatalogAssembler()
 
     def test_when_assemble_then_return_catalog(self):
         catalog = self._assembler.assemble([
@@ -54,7 +54,7 @@ class CalatogAssemblerTest(unittest.TestCase):
 
 class CalatogMergerTest(unittest.TestCase):
     def setUp(self) -> None:
-        self._assembler = Mock(spec=CatalogAssembler)
+        self._assembler = Mock(spec=ConfiguredCatalogAssembler)
         self._source_repository = Mock(spec=SourceRepository)
         self._merger = CatalogMerger(self._source_repository, self._assembler)
 

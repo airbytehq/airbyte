@@ -7,7 +7,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "click"]
 
 
 def local_pkg(name: str) -> str:

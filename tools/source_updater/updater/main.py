@@ -1,10 +1,11 @@
+import click
 import glob
 import logging
 import os
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from updater.catalog import CatalogAssembler, CatalogMerger
+from updater.catalog import ConfiguredCatalogAssembler, CatalogMerger
 from updater.config import Config
 from updater.handler import SourceUpdaterHandler
 from updater.source import SourceRepository
@@ -52,21 +53,16 @@ def _assemble_configs(config_path: str):
     return main_config, other_configs
 
 
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(
-        description="Source updated",
-    )
-    parser.add_argument("--source", type=str, required=True, help="Name of the source. For example, 'source-jira'")
-    parser.add_argument("--manifest", type=str, required=True, help="Path to the new yaml manifest file")
-    parser.add_argument("--config", type=str, required=True, help="Path to the config file or directory. We recommend using `airbyte-integrations/connectors/<source_name>/secrets/updated_configurations/*.json`")
-    parser.add_argument("--debug", default=False, required=False, action='store_true', help="Enable debug logs")
-
-    args = parser.parse_args()
-    source_name = args.source
-    manifest_path = args.manifest
-    config_path = args.config
-    if args.debug:
+@click.command()
+@click.option("--source", type=str, required=True, help="Name of the source. For example, 'source-jira'")
+@click.option("--manifest", type=str, required=True, help="Path to the new yaml manifest file")
+@click.option("--config", type=str, required=True, help="Path to the config file or directory. We recommend using `airbyte-integrations/connectors/<source_name>/secrets/updated_configurations/*.json`")
+@click.option("--debug", is_flag=True, default=False, help="Enable debug logs")
+def main(source: str, manifest: str, config: str, debug: bool) -> None:
+    source_name = source
+    manifest_path = manifest
+    config_path = config
+    if debug:
         logging.basicConfig(level=logging.DEBUG, force=True)
 
     logger.info("Starting the update...")
@@ -74,7 +70,11 @@ if __name__ == "__main__":
     main_config, other_configs = _assemble_configs(config_path)
 
     new_manifest_source = YamlDeclarativeSource(manifest_path)
-    handler = SourceUpdaterHandler(repo, CatalogMerger(repo, CatalogAssembler()))
+    handler = SourceUpdaterHandler(repo, CatalogMerger(repo, ConfiguredCatalogAssembler()))
     handler.handle(source_name, new_manifest_source, main_config, other_configs)
 
     logger.info(f"Successfully updated source `{source_name}`!")
+
+
+if __name__ == "__main__":
+    main()

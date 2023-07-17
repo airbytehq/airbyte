@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import yaml
 from pydantic.error_wrappers import ValidationError
 from typing import Set
@@ -30,17 +31,7 @@ class SourceRepository:
 
     def delete_schemas_folder(self, source_name: str) -> None:
         schemas_folder_path = os.path.join(self._path_from_name(source_name), source_name.replace("-", "_"), "schemas")
-        for root, dirs, files in os.walk(schemas_folder_path, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-
-        try:
-            os.rmdir(os.path.join(schemas_folder_path))
-        except FileNotFoundError:
-            # Nothing to do here as the directory didn't exist
-            pass
+        shutil.rmtree(schemas_folder_path, ignore_errors=True)
 
     def write_manifest(self, source_name: str, source: ManifestDeclarativeSource) -> None:
         # FIXME This seems very intrusive because it modifies the internal attribute of ManifestDeclarativeSource. We should probably have a

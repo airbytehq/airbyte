@@ -11,7 +11,7 @@ from updater.source import SourceRepository
 logger = logging.getLogger("catalog")
 
 
-class CatalogAssembler:
+class ConfiguredCatalogAssembler:
     def assemble(self, manifest_streams: List[Stream]) -> ConfiguredAirbyteCatalog:
         streams: List[ConfiguredAirbyteStream] = []
         for stream in manifest_streams:
@@ -33,7 +33,7 @@ class CatalogAssembler:
 
 
 class CatalogMerger:
-    def __init__(self, repo: SourceRepository, catalog_assembler: CatalogAssembler):
+    def __init__(self, repo: SourceRepository, catalog_assembler: ConfiguredCatalogAssembler):
         self._repo = repo
         self._catalog_assembler = catalog_assembler
 
