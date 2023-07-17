@@ -232,6 +232,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
+    LOGGER.info("Alter Table Report {} {} {} {}; Clustering {}; Partitioning {}",
+            alterTableReport.columnsToAdd(),
+            alterTableReport.columnsToRemove(),
+            alterTableReport.columnsToChangeType(),
+            alterTableReport.isDestinationV2Format());
     return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
   }
 

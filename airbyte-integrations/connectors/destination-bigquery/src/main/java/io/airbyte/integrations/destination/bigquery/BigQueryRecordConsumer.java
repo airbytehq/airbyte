@@ -94,7 +94,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             overwriteStreamsWithTmpTable.put(stream.id(), "");
           }
         } else {
-          destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
           if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             final BigInteger rowsInFinalTable = bigquery.getTable(TableId.of(stream.id().finalNamespace(), stream.id().finalName())).getNumRows();
             if (new BigInteger("0").equals(rowsInFinalTable)) {
@@ -106,6 +105,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
               // end of the sync.
               overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
             }
+          } else {
+            destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
           }
         }
       }

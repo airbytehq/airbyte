@@ -63,13 +63,16 @@ public class BigQueryDestinationHandler {
     try {
       if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
         attemptSoftReset(sqlGenerator, stream, existingTable);
+      } else {
+        LOGGER.info("Existing Schema matches expected schema, no alterations needed");
       }
     } catch (SqlGenerator.TableNotMigratedException nm) {
-      throw new RuntimeException("Cannot complete destinations v2 sync, final table not migrated");
+      throw new RuntimeException("Cannot complete destinations v2 sync, final table not migrated: %s".formatted(stream.id().finalName()));
     }
   }
 
   public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final CatalogParser.StreamConfig stream, final TableDefinition existingTable) {
+    LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
     sqlGenerator.softReset(stream, existingTable).forEach(sql -> {
       try {
         execute(sql);

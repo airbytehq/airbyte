@@ -214,7 +214,7 @@ public class BigQueryStagingConsumerFactory {
             overwriteStreamsWithTmpTable.put(stream.id(), "");
           }
         } else {
-          destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
+
           if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             final BigInteger rowsInFinalTable = destinationHandler.getFinalTable(stream.id()).getNumRows();
             if (new BigInteger("0").equals(rowsInFinalTable)) {
@@ -227,6 +227,8 @@ public class BigQueryStagingConsumerFactory {
               overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
               destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
             }
+          } else {
+            destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
           }
         }
       }
