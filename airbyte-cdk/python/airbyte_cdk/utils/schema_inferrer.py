@@ -83,13 +83,12 @@ class SchemaInferrer:
                     node.update(real_type)
                     node["type"] = [node["type"], "null"]
                     node.pop("anyOf")
-            if "properties" in node:
-                if isinstance(node["properties"], dict):
-                    for key, value in list(node["properties"].items()):
-                        if isinstance(value, dict) and value.get("type", None) == "null":
-                            node["properties"].pop(key)
-                        else:
-                            self._clean(value)
+            if "properties" in node and isinstance(node["properties"], dict):
+                for key, value in list(node["properties"].items()):
+                    if isinstance(value, dict) and value.get("type", None) == "null":
+                        node["properties"].pop(key)
+                    else:
+                        self._clean(value)
             if "items" in node:
                 self._clean(node["items"])
         return node
