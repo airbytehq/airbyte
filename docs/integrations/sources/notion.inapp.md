@@ -28,4 +28,5 @@ To obtain the necessary authorization credentials, you need to create and config
 3. Enter the **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated.
 4. Click **Set up source** and wait for the tests to complete.
 ​
+
 For detailed information on supported sync modes, supported streams, performance considerations, refer to the [full documentation](https://docs.airbyte.com/integrations/sources/notion).
