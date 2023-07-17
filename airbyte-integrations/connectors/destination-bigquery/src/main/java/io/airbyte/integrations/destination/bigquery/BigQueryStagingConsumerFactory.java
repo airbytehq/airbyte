@@ -15,9 +15,9 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
@@ -108,7 +108,7 @@ public class BigQueryStagingConsumerFactory {
                                                                                                                  final BigQueryDestinationHandler destinationHandler,
                                                                                                                  final ParsedCatalog parsedCatalog,
                                                                                                                  final boolean use1s1t,
-                                                                                                                 final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable) {
+                                                                                                                 final Map<StreamId, String> overwriteStreamsWithTmpTable) {
     return (streamId) -> {
       if (use1s1t) {
         final var streamConfig = parsedCatalog.getStream(streamId.getNamespace(), streamId.getName());
@@ -196,13 +196,13 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private Map<SqlGenerator.StreamId, String> createFinalTables(boolean use1s1t,
-                                                               final ParsedCatalog parsedCatalog,
-                                                               final BigQueryDestinationHandler destinationHandler,
-                                                               final BigQuerySqlGenerator sqlGenerator)
+  private Map<StreamId, String> createFinalTables(boolean use1s1t,
+                                                  final ParsedCatalog parsedCatalog,
+                                                  final BigQueryDestinationHandler destinationHandler,
+                                                  final BigQuerySqlGenerator sqlGenerator)
       throws InterruptedException {
     // TODO: share this code from BigQueryRecordConsumer
-    Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
+    Map<StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
     if (use1s1t) {
       // For each stream, make sure that its corresponding final table exists.
       for (StreamConfig stream : parsedCatalog.streams()) {
@@ -306,7 +306,7 @@ public class BigQueryStagingConsumerFactory {
   private CheckedConsumer<BigQueryWriteConfig, InterruptedException> getReplaceFinalTableConsumer(boolean use1s1t,
                                                                                                    final BigQuerySqlGenerator sqlGenerator,
                                                                                                    final BigQueryDestinationHandler destinationHandler,
-                                                                                                   final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable,
+                                                                                                   final Map<StreamId, String> overwriteStreamsWithTmpTable,
                                                                                                    final ParsedCatalog parsedCatalog) {
     return (writeConfig) -> {
       final var streamConfig = parsedCatalog.getStream(writeConfig.namespace(), writeConfig.streamName());
