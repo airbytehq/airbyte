@@ -25,7 +25,7 @@ class ParquetParser(FileTypeParser):
     ) -> Dict[str, Any]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
+            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243

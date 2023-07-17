@@ -39,7 +39,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat]]] = Field(
+    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat, JsonlFormat]]] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )

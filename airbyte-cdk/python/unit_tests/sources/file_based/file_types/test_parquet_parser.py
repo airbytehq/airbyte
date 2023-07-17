@@ -5,13 +5,14 @@
 import asyncio
 import datetime
 import math
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
 from unittest.mock import Mock
 
 import pyarrow as pa
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -41,9 +42,12 @@ _decimal_as_float_parquet_format = ParquetFormat(decimal_as_float=True)
         pytest.param(pa.time64("us"), {"type": "string"}, _default_parquet_format, id="test_parquet_time64us"),
         pytest.param(pa.time64("ns"), {"type": "string"}, _default_parquet_format, id="test_parquet_time64us"),
         pytest.param(pa.timestamp("s"), {"type": "string", "format": "date-time"}, _default_parquet_format, id="test_parquet_timestamps_s"),
-        pytest.param(pa.timestamp("ms"), {"type": "string", "format": "date-time"}, _default_parquet_format, id="test_parquet_timestamp_ms"),
-        pytest.param(pa.timestamp("s", "utc"), {"type": "string", "format": "date-time"}, _default_parquet_format, id="test_parquet_timestamps_s_with_tz"),
-        pytest.param(pa.timestamp("ms", "est"), {"type": "string", "format": "date-time"}, _default_parquet_format, id="test_parquet_timestamps_ms_with_tz"),
+        pytest.param(pa.timestamp("ms"), {"type": "string", "format": "date-time"}, _default_parquet_format,
+                     id="test_parquet_timestamp_ms"),
+        pytest.param(pa.timestamp("s", "utc"), {"type": "string", "format": "date-time"}, _default_parquet_format,
+                     id="test_parquet_timestamps_s_with_tz"),
+        pytest.param(pa.timestamp("ms", "est"), {"type": "string", "format": "date-time"}, _default_parquet_format,
+                     id="test_parquet_timestamps_ms_with_tz"),
         pytest.param(pa.date32(), {"type": "string", "format": "date"}, _default_parquet_format, id="test_parquet_date32"),
         pytest.param(pa.date64(), {"type": "string", "format": "date"}, _default_parquet_format, id="test_parquet_date64"),
         pytest.param(pa.duration("s"), {"type": "integer"}, _default_parquet_format, id="test_duration_s"),
@@ -83,7 +87,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
     [
         pytest.param(pa.bool_(), _default_parquet_format, True, True, id="test_bool"),
         pytest.param(pa.int8(), _default_parquet_format, -1, -1, id="test_int8"),
-        pytest.param(pa.int16(), _default_parquet_format,  2, 2, id="test_int16"),
+        pytest.param(pa.int16(), _default_parquet_format, 2, 2, id="test_int16"),
         pytest.param(pa.int32(), _default_parquet_format, 3, 3, id="test_int32"),
         pytest.param(pa.int64(), _default_parquet_format, 4, 4, id="test_int64"),
         pytest.param(pa.uint8(), _default_parquet_format, 4, 4, id="test_parquet_uint8"),
@@ -96,9 +100,12 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.time32("ms"), _default_parquet_format, datetime.time(3, 4, 5), "03:04:05", id="test_parquet_time32ms"),
         pytest.param(pa.time64("us"), _default_parquet_format, datetime.time(6, 7, 8), "06:07:08", id="test_parquet_time64us"),
         pytest.param(pa.time64("ns"), _default_parquet_format, datetime.time(9, 10, 11), "09:10:11", id="test_parquet_time64us"),
-        pytest.param(pa.timestamp("s"), _default_parquet_format, datetime.datetime(2023, 7, 7, 10, 11, 12), "2023-07-07T10:11:12", id="test_parquet_timestamps_s"),
-        pytest.param(pa.timestamp("ms"), _default_parquet_format, datetime.datetime(2024, 8, 8, 11, 12, 13), "2024-08-08T11:12:13", id="test_parquet_timestamp_ms"),
-        pytest.param(pa.timestamp("s", "utc"), _default_parquet_format, datetime.datetime(2020, 1, 1, 1, 1, 1, tzinfo=datetime.timezone.utc),
+        pytest.param(pa.timestamp("s"), _default_parquet_format, datetime.datetime(2023, 7, 7, 10, 11, 12), "2023-07-07T10:11:12",
+                     id="test_parquet_timestamps_s"),
+        pytest.param(pa.timestamp("ms"), _default_parquet_format, datetime.datetime(2024, 8, 8, 11, 12, 13), "2024-08-08T11:12:13",
+                     id="test_parquet_timestamp_ms"),
+        pytest.param(pa.timestamp("s", "utc"), _default_parquet_format,
+                     datetime.datetime(2020, 1, 1, 1, 1, 1, tzinfo=datetime.timezone.utc),
                      "2020-01-01T01:01:01+00:00", id="test_parquet_timestamps_s_with_tz"),
         pytest.param(pa.timestamp("ms", "utc"), _default_parquet_format, datetime.datetime(2021, 2, 3, 4, 5, tzinfo=datetime.timezone.utc),
                      "2021-02-03T04:05:00+00:00", id="test_parquet_timestamps_ms_with_tz"),
@@ -124,11 +131,13 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.decimal256(8, 2), _default_parquet_format, 13, "13.00", id="test_decimal256"),
         pytest.param(pa.decimal128(5, 3), _decimal_as_float_parquet_format, 12, 12.000, id="test_decimal128"),
         pytest.param(pa.decimal256(8, 2), _decimal_as_float_parquet_format, 13, 13.00, id="test_decimal256"),
-        pytest.param(pa.map_(pa.string(), pa.int32()), _default_parquet_format, {"hello": 1, "world": 2}, {"hello": 1, "world": 2}, id="test_map"),
+        pytest.param(pa.map_(pa.string(), pa.int32()), _default_parquet_format, {"hello": 1, "world": 2}, {"hello": 1, "world": 2},
+                     id="test_map"),
         pytest.param(pa.null(), _default_parquet_format, None, None, id="test_null"),
     ]
 )
-def test_value_transformation(pyarrow_type: pa.DataType, parquet_format: ParquetFormat, parquet_object: Scalar, expected_value: Any) -> None:
+def test_value_transformation(pyarrow_type: pa.DataType, parquet_format: ParquetFormat, parquet_object: Scalar,
+                              expected_value: Any) -> None:
     pyarrow_value = pa.array([parquet_object], type=pyarrow_type)[0]
     py_value = ParquetParser._to_output_value(pyarrow_value, parquet_format)
     if isinstance(py_value, float):
@@ -147,15 +156,21 @@ def test_value_dictionary() -> None:
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}
 
 
-def test_wrong_file_format() -> None:
+@pytest.mark.parametrize(
+    "file_format", [
+        pytest.param(CsvFormat(
+            filetype="csv",
+            delimiter=",",
+            escape_char="\\",
+            quote_char='"',
+        ), id="test_csv_format"),
+        pytest.param(JsonlFormat(), id="test_jsonl_format"),
+    ]
+)
+def test_wrong_file_format(file_format: Union[CsvFormat, JsonlFormat]) -> None:
     parser = ParquetParser()
-    csv_format = CsvFormat(
-        filetype="csv",
-        delimiter=",",
-        escape_char="\\",
-        quote_char='"',
-    )
-    config = FileBasedStreamConfig(name="test.parquet", file_type="csv", format={"csv": csv_format}, validation_policy="a_validtion_policy")
+    config = FileBasedStreamConfig(name="test.parquet", file_type=file_format.filetype, format={file_format.filetype: file_format},
+                                   validation_policy="a_validtion_policy")
     file = RemoteFile(uri="s3://mybucket/test.parquet", last_modified=datetime.datetime.now())
     stream_reader = Mock()
     logger = Mock()
