@@ -473,10 +473,11 @@ parquet_file_with_decimal_as_string_scenario = (
                     "file_type": "parquet",
                     "globs": ["*"],
                     "validation_policy": "emit_record",
-                    # Legacy format
-                    "file_format": {
-                        "filetype": "parquet",
-                        "decimal_as_float": False
+                    "format": {
+                        "parquet": {
+                            "filetype": "parquet",
+                            "decimal_as_float": False
+                        }
                     }
                 }
             ]
