@@ -75,7 +75,7 @@ def test_updated_state(patch_incremental_base_class, config):
         current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"}
     )
 
-    assert updated_state == {"date": "2021-02-25T00:00:00Z"}
+    assert updated_state == {"date": "2021-02-25T00:00:00+00:00"}
 
 
 @pytest.fixture
@@ -165,7 +165,7 @@ def test_engage_stream_incremental(requests_mock, engage_response, config):
     records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
 
     assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47+00:00"}
 
 
 def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config):
@@ -181,7 +181,7 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, cohor
 
     records = [item for item in records]
     assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47+00:00"}
 
 
 @pytest.fixture
@@ -334,7 +334,7 @@ def test_annotations_stream(requests_mock, annotations_response, config):
     stream = Annotations(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
 
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_slice = {"start_date": pendulum.parse("2017-01-25T00:00:00Z"), "end_date": pendulum.parse("2017-02-25T00:00:00Z")}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
 
@@ -364,7 +364,7 @@ def test_revenue_stream(requests_mock, revenue_response, config):
     stream = Revenue(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
 
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_slice = {"start_date": pendulum.parse("2017-01-25T00:00:00Z"), "end_date": pendulum.parse("2017-02-25T00:00:00Z")}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
@@ -428,7 +428,7 @@ def test_export_stream(requests_mock, export_response, config):
 
     stream = Export(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_slice = {"start_date": pendulum.parse("2017-01-25T00:00:00Z"), "end_date": pendulum.parse("2017-02-25T00:00:00Z")}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
@@ -438,19 +438,16 @@ def test_export_stream(requests_mock, export_response, config):
 
 def test_export_stream_request_params(config):
     stream = Export(authenticator=MagicMock(), **config)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_slice = {"start_date": pendulum.parse("2017-01-25T00:00:00Z"), "end_date": pendulum.parse("2023-02-25T00:00:00Z")}
     stream_state = {"date": "2021-06-16T17:00:00"}
-
-    request_params = stream.request_params(stream_state=None, stream_slice=stream_slice)
-    assert "where" not in request_params
-
-    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
-    assert "where" not in request_params
 
     request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
     assert "where" in request_params
-    timestamp = int(pendulum.parse("2021-06-16T17:00:00Z").timestamp())
-    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
+    # stream state should be ignored in request params to not trigger race conditions!
+    # stream state only affects stream slices.
+    start_timestamp = int(pendulum.parse("2017-01-25T00:00:00Z").timestamp())
+    end_timestamp = int(pendulum.parse("2023-02-25T00:00:00Z").timestamp())
+    assert request_params.get("where") == f'properties["$time"]>=datetime({start_timestamp}) and properties["$time"]<datetime({end_timestamp})'
 
 
 def test_export_terminated_early(requests_mock, config):
