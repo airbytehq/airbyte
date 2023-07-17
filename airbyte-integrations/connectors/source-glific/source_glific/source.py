@@ -233,9 +233,9 @@ class SourceGlific(AbstractSource):
             variables = {}
             payload = {"query": query, "variables": variables}
 
-            res = requests.post(endpoint, headers=headers, json=payload, timeout=30)
-            res.raise_for_status()
-            data = res.json()
+            response = requests.post(endpoint, headers=headers, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
         except requests.exceptions.HTTPError:
             # return empty zero streams since config could not be fetched
             return []
