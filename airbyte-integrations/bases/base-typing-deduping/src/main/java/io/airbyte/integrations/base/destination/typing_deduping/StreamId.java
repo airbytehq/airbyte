@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 /**
@@ -9,11 +13,11 @@ package io.airbyte.integrations.base.destination.typing_deduping;
  * it in a query.
  *
  * @param finalNamespace the namespace where the final table will be created
- * @param finalName      the name of the final table
- * @param rawNamespace   the namespace where the raw table will be created (typically "airbyte")
- * @param rawName        the name of the raw table (typically namespace_name, but may be different if there
- *                       are collisions). There is no rawNamespace because we assume that we're writing raw tables
- *                       to the airbyte namespace.
+ * @param finalName the name of the final table
+ * @param rawNamespace the namespace where the raw table will be created (typically "airbyte")
+ * @param rawName the name of the raw table (typically namespace_name, but may be different if there
+ *        are collisions). There is no rawNamespace because we assume that we're writing raw tables
+ *        to the airbyte namespace.
  */
 public record StreamId(String finalNamespace,
                        String finalName,
@@ -47,16 +51,17 @@ public record StreamId(String finalNamespace,
   }
 
   /**
-   * Build the raw table name as namespace + (delimiter) + name. For example, given a stream with namespace "public__ab"
-   * and name "abab_users", we will end up with raw table name "public__ab_ab___ab_abab_users".
+   * Build the raw table name as namespace + (delimiter) + name. For example, given a stream with
+   * namespace "public__ab" and name "abab_users", we will end up with raw table name
+   * "public__ab_ab___ab_abab_users".
    * <p>
    * This logic is intended to solve two problems:
    * <ul>
-   *   <li>The raw table name should be unambiguously parsable into the namespace/name.</li>
-   *   <li>It must be impossible for two different streams to generate the same raw table name.</li>
+   * <li>The raw table name should be unambiguously parsable into the namespace/name.</li>
+   * <li>It must be impossible for two different streams to generate the same raw table name.</li>
    * </ul>
-   * The generated delimiter is guaranteed to not be present in the namespace or name, so it accomplishes both of these
-   * goals.
+   * The generated delimiter is guaranteed to not be present in the namespace or name, so it
+   * accomplishes both of these goals.
    */
   public static String concatenateRawTableName(String namespace, String name) {
     String plainConcat = namespace + name;
@@ -73,4 +78,5 @@ public record StreamId(String finalNamespace,
 
     return namespace + "_ab" + "_".repeat(longestUnderscoreRun + 1) + "ab_" + name;
   }
+
 }

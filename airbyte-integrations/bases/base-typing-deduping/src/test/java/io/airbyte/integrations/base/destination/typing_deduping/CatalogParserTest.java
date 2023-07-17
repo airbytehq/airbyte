@@ -53,7 +53,8 @@ class CatalogParserTest {
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace, originalName);
+      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace,
+          originalName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),
