@@ -12,7 +12,6 @@ import json
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from sgqlc.endpoint.http import HTTPEndpoint
 
 
 
@@ -232,9 +231,11 @@ class SourceGlific(AbstractSource):
         try:
             query = 'query organizationExportConfig { organizationExportConfig { data errors { key message } } }'
             variables = {}
+            payload = {"query": query, "variables": variables}
 
-            endpoint = HTTPEndpoint(endpoint, headers)
-            data = endpoint(query, variables)
+            res = requests.post(endpoint, headers=headers, json=payload, timeout=30)
+            res.raise_for_status()
+            data = res.json()
         except requests.exceptions.HTTPError:
             # return empty zero streams since config could not be fetched
             return []
