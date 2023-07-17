@@ -42,8 +42,10 @@
               "type": ["object", "null"],
               "properties": {
                 "type": {
-                  "type": ["string", "null"],
-                  "value": ["string", "null"]
+                  "type": ["string", "null"]
+                },
+                "value": {
+                  "type": ["string", "null"]
                 }
               }
             }
