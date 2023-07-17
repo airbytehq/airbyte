@@ -73,6 +73,9 @@ public class BigQueryDestinationHandler {
               String truncatedQuery = qc.getQuery()
                   .substring(0, Math.min(100, qc.getQuery().length()))
                   .replaceAll("\n", " ");
+              if (!truncatedQuery.equals(qc.getQuery())) {
+                truncatedQuery += "...";
+              }
               LOGGER.info("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
                   truncatedQuery,
                   childQueryStats.getEndTime() - childQueryStats.getStartTime(),
