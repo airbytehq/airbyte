@@ -407,10 +407,8 @@ wait_for_rediscovery_scenario_single_stream = (
     .set_expected_logs({
         "read": [
             {
-                # For this stream, the record that we check during the availability check does conform to the schema, but during the sync
-                # we encounter a record that does not, so stop the in-progress sync.
-                "level": "WARNING",
-                "message": "Skipped syncing stream 'stream1' because it was unavailable.",
+                "level": "WARN",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a.csv validation_policy=wait_for_discover n_skipped=0",
             },
         ]
     })
@@ -460,16 +458,12 @@ wait_for_rediscovery_scenario_multi_stream = (
     .set_expected_logs({
         "read": [
             {
-                # For this stream, the record that we check during the availability check does not conform to the schema so we do not proceed
-                # with the sync for that stream.
                 "level": "WARN",
-                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=wait_for_discover n_skipped=0",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream1 file=a/a1.csv validation_policy=wait_for_discover n_skipped=0",
             },
             {
-                # For this stream, the record that we check during the availability check does conform to the schema, but during the sync
-                # we encounter a record that does not, so stop the in-progress sync.
-                "level": "WARNING",
-                "message": "Skipped syncing stream 'stream1' because it was unavailable.",
+                "level": "WARN",
+                "message": "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema. stream=stream2 file=b/b2.csv validation_policy=wait_for_discover n_skipped=0",
             },
         ]
     })

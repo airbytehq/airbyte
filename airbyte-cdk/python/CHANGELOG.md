@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
 ## 0.44.4
 Connector builder: Show all request/responses as part of the testing panel
 
