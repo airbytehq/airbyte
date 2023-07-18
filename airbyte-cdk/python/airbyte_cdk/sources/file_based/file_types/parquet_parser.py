@@ -2,17 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable
 
-# import pyarrow as pa
-# import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-# from pyarrow import Scalar
 
 
 class ParquetParser(FileTypeParser):
