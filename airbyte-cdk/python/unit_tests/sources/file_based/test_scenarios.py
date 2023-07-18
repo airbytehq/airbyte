@@ -72,6 +72,10 @@ from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
+    parquet_file_with_decimal_as_float_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_legacy_config_scenario,
+    parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
 )
@@ -126,6 +130,9 @@ discover_scenarios = [
     single_parquet_scenario,
     multi_parquet_scenario,
     parquet_various_types_scenario,
+    parquet_file_with_decimal_no_config_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_as_float_scenario,
     schemaless_csv_scenario,
     schemaless_csv_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
@@ -138,6 +145,7 @@ discover_scenarios = [
     multi_stream_user_input_schema_scenario_schema_is_invalid,
     valid_multi_stream_user_input_schema_scenario,
     valid_single_stream_user_input_schema_scenario,
+    parquet_file_with_decimal_legacy_config_scenario,
     single_jsonl_scenario,
     multi_jsonl_with_different_keys_scenario,
     multi_jsonl_stream_n_file_exceeds_limit_for_inference,
@@ -288,13 +296,13 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestS
         assert output["status"] == scenario.expected_check_status
 
 
-def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Any:
+def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Mapping[str, Any]:
     launch(
         scenario.source,
         ["spec"],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["spec"]
+    return json.loads(captured.out.splitlines()[0])["spec"]  # type: ignore
 
 
 def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
