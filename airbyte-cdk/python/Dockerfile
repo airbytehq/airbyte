@@ -10,7 +10,8 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 # install airbyte-cdk
-RUN pip install --prefix=/install airbyte-cdk==0.45.0
+# cdk is pinned to 0.44 because 0.45.0 includes parquet, which cannot be installed on alpine
+RUN pip install --prefix=/install airbyte-cdk==0.44.0
 
 # build a clean environment
 FROM base
