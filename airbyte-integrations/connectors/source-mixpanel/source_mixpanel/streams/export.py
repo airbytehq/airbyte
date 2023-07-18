@@ -4,7 +4,7 @@
 
 import json
 from functools import cache
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping
 
 import pendulum
 import requests
@@ -182,15 +182,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        mapping = super().request_params(stream_state, stream_slice, next_page_token)
-        if stream_state and "date" in stream_state:
-            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
-            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
-        return mapping
 
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
