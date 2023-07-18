@@ -561,7 +561,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 3.3.1   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/28394) | Expand Schema for Ads stream                                                                  |
+| 3.3.1   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/28394) | Add `utm_params` field to `ads` schema                                                        |
 | 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema. |
 | 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                              |
 | 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation               |
