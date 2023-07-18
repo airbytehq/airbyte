@@ -20,7 +20,7 @@ def check_migration_guide(connector: Connector) -> bool:
 
     migration_guide_file_path = connector.migration_guide_file_path
     if not migration_guide_file_path.exists():
-        print(f"Migration guide file is missing for {connector.name}.")
+        print(f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder.")
         return False
 
     # Check that the migration guide begins with # {connector name} Migration Guide
@@ -29,7 +29,7 @@ def check_migration_guide(connector: Connector) -> bool:
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
         if not first_line == expected_title:
-            print(f"Migration guide file for {connector.name} does not start with the correct header.")
+            print(f"Migration guide file for {connector.name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'")
             return False
 
         # Check that the migration guide contains a section for each breaking change key ## Upgrading to {version}
