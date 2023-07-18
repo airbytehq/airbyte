@@ -6,7 +6,7 @@ import logging
 import os
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
@@ -127,19 +127,22 @@ class HttpRequester(Requester):
         )
 
     # fixing request options provider types has a lot of dependencies
-    def get_request_body_data( # type: ignore
+    def get_request_body_data(  # type: ignore
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
-        return self._request_options_provider.get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        ) or {}
+        return (
+            self._request_options_provider.get_request_body_data(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
+            or {}
+        )
 
     # fixing request options provider types has a lot of dependencies
-    def get_request_body_json( # type: ignore
+    def get_request_body_json(  # type: ignore
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -218,7 +221,9 @@ class HttpRequester(Requester):
         """
         return self.interpret_response_status(response).error_message
 
-    def _get_mapping(self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
+    def _get_mapping(
+        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any
+    ) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
         """
         Get mapping from the provided method, and get the keys of the mapping.
         If the method returns a string, it will return the string and an empty set.
@@ -265,7 +270,7 @@ class HttpRequester(Requester):
 
         # Return the combined mappings
         # ignore type because mypy doesn't follow all mappings being dicts
-        return {**requester_mapping, **auth_options_mapping, **extra_mapping} # type: ignore
+        return {**requester_mapping, **auth_options_mapping, **extra_mapping}  # type: ignore
 
     def _request_headers(
         self,
@@ -419,7 +424,7 @@ class HttpRequester(Requester):
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
-        return backoff_handler(user_backoff_handler)(request) # type: ignore
+        return backoff_handler(user_backoff_handler)(request)  # type: ignore
 
     def _send(self, request: requests.PreparedRequest) -> requests.Response:
         """
