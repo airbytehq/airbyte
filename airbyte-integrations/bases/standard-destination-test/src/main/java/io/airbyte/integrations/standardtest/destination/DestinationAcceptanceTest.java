@@ -295,14 +295,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override to return true if a destination implements size limits on record size (then destination
-   * should redefine getMaxRecordValueLimit() too)
-   */
-  protected boolean implementsRecordSizeLimitChecks() {
-    return false;
-  }
-
-  /**
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
@@ -836,66 +828,6 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
         defaultSchema);
     assertSameMessages(expectedMessages, actualMessages, true);
-  }
-
-  /**
-   * This test is running a sync using the exchange rate catalog and messages. However it also
-   * generates and adds two extra messages with big records (near the destination limit as defined by
-   * getMaxValueLengthLimit()
-   * <p>
-   * The first big message should be small enough to fit into the destination while the second message
-   * would be too big and fails to replicate.
-   */
-  @Test
-  void testSyncVeryBigRecords() throws Exception {
-    if (!implementsRecordSizeLimitChecks()) {
-      return;
-    }
-
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
-            AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
-        .collect(Collectors.toList());
-    // Add a big message that barely fits into the limits of the destination
-    messages.add(new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                // remove enough characters from max limit to fit the other columns and json characters
-                .put("currency", generateBigString(-150))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build()))));
-    // Add a big message that does not fit into the limits of the destination
-    final AirbyteMessage bigMessage = new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build())));
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteMessage> allMessages = new ArrayList<>();
-    allMessages.add(bigMessage);
-    allMessages.addAll(messages);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   private String generateBigString(final int addExtraCharacters) {

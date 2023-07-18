@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
 ## 0.44.2
 Ensuring the state value format matches the cursor value from the record
 
