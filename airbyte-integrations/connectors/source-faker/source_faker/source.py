@@ -10,6 +10,7 @@ from airbyte_cdk.sources.streams import Stream
 
 from .streams import Products, Purchases, Users
 
+# Adding this comment is a big ol' breaking change
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
