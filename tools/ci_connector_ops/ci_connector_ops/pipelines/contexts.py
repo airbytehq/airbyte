@@ -15,6 +15,7 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from ci_connector_ops.pipelines import hacks
 from ci_connector_ops.pipelines.actions import secrets
 from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
@@ -393,7 +394,7 @@ class ConnectorContext(PipelineContext):
     def docker_image_from_metadata(self) -> str:
         return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
 
-    def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -403,7 +404,8 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
