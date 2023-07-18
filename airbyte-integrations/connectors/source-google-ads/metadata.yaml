@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 0.7.0
+  dockerImageTag: 0.7.1
   dockerRepository: airbyte/source-google-ads
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg

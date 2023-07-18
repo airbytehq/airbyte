@@ -14,6 +14,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
+from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
     error_extension_mismatch_scenario,
@@ -58,6 +59,17 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_earlier_scenario,
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
+)
+from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
+    invalid_jsonl_scenario,
+    jsonl_multi_stream_scenario,
+    jsonl_user_input_schema_scenario,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_with_different_keys_scenario,
+    schemaless_jsonl_multi_stream_scenario,
+    schemaless_jsonl_scenario,
+    single_jsonl_scenario,
 )
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
@@ -135,6 +147,15 @@ discover_scenarios = [
     valid_multi_stream_user_input_schema_scenario,
     valid_single_stream_user_input_schema_scenario,
     parquet_file_with_decimal_legacy_config_scenario,
+    single_jsonl_scenario,
+    multi_jsonl_with_different_keys_scenario,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    invalid_jsonl_scenario,
+    jsonl_multi_stream_scenario,
+    jsonl_user_input_schema_scenario,
+    schemaless_jsonl_scenario,
+    schemaless_jsonl_multi_stream_scenario,
 ]
 
 
@@ -151,10 +172,10 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
         output = discover(capsys, tmp_path, scenario)
         catalog, logs = output["catalog"], output["logs"]
         assert catalog == scenario.expected_catalog
-        if expected_logs is not None:
-            expected_discover_logs = expected_logs.get("discover", [])
+        if expected_logs:
+            discover_logs = expected_logs.get("discover")
             logs = [log for log in logs if log.get("log", {}).get("level") in ("ERROR", "WARN")]
-            _verify_expected_logs(logs, expected_discover_logs)
+            _verify_expected_logs(logs, discover_logs)
 
 
 read_scenarios = discover_scenarios + [
@@ -200,7 +221,7 @@ def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFix
         _verify_read_output(output, scenario)
 
 
-def _verify_read_output(output: Dict[str, List[Any]], scenario: TestScenario) -> None:
+def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
     records, logs = output["records"], output["logs"]
     logs = [log for log in logs if log.get("level") in ("ERROR", "WARN", "WARNING")]
     expected_records = scenario.expected_records
@@ -217,17 +238,19 @@ def _verify_read_output(output: Dict[str, List[Any]], scenario: TestScenario) ->
             assert actual["state"]["data"] == expected
 
     if scenario.expected_logs:
-        expected_logs = scenario.expected_logs.get("read", [])
-        assert len(logs) == len(expected_logs)
-        _verify_expected_logs(logs, expected_logs)
+        read_logs = scenario.expected_logs.get("read")
+        assert len(logs) == (len(read_logs) if read_logs else 0)
+        _verify_expected_logs(logs, read_logs)
 
 
-def _verify_expected_logs(logs: List[Mapping[str, Any]], expected_logs: List[Mapping[str, Any]]) -> None:
-    for actual, expected in zip(logs, expected_logs):
-        actual_level, actual_message = actual["level"], actual["message"]
-        expected_level, expected_message = expected["level"], expected["message"]
-        assert actual_level == expected_level
-        assert expected_message in actual_message
+def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
+    if expected_logs:
+        for actual, expected in zip(logs, expected_logs):
+            actual_level, actual_message = actual["level"], actual["message"]
+            expected_level = expected["level"]
+            expected_message = expected["message"]
+            assert actual_level == expected_level
+            assert expected_message in actual_message
 
 
 spec_scenarios = [
