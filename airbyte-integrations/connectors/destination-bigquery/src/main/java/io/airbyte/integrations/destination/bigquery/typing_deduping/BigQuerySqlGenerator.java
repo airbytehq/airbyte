@@ -224,7 +224,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns(), stream.destinationSyncMode());
+    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -293,7 +293,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns, DestinationSyncMode destinationSyncMode) {
+  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -312,17 +312,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 END"""))
         .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
-    final String deletionClause;
-    if (destinationSyncMode == DestinationSyncMode.APPEND_DEDUP && streamColumns.keySet().stream().anyMatch(col -> "_ab_cdc_deleted_at".equals(col.originalName()))) {
-      deletionClause = """
-          AND (
-            JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-            OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
-          )
-          """;
-    } else {
-      deletionClause = "";
-    }
 
     String cdcConditionalOrIncludeStatement = "";
     if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
