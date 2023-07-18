@@ -104,7 +104,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   bump-version:
-    needs: build-cdk
+    needs: start-publish-docker-image-runner-0
     if: github.event.inputs.release-type != 'none'
     runs-on: ubuntu-latest
     outputs:
@@ -165,7 +165,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
-    needs: start-publish-docker-image-runner-0
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
