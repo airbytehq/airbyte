@@ -10,10 +10,6 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 # install airbyte-cdk
-# FIXME to enable CI to pass, we added this line which allows airbyte-cdk==0.45.0 to work with pyyaml~=5.4
-# We should remove this like as soon as the new version of airbyte-cdk is released. For more information, see
-# https://github.com/yaml/pyyaml/issues/601
-RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolation
 RUN pip install --prefix=/install airbyte-cdk==0.45.0
 
 # build a clean environment
