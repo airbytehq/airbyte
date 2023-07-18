@@ -92,7 +92,7 @@ class FileBasedStreamConfig(BaseModel):
         if config.get("filetype") != "parquet":
             raise ValueError(f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support.")
         if config.get("decimal_as_float"):
-            raise ValueError(f"Received legacy parquert file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support.")
+            raise ValueError(f"Received legacy parquet file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support.")
         return {**config, **{"decimal_as_float": True}}
 
     @validator("input_schema", pre=True)
