@@ -5,6 +5,8 @@ data:
   registries:
     oss:
       enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: database
   connectorType: source
   definitionId: FAKE-UUID-0000-0000-000000000000

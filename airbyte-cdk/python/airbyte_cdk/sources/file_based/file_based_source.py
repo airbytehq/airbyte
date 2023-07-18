@@ -9,9 +9,9 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -21,7 +21,6 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SC
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
 
 DEFAULT_MAX_HISTORY_SIZE = 10_000
@@ -32,7 +31,7 @@ class FileBasedSource(AbstractSource, ABC):
         self,
         stream_reader: AbstractFileBasedStreamReader,
         catalog: Optional[ConfiguredAirbyteCatalog],
-        availability_strategy: Optional[AvailabilityStrategy],
+        availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
         spec_class: Type[AbstractFileBasedSpec],
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[str, FileTypeParser] = default_parsers,
@@ -76,7 +75,7 @@ class FileBasedSource(AbstractSource, ABC):
                 (
                     stream_is_available,
                     reason,
-                ) = stream.availability_strategy.check_availability(stream, logger, self)
+                ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except Exception:
                 errors.append(f"Unable to connect to stream {stream} - {''.join(traceback.format_exc())}")
             else:
