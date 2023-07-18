@@ -244,13 +244,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
   }
 
-  private boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
+  @VisibleForTesting
+  public boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
     return existingTable.getClustering() == null ? false : containsAllIgnoreCase(
             existingTable.getClustering().getFields().stream().collect(Collectors.toSet()),
             clusteringColumns(stream));
   }
 
-  private boolean partitioningMatches(StandardTableDefinition existingTable) {
+  @VisibleForTesting
+  public boolean partitioningMatches(StandardTableDefinition existingTable) {
     return existingTable.getTimePartitioning() == null ? false : existingTable.getTimePartitioning()
             .getField()
             .equalsIgnoreCase("_airbyte_extracted_at") &&
