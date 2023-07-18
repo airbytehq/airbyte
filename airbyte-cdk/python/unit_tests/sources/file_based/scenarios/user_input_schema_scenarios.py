@@ -223,10 +223,6 @@ single_stream_user_input_schema_scenario_skip_nonconforming_records = (
             },
             {
                 'level': 'WARNING',
-                'message': 'Could not cast the value to the expected type.: col1: value=val11,expected_type=integer',
-            },
-            {
-                'level': 'WARNING',
                 'message': 'Could not cast the value to the expected type.: col1: value=val21,expected_type=integer',
             },
         ]
@@ -562,10 +558,6 @@ multi_stream_user_input_schema_scenario_emit_nonconforming_records = (
             },
             {
                 'level': 'WARNING',
-                'message': 'Could not cast the value to the expected type.: col2: value=val12b,expected_type=integer',
-            },
-            {
-                'level': 'WARNING',
                 'message': 'Could not cast the value to the expected type.: col2: value=val22b,expected_type=integer',
             },
         ]
@@ -702,10 +694,6 @@ multi_stream_user_input_schema_scenario_skip_nonconforming_records = (
             {
                 'level': 'WARN',
                 'message': 'Records in file did not pass validation policy. stream=stream2 file=b.csv n_skipped=2 validation_policy=skip_record',
-            },
-            {
-                'level': 'WARNING',
-                'message': 'Could not cast the value to the expected type.: col2: value=val12b,expected_type=integer',
             },
             {
                 'level': 'WARNING',
