@@ -58,7 +58,7 @@ public final class PostgresCatalogHelper {
    * @return will return list of sync modes
    */
   public static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH));
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   /*
