@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Views Schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "url": {
+      "type": ["null", "string"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "conditions": {
+      "properties": {
+        "all": {
+          "items": {
+            "properties": {
+              "field": {
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        },
+        "any": {
+          "items": {
+            "properties": {
+              "field": {
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "execution": {
+      "properties": {
+        "group_by": {
+          "type": ["null", "string"]
+        },
+        "sort_by": {
+          "type": ["null", "string"]
+        },
+        "group_order": {
+          "type": ["null", "string"]
+        },
+        "sort_order": {
+          "type": ["null", "string"]
+        },
+        "columns": {
+          "items": {
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "title": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              },
+              "filterable": {
+                "type": ["null", "boolean"]
+              },
+              "sortable": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        },
+        "group": {
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "order": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "sort": {
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "order": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "filterable": {
+              "type": ["null", "boolean"]
+            },
+            "sortable": {
+              "type": ["null", "boolean"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "fields": {
+          "items": {
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "title": {
+                "type": ["null", "string"]
+              },
+              "filterable": {
+                "type": ["null", "boolean"]
+              },
+              "sortable": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        },
+        "custom_fields": {
+          "items": {
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "title": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              },
+              "filterable": {
+                "type": ["null", "boolean"]
+              },
+              "sortable": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "restriction": {
+      "properties": {
+        "id": {
+          "type": ["null", "number"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "ids": {
+          "items": {
+            "type": ["null", "number"]
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "position": {
+      "type": ["null", "number"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
+    }
+  }
+}
