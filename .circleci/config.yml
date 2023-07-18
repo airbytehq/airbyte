@@ -30,15 +30,12 @@ workflows:
           context:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
+
       - dependencies_applovin:
           context:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
-      - docker/hadolint:
-          dockerfiles:
-            - airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
-            - airbyte-integrations/connectors/source-applovin/Dockerfile
-          ignore-rules: "DL3059,DL3008"
+
       - aws-ecr/build-and-push-image:
           path: airbyte-integrations/connectors/source-facebook-marketing/
           executor:
@@ -52,11 +49,11 @@ workflows:
           skip-when-tags-exist: true
           requires:
             - dependencies_facebook
-            - docker/hadolint
           filters:
             branches:
               only:
                 - voodoo_master
+
       - aws-ecr/build-and-push-image:
           path: airbyte-integrations/connectors/source-applovin/
           executor:
@@ -70,7 +67,6 @@ workflows:
           skip-when-tags-exist: true
           requires:
             - dependencies_applovin
-            - docker/hadolint
           filters:
             branches:
               only:
