@@ -64,6 +64,7 @@ connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers
 connectors-testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-tidb" }
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
+docker-java-api = { module = "com.github.docker-java:docker-java-api", version = "3.3.2" }
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }

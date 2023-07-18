@@ -21,6 +21,7 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.connectors.testcontainers.mongodb
+    testImplementation libs.docker.java.api
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')

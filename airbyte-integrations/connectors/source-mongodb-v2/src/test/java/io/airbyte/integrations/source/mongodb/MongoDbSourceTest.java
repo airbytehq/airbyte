@@ -53,7 +53,7 @@ class MongoDbSourceTest {
 
   @BeforeAll
   static void init() {
-    MONGO_DB = new MongoDBContainer("mongo:6.0.7");
+    MONGO_DB = new MongoDBContainer("mongo:6.0.8");
     MONGO_DB.start();
 
     try (final MongoClient client = MongoClients.create(MONGO_DB.getReplicaSetUrl() + "?retryWrites=false")) {
