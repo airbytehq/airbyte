@@ -217,7 +217,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS, DestinationSyncMode.OVERWRITE);
+    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
     destinationHandler.execute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
