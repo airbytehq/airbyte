@@ -120,6 +120,7 @@ def test_chunk_date_range_without_end_date():
         {"start_date": "2022-01-27", "end_date": "2022-01-27"},
         {"start_date": "2022-01-28", "end_date": "2022-01-28"},
         {"start_date": "2022-01-29", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-30"},
     ]
     assert expected_response == slices
 
