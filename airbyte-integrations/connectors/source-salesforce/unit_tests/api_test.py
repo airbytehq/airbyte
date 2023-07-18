@@ -13,6 +13,7 @@ from unittest.mock import Mock
 import pytest
 import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
@@ -61,7 +62,7 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)) == rest_stream_records
 
 
-def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
+def test_stream_unsupported_by_bulk(stream_config, stream_api):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
     """
@@ -661,3 +662,53 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
     )
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert records == []
+
+
+@pytest.mark.parametrize(
+    "status_code,response_json,log_message",
+    [
+        (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
+        (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
+        (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
+        (400, [{"errorCode": "API_ERROR", "message": "Implementation restriction: Account only allows security evaluation for non-admin users when LIMIT is specified and at most 1000"}], f"Unable to sync 'Account'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."),
+        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
+    ]
+)
+def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, stream_api, status_code, response_json, log_message, caplog):
+    """
+    """
+    stream = generate_stream("Account", stream_config, stream_api)
+    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
+    requests_mock.register_uri(
+        "POST",
+        url,
+        status_code=status_code,
+        json=response_json,
+    )
+    query = "Select Id, Subject from Account"
+    with caplog.at_level(logging.ERROR):
+        assert stream.create_stream_job(query, url) is None, "this stream should be skipped"
+
+    # check logs
+    assert log_message in caplog.records[-1].message
+
+
+@pytest.mark.parametrize(
+    "status_code,response_json,error_message",
+    [
+        (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}], 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
+    ]
+)
+def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
+
+    stream = generate_stream("Account", stream_config, stream_api)
+    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query/queryJobId"
+    requests_mock.register_uri(
+        "GET",
+        url,
+        status_code=status_code,
+        json=response_json,
+    )
+    with pytest.raises(AirbyteTracedException) as e:
+        stream.wait_for_job(url=url)
+    assert e.value.message == error_message

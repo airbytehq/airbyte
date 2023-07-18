@@ -15,11 +15,12 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
@@ -347,11 +348,16 @@ class BulkSalesforceStream(SalesforceStream):
                         f"The stream '{self.name}' is not queryable, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
+                elif (
+                    error.response.status_code == codes.BAD_REQUEST
+                    and error_code == "API_ERROR"
+                    and error_message.startswith("Implementation restriction")
+                ):
+                    message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
+                    self.logger.error(message)
                 elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
+                    message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
+                    self.logger.error(message)
                 else:
                     raise error
             else:
@@ -368,7 +374,20 @@ class BulkSalesforceStream(SalesforceStream):
         # this value was received empirically
         time.sleep(0.5)
         while pendulum.now() < expiration_time:
-            job_info = self._send_http_request("GET", url=url).json()
+            try:
+                job_info = self._send_http_request("GET", url=url).json()
+            except exceptions.HTTPError as error:
+                error_data = error.response.json()[0]
+                error_code = error_data.get("errorCode")
+                error_message = error_data.get("message", "")
+                if (
+                    "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
+                    and error_code == "TXN_SECURITY_METERING_ERROR"
+                ):
+                    message = 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
+                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
+                else:
+                    raise error
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 if job_status != "JobComplete":
