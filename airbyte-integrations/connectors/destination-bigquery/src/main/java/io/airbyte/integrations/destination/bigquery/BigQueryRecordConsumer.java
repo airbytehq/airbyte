@@ -169,12 +169,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private void processRecord(final AirbyteMessage message) throws InterruptedException {
     final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(streamId).upload(message);
-    if (!streamTDValve.containsKey(streamId)) {
-      streamTDValve.addStream(streamId);
-    } else if (streamTDValve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
-      doTypingAndDeduping(catalog.getStream(streamId.getNamespace(), streamId.getName()));
-      streamTDValve.updateTimeAndIncreaseInterval(streamId);
-    }
+    // We are not doing any incremental typing and de-duping for Standard Inserts, see
+    // https://github.com/airbytehq/airbyte/issues/27586
   }
 
   @Override
