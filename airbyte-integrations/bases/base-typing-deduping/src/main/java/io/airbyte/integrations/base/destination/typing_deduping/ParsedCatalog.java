@@ -8,14 +8,14 @@ import java.util.List;
 
 public record ParsedCatalog(List<StreamConfig> streams) {
 
-  public StreamConfig getStream(String namespace, String name) {
+  public StreamConfig getStream(String originalNamespace, String originalName) {
     return streams.stream()
-        .filter(s -> s.id().originalNamespace().equals(namespace) && s.id().originalName().equals(name))
+        .filter(s -> s.id().originalNamespace().equals(originalNamespace) && s.id().originalName().equals(originalName))
         .findFirst()
         .orElseThrow(() -> new IllegalArgumentException(String.format(
             "Could not find stream %s.%s out of streams %s",
-            namespace,
-            name,
+            originalNamespace,
+            originalName,
             streams.stream().map(stream -> stream.id().originalNamespace() + "." + stream.id().originalName()).toList())));
   }
 
