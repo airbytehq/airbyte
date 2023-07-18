@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 import pytest
 from _pytest.capture import CaptureFixture
-from _pytest.logging import LogCaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
@@ -75,10 +74,10 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
     parquet_file_with_decimal_as_float_scenario,
     parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_legacy_config_scenario,
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
-    parquet_file_with_decimal_legacy_config_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (

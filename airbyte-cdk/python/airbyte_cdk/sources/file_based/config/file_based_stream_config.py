@@ -82,7 +82,6 @@ class FileBasedStreamConfig(BaseModel):
             legacy_config = cls._transform_legacy_parquet_config(legacy_config)
         return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in legacy_config.items()})}
 
-
     @classmethod
     def _transform_legacy_parquet_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -90,9 +89,13 @@ class FileBasedStreamConfig(BaseModel):
         To avoid introducing a breaking change with the new default, we will set decimal_as_float to True in the legacy configs.
         """
         if config.get("filetype") != "parquet":
-            raise ValueError(f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support.")
+            raise ValueError(
+                f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
+            )
         if config.get("decimal_as_float"):
-            raise ValueError(f"Received legacy parquet file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support.")
+            raise ValueError(
+                "Received legacy parquet file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
+            )
         return {**config, **{"decimal_as_float": True}}
 
     @validator("input_schema", pre=True)
