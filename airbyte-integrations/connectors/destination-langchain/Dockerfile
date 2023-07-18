@@ -13,6 +13,9 @@ COPY setup.py ./
 
 RUN pip install --upgrade pip
 
+## Workaround for https://github.com/yaml/pyyaml/issues/601
+RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolation
+
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
