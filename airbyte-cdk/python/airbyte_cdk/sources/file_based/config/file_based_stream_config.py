@@ -134,6 +134,8 @@ class FileBasedStreamConfig(BaseModel):
     @validator("input_schema", pre=True)
     def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
         if v:
-            return type_mapping_to_jsonschema(v)
-        else:
-            return None
+            schema = type_mapping_to_jsonschema(v)
+            if not schema:
+                raise ValueError(f"Unable to create JSON schema from input schema {v}")
+            return schema
+        return None

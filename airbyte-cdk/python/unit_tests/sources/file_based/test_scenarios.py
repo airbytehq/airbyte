@@ -13,6 +13,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
+from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
     error_extension_mismatch_scenario,
@@ -57,6 +58,17 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_earlier_scenario,
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
+)
+from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
+    invalid_jsonl_scenario,
+    jsonl_multi_stream_scenario,
+    jsonl_user_input_schema_scenario,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_with_different_keys_scenario,
+    schemaless_jsonl_multi_stream_scenario,
+    schemaless_jsonl_scenario,
+    single_jsonl_scenario,
 )
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
@@ -126,6 +138,15 @@ discover_scenarios = [
     multi_stream_user_input_schema_scenario_schema_is_invalid,
     valid_multi_stream_user_input_schema_scenario,
     valid_single_stream_user_input_schema_scenario,
+    single_jsonl_scenario,
+    multi_jsonl_with_different_keys_scenario,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    invalid_jsonl_scenario,
+    jsonl_multi_stream_scenario,
+    jsonl_user_input_schema_scenario,
+    schemaless_jsonl_scenario,
+    schemaless_jsonl_multi_stream_scenario,
 ]
 
 
@@ -143,9 +164,9 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
         catalog, logs = output["catalog"], output["logs"]
         assert catalog == scenario.expected_catalog
         if expected_logs:
-            expected_logs = expected_logs.get("discover", [])
+            discover_logs = expected_logs.get("discover")
             logs = [log for log in logs if log.get("log", {}).get("level") in ("ERROR", "WARN")]
-            _verify_expected_logs(logs, expected_logs)
+            _verify_expected_logs(logs, discover_logs)
 
 
 read_scenarios = discover_scenarios + [
@@ -162,14 +183,14 @@ read_scenarios = discover_scenarios + [
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario):
+def test_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
     else:
         run_test_read_full_refresh(capsys, caplog, tmp_path, scenario)
 
 
-def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:  # noqa
@@ -181,7 +202,7 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: CaptureFixtu
         _verify_read_output(output, scenario)
 
 
-def run_test_read_incremental(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc):
@@ -191,7 +212,7 @@ def run_test_read_incremental(capsys: CaptureFixture[str], caplog: CaptureFixtur
         _verify_read_output(output, scenario)
 
 
-def _verify_read_output(output, scenario):
+def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
     records, logs = output["records"], output["logs"]
     logs = [log for log in logs if log.get("level") in ("ERROR", "WARN", "WARNING")]
     expected_records = scenario.expected_records
@@ -208,17 +229,19 @@ def _verify_read_output(output, scenario):
             assert actual["state"]["data"] == expected
 
     if scenario.expected_logs:
-        expected_logs = scenario.expected_logs.get("read", [])
-        assert len(logs) == len(expected_logs)
-        _verify_expected_logs(logs, expected_logs)
+        read_logs = scenario.expected_logs.get("read")
+        assert len(logs) == (len(read_logs) if read_logs else 0)
+        _verify_expected_logs(logs, read_logs)
 
 
-def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]):
-    for actual, expected in zip(logs, expected_logs):
-        actual_level, actual_message = actual["level"], actual["message"]
-        expected_level, expected_message = expected["level"], expected["message"]
-        assert actual_level == expected_level
-        assert expected_message in actual_message
+def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
+    if expected_logs:
+        for actual, expected in zip(logs, expected_logs):
+            actual_level, actual_message = actual["level"], actual["message"]
+            expected_level = expected["level"]
+            expected_message = expected["message"]
+            assert actual_level == expected_level
+            assert expected_message in actual_message
 
 
 spec_scenarios = [
@@ -227,7 +250,7 @@ spec_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
-def test_spec(capsys, scenario):
+def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
     assert spec(capsys, scenario) == scenario.expected_spec
 
 
@@ -265,7 +288,7 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestS
         assert output["status"] == scenario.expected_check_status
 
 
-def spec(capsys, scenario):
+def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Any:
     launch(
         scenario.source,
         ["spec"],
@@ -296,7 +319,7 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
         }
 
 
-def read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
+def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
     launch(
         scenario.source,
         [
@@ -323,7 +346,7 @@ def read(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: Pos
     }
 
 
-def read_with_state(capsys: CaptureFixture[str], caplog: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, List[Any]]:
+def read_with_state(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, List[Any]]:
     launch(
         scenario.source,
         [
