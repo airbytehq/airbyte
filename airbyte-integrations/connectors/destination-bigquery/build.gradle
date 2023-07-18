@@ -10,9 +10,10 @@ application {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
 
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
@@ -22,22 +23,18 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-}
-
-tasks.named("airbyteDocker") {
-    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
-    // but it's also just simple to implement
-    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
 }
 
 configurations.all {

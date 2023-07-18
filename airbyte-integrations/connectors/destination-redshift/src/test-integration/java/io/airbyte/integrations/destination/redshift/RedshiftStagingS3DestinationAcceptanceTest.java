@@ -243,11 +243,6 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected boolean implementsRecordSizeLimitChecks() {
-    return true;
-  }
-
-  @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
