@@ -13,6 +13,8 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+pyarrow_dependency = "pyarrow==12.0.1"
+
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
@@ -63,7 +65,6 @@ setup(
         "Jinja2~=3.1.2",
         "cachetools",
         "wcmatch==8.4",
-        "pyarrow==12.0.1",
     ],
     python_requires=">=3.8",
     extras_require={
@@ -76,10 +77,14 @@ setup(
             "requests-mock",
             "pytest-httpserver",
             "pandas==2.0.3",
+            pyarrow_dependency,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
+        ],
+        "file-based": [
+            pyarrow_dependency,
         ],
     },
 )
