@@ -283,7 +283,8 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestS
         try:
             check(capsys, tmp_path, scenario)
         except expected_exc as error: # noqa
-            assert expected_msg in str(error)
+            if expected_msg:
+                assert expected_msg in str(error)
 
     else:
         output = check(capsys, tmp_path, scenario)
