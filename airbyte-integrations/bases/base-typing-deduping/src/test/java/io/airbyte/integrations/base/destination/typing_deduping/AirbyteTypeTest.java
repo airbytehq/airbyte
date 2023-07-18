@@ -4,12 +4,13 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType.*;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.fromJsonSchema;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
@@ -179,21 +180,21 @@ public class AirbyteTypeTest {
                      """);
 
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
-    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
-    propertiesMap.put("key5", AirbyteProtocolType.DATE);
-    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key11", AirbyteProtocolType.STRING);
+    propertiesMap.put("key1", BOOLEAN);
+    propertiesMap.put("key2", INTEGER);
+    propertiesMap.put("key3", INTEGER);
+    propertiesMap.put("key4", NUMBER);
+    propertiesMap.put("key5", DATE);
+    propertiesMap.put("key6", TIME_WITHOUT_TIMEZONE);
+    propertiesMap.put("key7", TIME_WITH_TIMEZONE);
+    propertiesMap.put("key8", TIMESTAMP_WITHOUT_TIMEZONE);
+    propertiesMap.put("key9", TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key10", TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key11", STRING);
 
     final AirbyteType struct = new Struct(propertiesMap);
     for (final String schema : structSchema) {
-      assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
+      assertEquals(struct, fromJsonSchema(Jsons.deserialize(schema)));
     }
   }
 
@@ -218,7 +219,7 @@ public class AirbyteTypeTest {
 
     final AirbyteType struct = new Struct(new LinkedHashMap<>());
     for (final String schema : structSchema) {
-      assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
+      assertEquals(struct, fromJsonSchema(Jsons.deserialize(schema)));
     }
   }
 
@@ -235,10 +236,10 @@ public class AirbyteTypeTest {
                                 """;
 
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
+    propertiesMap.put("key1", BOOLEAN);
 
     final AirbyteType struct = new Struct(propertiesMap);
-    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+    assertEquals(struct, fromJsonSchema(Jsons.deserialize(structSchema)));
   }
 
   @Test
@@ -275,9 +276,9 @@ public class AirbyteTypeTest {
                     }
                     """);
 
-    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    final AirbyteType array = new Array(TIMESTAMP_WITH_TIMEZONE);
     for (final String schema : arraySchema) {
-      assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
+      assertEquals(array, fromJsonSchema(Jsons.deserialize(schema)));
     }
   }
 
@@ -301,9 +302,9 @@ public class AirbyteTypeTest {
                     }
                     """);
 
-    final AirbyteType array = new Array(AirbyteProtocolType.UNKNOWN);
+    final AirbyteType array = new Array(UNKNOWN);
     for (final String schema : arraySchema) {
-      assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
+      assertEquals(array, fromJsonSchema(Jsons.deserialize(schema)));
     }
   }
 
@@ -316,11 +317,11 @@ public class AirbyteTypeTest {
                                           """;
 
     final List<AirbyteType> options = new ArrayList<>();
-    options.add(AirbyteProtocolType.NUMBER);
-    options.add(AirbyteProtocolType.STRING);
+    options.add(NUMBER);
+    options.add(STRING);
 
     final UnsupportedOneOf unsupportedOneOf = new UnsupportedOneOf(options);
-    assertEquals(unsupportedOneOf, AirbyteType.fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)));
+    assertEquals(unsupportedOneOf, fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)));
   }
 
   @Test
@@ -333,16 +334,16 @@ public class AirbyteTypeTest {
                                """;
 
     final List<AirbyteType> options = new ArrayList<>();
-    options.add(AirbyteProtocolType.STRING);
-    options.add(AirbyteProtocolType.NUMBER);
+    options.add(STRING);
+    options.add(NUMBER);
 
     final OneOf oneOf = new OneOf(options);
-    assertEquals(oneOf, AirbyteType.fromJsonSchema(Jsons.deserialize(oneOfSchema)));
+    assertEquals(oneOf, fromJsonSchema(Jsons.deserialize(oneOfSchema)));
   }
 
   @Test
   public void testOneOfComplex() {
-    JsonNode schema = Jsons.deserialize("""
+    final JsonNode schema = Jsons.deserialize("""
                                         {
                                           "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
                                           "properties": {
@@ -352,35 +353,35 @@ public class AirbyteTypeTest {
                                         }
                                         """);
 
-    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+    final AirbyteType parsed = fromJsonSchema(schema);
 
-    AirbyteType expected = new OneOf(List.of(
-        AirbyteProtocolType.STRING,
+    final AirbyteType expected = new OneOf(List.of(
+        STRING,
         new Struct(new LinkedHashMap<>() {
 
           {
-            put("foo", AirbyteProtocolType.STRING);
+            put("foo", STRING);
           }
 
         }),
-        new Array(AirbyteProtocolType.STRING)));
+        new Array(STRING)));
     assertEquals(expected, parsed);
   }
 
   @Test
   public void testOneOfUnderspecifiedNonPrimitives() {
-    JsonNode schema = Jsons.deserialize("""
+    final JsonNode schema = Jsons.deserialize("""
                                         {
                                           "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
                                         }
                                         """);
 
-    AirbyteType parsed = AirbyteType.fromJsonSchema(schema);
+    final AirbyteType parsed = fromJsonSchema(schema);
 
-    AirbyteType expected = new OneOf(List.of(
-        AirbyteProtocolType.STRING,
+    final AirbyteType expected = new OneOf(List.of(
+        STRING,
         new Struct(new LinkedHashMap<>()),
-        new Array(AirbyteProtocolType.UNKNOWN)));
+        new Array(UNKNOWN)));
     assertEquals(expected, parsed);
   }
 
@@ -391,7 +392,7 @@ public class AirbyteTypeTest {
                                        "type": "foo"
                                      }
                                      """;
-    assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
+    assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
   }
 
   @Test
@@ -401,7 +402,7 @@ public class AirbyteTypeTest {
                                        "type": true
                                      }
                                      """;
-    assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
+    assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
   }
 
   @Test
@@ -417,7 +418,7 @@ public class AirbyteTypeTest {
     invalidSchema.add("{}");
 
     for (final String schema : invalidSchema) {
-      assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(schema)));
+      assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(schema)));
     }
   }
 
@@ -425,56 +426,56 @@ public class AirbyteTypeTest {
   public void testChooseOneOf() {
     // test ordering
 
-    OneOf o = new OneOf(ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.DATE));
-    assertEquals(AirbyteProtocolType.DATE, AirbyteTypeUtils.chooseOneOfType(o));
+    OneOf o = new OneOf(ImmutableList.of(STRING, DATE));
+    assertEquals(DATE, AirbyteTypeUtils.chooseOneOfType(o));
 
-    final Array a = new Array(AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE, a));
+    final Array a = new Array(TIME_WITH_TIMEZONE);
+    o = new OneOf(ImmutableList.of(TIMESTAMP_WITH_TIMEZONE, a));
     assertEquals(a, AirbyteTypeUtils.chooseOneOfType(o));
 
     final LinkedHashMap<String, AirbyteType> properties = new LinkedHashMap<>();
-    properties.put("key1", AirbyteProtocolType.UNKNOWN);
-    properties.put("key2", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    properties.put("key1", UNKNOWN);
+    properties.put("key2", TIME_WITHOUT_TIMEZONE);
     final Struct s = new Struct(properties);
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE, s));
+    o = new OneOf(ImmutableList.of(TIMESTAMP_WITHOUT_TIMEZONE, s));
     assertEquals(s, AirbyteTypeUtils.chooseOneOfType(o));
 
     // test exclusion
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER));
-    assertEquals(AirbyteProtocolType.INTEGER, AirbyteTypeUtils.chooseOneOfType(o));
+    o = new OneOf(ImmutableList.of(BOOLEAN, INTEGER));
+    assertEquals(INTEGER, AirbyteTypeUtils.chooseOneOfType(o));
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.INTEGER, AirbyteProtocolType.NUMBER, AirbyteProtocolType.DATE));
-    assertEquals(AirbyteProtocolType.NUMBER, AirbyteTypeUtils.chooseOneOfType(o));
+    o = new OneOf(ImmutableList.of(INTEGER, NUMBER, DATE));
+    assertEquals(NUMBER, AirbyteTypeUtils.chooseOneOfType(o));
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER, AirbyteProtocolType.STRING));
-    assertEquals(AirbyteProtocolType.STRING, AirbyteTypeUtils.chooseOneOfType(o));
+    o = new OneOf(ImmutableList.of(BOOLEAN, NUMBER, STRING));
+    assertEquals(STRING, AirbyteTypeUtils.chooseOneOfType(o));
   }
 
   @Test
   public void testAsColumns() {
-    OneOf o = new OneOf(List.of(
-        AirbyteProtocolType.STRING,
+    final OneOf o = new OneOf(List.of(
+        STRING,
         new Struct(new LinkedHashMap<>() {
 
           {
-            put("foo", AirbyteProtocolType.STRING);
+            put("foo", STRING);
           }
 
         }),
-        new Array(AirbyteProtocolType.STRING),
+        new Array(STRING),
         // This is bad behavior, but it matches current behavior so we'll test it.
         // Ideally, we would recognize that the sub-oneOfs are also objects.
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
         new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
-    LinkedHashMap<String, AirbyteType> columns = o.asColumns();
+    final LinkedHashMap<String, AirbyteType> columns = o.asColumns();
 
     assertEquals(
         new LinkedHashMap<>() {
 
           {
-            put("foo", AirbyteProtocolType.STRING);
+            put("foo", STRING);
           }
 
         },
@@ -483,7 +484,7 @@ public class AirbyteTypeTest {
 
   @Test
   public void testAsColumnsMultipleObjects() {
-    OneOf o = new OneOf(List.of(
+    final OneOf o = new OneOf(List.of(
         new Struct(new LinkedHashMap<>()),
         new Struct(new LinkedHashMap<>())));
 
@@ -494,9 +495,9 @@ public class AirbyteTypeTest {
 
   @Test
   public void testAsColumnsNoObjects() {
-    OneOf o = new OneOf(List.of(
-        AirbyteProtocolType.STRING,
-        new Array(AirbyteProtocolType.STRING),
+    final OneOf o = new OneOf(List.of(
+        STRING,
+        new Array(STRING),
         new UnsupportedOneOf(new ArrayList<>()),
         // Similar to testAsColumns(), this is bad behavior.
         new OneOf(List.of(new Struct(new LinkedHashMap<>()))),

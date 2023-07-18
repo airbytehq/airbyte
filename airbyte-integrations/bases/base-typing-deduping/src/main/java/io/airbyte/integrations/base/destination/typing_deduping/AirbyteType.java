@@ -4,14 +4,19 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.getAirbyteProtocolType;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.nodeIsType;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.slf4j.Logger;
@@ -33,40 +38,13 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       final JsonNode topLevelType = schema.get("type");
       if (topLevelType != null) {
         if (topLevelType.isTextual()) {
-          if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
+          if (nodeIsType(topLevelType, "object")) {
             return getStruct(schema);
-          } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
+          } else if (nodeIsType(topLevelType, "array")) {
             return getArray(schema);
           }
         } else if (topLevelType.isArray()) {
-          final List<String> typeOptions = new ArrayList<>();
-          topLevelType.elements().forEachRemaining(element -> {
-            // ignore "null" type and remove duplicates
-            String type = element.asText("");
-            if (!"null".equals(type) && !typeOptions.contains(type)) {
-              typeOptions.add(element.asText());
-            }
-          });
-
-          // we encounter an array of types that actually represents a single type rather than a OneOf
-          if (typeOptions.size() == 1) {
-            if (typeOptions.get(0).equals("object")) {
-              return getStruct(schema);
-            } else if (typeOptions.get(0).equals("array")) {
-              return getArray(schema);
-            } else {
-              return AirbyteTypeUtils.getAirbyteProtocolType(schema);
-            }
-          }
-
-          final List<AirbyteType> options = typeOptions.stream().map(typeOption -> {
-            // Recurse into a schema that forces a specific one of each option
-            JsonNode schemaClone = schema.deepCopy();
-            // schema is guaranteed to be an object here, because we know it has a `type` key
-            ((ObjectNode) schemaClone).put("type", typeOption);
-            return fromJsonSchema(schemaClone);
-          }).toList();
-          return new OneOf(options);
+          return fromArrayJsonSchema(schema, topLevelType);
         }
       } else if (schema.hasNonNull("oneOf")) {
         final List<AirbyteType> options = new ArrayList<>();
@@ -78,7 +56,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
         // This is for backwards-compatibility with legacy normalization.
         return getStruct(schema);
       }
-      return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+      return getAirbyteProtocolType(schema);
     } catch (final Exception e) {
       LOGGER.error("Exception parsing JSON schema {}: {}; returning UNKNOWN.", schema, e);
       return AirbyteProtocolType.UNKNOWN;
@@ -107,17 +85,48 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     }
   }
 
-  enum AirbyteProtocolType implements AirbyteType {
+  private static AirbyteType fromArrayJsonSchema(final JsonNode schema, final JsonNode array) {
+    final List<String> typeOptions = new ArrayList<>();
+    array.elements().forEachRemaining(element -> {
+      // ignore "null" type and remove duplicates
+      final String type = element.asText("");
+      if (!"null".equals(type) && !typeOptions.contains(type)) {
+        typeOptions.add(element.asText());
+      }
+    });
 
-    STRING,
-    NUMBER,
-    INTEGER,
+    // we encounter an array of types that actually represents a single type rather than a OneOf
+    if (typeOptions.size() == 1) {
+      if (typeOptions.get(0).equals("object")) {
+        return getStruct(schema);
+      } else if (typeOptions.get(0).equals("array")) {
+        return getArray(schema);
+      } else {
+        return getAirbyteProtocolType(schema);
+      }
+    }
+
+    final List<AirbyteType> options = typeOptions.stream().map(typeOption -> {
+      // Recurse into a schema that forces a specific one of each option
+      final JsonNode schemaClone = schema.deepCopy();
+      // schema is guaranteed to be an object here, because we know it has a `type` key
+      ((ObjectNode) schemaClone).put("type", typeOption);
+      return fromJsonSchema(schemaClone);
+    }).toList();
+    return new OneOf(options);
+  }
+
+  enum AirbyteProtocolType implements AirbyteType {
+    // Protocol types are ordered by precedence in the case of a OneOf that contains multiple types.
     BOOLEAN,
-    TIMESTAMP_WITH_TIMEZONE,
+    INTEGER,
+    NUMBER,
     TIMESTAMP_WITHOUT_TIMEZONE,
+    TIMESTAMP_WITH_TIMEZONE,
+    DATE,
     TIME_WITH_TIMEZONE,
     TIME_WITHOUT_TIMEZONE,
-    DATE,
+    STRING,
     UNKNOWN;
 
     public static AirbyteProtocolType matches(final String type) {

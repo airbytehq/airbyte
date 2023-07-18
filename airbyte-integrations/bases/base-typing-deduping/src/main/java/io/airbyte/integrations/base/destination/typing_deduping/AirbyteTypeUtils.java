@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableList;
@@ -31,18 +33,6 @@ public class AirbyteTypeUtils {
       AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
       AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING));
 
-  // Protocol types in order of precedence
-  private static final List<AirbyteProtocolType> ORDERED_PROTOCOL_TYPES = ImmutableList.of(
-      AirbyteProtocolType.BOOLEAN,
-      AirbyteProtocolType.INTEGER,
-      AirbyteProtocolType.NUMBER,
-      AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
-      AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-      AirbyteProtocolType.DATE,
-      AirbyteProtocolType.TIME_WITH_TIMEZONE,
-      AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-      AirbyteProtocolType.STRING);
-
   protected static boolean nodeIsType(final JsonNode node, final String type) {
     if (node == null || !node.isTextual()) {
       return false;
@@ -65,49 +55,48 @@ public class AirbyteTypeUtils {
     return false;
   }
 
+  // Extracts the appropriate protocol type from the representative JSON
   protected static AirbyteType getAirbyteProtocolType(final JsonNode node) {
+    // JSON could be a string (ex: "number")
     if (node.isTextual()) {
-      return AirbyteProtocolType.matches(node.asText());
+      return matches(node.asText());
     }
 
+    // Or, JSON could be a node with fields
     final JsonNode propertyType = node.get("type");
     final JsonNode airbyteType = node.get("airbyte_type");
     final JsonNode format = node.get("format");
 
     if (nodeIsOrContainsType(propertyType, "boolean")) {
-      return AirbyteProtocolType.BOOLEAN;
+      return BOOLEAN;
     } else if (nodeIsOrContainsType(propertyType, "integer")) {
-      return AirbyteProtocolType.INTEGER;
+      return INTEGER;
     } else if (nodeIsOrContainsType(propertyType, "number")) {
-      if (nodeIsType(airbyteType, "integer")) {
-        return AirbyteProtocolType.INTEGER;
-      } else {
-        return AirbyteProtocolType.NUMBER;
-      }
+      return nodeIsType(airbyteType, "integer") ? INTEGER : NUMBER;
     } else if (nodeIsOrContainsType(propertyType, "string")) {
       if (nodeIsOrContainsType(format, "date")) {
-        return AirbyteProtocolType.DATE;
+        return DATE;
       } else if (nodeIsType(format, "time")) {
         if (nodeIsType(airbyteType, "time_without_timezone")) {
-          return AirbyteProtocolType.TIME_WITHOUT_TIMEZONE;
+          return TIME_WITHOUT_TIMEZONE;
         } else if (nodeIsType(airbyteType, "time_with_timezone")) {
-          return AirbyteProtocolType.TIME_WITH_TIMEZONE;
+          return TIME_WITH_TIMEZONE;
         }
       } else if (nodeIsOrContainsType(format, "date-time")) {
         if (nodeIsType(airbyteType, "timestamp_without_timezone")) {
-          return AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE;
+          return TIMESTAMP_WITHOUT_TIMEZONE;
         } else if (airbyteType == null || nodeIsType(airbyteType, "timestamp_with_timezone")) {
-          return AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE;
+          return TIMESTAMP_WITH_TIMEZONE;
         }
       } else {
-        return AirbyteProtocolType.STRING;
+        return STRING;
       }
     }
 
-    return AirbyteProtocolType.UNKNOWN;
+    return UNKNOWN;
   }
 
-  // Pick which type in a OneOf has precedence
+  // Picks which type in a OneOf takes precedence
   public static AirbyteType chooseOneOfType(final OneOf o) {
     final List<AirbyteType> options = o.options();
 
@@ -133,10 +122,11 @@ public class AirbyteTypeUtils {
     } else if (foundStructType != null) {
       return foundStructType;
     } else {
-      for (final AirbyteProtocolType protocolType : ORDERED_PROTOCOL_TYPES) {
+      for (final AirbyteProtocolType protocolType : AirbyteProtocolType.values()) {
         if (typePresenceMap.getOrDefault(protocolType, false)) {
           boolean foundExcludedTypes = false;
-          final List<AirbyteProtocolType> excludedTypes = EXCLUDED_PROTOCOL_TYPES_MAP.getOrDefault(protocolType, Collections.emptyList());
+          final List<AirbyteProtocolType> excludedTypes = 
+              EXCLUDED_PROTOCOL_TYPES_MAP.getOrDefault(protocolType, Collections.emptyList());
           for (final AirbyteProtocolType excludedType : excludedTypes) {
             if (typePresenceMap.getOrDefault(excludedType, false)) {
               foundExcludedTypes = true;
@@ -150,7 +140,7 @@ public class AirbyteTypeUtils {
       }
     }
 
-    return AirbyteProtocolType.UNKNOWN;
+    return UNKNOWN;
   }
 
 }

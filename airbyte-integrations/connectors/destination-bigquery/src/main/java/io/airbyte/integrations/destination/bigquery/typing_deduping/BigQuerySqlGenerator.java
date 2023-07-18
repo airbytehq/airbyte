@@ -115,7 +115,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
-    if (airbyteType instanceof OneOf o) {
+    if (airbyteType instanceof final OneOf o) {
       // This is guaranteed to not be a OneOf, so we won't recurse infinitely
       final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
       return extractAndCast(column, chosenType);
@@ -160,7 +160,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to the SQLGenerator?
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      // TODO doublecheck these
       case STRING -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
@@ -510,7 +509,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
