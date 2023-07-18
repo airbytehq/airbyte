@@ -63,7 +63,8 @@ public class CursorManager<S> {
                        final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
                        final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction,
+        onlyIncludeIncrementalStreams);
   }
 
   /**

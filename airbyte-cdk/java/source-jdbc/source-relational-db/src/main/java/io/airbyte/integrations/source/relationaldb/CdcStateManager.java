@@ -22,7 +22,9 @@ public class CdcStateManager {
   private final AirbyteStateMessage rawStateMessage;
   private CdcState currentState;
 
-  public CdcStateManager(final CdcState serialized, final Set<AirbyteStreamNameNamespacePair> initialStreamsSynced, final AirbyteStateMessage stateMessage) {
+  public CdcStateManager(final CdcState serialized,
+                         final Set<AirbyteStreamNameNamespacePair> initialStreamsSynced,
+                         final AirbyteStateMessage stateMessage) {
     this.initialState = serialized;
     this.currentState = serialized;
     this.initialStreamsSynced = initialStreamsSynced;
