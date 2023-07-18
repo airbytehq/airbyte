@@ -86,7 +86,6 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   public void start() {
-    log.info("==== Using fixed Snowflake version 4..");
     supervisorThread.scheduleAtFixedRate(this::retrieveWork,
         SUPERVISOR_INITIAL_DELAY_SECS,
         SUPERVISOR_PERIOD_SECS,

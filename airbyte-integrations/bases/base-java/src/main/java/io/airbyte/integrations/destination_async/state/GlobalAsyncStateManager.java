@@ -109,10 +109,6 @@ public class GlobalAsyncStateManager {
     closeState(message, sizeInBytes);
   }
 
-  public LinkedList<Long> getStreamToStateIdQ(final StreamDescriptor streamDescriptor) {
-    return streamToStateIdQ.get(streamDescriptor);
-  }
-
   /**
    * Identical to {@link #getStateId(StreamDescriptor)} except this increments the associated counter
    * by 1. Intended to be called whenever a record is ingested.
@@ -152,9 +148,6 @@ public class GlobalAsyncStateManager {
       // remove all states with 0 counters.
       final LinkedList<Long> stateIdQueue = entry.getValue();
       while (true) {
-        // if (stateIdQueue.isEmpty()) {
-        // break;
-        // }
         synchronized (this) {
           final Long oldestState = stateIdQueue.peek();
           if (oldestState == null) {
