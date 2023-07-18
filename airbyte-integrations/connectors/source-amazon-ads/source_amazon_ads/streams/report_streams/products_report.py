@@ -8,6 +8,7 @@ from copy import copy
 from .report_streams import ReportStreamV3
 import datetime
 from dateutil.relativedelta import relativedelta
+import pendulum
 
 REPORTTYPE_ID_MAP = {
     "campaign": "spCampaigns",
@@ -205,15 +206,22 @@ class SponsoredProductsReportStream(ReportStreamV3):
     metrics_map = METRICS_MAP
     reportType_id_map = REPORTTYPE_ID_MAP
 
+    # 2023-7-18, change the start time to the day before yesterday, the end time to yesterday
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
-        today = datetime.datetime.today()
-        end_time = today.strftime("%Y-%m-%d")
-        start_date = datetime.datetime.strptime(report_date, "%Y%m%d")
+        today = pendulum.today(tz=profile.timezone).date()
+
+        start_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()       
+        end_date = today.subtract(days=1)
+        
+        if end_date.diff(start_date).in_days() > self.REPORTING_PERIOD:
+            start_date = end_date.subtract(days=1)
+            
+        if start_date >= today:
+            start_date = end_date.subtract(days=1)
+            
         start_time = start_date.strftime("%Y-%m-%d")
-        temp = (today - start_date).days
-        if temp > 30:
-            start_time = (today + relativedelta(days=-1 * 30)).strftime("%Y-%m-%d")
+        end_time = end_date.strftime("%Y-%m-%d")
         body = {
             "name": f"ADS-{record_type}-{report_date}",
             "startDate": start_time,
@@ -227,4 +235,5 @@ class SponsoredProductsReportStream(ReportStreamV3):
                 "format": "GZIP_JSON"
             }
         }
+        
         return {**body}
