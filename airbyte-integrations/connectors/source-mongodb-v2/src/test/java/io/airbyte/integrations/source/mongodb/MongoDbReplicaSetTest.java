@@ -61,6 +61,10 @@ class MongoDbReplicaSetTest {
   private static final String MONGO_NETWORK = "mongodb_network";
   private static final String OPLOG = "oplog.rs";
   private static final String REPLICA_SET_ID = "replica-set";
+  private static final String REPLICA_SET_CONFIG_FORMAT =
+      """
+      {_id:\\"%s\\",members:[{_id:0,host:\\"%s\\"},{_id:1,host:\\"%s\\"},{_id:2,host:\\"%s\\"}]}""";
+
   private static Network network;
   private static GenericContainer MONGO_DB1;
   private static GenericContainer MONGO_DB2;
@@ -111,11 +115,11 @@ class MongoDbReplicaSetTest {
 
     LOGGER.info("Initializing replica set...");
     final String replicaSetConfigJson = buildReplicaSetConfig();
+    LOGGER.info("********* {}", replicaSetConfigJson);
     LOGGER.info(MONGO_DB1.execInContainer("/bin/bash", "-c",
-        "mongosh --eval \"rs.initiate(" + replicaSetConfigJson + ", { force: true })\"").getStdout());
+        "mongosh --eval \"rs.initiate(" + replicaSetConfigJson + ", { force: true })\"").getStderr());
     LOGGER.info(MONGO_DB1.execInContainer("/bin/bash", "-c",
-        "mongosh --eval \"rs.status()\"").getStdout());
-    LOGGER.info(MONGO_DB1.execInContainer("/bin/bash", "-c", "mongosh --eval \"\"").getStdout());
+        "mongosh --eval \"rs.status()\"").getStderr());
 
     LOGGER.info("Seeding collection with data...");
     try (final MongoClient client = createMongoClient(DB_NAME)) {
@@ -243,10 +247,7 @@ class MongoDbReplicaSetTest {
   }
 
   private static String buildReplicaSetConfig() {
-    return "{_id:\\\"" + REPLICA_SET_ID + "\\\"," +
-        "members:[{_id:0,host:\\\"" + MONGO_DB1_NAME + "\\\"}," +
-        "{_id:1,host:\\\"" + MONGO_DB2_NAME + "\\\"}," +
-        "{_id:2,host:\\\"" + MONGO_DB3_NAME + "\\\"}]}";
+    return String.format(REPLICA_SET_CONFIG_FORMAT, REPLICA_SET_ID, MONGO_DB1_NAME, MONGO_DB2_NAME, MONGO_DB3_NAME);
   }
 
   private static MongoClient createMongoClient(final String databaseName) {

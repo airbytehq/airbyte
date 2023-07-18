@@ -33,7 +33,7 @@ import org.testcontainers.containers.MongoDBContainer;
 class MongoDatabaseTest {
 
   private static final String COLLECTION_NAME = "movies";
-  private static final String DB_NAME = "local";
+  private static final String DB_NAME = "airbyte_test";
   private static final Integer DATASET_SIZE = 10000;
 
   private static MongoDBContainer MONGO_DB;
@@ -42,7 +42,7 @@ class MongoDatabaseTest {
 
   @BeforeAll
   static void init() {
-    MONGO_DB = new MongoDBContainer("mongo:6.0.7");
+    MONGO_DB = new MongoDBContainer("mongo:6.0.8");
     MONGO_DB.start();
 
     try (final MongoClient client = MongoClients.create(MONGO_DB.getReplicaSetUrl() + "?retryWrites=false")) {
@@ -83,14 +83,19 @@ class MongoDatabaseTest {
   void testGetDatabaseNames() {
     final List<String> databaseNames = new ArrayList<>();
     mongoDatabase.getDatabaseNames().forEach(databaseNames::add);
-    assertEquals(3, databaseNames.size());
+    assertEquals(4, databaseNames.size());
     assertTrue(databaseNames.contains(DB_NAME));
+
+    // Built-in MongoDB databases
+    assertTrue(databaseNames.contains("admin"));
+    assertTrue(databaseNames.contains("config"));
+    assertTrue(databaseNames.contains("local"));
   }
 
   @Test
   void testGetCollectionNames() {
     final Set<String> collectionNames = mongoDatabase.getCollectionNames();
-    assertEquals(7, collectionNames.size());
+    assertEquals(1, collectionNames.size());
     assertTrue(collectionNames.contains(COLLECTION_NAME));
   }
 
