@@ -57,8 +57,8 @@ def chunk_date_range(
     After 2 hours next page tokens will be expired, finally resulting in page token expired error
     Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
-    yesterday = pendulum.yesterday(tz=time_zone)
-    end_date = min(pendulum.parse(end_date), yesterday) if end_date else yesterday
+    today = pendulum.today(tz=time_zone)
+    end_date = min(pendulum.parse(end_date), today) if end_date else today
     start_date = pendulum.parse(start_date)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
