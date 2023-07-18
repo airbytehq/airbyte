@@ -733,7 +733,7 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
@@ -742,8 +742,6 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
 
 class Views(SourceZendeskSupportCursorPaginationStream):
     """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
-
-    cursor_field = "created_at"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
@@ -754,7 +752,7 @@ class Views(SourceZendeskSupportCursorPaginationStream):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
@@ -773,7 +771,7 @@ class Automations(SourceZendeskSupportCursorPaginationStream):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
