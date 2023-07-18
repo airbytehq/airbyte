@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
@@ -109,13 +110,17 @@ public class BigQueryStagingConsumerFactory {
                                                                                                                  final ParsedCatalog parsedCatalog,
                                                                                                                  final boolean use1s1t,
                                                                                                                  final Map<StreamId, String> overwriteStreamsWithTmpTable) {
+    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
     return (streamId) -> {
       if (use1s1t) {
-        final var streamConfig = parsedCatalog.getStream(streamId.getNamespace(), streamId.getName());
-        String suffix;
-        suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), "");
-        final String sql = sqlGenerator.updateTable(suffix, streamConfig);
-        destinationHandler.execute(sql);
+        if (!valve.containsKey(streamId)) {
+          valve.addStream(streamId);
+        } else if (valve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
+          final var streamConfig = parsedCatalog.getStream(streamId.getNamespace(), streamId.getName());
+          final String suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), "");
+          destinationHandler.doTypingAndDeduping(streamConfig, sqlGenerator, suffix);
+          valve.updateTimeAndIncreaseInterval(streamId);
+        }
       }
     };
   }
