@@ -70,7 +70,6 @@ from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
     schemaless_jsonl_scenario,
     single_jsonl_scenario,
 )
-
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
     multi_stream_user_input_schema_scenario_emit_nonconforming_records,
