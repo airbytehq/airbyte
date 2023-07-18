@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "formType": {
-    "type": ["null", "object"],
+    "type": ["null", "object", "string"],
     "properties": {
       "archived": {
         "type": ["null", "boolean"]
