@@ -5,14 +5,10 @@
 import csv
 import io
 import json
-import tempfile
 from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional
 
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -63,8 +59,8 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     file_write_options: Optional[Mapping[str, Any]]
 
     def get_matching_files(
-            self,
-            globs: List[str],
+        self,
+        globs: List[str],
     ) -> Iterable[RemoteFile]:
         yield from AbstractFileBasedStreamReader.filter_files_by_globs([
             RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), file_type=self.file_type)
@@ -118,24 +114,3 @@ class InMemorySpec(AbstractFileBasedSpec):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         order=1,
     )
-
-
-class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
-    """
-    A file reader that writes RemoteFiles to a temporary file and then reads them back.
-    """
-
-    def open_file(self, file: RemoteFile) -> IOBase:
-        return io.BytesIO(self._create_file(file.uri))
-
-    def _create_file(self, file_name: str) -> bytes:
-        contents = self.files[file_name]["contents"]
-        schema = self.files[file_name].get("schema")
-
-        df = pd.DataFrame(contents[1:], columns=contents[0])
-        with tempfile.TemporaryFile() as fp:
-            table = pa.Table.from_pandas(df, schema)
-            pq.write_table(table, fp)
-
-            fp.seek(0)
-            return fp.read()

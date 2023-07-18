@@ -10,7 +10,6 @@ default_parsers: Mapping[str, FileTypeParser] = {
     "avro": AvroParser(),
     "csv": CsvParser(),
     "jsonl": JsonlParser(),
-    "parquet": ParquetParser(),
 }
 
 __all__ = ["AvroParser", "CsvParser", "JsonlParser", "ParquetParser", "default_parsers"]

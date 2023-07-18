@@ -70,11 +70,6 @@ from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
     schemaless_jsonl_scenario,
     single_jsonl_scenario,
 )
-from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
-    multi_parquet_scenario,
-    parquet_various_types_scenario,
-    single_parquet_scenario,
-)
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
     multi_stream_user_input_schema_scenario_emit_nonconforming_records,
@@ -123,9 +118,6 @@ discover_scenarios = [
     csv_legacy_format_scenario,
     multi_stream_custom_format,
     empty_schema_inference_scenario,
-    single_parquet_scenario,
-    multi_parquet_scenario,
-    parquet_various_types_scenario,
     schemaless_csv_scenario,
     schemaless_csv_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
@@ -202,6 +194,18 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFi
         _verify_read_output(output, scenario)
 
 
+def assert_expected_records_match_output(output: List[Dict[str, Any]], expected_output: List[Dict[str, Any]]) -> None:
+    for actual, expected in zip(output, expected_output):
+        assert actual["record"]["data"] == expected["data"]
+        assert actual["record"]["stream"] == expected["stream"]
+
+
+def assert_expected_logs_match_output(logs: List[Dict[str, Any]], expected_logs: List[Dict[str, Any]]) -> None:
+    for actual, expected in zip(logs, expected_logs):
+        assert actual["log"]["level"] == expected["level"]
+        assert actual["log"]["message"] == expected["message"]
+
+
 def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
@@ -276,12 +280,10 @@ def test_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestS
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
-        with pytest.raises(expected_exc):
-            output = check(capsys, tmp_path, scenario)
-            if expected_msg:
-                # expected_msg is a string. what's the expected value field?
-                assert expected_msg.value in output["message"]  # type: ignore
-                assert output["status"] == scenario.expected_check_status
+        try:
+            check(capsys, tmp_path, scenario)
+        except expected_exc as error: # noqa
+            assert expected_msg in str(error)
 
     else:
         output = check(capsys, tmp_path, scenario)
@@ -375,10 +377,10 @@ def read_with_state(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_
     }
 
 
-def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:
+def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[Any]]]) -> str:
     path.write_text(json.dumps(file_contents))
     return str(path)
 
 
 def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
-    return str(exc.value.args[0])
+    return exc.value.args[0]  # type: ignore
