@@ -207,9 +207,12 @@ class Connector:
         return self.documentation_directory / readme_file_name
 
     @property
+    def migration_guide_file_name(self) -> str:
+        return f"{self.name}-migrations.md"
+
+    @property
     def migration_guide_file_path(self) -> Path:
-        migration_guide_file_name = f"{self.name}-migrations.md"
-        return self.documentation_directory / migration_guide_file_name
+        return self.documentation_directory / self.migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:
