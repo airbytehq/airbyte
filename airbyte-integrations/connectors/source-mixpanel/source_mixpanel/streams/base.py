@@ -153,25 +153,25 @@ class DateSlicesMixin:
         date_slices: list = []
 
         # use the latest date between self.start_date and stream_state
-        start_date = pendulum.datetime(self.start_date.year, self.start_date.month, self.start_date.day, tz=self.project_timezone)
-        # end_date cannot be later than today
-        end_date = pendulum.datetime(self.end_date.year, self.end_date.month, self.end_date.day, tz=self.project_timezone)
-        end_date = min(end_date, pendulum.today(tz=self.project_timezone))
+        start_date = self.start_date
         if stream_state and self.cursor_field and self.cursor_field in stream_state:
             # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
             # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-            stream_state_date = pendulum.parse(stream_state[self.cursor_field])
-            start_date = max(start_date, stream_state_date).in_tz(self.project_timezone)
+            stream_state_date = pendulum.parse(stream_state[self.cursor_field]).date()
+            start_date = max(start_date, stream_state_date)
 
         # move start_date back <attribution_window> days to sync data since that time as well
         start_date = start_date - timedelta(days=self.attribution_window)
+
+        # end_date cannot be later than today
+        end_date = min(self.end_date, pendulum.today(tz=self.project_timezone).date())
 
         while start_date <= end_date:
             current_end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
             date_slices.append(
                 {
-                    "start_date": start_date,
-                    "end_date": min(current_end_date, end_date),
+                    "start_date": str(start_date),
+                    "end_date": str(min(current_end_date, end_date)),
                 }
             )
             # add 1 additional day because date range is inclusive
@@ -185,17 +185,17 @@ class DateSlicesMixin:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         return {
             **params,
-            "from_date": str(stream_slice["start_date"].date()),
-            "to_date": str(stream_slice["end_date"].date()),
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
         }
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        updated_state = pendulum.parse(latest_record.get(self.cursor_field))
+        updated_state = latest_record.get(self.cursor_field)
         if updated_state:
             state_value = current_stream_state.get(self.cursor_field)
             if state_value:
-                updated_state = max(updated_state, pendulum.parse(state_value))
-            current_stream_state[self.cursor_field] = str(updated_state.in_tz(self.project_timezone))
+                updated_state = max(updated_state, state_value)
+            current_stream_state[self.cursor_field] = updated_state
         return current_stream_state

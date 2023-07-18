@@ -25,7 +25,6 @@ def adapt_streams_if_testing(func):
         if bool(os.environ.get("PATCH_FUNNEL_SLICES", "")):
             Funnels.funnel_slices = funnel_slices_patched
         return func(self, config)
-
     return wrapper
 
 

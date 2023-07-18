@@ -60,6 +60,5 @@ acceptance_tests:
         export: ["time"]
         funnels: ["41833532", "date"]
         revenue: ["date"]
-        engage: ["last_seen"]
-        cohort_members: ["last_seen"]
+        cohort_members": ["last_seen"]
       timeout_seconds: 9000

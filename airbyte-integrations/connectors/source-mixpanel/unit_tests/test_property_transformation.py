@@ -9,7 +9,6 @@ that will conflict in further data normalization, like:
 """
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_mixpanel.streams import Export
@@ -40,7 +39,7 @@ def test_export_stream_conflict_names(requests_mock, export_response, config):
     stream.reqs_per_hour_limit = 0
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
 
-    stream_slice = {"start_date": pendulum.parse("2017-01-25T00:00:00Z"), "end_date": pendulum.parse("2017-02-25T00:00:00Z")}
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
     records = [record for record in records]
