@@ -748,6 +748,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])
+        # Workaround for https://github.com/yaml/pyyaml/issues/601
+        .with_exec(["pip3", "install", '"Cython<3.0"', '"pyyaml~=5.4"', "--no-build-isolation"])
         .with_exec(["pip3", "install", dbt_adapter_package])
         .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
