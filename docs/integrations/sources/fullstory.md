@@ -53,7 +53,7 @@ The FullStory source connector supports the following [sync modes](https://docs.
 - contacts
 - numbers
 - tags
-- user_availablity
+- user_availability
 - users
 - teams
 - webhooks
