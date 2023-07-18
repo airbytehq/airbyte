@@ -520,7 +520,7 @@ class ModelToComponentFactory:
         stream_slicer = None
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
-            if type(stream_slicer_model) == list:
+            if isinstance(stream_slicer_model, list):
                 stream_slicer = (
                     CartesianProductStreamSlicer(
                         [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -530,9 +530,10 @@ class ModelToComponentFactory:
                 stream_slicer = self._create_component_from_model(model=stream_slicer_model, config=config)
 
         if model.incremental_sync and stream_slicer:
+            incremental_sync_model = model.incremental_sync
             return PerPartitionCursor(
                 cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
                 ),
                 partition_router=stream_slicer,
             )
@@ -573,7 +574,7 @@ class ModelToComponentFactory:
 
     def create_default_paginator(
         self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
-    ) -> DefaultPaginator:
+    ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -602,11 +603,12 @@ class ModelToComponentFactory:
 
     def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs: Any) -> DpathExtractor:
         decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        return DpathExtractor(decoder=decoder, field_path=model.field_path, config=config, parameters=model.parameters or {})
+        model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
+        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
-        return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters or {}, config=config)
+        return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
@@ -629,13 +631,15 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
+        model_http_method = model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
             path=model.path,
             authenticator=authenticator,
             error_handler=error_handler,
-            http_method=model.http_method,
+            http_method=model_http_method,
             request_options_provider=request_options_provider,
             config=config,
             parameters=model.parameters or {},
@@ -651,7 +655,7 @@ class ModelToComponentFactory:
         return HttpResponseFilter(
             action=action,
             error_message=model.error_message or "",
-            error_message_contains=model.error_message_contains,
+            error_message_contains=model.error_message_contains or "",
             http_codes=http_codes,
             predicate=model.predicate or "",
             config=config,
@@ -660,7 +664,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
-        return InlineSchemaLoader(schema=model.schema_, parameters={})
+        return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
 
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
@@ -668,7 +672,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
-        return JsonFileSchemaLoader(file_path=model.file_path, config=config, parameters=model.parameters or {})
+        return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs: Any) -> ListPartitionRouter:
@@ -693,9 +697,9 @@ class ModelToComponentFactory:
     def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config, **kwargs: Any) -> MinMaxDatetime:
         return MinMaxDatetime(
             datetime=model.datetime,
-            datetime_format=model.datetime_format,
-            max_datetime=model.max_datetime,
-            min_datetime=model.min_datetime,
+            datetime_format=model.datetime_format or "",
+            max_datetime=model.max_datetime or "",
+            min_datetime=model.min_datetime or "",
             parameters=model.parameters or {},
         )
 
@@ -709,34 +713,36 @@ class ModelToComponentFactory:
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+            # ignore type error beause fixing it would have a lot of dependencies, revisit later
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator( # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
-                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters or {}).eval(config),
+                access_token_name=InterpolatedString.create(model.access_token_name or "access_token", parameters=model.parameters or {}).eval(config),
                 refresh_token_name=model.refresh_token_updater.refresh_token_name,
-                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters or {}).eval(config),
+                expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(config),
                 client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
                 client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
                 access_token_config_path=model.refresh_token_updater.access_token_config_path,
                 refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
                 token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
-                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters or {}).eval(config),
+                grant_type=InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.parameters or {}).eval(config),
                 refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters or {}).eval(config),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
             )
-        return DeclarativeOauth2Authenticator(
-            access_token_name=model.access_token_name,
+        # ignore type error beause fixing it would have a lot of dependencies, revisit later
+        return DeclarativeOauth2Authenticator( # type: ignore
+            access_token_name=model.access_token_name or "access_token",
             client_id=model.client_id,
             client_secret=model.client_secret,
-            expires_in_name=model.expires_in_name,
-            grant_type=model.grant_type,
+            expires_in_name=model.expires_in_name or "expires_in",
+            grant_type=model.grant_type or "refresh_token",
             refresh_request_body=model.refresh_request_body,
             refresh_token=model.refresh_token,
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
-            token_expiry_date_format=model.token_expiry_date_format,
+            token_expiry_date_format=model.token_expiry_date_format, # type: ignore
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},
@@ -749,7 +755,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
-        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, parameters=model.parameters or {})
+        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page or 0, parameters=model.parameters or {})
 
     def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: Any) -> ParentStreamConfig:
         declarative_stream = self._create_component_from_model(model.stream, config=config)
@@ -765,7 +771,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
-        return RecordFilter(condition=model.condition, config=config, parameters=model.parameters or {})
+        return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_request_path(model: RequestPathModel, config: Config, **kwargs: Any) -> RequestPath:
@@ -777,7 +783,7 @@ class ModelToComponentFactory:
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
     def create_record_selector(
-        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs
+        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs: Any
     ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
@@ -792,16 +798,16 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_session_token_authenticator(
-        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs
+        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
     ) -> SessionTokenAuthenticator:
         return SessionTokenAuthenticator(
             api_url=url_base,
             header=model.header,
             login_url=model.login_url,
-            password=model.password,
-            session_token=model.session_token,
-            session_token_response_key=model.session_token_response_key,
-            username=model.username,
+            password=model.password or "",
+            session_token=model.session_token or "",
+            session_token_response_key=model.session_token_response_key or "",
+            username=model.username or "",
             validate_session_url=model.validate_session_url,
             config=config,
             parameters=model.parameters or {},
@@ -843,7 +849,7 @@ class ModelToComponentFactory:
                 stream_slicer=stream_slicer,
                 cursor=cursor,
                 config=config,
-                maximum_number_of_slices=self._limit_slices_fetched,
+                maximum_number_of_slices=self._limit_slices_fetched or 5,
                 parameters=model.parameters or {},
                 disable_retries=self._disable_retries,
                 message_repository=self._message_repository,
@@ -883,7 +889,7 @@ class ModelToComponentFactory:
 
         return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters or {}, config=config)
 
-    def _create_message_repository_substream_wrapper(self, model, config):
+    def _create_message_repository_substream_wrapper(self, model: ParentStreamConfigModel, config: Config) -> Any:
         substream_factory = ModelToComponentFactory(
             limit_pages_fetched_per_slice=self._limit_pages_fetched_per_slice,
             limit_slices_fetched=self._limit_slices_fetched,
@@ -903,14 +909,14 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_wait_until_time_from_header(
-        model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs
+        model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any
     ) -> WaitUntilTimeFromHeaderBackoffStrategy:
         return WaitUntilTimeFromHeaderBackoffStrategy(
             header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
         )
 
-    def get_message_repository(self):
+    def get_message_repository(self) -> MessageRepository:
         return self._message_repository
 
-    def _evaluate_log_level(self, emit_connector_builder_messages) -> Level:
+    def _evaluate_log_level(self, emit_connector_builder_messages: bool) -> Level:
         return Level.DEBUG if emit_connector_builder_messages else Level.INFO
