@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser
+from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
@@ -25,6 +26,10 @@ class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
     @property
     def max_n_files_for_schema_inference(self) -> int:
         return 1
+
+
+class LowInferenceBytesJsonlParser(JsonlParser):
+    MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1
 
 
 class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamReader):
