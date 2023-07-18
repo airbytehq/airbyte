@@ -41,7 +41,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_name = InterpolatedString.create(self.request_option.field_name, parameters=parameters)
 
     @property
@@ -53,19 +53,19 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
     def token(self) -> str:
         return self.token_provider.get_token()
 
-    def _get_request_options(self, option_type: RequestOptionType):
+    def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self.request_option.inject_into == option_type:
             options[self._field_name.eval(self.config)] = self.token
         return options
 
-    def get_request_params(self) -> Optional[Mapping[str, Any]]:
+    def get_request_params(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter)
 
-    def get_request_body_data(self) -> Optional[Union[Mapping[str, Any], str]]:
+    def get_request_body_data(self) -> Union[Mapping[str, Any], str]:
         return self._get_request_options(RequestOptionType.body_data)
 
-    def get_request_body_json(self) -> Optional[Mapping[str, Any]]:
+    def get_request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
 
@@ -117,7 +117,7 @@ class BasicHttpAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     password: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)
         self._password = InterpolatedString.create(self.password, parameters=parameters)
 
@@ -140,7 +140,7 @@ class BasicHttpAuthenticator(DeclarativeAuthenticator):
     i.e. by adding another item the cache would exceed its maximum size, the cache must choose which item(s) to discard
     ttl=86400 means that cached token will live for 86400 seconds (one day)
 """
-cacheSessionTokenAuthenticator = TTLCache(maxsize=1000, ttl=86400)
+cacheSessionTokenAuthenticator: TTLCache[str, str] = TTLCache(maxsize=1000, ttl=86400)
 
 
 @cached(cacheSessionTokenAuthenticator)
@@ -165,7 +165,7 @@ def get_new_session_token(api_url: str, username: str, password: str, response_k
     response.raise_for_status()
     if not response.ok:
         raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
-    return response.json()[response_key]
+    return str(response.json()[response_key])
 
 
 @dataclass
@@ -202,7 +202,7 @@ class LegacySessionTokenAuthenticator(DeclarativeAuthenticator):
     validate_session_url: Union[InterpolatedString, str]
     password: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)
         self._password = InterpolatedString.create(self.password, parameters=parameters)
         self._api_url = InterpolatedString.create(self.api_url, parameters=parameters)
@@ -216,13 +216,13 @@ class LegacySessionTokenAuthenticator(DeclarativeAuthenticator):
 
     @property
     def auth_header(self) -> str:
-        return self._header.eval(self.config)
+        return str(self._header.eval(self.config))
 
     @property
     def token(self) -> str:
         if self._session_token.eval(self.config):
             if self.is_valid_session_token():
-                return self._session_token.eval(self.config)
+                return str(self._session_token.eval(self.config))
         if self._password.eval(self.config) and self._username.eval(self.config):
             username = self._username.eval(self.config)
             password = self._password.eval(self.config)

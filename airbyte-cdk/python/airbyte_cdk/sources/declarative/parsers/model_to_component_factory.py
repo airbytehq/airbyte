@@ -243,7 +243,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_api_key_authenticator(
-        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs
+        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
     ) -> ApiKeyAuthenticator:
         if model.inject_into is None and model.header is None:
             raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
@@ -270,21 +270,21 @@ class ModelToComponentFactory:
         return ApiKeyAuthenticator(
             token_provider=token_provider
             if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token, config=config, parameters=model.parameters),
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
             request_option=request_option,
             config=config,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
         )
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
         login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
             expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
-            parameters=model.parameters,
+            parameters=model.parameters or {},
             message_repository=self._message_repository,
         )
         if model.request_authentication.type == "Bearer":
@@ -306,14 +306,14 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_bearer_authenticator(
-        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs
+        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
     ) -> BearerAuthenticator:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
             token_provider=token_provider
             if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token, config=config, parameters=model.parameters),
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
             config=config,
             parameters=model.parameters or {},
         )

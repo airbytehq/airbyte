@@ -240,10 +240,10 @@ spec:
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
     assert stream.retriever.requester.name == stream.name
-    assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
-    assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
@@ -794,10 +794,10 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert selector._method == HttpMethod.GET
+    assert selector._http_method == HttpMethod.GET
     assert selector.name == "name"
-    assert selector.path.string == "/v3/marketing/lists"
-    assert selector.url_base.string == "https://api.sendgrid.com"
+    assert selector._path.string == "/v3/marketing/lists"
+    assert selector._url_base.string == "https://api.sendgrid.com"
 
     assert isinstance(selector.error_handler, DefaultErrorHandler)
     assert len(selector.error_handler.backoff_strategies) == 1
@@ -895,7 +895,7 @@ requester:
     assert selector.authenticator.token_provider.session_token_path == ["id"]
     assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
     assert selector.authenticator.token_provider.session_token_path == ["id"]
-    assert selector.authenticator.token_provider.login_requester.url_base.eval(input_config) == "https://api.sendgrid.com"
+    assert selector.authenticator.token_provider.login_requester._url_base.eval(input_config) == "https://api.sendgrid.com"
     assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {"username": "lists", "password": "verysecrettoken"}
 
 
@@ -993,7 +993,7 @@ def test_config_with_defaults():
     assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"

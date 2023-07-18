@@ -329,7 +329,7 @@ def test_send_request_stream_slice_next_page_token():
 
 def test_default_authenticator():
     requester = create_requester()
-    assert isinstance(requester.authenticator, NoAuth)
+    assert isinstance(requester._authenticator, NoAuth)
     assert isinstance(requester._session.auth, NoAuth)
 
 

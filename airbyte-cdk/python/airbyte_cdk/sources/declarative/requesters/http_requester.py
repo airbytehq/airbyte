@@ -6,7 +6,7 @@ import logging
 import os
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Sequence, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
@@ -49,59 +49,59 @@ class HttpRequester(Requester):
     path: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    authenticator: Optional[DeclarativeAuthenticator] = None
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    authenticator: DeclarativeAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.url_base = InterpolatedString.create(self.url_base, parameters=parameters)
-        self.path = InterpolatedString.create(self.path, parameters=parameters)
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
+        self._path = InterpolatedString.create(self.path, parameters=parameters)
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, parameters=parameters)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
-        self.authenticator = self.authenticator or NoAuth(parameters=parameters)
-        if type(self.http_method) == str:
-            self.http_method = HttpMethod[self.http_method]
-        self._method = self.http_method
+        self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+        self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
 
-        if isinstance(self.authenticator, AuthBase):
-            self._session.auth = self.authenticator
+        if isinstance(self._authenticator, AuthBase):
+            self._session.auth = self._authenticator
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
     # but this has a cascading effect where all dataclass fields must also be set to frozen.
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(self.__dict__))
 
-    def get_authenticator(self):
-        return self.authenticator
+    def get_authenticator(self) -> DeclarativeAuthenticator:
+        return self._authenticator
 
-    def get_url_base(self):
-        return os.path.join(self.url_base.eval(self.config), "")
+    def get_url_base(self) -> str:
+        return os.path.join(self._url_base.eval(self.config), "")
 
     def get_path(
         self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        path = self.path.eval(self.config, **kwargs)
+        path = str(self._path.eval(self.config, **kwargs))
         return path.lstrip("/")
 
-    def get_method(self):
-        return self._method
+    def get_method(self) -> HttpMethod:
+        return self._http_method
 
     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
     # only care about the status of the last response received
     @lru_cache(maxsize=10)
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
+        if self.error_handler is None:
+            raise ValueError("Cannot interpret response status without an error handler")
         return self.error_handler.interpret_response(response)
 
     def get_request_params(
@@ -126,24 +126,26 @@ class HttpRequester(Requester):
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
 
-    def get_request_body_data(
+    # fixing request options provider types has a lot of dependencies
+    def get_request_body_data( # type: ignore
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Union[Mapping[str, Any], str]:
         return self._request_options_provider.get_request_body_data(
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
+        ) or {}
 
-    def get_request_body_json(
+    # fixing request options provider types has a lot of dependencies
+    def get_request_body_json( # type: ignore
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Optional[Mapping[str, Any]]:
         return self._request_options_provider.get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
@@ -172,7 +174,7 @@ class HttpRequester(Requester):
         return self.error_handler.max_retries
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
 
     def _should_retry(self, response: requests.Response) -> bool:
@@ -187,7 +189,7 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return response.status_code == 429 or 500 <= response.status_code < 600
-        return self.interpret_response_status(response).action == ResponseAction.RETRY
+        return bool(self.interpret_response_status(response).action == ResponseAction.RETRY)
 
     def _backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -216,7 +218,7 @@ class HttpRequester(Requester):
         """
         return self.interpret_response_status(response).error_message
 
-    def _get_mapping(self, method, **kwargs):
+    def _get_mapping(self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
         """
         Get mapping from the provided method, and get the keys of the mapping.
         If the method returns a string, it will return the string and an empty set.
@@ -230,10 +232,10 @@ class HttpRequester(Requester):
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
-        requester_method,
-        auth_options_method,
+        requester_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
+        auth_options_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
         extra_options: Optional[Union[Mapping[str, Any], str]] = None,
-    ):
+    ) -> Union[Mapping[str, Any], str]:
         """
         Get the request_option from the requester, the authenticator and extra_options passed in.
         Raise a ValueError if there's a key collision
@@ -262,7 +264,8 @@ class HttpRequester(Requester):
             raise ValueError(f"Duplicate keys found: {intersection}")
 
         # Return the combined mappings
-        return {**requester_mapping, **auth_options_mapping, **extra_mapping}
+        # ignore type because mypy doesn't follow all mappings being dicts
+        return {**requester_mapping, **auth_options_mapping, **extra_mapping} # type: ignore
 
     def _request_headers(
         self,
@@ -278,9 +281,11 @@ class HttpRequester(Requester):
             stream_slice,
             next_page_token,
             self.get_request_headers,
-            self.authenticator.get_auth_header,
+            self.get_authenticator().get_auth_header,
             extra_headers,
         )
+        if isinstance(headers, str):
+            raise ValueError("Request headers cannot be a string")
         return {str(k): str(v) for k, v in headers.items()}
 
     def _request_params(
@@ -288,22 +293,25 @@ class HttpRequester(Requester):
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_params: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        return self._get_request_options(
+        options = self._get_request_options(
             stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
         )
+        if isinstance(options, str):
+            raise ValueError("Request params cannot be a string")
+        return options
 
     def _request_body_data(
         self,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_data: Optional[Union[Mapping[str, Any], str]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Optional[Union[Mapping[str, Any], str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -323,26 +331,29 @@ class HttpRequester(Requester):
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_json: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Optional[Mapping[str, Any]]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(
+        options = self._get_request_options(
             stream_slice, next_page_token, self.get_request_body_json, self.get_authenticator().get_request_body_json, extra_body_json
         )
+        if isinstance(options, str):
+            raise ValueError("Request body json cannot be a string")
+        return options
 
     def _create_prepared_request(
         self,
         path: str,
-        headers: Mapping = None,
-        params: Mapping = None,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, Any]] = None,
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
-        http_method = str(self.http_method.value)
+        http_method = str(self._http_method.value)
         args = {"method": http_method, "url": urljoin(self.get_url_base(), path), "headers": headers, "params": params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
@@ -358,14 +369,14 @@ class HttpRequester(Requester):
 
     def send_request(
         self,
-        path: Optional[str] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
-    ) -> requests.Response:
+    ) -> Optional[requests.Response]:
         request = self._create_prepared_request(
             path=path if path is not None else self.get_path(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=self._request_headers(stream_slice, next_page_token, request_headers),
@@ -407,7 +418,8 @@ class HttpRequester(Requester):
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
-        return backoff_handler(user_backoff_handler)(request)
+        # backoff handlers wrap _send, so it will always return a response
+        return backoff_handler(user_backoff_handler)(request) # type: ignore
 
     def _send(self, request: requests.PreparedRequest) -> requests.Response:
         """
@@ -476,7 +488,7 @@ class HttpRequester(Requester):
         """
 
         # default logic to grab error from common fields
-        def _try_get_error(value):
+        def _try_get_error(value: Any) -> Any:
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
@@ -495,6 +507,7 @@ class HttpRequester(Requester):
 
         try:
             body = response.json()
-            return _try_get_error(body)
+            error = _try_get_error(body)
+            return str(error) if error else None
         except requests.exceptions.JSONDecodeError:
             return None
