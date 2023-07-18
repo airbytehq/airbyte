@@ -28,7 +28,7 @@ You must be the owner of the Notion workspace to create a new integration associ
 :::
 
 2. Enter a **Name** for your integration. Make sure you have selected the workspace containing your data to replicate from the **Associated workspace** dropdown menu, and click **Submit**.
-3. In the navbar, select **Capabilities** and make sure to check **Read content**, as well as any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+3. In the navbar, select **Capabilities** and make sure to check the **Read content** checkbox to authorize Airbyte to read the content of your pages. You may also wish to check the **Read comments** box, as well as set a User capability to allow access to user information. For more details on the capabilities you can enable, please refer to the [Notion documentation on capabilities](https://developers.notion.com/reference/capabilities).
 
 ### Step 2: Set permissions and acquire authorization credentials
 
@@ -39,6 +39,7 @@ If you are authenticating via Access Token, you will need to manually set permis
 2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to 
 [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
 
+<!-- env:oss -->
 #### OAuth2.0 (Open Source only)
 If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to make your integration public and acquire your Client ID, Client Secret and Access Token.
 
@@ -46,6 +47,7 @@ If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to
 2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs** section, then click **Submit**.
 3. Navigate to the **Secrets** tab to find your Client ID and Client Secret.
 4. You need to use your integration's authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
+<!-- /env:oss -->
 
 ### Step 3: Set up the Notion connector in Airbyte
 
