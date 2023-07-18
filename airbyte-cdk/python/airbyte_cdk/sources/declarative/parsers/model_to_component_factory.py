@@ -326,7 +326,7 @@ class ModelToComponentFactory:
         for model_field, model_value in model_args.items():
             # If a custom component field doesn't have a type set, we try to use the type hints to infer the type
             if isinstance(model_value, dict) and "type" not in model_value and model_field in component_fields:
-                derived_type = self._derive_component_type_from_type_hints(str(component_fields.get(model_field) or ""))
+                derived_type = self._derive_component_type_from_type_hints(component_fields.get(model_field))
                 if derived_type:
                     model_value["type"] = derived_type
 
@@ -336,7 +336,7 @@ class ModelToComponentFactory:
                 vals = []
                 for v in model_value:
                     if isinstance(v, dict) and "type" not in v and model_field in component_fields:
-                        derived_type = self._derive_component_type_from_type_hints(str(component_fields.get(model_field) or ""))
+                        derived_type = self._derive_component_type_from_type_hints(component_fields.get(model_field))
                         if derived_type:
                             v["type"] = derived_type
                     if self._is_component(v):
@@ -356,7 +356,7 @@ class ModelToComponentFactory:
         return getattr(importlib.import_module(module), class_name)
 
     @staticmethod
-    def _derive_component_type_from_type_hints(field_type: str) -> Optional[str]:
+    def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
         interface = field_type
         while True:
             origin = get_origin(interface)
