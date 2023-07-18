@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -130,7 +130,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
-        self._message_repository = message_repository or InMemoryMessageRepository( # type: ignore
+        self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
 
@@ -190,7 +190,9 @@ class ModelToComponentFactory:
         # Needed for the case where we need to perform a second parse on the fields of a custom component
         self.TYPE_NAME_TO_MODEL = {cls.__name__: cls for cls in self.PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
-    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs: Any) -> Any:
+    def create_component(
+        self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs: Any
+    ) -> Any:
         """
         Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
         subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
@@ -254,11 +256,15 @@ class ModelToComponentFactory:
                 parameters=model.parameters or {},
             )
         )
-        return ApiKeyAuthenticator(api_token=model.api_token or "", request_option=request_option, config=config, parameters=model.parameters or {})
+        return ApiKeyAuthenticator(
+            api_token=model.api_token or "", request_option=request_option, config=config, parameters=model.parameters or {}
+        )
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
-        return BasicHttpAuthenticator(password=model.password or "", username=model.username, config=config, parameters=model.parameters or {})
+        return BasicHttpAuthenticator(
+            password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
+        )
 
     @staticmethod
     def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, **kwargs: Any) -> BearerAuthenticator:
@@ -521,10 +527,8 @@ class ModelToComponentFactory:
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
-                stream_slicer = (
-                    CartesianProductStreamSlicer(
-                        [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
-                    )
+                stream_slicer = CartesianProductStreamSlicer(
+                    [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
                 )
             else:
                 stream_slicer = self._create_component_from_model(model=stream_slicer_model, config=config)
@@ -559,7 +563,10 @@ class ModelToComponentFactory:
         else:
             response_filters.append(
                 HttpResponseFilter(
-                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=config, parameters=model.parameters or {}
+                    ResponseAction.RETRY,
+                    http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS,
+                    config=config,
+                    parameters=model.parameters or {},
                 )
             )
             response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, parameters=model.parameters or {}))
@@ -631,7 +638,9 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-        model_http_method = model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
+        model_http_method = (
+            model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
+        )
 
         return HttpRequester(
             name=name,
@@ -714,12 +723,16 @@ class ModelToComponentFactory:
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
             # ignore type error beause fixing it would have a lot of dependencies, revisit later
-            return DeclarativeSingleUseRefreshTokenOauth2Authenticator( # type: ignore
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
-                access_token_name=InterpolatedString.create(model.access_token_name or "access_token", parameters=model.parameters or {}).eval(config),
+                access_token_name=InterpolatedString.create(
+                    model.access_token_name or "access_token", parameters=model.parameters or {}
+                ).eval(config),
                 refresh_token_name=model.refresh_token_updater.refresh_token_name,
-                expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(config),
+                expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(
+                    config
+                ),
                 client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
                 client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
                 access_token_config_path=model.refresh_token_updater.access_token_config_path,
@@ -732,7 +745,7 @@ class ModelToComponentFactory:
                 message_repository=self._message_repository,
             )
         # ignore type error beause fixing it would have a lot of dependencies, revisit later
-        return DeclarativeOauth2Authenticator( # type: ignore
+        return DeclarativeOauth2Authenticator(  # type: ignore
             access_token_name=model.access_token_name or "access_token",
             client_id=model.client_id,
             client_secret=model.client_secret,
@@ -742,7 +755,7 @@ class ModelToComponentFactory:
             refresh_token=model.refresh_token,
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
-            token_expiry_date_format=model.token_expiry_date_format, # type: ignore
+            token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},
@@ -789,7 +802,11 @@ class ModelToComponentFactory:
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
         return RecordSelector(
-            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters or {}
+            extractor=extractor,
+            config=config,
+            record_filter=record_filter,
+            transformations=transformations,
+            parameters=model.parameters or {},
         )
 
     @staticmethod
@@ -877,7 +894,9 @@ class ModelToComponentFactory:
             parameters={},
         )
 
-    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any) -> SubstreamPartitionRouter:
+    def create_substream_partition_router(
+        self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any
+    ) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
             parent_stream_configs.extend(

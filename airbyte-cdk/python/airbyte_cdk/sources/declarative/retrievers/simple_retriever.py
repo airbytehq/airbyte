@@ -4,7 +4,7 @@
 
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, Level, SyncMode
@@ -74,7 +74,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 
-    @property # type: ignore
+    @property  # type: ignore
     def name(self) -> str:
         """
         :return: Stream name
@@ -104,8 +104,8 @@ class SimpleRetriever(Retriever, HttpStream):
         if self.disable_retries:
             return 0
         # this will be removed once simple_retriever is decoupled from http_stream
-        if hasattr(self.requester.error_handler, "max_retries"): # type: ignore
-            return self.requester.error_handler.max_retries # type: ignore
+        if hasattr(self.requester.error_handler, "max_retries"):  # type: ignore
+            return self.requester.error_handler.max_retries  # type: ignore
         return self._DEFAULT_MAX_RETRY
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -152,7 +152,7 @@ class SimpleRetriever(Retriever, HttpStream):
         requester_method: Callable[..., Mapping[str, Any]],
         paginator_method: Callable[..., Mapping[str, Any]],
         stream_slicer_method: Callable[..., Mapping[str, Any]],
-        auth_options_method: Callable[..., Mapping[str, Any]]
+        auth_options_method: Callable[..., Mapping[str, Any]],
     ) -> MutableMapping[str, Any]:
         """
         Get the request_option from the requester and from the paginator
@@ -256,10 +256,10 @@ class SimpleRetriever(Retriever, HttpStream):
             stream_slice,
             next_page_token,
             # body data can be a string as well, this will be fixed in the rewrite using http requester instead of http stream
-            self.requester.get_request_body_data, # type: ignore
-            self._paginator.get_request_body_data, # type: ignore
-            self.stream_slicer.get_request_body_data, # type: ignore
-            self.requester.get_authenticator().get_request_body_data, # type: ignore
+            self.requester.get_request_body_data,  # type: ignore
+            self._paginator.get_request_body_data,  # type: ignore
+            self.stream_slicer.get_request_body_data,  # type: ignore
+            self.requester.get_authenticator().get_request_body_data,  # type: ignore
         )
 
     def request_body_json(
@@ -278,10 +278,10 @@ class SimpleRetriever(Retriever, HttpStream):
             stream_slice,
             next_page_token,
             # body json can be None as well, this will be fixed in the rewrite using http requester instead of http stream
-            self.requester.get_request_body_json, # type: ignore
-            self._paginator.get_request_body_json, # type: ignore
-            self.stream_slicer.get_request_body_json, # type: ignore
-            self.requester.get_authenticator().get_request_body_json, # type: ignore
+            self.requester.get_request_body_json,  # type: ignore
+            self._paginator.get_request_body_json,  # type: ignore
+            self.stream_slicer.get_request_body_json,  # type: ignore
+            self.requester.get_authenticator().get_request_body_json,  # type: ignore
         )
 
     def request_kwargs(
@@ -364,7 +364,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._records_from_last_response = records
         return records
 
-    @property # type: ignore
+    @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """The stream's primary key"""
         return self._primary_key
@@ -394,7 +394,7 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         # Fixing paginator types has a long tail of dependencies
-        self._paginator.reset() # type: ignore
+        self._paginator.reset()  # type: ignore
         # Note: Adding the state per partition led to a difficult situation where the state for a partition is not the same as the
         # stream_state. This means that if any class downstream wants to access the state, it would need to perform some kind of selection
         # based on the partition. To short circuit this, we do the selection here which avoid downstream classes to know about it the
@@ -406,8 +406,8 @@ class SimpleRetriever(Retriever, HttpStream):
         # * Why is this abstraction not on the DeclarativeStream level? DeclarativeStream does not have a notion of stream slicers and we
         #    would like to avoid exposing the stream state outside of the cursor. This case is needed as of 2023-06-14 because of
         #    interpolation.
-        if self.cursor and hasattr(self.cursor, "select_state"): # type: ignore
-            slice_state = self.cursor.select_state(stream_slice) # type: ignore
+        if self.cursor and hasattr(self.cursor, "select_state"):  # type: ignore
+            slice_state = self.cursor.select_state(stream_slice)  # type: ignore
         elif self.cursor:
             slice_state = self.cursor.get_stream_state()
         else:
@@ -448,9 +448,8 @@ class SimpleRetriever(Retriever, HttpStream):
             return Record(stream_data.record.data, stream_slice)
         return None
 
-
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
-    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]: # type: ignore
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
         """
         Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -499,7 +498,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
             )
 
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
-    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]: # type: ignore
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def parse_records(
