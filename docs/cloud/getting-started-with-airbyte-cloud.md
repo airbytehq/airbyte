@@ -208,12 +208,6 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 
 ### European Union
 
-:::note 
-
-Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
-
-:::
-
 #### GCP region: us-west3
 * 34.106.109.131
 * 34.106.196.165
