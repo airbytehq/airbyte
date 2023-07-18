@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
@@ -13,6 +8,14 @@ data:
   icon: sendinblue.svg
   license: MIT
   name: Sendinblue
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/sendinblue
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

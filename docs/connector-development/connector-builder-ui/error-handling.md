@@ -46,6 +46,8 @@ Although a lot of API documentation does not call out using an exponential backo
 
 The "Wait time from header" backoff strategy allows the connector to wait before retrying a request based on the value specified in the API response.
 
+<iframe width="640" height="545" src="https://www.loom.com/embed/84b65299b5cd4f83a8e3b6abdfa0ebd2" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 #### Example
 
 The [Chargebee API](https://apidocs.chargebee.com/docs/api/error-handling) documentation recommends using the `Retry-After` in the response headers to determine when to retry the request.
@@ -56,6 +58,8 @@ When running a sync, the connector receives from the Chargebee API a response wi
 
 The "Wait until time from header" backoff strategy allows the connector to wait until a specific time before retrying a request according to the API response.
 
+<iframe width="640" height="562" src="https://www.loom.com/embed/023bc8a5e5464b2fba125f9344e3f02f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 #### Example
 
 The [Recurly API](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits) is an API that defines a header `X-RateLimit-Reset` which specifies when the request rate limit will be reset. 
@@ -65,6 +69,8 @@ Take for example a connector that makes a request at 25/04/2023 01:00:00 GMT and
 ## Response filter
 
 A response filter should be used when a connector needs to interpret an API response to decide how the sync should proceed. Common use cases for this feature include ignoring error codes to continue fetching data, retrying requests for specific error codes, and stopping a sync based on the response received from the API.
+
+<iframe width="640" height="716" src="https://www.loom.com/embed/dc86147384204156a2b79442a00c0dd3" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 ### Response conditions
 

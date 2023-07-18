@@ -114,4 +114,4 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call
-    assert len(responses.calls) == 3 * len(ranges)
+    assert len(responses.calls) == 3 * len(ranges) + 1

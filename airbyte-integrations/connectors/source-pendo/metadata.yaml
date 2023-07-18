@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
@@ -13,6 +8,14 @@ data:
   icon: pendo.svg
   license: MIT
   name: Pendo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pendo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

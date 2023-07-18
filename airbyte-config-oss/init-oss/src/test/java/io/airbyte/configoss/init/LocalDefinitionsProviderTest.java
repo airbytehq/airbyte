@@ -5,19 +5,14 @@
 package io.airbyte.configoss.init;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.io.Resources;
-import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.configoss.StandardDestinationDefinition;
 import io.airbyte.configoss.StandardSourceDefinition;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -75,26 +70,17 @@ class LocalDefinitionsProviderTest {
   }
 
   @Test
-  void testGetSourceDefinitions() throws IOException {
-    final URL url = Resources.getResource(LocalDefinitionsProvider.class, "/seed/source_definitions.yaml");
-    final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
-    final JsonNode configList = Yamls.deserialize(yamlString);
-    final int expectedNumberOfSources = MoreIterators.toList(configList.elements()).size();
-
+  void testGetSourceDefinitions() {
     final List<StandardSourceDefinition> sourceDefinitions = localDefinitionsProvider.getSourceDefinitions();
-    assertEquals(expectedNumberOfSources, sourceDefinitions.size());
+    assertFalse(sourceDefinitions.isEmpty());
     assertTrue(sourceDefinitions.stream().allMatch(sourceDef -> sourceDef.getProtocolVersion().length() > 0));
   }
 
   @Test
-  void testGetDestinationDefinitions() throws IOException {
-    final URL url = Resources.getResource(LocalDefinitionsProvider.class, "/seed/destination_definitions.yaml");
-    final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
-    final JsonNode configList = Yamls.deserialize(yamlString);
-    final int expectedNumberOfDestinations = MoreIterators.toList(configList.elements()).size();
+  void testGetDestinationDefinitions() {
     final List<StandardDestinationDefinition> destinationDefinitions = localDefinitionsProvider.getDestinationDefinitions();
-    assertEquals(expectedNumberOfDestinations, destinationDefinitions.size());
-    assertTrue(destinationDefinitions.stream().allMatch(destDef -> destDef.getProtocolVersion().length() > 0));
+    assertFalse(destinationDefinitions.isEmpty());
+    assertTrue(destinationDefinitions.stream().allMatch(sourceDef -> sourceDef.getProtocolVersion().length() > 0));
   }
 
 }

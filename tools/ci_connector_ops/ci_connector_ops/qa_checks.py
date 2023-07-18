@@ -8,6 +8,52 @@ from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
 
 from ci_connector_ops.utils import Connector
+from pydash.objects import get
+
+
+def check_migration_guide(connector: Connector) -> bool:
+    """Check if a migration guide is available for the connector if a breaking change was introduced."""
+
+    breaking_changes = get(connector.metadata, f"releases.breakingChanges")
+    if not breaking_changes:
+        return True
+
+    migration_guide_file_path = connector.migration_guide_file_path
+    if not migration_guide_file_path.exists():
+        print(f"Migration guide file is missing for {connector.name}.")
+        return False
+
+    # Check that the migration guide begins with # {connector name} Migration Guide
+    expected_title = f"# {connector.name} Migration Guide"
+    expected_version_header_start = f"## Upgrading to "
+    with open(migration_guide_file_path) as f:
+        first_line = f.readline().strip()
+        if not first_line == expected_title:
+            print(f"Migration guide file for {connector.name} does not start with the correct header.")
+            return False
+
+        # Check that the migration guide contains a section for each breaking change key ## Upgrading to {version}
+        # Note that breaking change is a dict where the version is the key
+        # Note that the migration guide must have the sections in order of the version descending
+        # 3.0.0, 2.0.0, 1.0.0, etc
+        # This means we have to record the headings in the migration guide and then check that they are in order
+        # We also have to check that the headings are in the breaking changes dict
+
+        ordered_breaking_changes = sorted(breaking_changes.keys(), reverse=True)
+        ordered_heading_versions = []
+        for line in f:
+            stripped_line = line.strip()
+            if stripped_line.startswith(expected_version_header_start):
+                version = stripped_line.replace(expected_version_header_start, "")
+                ordered_heading_versions.append(version)
+
+        if ordered_breaking_changes != ordered_heading_versions:
+            print(f"Migration guide file for {connector.name} has missing or misordered version headings.")
+            print(f"Expected: {ordered_breaking_changes}")
+            print(f"Actual: {ordered_heading_versions}")
+            return False
+
+    return True
 
 
 def check_documentation_file_exists(connector: Connector) -> bool:
@@ -32,9 +78,9 @@ def check_documentation_follows_guidelines(connector: Connector) -> bool:
     if not doc_lines[0].startswith("# "):
         print("The connector name is not used as the main header in the documentation.")
         follows_guidelines = False
-    # We usually don't have a definition if the connector is not published.
-    if connector.definition:
-        if doc_lines[0].strip() != f"# {connector.definition['name'].lower()}":
+    # We usually don't have a metadata if the connector is not published.
+    if connector.metadata:
+        if doc_lines[0].strip() != f"# {connector.metadata['name'].lower()}":
             print("The connector name is not used as the main header in the documentation.")
             follows_guidelines = False
     elif not doc_lines[0].startswith("# "):
@@ -116,8 +162,11 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz"}
-IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz", "*.svg"}
+IGNORED_URLS_PREFIX = {
+    "http://json-schema.org",
+    "http://localhost",
+}
 
 
 def is_comment(line: str, file_path: Path):
@@ -179,8 +228,13 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
     return True
 
 
+def check_metadata_version_matches_dockerfile_label(connector: Connector) -> bool:
+    return connector.version_in_dockerfile_label == connector.version
+
+
 QA_CHECKS = [
     check_documentation_file_exists,
+    check_migration_guide,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
     # check_documentation_follows_guidelines,
     check_changelog_entry_is_updated,
@@ -190,7 +244,30 @@ QA_CHECKS = [
     # https://github.com/airbytehq/airbyte/issues/21606
     check_connector_https_url_only,
     check_connector_has_no_critical_vulnerabilities,
+    check_metadata_version_matches_dockerfile_label,
 ]
+
+
+def remove_strict_encrypt_suffix(connector_technical_name: str) -> str:
+    """Remove the strict encrypt suffix from a connector name.
+
+    Args:
+        connector_technical_name (str): the connector name.
+
+    Returns:
+        str: the connector name without the strict encrypt suffix.
+    """
+    strict_encrypt_suffixes = [
+        "-strict-encrypt",
+        "-secure",
+    ]
+
+    for suffix in strict_encrypt_suffixes:
+        if connector_technical_name.endswith(suffix):
+            new_connector_technical_name = connector_technical_name.replace(suffix, "")
+            print("Checking connector " + new_connector_technical_name + " due to strict-encrypt")
+            return new_connector_technical_name
+    return connector_technical_name
 
 
 def run_qa_checks():
@@ -198,9 +275,8 @@ def run_qa_checks():
     if not connector_technical_name.startswith("source-") and not connector_technical_name.startswith("destination-"):
         print("No QA check to run as this is not a connector.")
         sys.exit(0)
-    if connector_technical_name.endswith("-strict-encrypt"):
-        connector_technical_name = connector_technical_name.replace("-strict-encrypt", "")
-        print("Checking connector " + connector_technical_name + " due to strict-encrypt")
+
+    connector_technical_name = remove_strict_encrypt_suffix(connector_technical_name)
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
     qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}

@@ -12,7 +12,6 @@ from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 LOGGER = logging.getLogger("airbyte")
@@ -67,10 +66,6 @@ class Events(HttpStream):
     def url_base(self) -> str:
         subdomain = "analytics.eu." if self.data_region == "EU Residency Server" else ""
         return f"https://{subdomain}amplitude.com/api/"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     @property
     def time_interval(self) -> dict:

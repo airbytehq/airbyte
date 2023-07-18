@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: destination
   definitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
@@ -14,6 +8,14 @@ data:
   icon: elasticsearch.svg
   license: MIT
   name: ElasticSearch
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

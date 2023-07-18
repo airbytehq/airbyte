@@ -14,5 +14,7 @@ data:
   license: MIT
   name: Streamr
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/streamr
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/streamr
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"

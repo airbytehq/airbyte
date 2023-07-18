@@ -10,52 +10,64 @@ This page guides you through setting up the Zendesk Support source connector.
 ## Set up the Zendesk Support source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Support** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Subdomain**, enter your [Zendesk subdomain](#prerequisites).
 6. For **Start date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
-    - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. 
-    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
+   - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+   - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.
 8. Click **Set up source**.
 
 ## Supported sync modes
 
 The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh | Overwrite
- - Full Refresh | Append
- - Incremental Sync | Append
- - Incremental Sync | Deduped History
+
+- Full Refresh | Overwrite
+- Full Refresh | Append
+- Incremental Sync | Append
+- Incremental Sync | Deduped History
 
 ## Supported streams
 
 :::note
 There are two types of incremental sync:
+
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-:::
+   :::
 
 The Zendesk Support source connector supports the following streams:
 
-* [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-* [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
-* [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
-* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
-* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
-* [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
-* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
-* [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
-* [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
-* [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
-* [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
-* [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)  \(Incremental\)
-* [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
-* [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
-* [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
-* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
-* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [AuditLogs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
+- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
+- [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
+- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
+- [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
+- [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+- [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
+- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
+- [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
+- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
+- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
+- [Account Attributes](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes)
+- [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
+- [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+- [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
+- [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
+- [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
+- [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+- [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
+- [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
+- [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/)
+- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
 
 ## Performance considerations
 
@@ -67,6 +79,20 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0.10.1` | 2023-07-10 | [28096](https://github.com/airbytehq/airbyte/pull/28096) | Replace `offset` pagination with `cursor` pagination                                                                                                                                                                               |
+| `0.10.0` | 2023-07-06 | [27991](https://github.com/airbytehq/airbyte/pull/27991) | add streams: `PostVotes`, `PostCommentVotes`                                                                                                                                                                                       |
+| `0.9.0`  | 2023-07-05 | [27961](https://github.com/airbytehq/airbyte/pull/27961) | Add stream: `Post Comments`                                                                                                                                                                                                        |
+| `0.8.1`  | 2023-06-27 | [27765](https://github.com/airbytehq/airbyte/pull/27765) | Bugfix: Nonetype error while syncing more then 100000 organizations                                                                                                                                                                |
+| `0.8.0`  | 2023-06-09 | [27156](https://github.com/airbytehq/airbyte/pull/27156) | Add stream `Posts`                                                                                                                                                                                                                 |
+| `0.7.0`  | 2023-06-27 | [27436](https://github.com/airbytehq/airbyte/pull/27436) | Add Ticket Skips stream                                                                                                                                                                                                            |
+| `0.6.0`  | 2023-06-27 | [27450](https://github.com/airbytehq/airbyte/pull/27450) | Add Skill Based Routing streams                                                                                                                                                                                                    |
+| `0.5.0`  | 2023-06-26 | [27735](https://github.com/airbytehq/airbyte/pull/27735) | License Update: Elv2 stream stream                                                                                                                                                                                                 |
+| `0.4.0`  | 2023-06-16 | [27431](https://github.com/airbytehq/airbyte/pull/27431) | Add Organization Memberships stream                                                                                                                                                                                                |
+| `0.3.1`  | 2023-06-02 | [26945](https://github.com/airbytehq/airbyte/pull/26945) | Make `Ticket Metrics` stream to use cursor pagination                                                                                                                                                                              |
+| `0.3.0`  | 2023-05-23 | [26347](https://github.com/airbytehq/airbyte/pull/26347) | Add stream `Audit Logs` logs`                                                                                                                                                                                                      |
+| `0.2.30` | 2023-05-23 | [26414](https://github.com/airbytehq/airbyte/pull/26414) | Added missing handlers when `empty json` or `JSONDecodeError` is received                                                                                                                                                          |
+| `0.2.29` | 2023-04-18 | [25214](https://github.com/airbytehq/airbyte/pull/25214) | Add missing fields to `Tickets` stream                                                                                                                                                                                             |
+| `0.2.28` | 2023-03-21 | [24053](https://github.com/airbytehq/airbyte/pull/24053) | Fix stream `sla_policies` schema data type error (events.value)                                                                                                                                                                    |
 | `0.2.27` | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification                                                                                                                                                                                         |
 | `0.2.26` | 2023-03-20 | [24252](https://github.com/airbytehq/airbyte/pull/24252) | Handle invalid `start_date` when checking connection                                                                                                                                                                               |
 | `0.2.25` | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams                                                                                                                                                                                         |

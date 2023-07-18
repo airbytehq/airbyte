@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
@@ -13,6 +8,14 @@ data:
   icon: toggl.svg
   license: MIT
   name: Toggl
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/toggl
+  documentationUrl: https://docs.airbyte.com/integrations/sources/toggl
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

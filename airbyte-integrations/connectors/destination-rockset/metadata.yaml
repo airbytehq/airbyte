@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
@@ -12,6 +7,13 @@ data:
   githubIssueLabel: destination-rockset
   license: MIT
   name: Rockset
+  registries:
+    cloud:
+      enabled: false # hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/rockset
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/rockset
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

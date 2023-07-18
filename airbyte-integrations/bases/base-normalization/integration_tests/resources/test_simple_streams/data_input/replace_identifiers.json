@@ -28,6 +28,15 @@
     },
     {
       "TYPES_TESTING_INCORRECT_VALUES": "types_testing_incorrect_values"
+    },
+    {
+      "DEDUP_CDC_EXCLUDED_FIRST_RUN_INCORRECT_NAMES": "dedup_cdc_excluded_first_run_incorrect_names"
+    },
+    {
+      "DEDUP_CDC_EXCLUDED_SECOND_RUN_INCORRECT_NAMES": "dedup_cdc_excluded_second_run_incorrect_names"
+    },
+    {
+      "DEDUP_CDC_EXCLUDED_THIRD_RUN_INCORRECT_NAMES": "dedup_cdc_excluded_third_run_incorrect_names"
     }
   ],
   "redshift": [],

@@ -65,7 +65,7 @@ public class JdbcBufferedConsumerFactory {
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
         new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
-        onCloseFunction(database, sqlOperations, writeConfigs),
+        onCloseFunction(),
         catalog,
         sqlOperations::isValidData);
   }
@@ -189,21 +189,12 @@ public class JdbcBufferedConsumerFactory {
   }
 
   /**
-   * Closes connection to JDBC database and other tear down functionality
+   * Tear down functionality
    *
-   * @param database JDBC database to connect to
-   * @param sqlOperations interface used to execute SQL queries
-   * @param writeConfigs settings for each stream
    * @return
    */
-  private static OnCloseFunction onCloseFunction(final JdbcDatabase database,
-                                                 final SqlOperations sqlOperations,
-                                                 final List<WriteConfig> writeConfigs) {
-    return (hasFailed) -> {
-      if (!hasFailed) {
-        sqlOperations.onDestinationCloseOperations(database, writeConfigs);
-      }
-    };
+  private static OnCloseFunction onCloseFunction() {
+    return (hasFailed) -> {};
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {

@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_google_analytics_data_api_singer'
+    moduleDirectory 'source_google_analytics_data_api'
 }

@@ -105,7 +105,20 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) |Specified date formatting in specification                                |
+| 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                               |
+| 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                             |
+| 1.5.0   | 2023-06-15 | [27392](https://github.com/airbytehq/airbyte/pull/27392) | Make API URL an optional parameter in spec.                                                |
+| 1.4.2   | 2023-06-15 | [27346](https://github.com/airbytehq/airbyte/pull/27346) | Partially revert changes made in version 1.0.4, disallow http calls in cloud.              |
+| 1.4.1   | 2023-06-13 | [27351](https://github.com/airbytehq/airbyte/pull/27351) | Fix OAuth token expiry date.                                                               |
+| 1.4.0   | 2023-06-12 | [27234](https://github.com/airbytehq/airbyte/pull/27234) | Skip stream slices on 403/404 errors, do not fail syncs.                                   |
+| 1.3.1   | 2023-06-08 | [27147](https://github.com/airbytehq/airbyte/pull/27147) | Improve connectivity check for connections with no projects/groups                         |
+| 1.3.0   | 2023-06-08 | [27150](https://github.com/airbytehq/airbyte/pull/27150) | Update stream schemas                                                                      |
+| 1.2.1   | 2023-06-02 | [26947](https://github.com/airbytehq/airbyte/pull/26947) | New field `name` added to `Pipelines` and `PipelinesExtended` stream schema                |
+| 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys                                               |
+| 1.1.1   | 2023-05-23 | [26422](https://github.com/airbytehq/airbyte/pull/26422) | Fix error `404 Repository Not Found` when syncing project with Repository feature disabled |
+| 1.1.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce two new fields in the `Projects` stream schema                                   |
+| 1.0.4   | 2023-04-20 | [21373](https://github.com/airbytehq/airbyte/pull/21373) | Accept api_url with or without scheme                                                      |
+| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) | Specified date formatting in specification                                                 |
 | 1.0.2   | 2023-01-27 | [22001](https://github.com/airbytehq/airbyte/pull/22001) | Set `AvailabilityStrategy` for streams explicitly to `None`                                |
 | 1.0.1   | 2023-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
 | 1.0.0   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |

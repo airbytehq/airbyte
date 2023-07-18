@@ -34,8 +34,8 @@ public class RecordSizeEstimator {
    * determined by {@code sampleBatchSize}.
    */
   public RecordSizeEstimator(final int sampleBatchSize) {
-    this.streamRecordSizeEstimation = new HashMap<>();
-    this.streamSampleCountdown = new HashMap<>();
+    streamRecordSizeEstimation = new HashMap<>();
+    streamSampleCountdown = new HashMap<>();
     this.sampleBatchSize = sampleBatchSize;
   }
 
@@ -43,13 +43,13 @@ public class RecordSizeEstimator {
     this(DEFAULT_SAMPLE_BATCH_SIZE);
   }
 
-  public long getEstimatedByteSize(final AirbyteRecordMessage recordMessage) {
-    final String stream = recordMessage.getStream();
+  public long getEstimatedByteSize(final AirbyteRecordMessage record) {
+    final String stream = record.getStream();
     final Integer countdown = streamSampleCountdown.get(stream);
 
     // this is a new stream; initialize its estimation
     if (countdown == null) {
-      final long byteSize = getStringByteSize(recordMessage.getData());
+      final long byteSize = getStringByteSize(record.getData());
       streamRecordSizeEstimation.put(stream, byteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return byteSize;
@@ -58,7 +58,7 @@ public class RecordSizeEstimator {
     // this stream needs update; compute a new estimation
     if (countdown <= 0) {
       final long prevMeanByteSize = streamRecordSizeEstimation.get(stream);
-      final long currentByteSize = getStringByteSize(recordMessage.getData());
+      final long currentByteSize = getStringByteSize(record.getData());
       final long newMeanByteSize = prevMeanByteSize / 2 + currentByteSize / 2;
       streamRecordSizeEstimation.put(stream, newMeanByteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
@@ -71,7 +71,7 @@ public class RecordSizeEstimator {
   }
 
   @VisibleForTesting
-  static long getStringByteSize(final JsonNode data) {
+  public static long getStringByteSize(final JsonNode data) {
     // assume UTF-8 encoding, and each char is 4 bytes long
     return Jsons.serialize(data).length() * 4L;
   }
