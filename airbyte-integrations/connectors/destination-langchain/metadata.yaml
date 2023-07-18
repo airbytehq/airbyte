@@ -1,7 +1,7 @@
 data:
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   connectorSubtype: database
