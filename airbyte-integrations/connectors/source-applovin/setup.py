@@ -22,7 +22,6 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml"]},
-    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
