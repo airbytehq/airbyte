@@ -240,6 +240,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             alterTableReport.isDestinationV2Format(),
             tableClusteringMatches,
             tablePartitioningMatches);
+
     return alterTableReport.isNoOp() && tableClusteringMatches && tablePartitioningMatches;
   }
 

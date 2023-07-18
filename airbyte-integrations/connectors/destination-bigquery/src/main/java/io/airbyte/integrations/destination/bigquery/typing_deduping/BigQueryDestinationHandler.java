@@ -60,6 +60,12 @@ public class BigQueryDestinationHandler {
         statistics.getTotalBytesBilled());
   }
 
+  /**
+   * Ensures that the final table has a schema which is compatible with the incoming stream.
+   * @param sqlGenerator A bigquery sql generator to create sql statements
+   * @param stream the incoming stream
+   * @param existingTable the existing final table
+   */
   public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
     try {
       if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
@@ -72,6 +78,11 @@ public class BigQueryDestinationHandler {
     }
   }
 
+  /**
+   * Attempt to rebuild the final table from the raw table without recopying over data (soft-reset)
+   * @param sqlGenerator A bigquery sql generator to create sql statements
+   * @param stream the incoming stream
+   */
   public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream) {
     LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
     sqlGenerator.softReset(stream).forEach(sql -> {
