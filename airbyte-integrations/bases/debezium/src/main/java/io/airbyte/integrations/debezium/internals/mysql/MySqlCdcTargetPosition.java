@@ -24,6 +24,14 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
     this(new MySqlCdcPosition(fileName, position));
   }
 
+  public MySqlCdcTargetPosition(final MySqlCdcPosition targetPosition) {
+    this.targetPosition = targetPosition;
+  }
+
+  public MySqlCdcPosition getTargetPosition() {
+    return targetPosition;
+  }
+
   @Override
   public boolean equals(final Object obj) {
     if (obj instanceof final MySqlCdcTargetPosition cdcTargetPosition) {
@@ -40,10 +48,6 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   @Override
   public String toString() {
     return targetPosition.toString();
-  }
-
-  public MySqlCdcTargetPosition(final MySqlCdcPosition targetPosition) {
-    this.targetPosition = targetPosition;
   }
 
   public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
