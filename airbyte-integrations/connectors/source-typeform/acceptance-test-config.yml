@@ -21,7 +21,7 @@ acceptance_tests:
         bypass_reason: "no data"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
+      fail_on_extra_columns: true
   incremental:
     tests:
     - config_path: "secrets/incremental_config.json"

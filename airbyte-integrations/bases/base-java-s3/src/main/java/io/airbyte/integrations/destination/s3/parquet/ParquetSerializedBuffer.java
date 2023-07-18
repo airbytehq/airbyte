@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * The {@link io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer} class
  * abstracts the {@link io.airbyte.integrations.destination.record_buffer.BufferStorage} from the
  * details of the format the data is going to be stored in.
- *
+ * <p>
  * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us
  * to go through {@link HadoopOutputFile} instead. So we can't benefit from the abstraction
  * described above. Therefore, we re-implement the necessary methods to be used as
@@ -72,7 +72,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration avroConfig = new Configuration();
+    final Configuration avroConfig = new Configuration();
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
@@ -99,6 +99,11 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
     }
+  }
+
+  @Override
+  public long accept(final String recordString, final long emittedAt) throws Exception {
+    throw new UnsupportedOperationException("This method is not supported for ParquetSerializedBuffer");
   }
 
   @Override

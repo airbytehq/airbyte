@@ -25,7 +25,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pydantic import ValidationError
 
@@ -584,12 +584,95 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 
-    # 0 for http stream, 3 for non http stream and 3 status trace meessages
+    # 0 for http stream, 3 for non http stream and 3 status trace messages
     assert len(records) == 0 + 3 + 3
     assert non_http_stream.read_records.called
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
-        f"The endpoint to access stream '{http_stream.name}' returned 403: Forbidden.",
+        f"Unable to read {http_stream.name} stream.",
+        "This is most likely due to insufficient permissions on the credentials in use.",
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
+    ]
+    for message in expected_logs:
+        assert message in caplog.text
+
+
+def test_read_default_http_availability_strategy_parent_stream_unavailable(catalog, mocker, caplog):
+    """Test default availability strategy if error happens during slice extraction (reading of parent stream)"""
+    mocker.patch.multiple(Stream, __abstractmethods__=set())
+
+    class MockHttpParentStream(HttpStream):
+        url_base = "https://test_base_url.com"
+        primary_key = ""
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.resp_counter = 1
+
+        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+            return None
+
+        def path(self, **kwargs) -> str:
+            return ""
+
+        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+            stub_response = {"data": self.resp_counter}
+            self.resp_counter += 1
+            yield stub_response
+
+    class MockHttpStream(HttpSubStream):
+        url_base = "https://test_base_url.com"
+        primary_key = ""
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.resp_counter = 1
+
+        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+            return None
+
+        def path(self, **kwargs) -> str:
+            return ""
+
+        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+            stub_response = {"data": self.resp_counter}
+            self.resp_counter += 1
+            yield stub_response
+
+    http_stream = MockHttpStream(parent=MockHttpParentStream())
+    streams = [http_stream]
+    assert isinstance(http_stream, HttpSubStream)
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    # Patch HTTP request to stream endpoint to make it unavailable
+    req = requests.Response()
+    req.status_code = 403
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    source = MockAbstractSource(streams=streams)
+    logger = logging.getLogger("test_read_default_http_availability_strategy_parent_stream_unavailable")
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {
+                    "name": "mock_http_stream",
+                    "json_schema": {"type": "object", "properties": {"k": "v"}},
+                    "supported_sync_modes": ["full_refresh"],
+                },
+                "destination_sync_mode": "overwrite",
+                "sync_mode": "full_refresh",
+            }
+        ]
+    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    with caplog.at_level(logging.WARNING):
+        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+
+    # 0 for http stream, 3 for non http stream and 3 status trace messages
+    assert len(records) == 0
+    expected_logs = [
+        f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
+        f"Unable to get slices for {http_stream.name} stream, because of error in parent stream",
         "This is most likely due to insufficient permissions on the credentials in use.",
         f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
     ]

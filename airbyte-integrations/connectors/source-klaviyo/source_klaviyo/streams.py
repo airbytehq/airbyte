@@ -200,6 +200,7 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
         self._start_ts = int(pendulum.parse(start_date).timestamp())
+        self._start_sync = int(pendulum.now().timestamp())
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -229,12 +230,21 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
 
+        params["sort"] = "asc"
         if not params.get("since"):  # skip state filter if already have one from pagination
             state_ts = int(stream_state.get(self.cursor_field, 0))
+            last_next_token = stream_state.get("last_next_token", None)
+            if last_next_token is not None:
+                token_timestamp = int(str(last_next_token).split(":")[0])
+                # if the token stamp is equal to the state timestamp then we will use the next token as since value
+                # This will allow us to recover from extreme cases where there millions of events for the same timestamp.
+                if token_timestamp == state_ts:
+                    params["since"] = last_next_token
+                    return params
+
             if state_ts > 0 and self.look_back_window_in_seconds:
                 state_ts -= self.look_back_window_in_seconds
             params["since"] = max(state_ts, self._start_ts)
-        params["sort"] = "asc"
 
         return params
 
@@ -250,7 +260,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
             latest_record = datetime.datetime.strptime(latest_record, "%Y-%m-%d %H:%M:%S")
             latest_record = datetime.datetime.timestamp(latest_record)
 
-        return {self.cursor_field: max(latest_record, state_ts)}
+        new_value = max(latest_record, state_ts)
+        new_value = min(new_value, self._start_sync)
+        return {self.cursor_field: new_value}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -263,6 +275,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         decoded_response = response.json()
         if decoded_response.get("next"):
             return {"since": decoded_response["next"]}
+        
+        data = decoded_response.get("data", [{}]) or [{}]
+        self.logger.info("Last timestamp -> " + str(data[-1].get("timestamp", "No timestamp")))
 
         return None
 
@@ -400,9 +415,13 @@ class Events(IncrementalKlaviyoStreamV1):
 
     cursor_field = "timestamp"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.last_next_token = None
+
     @property
     def look_back_window_in_seconds(self) -> Optional[int]:
-        return timedelta(minutes=120).seconds
+        return timedelta(minutes=30).seconds
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"
@@ -421,6 +440,30 @@ class Events(IncrementalKlaviyoStreamV1):
 
             yield process_record(record)
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        super_state = super().get_updated_state(current_stream_state, latest_record)
+        super_state["last_next_token"] = self.last_next_token
+        return super_state
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
+        :param response: the most recent response from the API
+        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+                If there are no more pages in the result, return None.
+        """
+        decoded_response = response.json()
+        if decoded_response.get("next"):
+            next_token = decoded_response["next"]
+            self.last_next_token = next_token
+            return {"since": next_token}
+
+        self.last_next_token = None
+        data = decoded_response.get("data", [{}]) or [{}]
+        self.logger.info("Last timestamp -> " + str(data[-1].get("timestamp", "No timestamp")))
+
+        return None
 
 class Flows(ReverseIncrementalKlaviyoStreamV1):
     cursor_field = "created"

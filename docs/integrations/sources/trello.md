@@ -74,14 +74,15 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.3.2 | 2023-05-05 | [25870](https://github.com/airbytehq/airbyte/pull/25870) | Added `CDK typeTransformer` to guarantee JSON schema types |
-| 0.3.1 | 2023-03-21 | [24266](https://github.com/airbytehq/airbyte/pull/24266) | Get board ids also from organizations |
-| 0.3.0 | 2023-03-17 | [24141](https://github.com/airbytehq/airbyte/pull/24141) | Certify to Beta |
-| 0.2.0 | 2023-03-15 | [24045](https://github.com/airbytehq/airbyte/pull/24045) | Fix schema for boards and cards streams |
-| 0.1.6 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Updated fields in source-connector specifications |
-| 0.1.3 | 2021-11-25 | [8183](https://github.com/airbytehq/airbyte/pull/8183) | Enable specifying board ids in configuration |
-| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.1 | 2021-10-12 | [6968](https://github.com/airbytehq/airbyte/pull/6968) | Add oAuth flow support |
-| 0.1.0 | 2021-08-18 | [5501](https://github.com/airbytehq/airbyte/pull/5501) | Release Trello CDK Connector |
+| Version | Date       | Pull Request                                             | Subject                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------|
+| 0.3.3   | 2023-06-19 | [27470](https://github.com/airbytehq/airbyte/pull/27470) | Update Organizations schema                                |
+| 0.3.2   | 2023-05-05 | [25870](https://github.com/airbytehq/airbyte/pull/25870) | Added `CDK typeTransformer` to guarantee JSON schema types |
+| 0.3.1   | 2023-03-21 | [24266](https://github.com/airbytehq/airbyte/pull/24266) | Get board ids also from organizations                      |
+| 0.3.0   | 2023-03-17 | [24141](https://github.com/airbytehq/airbyte/pull/24141) | Certify to Beta                                            |
+| 0.2.0   | 2023-03-15 | [24045](https://github.com/airbytehq/airbyte/pull/24045) | Fix schema for boards and cards streams                    |
+| 0.1.6   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Updated fields in source-connector specifications          |
+| 0.1.3   | 2021-11-25 | [8183](https://github.com/airbytehq/airbyte/pull/8183)   | Enable specifying board ids in configuration               |
+| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                            |
+| 0.1.1   | 2021-10-12 | [6968](https://github.com/airbytehq/airbyte/pull/6968)   | Add oAuth flow support                                     |
+| 0.1.0   | 2021-08-18 | [5501](https://github.com/airbytehq/airbyte/pull/5501)   | Release Trello CDK Connector                               |

@@ -12,7 +12,6 @@ import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
@@ -57,7 +56,7 @@ class AsyncFlush implements DestinationFlushFunction {
           // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
           // we should either just pass the raw string or at least have a way to do that and create a default
           // impl that maintains backwards compatible behavior.
-          writer.accept(Jsons.deserialize(record.getSerialized(), AirbyteMessage.class).getRecord());
+          writer.accept(record.getSerialized(), record.getRecord().getEmittedAt());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -95,7 +94,7 @@ class AsyncFlush implements DestinationFlushFunction {
   @Override
   public long getOptimalBatchSizeBytes() {
     // todo(davin): this should be per-destination specific. currently this is for Snowflake.
-    return 200 * 1024 * 1024;
+    return 100 * 1024 * 1024;
   }
 
 }

@@ -10,7 +10,6 @@ from typing import ClassVar, List, Tuple
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult
-from ci_connector_ops.pipelines.utils import slugify
 from dagger import CacheVolume, Container, Directory
 
 
@@ -32,10 +31,6 @@ class GradleTask(Step, ABC):
         # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
         "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
     ]
-
-    @property
-    def docker_service_name(self) -> str:
-        return slugify(f"gradle-{self.title}")
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
@@ -81,9 +76,7 @@ class GradleTask(Step, ABC):
 
     async def _run(self) -> StepResult:
         connector_under_test = (
-            environments.with_gradle(
-                self.context, self.build_include, docker_service_name=self.docker_service_name, bind_to_docker_host=self.BIND_TO_DOCKER_HOST
-            )
+            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")

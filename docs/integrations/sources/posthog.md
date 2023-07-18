@@ -51,16 +51,17 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
-| 0.1.10  | 2023-04-15 | [24084](https://github.com/airbytehq/airbyte/pull/24084) | Increase `events` streams batch size                                                                               |
-| 0.1.9   | 2023-02-13 | [22906](https://github.com/airbytehq/airbyte/pull/22906) | Specified date formatting in specification                                                                         |
-| 0.1.8   | 2022-11-11 | [18993](https://github.com/airbytehq/airbyte/pull/18993) | connector migrated to low-code, added projects,insights streams, added project based slicing for all other streams |
-| 0.1.7   | 2022-07-26 | [14585](https://github.com/airbytehq/airbyte/pull/14585) | Add missing 'properties' field to event attributes                                                                 |
-| 0.1.6   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                                                                          |
-| 0.1.5   | 2021-12-24 | [9082](https://github.com/airbytehq/airbyte/pull/9082)   | Remove obsolete session_events and insights streams                                                                |
-| 0.1.4   | 2021-09-14 | [6058](https://github.com/airbytehq/airbyte/pull/6058)   | Support self-hosted posthog instances                                                                              |
-| 0.1.3   | 2021-07-20 | [4001](https://github.com/airbytehq/airbyte/pull/4001)   | Incremental streams read only relevant pages                                                                       |
-| 0.1.2   | 2021-07-15 | [4692](https://github.com/airbytehq/airbyte/pull/4692)   | Use account information for checking the connection                                                                |
-| 0.1.1   | 2021-07-05 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                                                       |
-| 0.1.0   | 2021-06-08 | [3768](https://github.com/airbytehq/airbyte/pull/3768)   | Initial Release                                                                                                    |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                               |
+|:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.11  | 2023-06-09 | [27135](https://github.com/airbytehq/airbyte/pull/27135) | Fix custom EventsSimpleRetriever                                                                                                      |
+| 0.1.10  | 2023-04-15 | [24084](https://github.com/airbytehq/airbyte/pull/24084) | Increase `events` streams batch size                                                                                                  |
+| 0.1.9   | 2023-02-13 | [22906](https://github.com/airbytehq/airbyte/pull/22906) | Specified date formatting in specification                                                                                            |
+| 0.1.8   | 2022-11-11 | [18993](https://github.com/airbytehq/airbyte/pull/18993) | connector migrated to low-code, added projects,insights streams, added project based slicing for all other streams                    |
+| 0.1.7   | 2022-07-26 | [14585](https://github.com/airbytehq/airbyte/pull/14585) | Add missing 'properties' field to event attributes                                                                                    |
+| 0.1.6   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                                                                                             |
+| 0.1.5   | 2021-12-24 | [9082](https://github.com/airbytehq/airbyte/pull/9082)   | Remove obsolete session_events and insights streams                                                                                   |
+| 0.1.4   | 2021-09-14 | [6058](https://github.com/airbytehq/airbyte/pull/6058)   | Support self-hosted posthog instances                                                                                                 |
+| 0.1.3   | 2021-07-20 | [4001](https://github.com/airbytehq/airbyte/pull/4001)   | Incremental streams read only relevant pages                                                                                          |
+| 0.1.2   | 2021-07-15 | [4692](https://github.com/airbytehq/airbyte/pull/4692)   | Use account information for checking the connection                                                                                   |
+| 0.1.1   | 2021-07-05 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                                                                          |
+| 0.1.0   | 2021-06-08 | [3768](https://github.com/airbytehq/airbyte/pull/3768)   | Initial Release                                                                                                                       |
