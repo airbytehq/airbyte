@@ -330,7 +330,7 @@ invalid_jsonl_scenario = (
             "a.jsonl": {
                 "contents": [
                     {"col1": "val1"},
-                    {"invalid"},
+                    "invalid",
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
@@ -369,12 +369,14 @@ invalid_jsonl_scenario = (
     ])
     .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
-        [
-            {
-                "level": "ERROR",
-                "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.jsonl line_no=1 n_skipped=0",
-            },
-        ]
+        {
+            "read": [
+                {
+                    "level": "ERROR",
+                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.jsonl line_no=2 n_skipped=0",
+                },
+            ]
+        }
     )
 ).build()
 
@@ -663,6 +665,73 @@ schemaless_jsonl_multi_stream_scenario = (
              "stream": "stream2"},
             {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.jsonl"},
              "stream": "stream2"},
+        ]
+    )
+).build()
+
+jsonl_user_input_schema_scenario = (
+    TestScenarioBuilder()
+    .set_name("jsonl_user_input_schema_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "jsonl",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": '{"col1": "integer", "col2": "string"}'
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.jsonl": {
+                "contents": [
+                    {"col1": 1, "col2": "val12"},
+                    {"col1": 2, "col2": "val22"},
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("jsonl")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "integer"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": 1, "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": 2, "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
         ]
     )
 ).build()

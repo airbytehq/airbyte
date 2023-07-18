@@ -28,7 +28,7 @@ class JsonlParser(FileTypeParser):
         Infers the schema for the file by inferring the schema for each line, and merging
         it with the previously-inferred schema.
         """
-        inferred_schema = {}
+        inferred_schema: Dict[str, Any] = {}
         read_bytes = 0
 
         with stream_reader.open_file(file) as fp:
@@ -61,6 +61,9 @@ class JsonlParser(FileTypeParser):
     def infer_schema_for_record(cls, record: Dict[str, Any]) -> Dict[str, Any]:
         record_schema = {}
         for key, value in record.items():
-            record_schema[key] = {"type": PYTHON_TYPE_MAPPING[type(value)]}
+            if value is None:
+                record_schema[key] = {"type": "null"}
+            else:
+                record_schema[key] = {"type": PYTHON_TYPE_MAPPING[type(value)]}
 
         return record_schema
