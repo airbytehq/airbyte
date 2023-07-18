@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
-import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -15,7 +14,6 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.BiMap;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
@@ -23,10 +21,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneO
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils;
+import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
@@ -36,9 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -53,8 +51,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
-
-  private final String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
@@ -301,7 +297,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public List<String> softReset(final StreamConfig stream, final TableDefinition existingTable) {
+  public List<String> softReset(final StreamConfig stream) {
     String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     String clearLoadedAt = clearLoadedAt(stream.id());
     String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);

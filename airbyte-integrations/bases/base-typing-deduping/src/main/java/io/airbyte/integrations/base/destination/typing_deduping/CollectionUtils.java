@@ -3,12 +3,14 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import java.util.Collection;
 import java.util.Optional;
 
+/**
+ * TODO these are not in the right place, they probably belongs in a base library but to avoid
+ * having to publish a bunch of connectors I'm putting it here temporarily
+ *
+ */
 public class CollectionUtils {
 
     /**
-     * TODO these are not in the right place, they probably belongs in a base library but to avoid
-     * having to publish a bunch of connectors I'm putting it here temporarily
-     *
      * Pass in a collection and search term to determine whether any of the values
      * match ignoring case
      * @param collection the collection of values

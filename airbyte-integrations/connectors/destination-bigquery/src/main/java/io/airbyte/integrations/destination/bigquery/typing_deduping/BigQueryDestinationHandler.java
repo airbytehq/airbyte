@@ -13,11 +13,12 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.Optional;
 import java.util.UUID;
+
+import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,18 +63,18 @@ public class BigQueryDestinationHandler {
   public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
     try {
       if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
-        attemptSoftReset(sqlGenerator, stream, existingTable);
+        attemptSoftReset(sqlGenerator, stream);
       } else {
         LOGGER.info("Existing Schema matches expected schema, no alterations needed");
       }
-    } catch (SqlGenerator.TableNotMigratedException nm) {
+    } catch (TableNotMigratedException nm) {
       throw new RuntimeException("Cannot complete destinations v2 sync, final table not migrated: %s".formatted(stream.id().finalName()));
     }
   }
 
-  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
+  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream) {
     LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
-    sqlGenerator.softReset(stream, existingTable).forEach(sql -> {
+    sqlGenerator.softReset(stream).forEach(sql -> {
       try {
         execute(sql);
       } catch (InterruptedException | JobException ex) {

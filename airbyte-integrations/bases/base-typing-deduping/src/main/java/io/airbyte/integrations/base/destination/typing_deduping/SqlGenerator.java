@@ -8,9 +8,11 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public interface SqlGenerator<DialectTableDefinition> {
+
+  Set<String> FINAL_TABLE_AIRBYTE_COLUMNS = Set.of("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta");
+  String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
@@ -27,9 +29,21 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   String createTable(final StreamConfig stream, final String suffix);
 
+  /**
+   * Check the final table's schema and compare it to what the stream config would generate.
+   * @param stream the stream/stable in question
+   * @param existingTable the existing table mapped to the stream
+   * @return whether the existing table matches the expected schema
+   * @throws TableNotMigratedException if the table does not contain all {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS}
+   */
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
-  List<String> softReset(final StreamConfig stream, final DialectTableDefinition existingTable);
+  /**
+   * SQL Statements which will rebuild the final table using the raw table data
+   * @param stream the stream to rebuild
+   * @return an ordered sequence of SQL statements to execute to rebuild the final table.
+   */
+  List<String> softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -59,18 +73,5 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
 
-  Set<String> FINAL_TABLE_AIRBYTE_COLUMNS = Set.of("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta");
-
-  record AlterTableReport(Set<String> columnsToAdd, Set<String> columnsToRemove, Set<String> columnsToChangeType, boolean isDestinationV2Format) {
-
-    public boolean isNoOp() {
-      return isDestinationV2Format && Stream.of(this.columnsToAdd, this.columnsToRemove, this.columnsToChangeType).allMatch(Set::isEmpty);
-    }
-
-  }
-
   AlterTableReport buildAlterTableReport(final StreamConfig stream, final DialectTableDefinition existingTable);
-
-  class TableNotMigratedException extends Exception {}
-
 }
