@@ -15,7 +15,7 @@
       },
       "host": {
         "title": "Host Address",
-        "description": "The remote server's host address",
+        "description": "The remote server's host address.",
         "type": "string",
         "examples": ["www.host.com", "192.0.2.1"],
         "order": 1
@@ -46,7 +46,7 @@
               },
               "auth_user_password": {
                 "title": "Password",
-                "description": "The password used for authentication when logging into the remote server.",
+                "description": "The password used for authentication when logging in to the remote server.",
                 "type": "string",
                 "airbyte_secret": true,
                 "order": 1
@@ -65,7 +65,7 @@
               },
               "auth_ssh_key": {
                 "title": "SSH Private Key",
-                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "description": "SSH private key used for authentication when logging in to the remote server. See the <a href='https://docs.airbyte.com/integrations/sources/sftp#setup-guide' target='_blank'>setup guide</a> for more information.",
                 "type": "string",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -85,7 +85,7 @@
       },
       "folder_path": {
         "title": "Folder Path",
-        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp#setup-guide'>setup guide</a> for more information.",
+        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp#setup-guide' target='_blank'>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": ["/logs/2022"],
@@ -93,7 +93,7 @@
       },
       "file_pattern": {
         "title": "File Pattern",
-        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp#setup-guide`>setup guide</a> for more information.",
+        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp#setup-guide` target='_blank'>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": [
