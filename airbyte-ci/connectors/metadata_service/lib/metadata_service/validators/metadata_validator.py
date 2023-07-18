@@ -19,8 +19,10 @@ ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
     ("airbyte/destination-meilisearch", "1.0.0"),
     ("airbyte/destination-csv", "1.0.0"),
     ("airbyte/source-metabase", "1.0.0"),
-    ("airbyte/source-hubspot", "1.0.0"),
     ("airbyte/source-typeform", "1.0.0"),
+    ("airbyte/source-recharge", "1.0.0"),
+    ("airbyte/source-pipedrive", "1.0.0"),
+    ("airbyte/source-paypal-transaction", "2.0.0"),
 ]
 
 
