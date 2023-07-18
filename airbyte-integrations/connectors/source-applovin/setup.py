@@ -11,17 +11,17 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2",
-    "pytest-mock~=3.6.1",
     "connector-acceptance-test",
 ]
 
 setup(
-    name="source_applovin2",
-    description="Source implementation for Applovin2.",
+    name="source_applovin",
+    description="Source implementation for Applovin.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "*.yaml"]},
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,

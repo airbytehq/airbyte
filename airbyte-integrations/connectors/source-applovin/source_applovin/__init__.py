@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceApplovin2
+from .source import SourceApplovin
 
-__all__ = ["SourceApplovin2"]
+__all__ = ["SourceApplovin"]

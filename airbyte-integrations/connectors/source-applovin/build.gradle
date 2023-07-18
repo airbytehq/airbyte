@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_applovin2'
+    moduleDirectory 'source_applovin_singer'
 }

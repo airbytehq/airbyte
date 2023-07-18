@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_applovin import SourceApplovin2
+from source_applovin import SourceApplovin
 
 if __name__ == "__main__":
-    source = SourceApplovin2()
+    source = SourceApplovin()
     launch(source, sys.argv[1:])
