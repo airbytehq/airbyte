@@ -7,8 +7,15 @@ orbs:
   docker: circleci/docker@2
 
 jobs:
-  dependencies:
+  dependencies_facebook:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-facebook-marketing
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+  dependencies_applovin:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-applovin
     machine:
       image: ubuntu-2004:202201-02
     steps:
@@ -19,12 +26,16 @@ workflows:
   version: 2
   deployment:
     jobs:
-      - dependencies:
+      - dependencies_facebook:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+      - dependencies_applovin:
           context:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
       - docker/hadolint:
-          dockerfiles: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
+          dockerfiles: airbyte-integrations/connectors/source-facebook-marketing/Dockerfile,airbyte-integrations/connectors/source-facebook-marketing/Dockerfile
           ignore-rules: "DL3059,DL3008"
       - aws-ecr/build-and-push-image:
           path: airbyte-integrations/connectors/source-facebook-marketing/
@@ -38,7 +49,25 @@ workflows:
           tag: << pipeline.git.revision >>
           skip-when-tags-exist: true
           requires:
-            - dependencies
+            - dependencies_facebook
+            - docker/hadolint
+          filters:
+            branches:
+              only:
+                - voodoo_master
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-applovin/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-applovin"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_applovin
             - docker/hadolint
           filters:
             branches:
