@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
 ## 0.45.0
 Fix pyyaml and cython incompatibility
 
