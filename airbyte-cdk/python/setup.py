@@ -63,7 +63,6 @@ setup(
         "Jinja2~=3.1.2",
         "cachetools",
         "wcmatch==8.4",
-        "pyarrow==12.0.1",
     ],
     python_requires=">=3.8",
     extras_require={
@@ -81,5 +80,8 @@ setup(
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
         ],
+        "file-based": [
+            "pyarrow==12.0.1",
+        ]
     },
 )
