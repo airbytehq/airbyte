@@ -150,13 +150,14 @@ class DateSlicesMixin:
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        date_slices: list = []
-
         # use the latest date between self.start_date and stream_state
         start_date = self.start_date
+        cursor_value = None
+
         if stream_state and self.cursor_field and self.cursor_field in stream_state:
             # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
             # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
+            cursor_value = stream_state[self.cursor_field]
             stream_state_date = pendulum.parse(stream_state[self.cursor_field]).date()
             start_date = max(start_date, stream_state_date)
 
@@ -168,16 +169,15 @@ class DateSlicesMixin:
 
         while start_date <= end_date:
             current_end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
-            date_slices.append(
-                {
-                    "start_date": str(start_date),
-                    "end_date": str(min(current_end_date, end_date)),
-                }
-            )
+            stream_slice = {
+                "start_date": str(start_date),
+                "end_date": str(min(current_end_date, end_date)),
+            }
+            if cursor_value:
+                stream_slice[self.cursor_field] = cursor_value
+            yield stream_slice
             # add 1 additional day because date range is inclusive
             start_date = current_end_date + timedelta(days=1)
-
-        return date_slices
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
