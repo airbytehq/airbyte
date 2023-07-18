@@ -75,6 +75,7 @@ setup(
             "requests-mock",
             "pytest-httpserver",
             "pandas==2.0.3",
+            "pyarrow==12.0.1",
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
