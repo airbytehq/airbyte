@@ -82,6 +82,6 @@ setup(
         ],
         "file-based": [
             "pyarrow==12.0.1",
-        ]
+        ],
     },
 )
