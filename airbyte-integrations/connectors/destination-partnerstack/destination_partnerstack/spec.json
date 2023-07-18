@@ -1,0 +1,36 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/partnerstack",
+  "supported_destination_sync_modes": [
+    "append"
+  ],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Partnerstack",
+    "type": "object",
+    "required": [
+      "public_key"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "public_key": {
+        "title": "Public Key",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "private_key": {
+        "title": "Private Key",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "endpoint": {
+        "title": "API Endpoint",
+        "type": "string",
+        "description": "The endpoint you want to use for the Partnerstack API",
+        "order": 3
+      }
+    }
+  }
+}
