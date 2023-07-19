@@ -59,17 +59,17 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     else:
         return False
 
-def secret_host_variable(client: Client, name: str, default: str = ""):
+def secret_host_env_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container."""
     def _secret_host_variable(container: Container):
         return container.with_secret_variable(
             name,
-            get_secret_host_variable(client, name, default)
+            get_secret_host_env_variable(client, name, default)
         )
     return _secret_host_variable
 
 
-def get_secret_host_variable(client: Client, name: str, default: str = "") -> Secret:
+def get_secret_host_env_variable(client: Client, name: str, default: str = "") -> Secret:
     """Creates a dagger.Secret from a host environment variable."""
     return client.set_secret(name, os.environ.get(name, default))
 
