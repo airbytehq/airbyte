@@ -169,6 +169,7 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
 
             // "group" is an attribute airbyte uses internally
             map.remove("group");
+            map.remove("groups");
 
             // a mapping from a jsonschema type to an internal airbyte type
             map.remove("airbyte_type");
