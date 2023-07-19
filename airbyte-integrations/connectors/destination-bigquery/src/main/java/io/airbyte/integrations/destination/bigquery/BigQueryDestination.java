@@ -272,8 +272,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .formatterMap(getFormatterMap(stream.getJsonSchema()))
           .tmpTableName(namingResolver.getTmpTableName(streamName))
           .targetTableName(targetTableName)
-          // This refers to whether this is BQ denormalized or not
-          .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
+          .isDefaultAirbyteTmpSchema(true)
           .build();
 
       putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
@@ -288,17 +287,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         BigQueryUploaderFactory.getUploader(uploaderConfig));
-  }
-
-  /**
-   * BigQuery might have different structure of the Temporary table. If this method returns TRUE,
-   * temporary table will have only three common Airbyte attributes. In case of FALSE, temporary table
-   * structure will be in line with Airbyte message JsonSchema.
-   *
-   * @return use default AirbyteSchema or build using JsonSchema
-   */
-  protected boolean isDefaultAirbyteTmpTableSchema() {
-    return true;
   }
 
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
