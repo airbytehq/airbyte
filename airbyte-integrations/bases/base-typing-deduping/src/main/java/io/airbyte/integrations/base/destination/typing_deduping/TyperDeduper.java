@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -8,20 +12,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to
- * call {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise
- * avoid interacting directly with these classes.
+ * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to call
+ * {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise avoid
+ * interacting directly with these classes.
  * <p>
  * In a typical sync, destinations should call the methods:
  * <ol>
- *   <li>{@link #createFinalTables()} once at the start of the sync</li>
- *   <li>{@link #typeAndDedupe(String, String)} as needed throughoug the sync</li>
- *   <li>{@link #commitFinalTables()} once at the end of the sync</li>
+ * <li>{@link #createFinalTables()} once at the start of the sync</li>
+ * <li>{@link #typeAndDedupe(String, String)} as needed throughoug the sync</li>
+ * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
- * Note that createFinalTables initializes some internal state. The other methods will throw an exception
- * if that method was not called.
+ * Note that createFinalTables initializes some internal state. The other methods will throw an
+ * exception if that method was not called.
  */
 public class TyperDeduper<DialectTableDefinition> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TyperDeduper.class);
 
   private static final String NO_SUFFIX = "";
@@ -41,9 +46,10 @@ public class TyperDeduper<DialectTableDefinition> {
   }
 
   /**
-   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be the true final tables.
-   * Specifically, other than an initial sync (i.e. table does not exist, or is empty) we write to a temporary final table,
-   * and swap it into the true final table at the end of the sync. This is to prevent user downtime during a sync.
+   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be
+   * the true final tables. Specifically, other than an initial sync (i.e. table does not exist, or is
+   * empty) we write to a temporary final table, and swap it into the true final table at the end of
+   * the sync. This is to prevent user downtime during a sync.
    */
   public void createFinalTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
@@ -52,7 +58,8 @@ public class TyperDeduper<DialectTableDefinition> {
     overwriteStreamsWithTmpTable = new HashMap<>();
 
     // For each stream, make sure that its corresponding final table exists.
-    // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an _airbyte_tmp table.
+    // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
+    // _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isEmpty()) {
@@ -82,7 +89,8 @@ public class TyperDeduper<DialectTableDefinition> {
   }
 
   /**
-   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table, etc.).
+   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table,
+   * etc.).
    * <p>
    * This method is thread-safe; multiple threads can call it concurrently.
    *
@@ -100,7 +108,8 @@ public class TyperDeduper<DialectTableDefinition> {
   /**
    * Does any "end of sync" work. For most streams, this is a noop.
    * <p>
-   * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table into the final table.
+   * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
+   * into the final table.
    */
   public void commitFinalTables() throws Exception {
     for (StreamConfig streamConfig : parsedCatalog.streams()) {
@@ -115,4 +124,5 @@ public class TyperDeduper<DialectTableDefinition> {
       }
     }
   }
+
 }
