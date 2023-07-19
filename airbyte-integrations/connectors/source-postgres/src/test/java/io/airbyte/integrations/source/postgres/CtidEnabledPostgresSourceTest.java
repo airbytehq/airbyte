@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CURSOR_VIA_CTID;
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractSpecificFieldFromCombinedMessages;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
@@ -150,11 +151,11 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     assertEquals(6, actualFirstSyncState.size());
 
     // The expected state type should be 2 ctid's and the last one being standard
-    final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "cursorBased");
+    final List<String> expectedStateTypesFromFirstSync = List.of("ctid", "ctid", "cursor_based");
     final List<String> stateTypeOfStreamOneStatesFromFirstSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, STATE_TYPE_KEY);
     final List<String> stateTypeOfStreamTwoStatesFromFirstSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamTwoName, STATE_TYPE_KEY);
     // It should be the same for stream1 and stream2
     assertEquals(stateTypeOfStreamOneStatesFromFirstSync, expectedStateTypesFromFirstSync);
     assertEquals(stateTypeOfStreamTwoStatesFromFirstSync, expectedStateTypesFromFirstSync);
@@ -168,7 +169,7 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
 
     // Verifying each element and its index to match.
     // Only checking the first 2 elements since we have verified that the last state_type is
-    // "cursorBased"
+    // "cursor_based"
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
     assertEquals(ctidFromStreamOneStatesFromFirstSync.get(1), expectedCtidsFromFirstSync.get(1));
     assertEquals(ctidFromStreamTwoStatesFromFirstSync.get(0), expectedCtidsFromFirstSync.get(0));
@@ -208,22 +209,22 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     final List<AirbyteStateMessage> streamOneStateMessagesFromSecondSync =
         extractStateMessage(messagesFromSecondSyncWithMixedStates, streamOneName);
     final List<String> stateTypeOfStreamOneStatesFromSecondSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamOneName, STATE_TYPE_KEY);
 
     final List<AirbyteStateMessage> streamTwoStateMessagesFromSecondSync =
         extractStateMessage(messagesFromSecondSyncWithMixedStates, streamTwoName);
     final List<String> stateTypeOfStreamTwoStatesFromSecondSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromSecondSyncWithMixedStates, streamTwoName, STATE_TYPE_KEY);
 
     // Stream One states after the second sync are expected to have 2 stream states
     // - 1 with Ctid state_type and 1 state that is of cursorBased state type
     assertEquals(2, streamOneStateMessagesFromSecondSync.size());
-    assertEquals(List.of("ctid", "cursorBased"), stateTypeOfStreamOneStatesFromSecondSync);
+    assertEquals(List.of("ctid", "cursor_based"), stateTypeOfStreamOneStatesFromSecondSync);
 
     // Stream Two states after the second sync are expected to have 1 stream state
     // - The state that is of cursorBased state type
     assertEquals(1, streamTwoStateMessagesFromSecondSync.size());
-    assertEquals(List.of("cursorBased"), stateTypeOfStreamTwoStatesFromSecondSync);
+    assertEquals(List.of("cursor_based"), stateTypeOfStreamTwoStatesFromSecondSync);
 
     // Add some data to each table and perform a third read.
     // Expect to see all records be synced via cursorBased method and not ctid
@@ -248,14 +249,14 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     final List<AirbyteStateMessage> streamOneStateMessagesFromThirdSync =
         extractStateMessage(messagesFromThirdSync, streamOneName);
     final List<String> stateTypeOfStreamOneStatesFromThirdSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, STATE_TYPE_KEY);
     final List<String> cursorOfStreamOneStatesFromThirdSync =
         extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamOneName, "cursor");
 
     final List<AirbyteStateMessage> streamTwoStateMessagesFromThirdSync =
         extractStateMessage(messagesFromThirdSync, streamTwoName);
     final List<String> stateTypeOfStreamTwoStatesFromThirdSync =
-        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "state_type");
+        extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, STATE_TYPE_KEY);
     final List<String> cursorOfStreamTwoStatesFromThirdSync =
         extractSpecificFieldFromCombinedMessages(messagesFromThirdSync, streamTwoName, "cursor");
 
@@ -263,11 +264,11 @@ public class CtidEnabledPostgresSourceTest extends PostgresJdbcSourceAcceptanceT
     // cursor: 4 for stream one
     // cursor: 43 for stream two
     assertEquals(1, streamOneStateMessagesFromThirdSync.size());
-    assertEquals(List.of("cursorBased"), stateTypeOfStreamOneStatesFromThirdSync);
+    assertEquals(List.of("cursor_based"), stateTypeOfStreamOneStatesFromThirdSync);
     assertEquals(List.of("4"), cursorOfStreamOneStatesFromThirdSync);
 
     assertEquals(1, streamTwoStateMessagesFromThirdSync.size());
-    assertEquals(List.of("cursorBased"), stateTypeOfStreamTwoStatesFromThirdSync);
+    assertEquals(List.of("cursor_based"), stateTypeOfStreamTwoStatesFromThirdSync);
     assertEquals(List.of("43"), cursorOfStreamTwoStatesFromThirdSync);
   }
 
