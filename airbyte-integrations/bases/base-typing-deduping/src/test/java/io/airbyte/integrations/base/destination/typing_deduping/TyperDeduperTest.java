@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,21 +28,21 @@ public class TyperDeduperTest {
     inOrder = inOrder(destinationHandler);
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
-            new StreamId("overwrite_ns", "overwrite_stream",  null, null, "overwrite_ns", "overwrite_stream"),
+            new StreamId("overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
             null,
             DestinationSyncMode.OVERWRITE,
             null,
             null,
             null),
         new StreamConfig(
-            new StreamId("append_ns", "append_stream",  null, null, "append_ns", "append_stream"),
+            new StreamId("append_ns", "append_stream", null, null, "append_ns", "append_stream"),
             null,
             DestinationSyncMode.APPEND,
             null,
             null,
             null),
         new StreamConfig(
-            new StreamId("dedup_ns", "dedup_stream",  null, null, "dedup_ns", "dedup_stream"),
+            new StreamId("dedup_ns", "dedup_stream", null, null, "dedup_ns", "dedup_stream"),
             null,
             DestinationSyncMode.APPEND_DEDUP,
             null,
@@ -77,8 +81,8 @@ public class TyperDeduperTest {
   }
 
   /**
-   * When there's an existing table but it's empty, we should ensure it has the right schema and
-   * write to it directly.
+   * When there's an existing table but it's empty, we should ensure it has the right schema and write
+   * to it directly.
    */
   @Test
   void existingEmptyTable() throws Exception {
@@ -146,4 +150,5 @@ public class TyperDeduperTest {
         () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream"));
     verifyNoInteractions(ignoreStubs(destinationHandler));
   }
+
 }
