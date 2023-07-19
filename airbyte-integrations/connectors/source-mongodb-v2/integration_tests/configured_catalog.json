@@ -1,65 +1,74 @@
 {
-  "streams": [{
-    "name": "acceptance_test1",
-    "json_schema": {
-      "type": "object",
-      "properties": {
-        "test_aibyte_transform": {
-          "type": "string"
-        },
-        "double_test": {
-          "type": "number"
-        },
-        "test_array": {
-          "type": "array"
-        },
-        "name": {
-          "type": "string"
-        },
-        "_id": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "object_test": {
-          "type": "object",
-          "properties": {
-            "testObject": {
-              "type": "object",
-              "properties": {
-                "testField1": {
-                  "type": "string"
-                },
-                "thirdLevelDocument": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
+  "streams": [
+    {
+      "stream": {
+        "name" : "acceptance_test1",
+        "json_schema" : {
+          "type" : "object",
+          "properties" : {
+            "test_aibyte_transform" : {
+              "type" : "string"
+            },
+            "double_test" : {
+              "type" : "number"
+            },
+            "test_array" : {
+              "type" : "array"
+            },
+            "name" : {
+              "type" : "string"
+            },
+            "_id" : {
+              "type" : "string"
+            },
+            "id" : {
+              "type" : "string"
+            },
+            "object_test" : {
+              "type" : "object",
+              "properties" : {
+                "testObject" : {
+                  "type" : "object",
+                  "properties" : {
+                    "testField1" : {
+                      "type" : "string"
                     },
-                    "intData": {
-                      "type": "number"
+                    "thirdLevelDocument" : {
+                      "type" : "object",
+                      "properties" : {
+                        "data" : {
+                          "type" : "string"
+                        },
+                        "intData" : {
+                          "type" : "number"
+                        }
+                      }
+                    },
+                    "name" : {
+                      "type" : "string"
+                    },
+                    "testInt" : {
+                      "type" : "number"
                     }
                   }
-                },
-                "name": {
-                  "type": "string"
-                },
-                "testInt": {
-                  "type": "number"
                 }
               }
+            },
+            "int_test" : {
+              "type" : "number"
             }
           }
         },
-        "int_test": {
-          "type": "number"
-        }
-      }
-    },
-    "supported_sync_modes": ["full_refresh", "incremental"],
-    "default_cursor_field": [],
-    "source_defined_primary_key": [],
-    "namespace": "test"
-  }]
+        "supported_sync_modes" : [
+          "full_refresh",
+          "incremental"
+        ],
+        "default_cursor_field" : [],
+        "source_defined_primary_key" : [],
+        "namespace" : "test"
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
 }
