@@ -4,49 +4,49 @@
 
 import csv
 import io
+import json
 import tempfile
 from datetime import datetime
 from io import IOBase
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
+from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic import AnyUrl, Field
 
 
 class InMemoryFilesSource(FileBasedSource):
     def __init__(
             self,
-            files,
-            file_type,
-            availability_strategy: AvailabilityStrategy,
-            discovery_policy: AbstractDiscoveryPolicy,
-            validation_policies: Dict[str, AbstractSchemaValidationPolicy],
-            parsers: Dict[str, FileTypeParser],
-            stream_reader: AbstractFileBasedStreamReader,
-            catalog: Optional[Dict[str, Any]],
-            file_write_options: Dict[str, Any],
+            files: Mapping[str, Any] ,
+            file_type: str,
+            availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
+            discovery_policy: Optional[AbstractDiscoveryPolicy],
+            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
+            parsers: Mapping[str, FileTypeParser],
+            stream_reader: Optional[AbstractFileBasedStreamReader],
+            catalog: Optional[Mapping[str, Any]],
+            file_write_options: Mapping[str, Any],
             max_history_size: int,
     ):
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
-        availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
+        availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)  # type: ignore[assignment]
         super().__init__(
             stream_reader,
             catalog=ConfiguredAirbyteCatalog(streams=catalog["streams"]) if catalog else None,
             availability_strategy=availability_strategy,
             spec_class=InMemorySpec,
-            discovery_policy=discovery_policy,
+            discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
             max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE
@@ -58,9 +58,9 @@ class InMemoryFilesSource(FileBasedSource):
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
-    files: Dict[str, dict]
+    files: Mapping[str, Mapping[str, Any]]
     file_type: str
-    file_write_options: Optional[Dict[str, Any]]
+    file_write_options: Optional[Mapping[str, Any]]
 
     def get_matching_files(
             self,
@@ -72,15 +72,14 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         ], globs)
 
     def open_file(self, file: RemoteFile) -> IOBase:
-        return io.StringIO(self._make_file_contents(file.uri))
-
-    def _make_file_contents(self, file_name: str):
-        if self.file_type == "csv":
-            return self._make_csv_file_contents(file_name)
+        if file.file_type == "csv":
+            return self._make_csv_file_contents(file.uri)
+        elif file.file_type == "jsonl":
+            return self._make_jsonl_file_contents(file.uri)
         else:
-            raise NotImplementedError(f"No implementation for filename: {file_name}")
+            raise NotImplementedError(f"No implementation for file type: {file.file_type}")
 
-    def _make_csv_file_contents(self, file_name: str) -> str:
+    def _make_csv_file_contents(self, file_name: str) -> IOBase:
         fh = io.StringIO()
         if self.file_write_options:
             csv.register_dialect("in_memory_dialect", **self.file_write_options)
@@ -90,13 +89,26 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         else:
             writer = csv.writer(fh)
             writer.writerows(self.files[file_name]["contents"])
-        return fh.getvalue()
+        fh.seek(0)
+        return fh
+
+    def _make_jsonl_file_contents(self, file_name: str) -> IOBase:
+        fh = io.BytesIO()
+
+        for line in self.files[file_name]["contents"]:
+            try:
+                fh.write((json.dumps(line) + '\n').encode("utf-8"))
+            except TypeError:
+                # Intentionally trigger json validation error
+                fh.write((str(line) + '\n').encode("utf-8"))
+        fh.seek(0)
+        return fh
 
 
 class InMemorySpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")
+        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
 
     start_date: Optional[str] = Field(
         title="Start Date",
@@ -114,9 +126,9 @@ class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
     """
 
     def open_file(self, file: RemoteFile) -> IOBase:
-        return io.BytesIO(self._make_file_contents(file.uri))
+        return io.BytesIO(self._create_file(file.uri))
 
-    def _make_file_contents(self, file_name: str) -> bytes:
+    def _create_file(self, file_name: str) -> bytes:
         contents = self.files[file_name]["contents"]
         schema = self.files[file_name].get("schema")
 

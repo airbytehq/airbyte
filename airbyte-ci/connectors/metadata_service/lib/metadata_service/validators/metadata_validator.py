@@ -1,5 +1,7 @@
-import yaml
+import re
+import semver
 import pathlib
+import yaml
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from typing import Optional, Tuple, Union, List, Callable
@@ -8,6 +10,20 @@ from pydash.objects import get
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
+
+# TODO: Remove these when each of these connectors ship any new version
+ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
+    ("airbyte/source-prestashop", "1.0.0"),
+    ("airbyte/source-onesignal", "1.0.0"),
+    ("airbyte/source-yandex-metrica", "1.0.0"),
+    ("airbyte/destination-meilisearch", "1.0.0"),
+    ("airbyte/destination-csv", "1.0.0"),
+    ("airbyte/source-metabase", "1.0.0"),
+    ("airbyte/source-typeform", "1.0.0"),
+    ("airbyte/source-recharge", "1.0.0"),
+    ("airbyte/source-pipedrive", "1.0.0"),
+    ("airbyte/source-paypal-transaction", "2.0.0"),
+]
 
 
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
@@ -64,9 +80,43 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
     return True, None
 
 
+def is_major_version(version: str) -> bool:
+    """Check whether the version is of format N.0.0"""
+    semver_version = semver.Version.parse(version)
+    return semver_version.minor == 0 and semver_version.patch == 0
+
+
+def validate_major_version_bump_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
+    metadata_definition_dict = metadata_definition.dict()
+    image_tag = get(metadata_definition_dict, "data.dockerImageTag")
+
+    if not is_major_version(image_tag):
+        return True, None
+
+    # Some connectors had just done major version bumps when this check was introduced.
+    # These do not need breaking change entries for these specific versions.
+    # Future versions will still be validated to make sure an entry exists.
+    # See comment by ALREADY_ON_MAJOR_VERSION_EXCEPTIONS for how to get rid of this list.
+    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
+    if (docker_repo, image_tag) in ALREADY_ON_MAJOR_VERSION_EXCEPTIONS:
+        return True, None
+
+    releases = get(metadata_definition_dict, "data.releases")
+    if not releases:
+        return False, f"When doing a major version bump ({image_tag}), there must be a 'releases' property that contains 'breakingChanges' entries."
+
+    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
+    if image_tag not in breaking_changes.keys():
+        return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
+    validate_major_version_bump_has_breaking_change_entry,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

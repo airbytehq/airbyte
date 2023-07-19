@@ -18,6 +18,11 @@ public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatt
   }
 
   @Override
+  protected boolean useObjectForData() {
+    return false;
+  }
+
+  @Override
   protected Object getEmittedAtField(AirbyteRecordMessage recordMessage) {
     return recordMessage.getEmittedAt();
   }
