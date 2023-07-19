@@ -28,6 +28,7 @@ class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):
     validate_schema_before_sync = True
 
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
+        # FIXME: this does not handle the case of a None record
         if schema is None or not conforms_to_schema(record, schema):
             raise StopSyncPerValidationPolicy(FileBasedSourceError.STOP_SYNC_PER_SCHEMA_VALIDATION_POLICY)
         return True
