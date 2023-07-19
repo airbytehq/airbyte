@@ -2,84 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import codecs
-from enum import Enum
 from typing import Any, List, Mapping, Optional, Union
 
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
-VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
 
-
-class QuotingBehavior(Enum):
-    QUOTE_ALL = "Quote All"
-    QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
-    QUOTE_NONNUMERIC = "Quote Non-numeric"
-    QUOTE_NONE = "Quote None"
-
-
-class CsvFormat(BaseModel):
-    delimiter: str = Field(
-        title="Delimiter",
-        description="The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
-        default=",",
-    )
-    quote_char: str = Field(
-        title="Quote Character",
-        default='"',
-        description="The character used for quoting CSV values. To disallow quoting, make this field blank.",
-    )
-    escape_char: Optional[str] = Field(
-        title="Escape Character",
-        default=None,
-        description="The character used for escaping special characters. To disallow escaping, leave this field blank.",
-    )
-    encoding: Optional[str] = Field(
-        default="utf8",
-        description='The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
-    )
-    double_quote: bool = Field(
-        title="Double Quote", default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data."
-    )
-    quoting_behavior: QuotingBehavior = Field(
-        title="Quoting Behavior",
-        default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
-        description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
-    )
-    # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
-    # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks
-    # of using pyarrow
-
-    @validator("delimiter")
-    def validate_delimiter(cls, v: str) -> str:
-        if len(v) != 1:
-            raise ValueError("delimiter should only be one character")
-        if v in {"\r", "\n"}:
-            raise ValueError(f"delimiter cannot be {v}")
-        return v
-
-    @validator("quote_char")
-    def validate_quote_char(cls, v: str) -> str:
-        if len(v) != 1:
-            raise ValueError("quote_char should only be one character")
-        return v
-
-    @validator("escape_char")
-    def validate_escape_char(cls, v: str) -> str:
-        if len(v) != 1:
-            raise ValueError("escape_char should only be one character")
-        return v
-
-    @validator("encoding")
-    def validate_encoding(cls, v: str) -> str:
-        try:
-            codecs.lookup(v)
-        except LookupError:
-            raise ValueError(f"invalid encoding format: {v}")
-        return v
+VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
 
 
 class FileBasedStreamConfig(BaseModel):
@@ -105,10 +39,10 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Mapping[str, CsvFormat]] = Field(
+    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat, JsonlFormat]]] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
-    )  # this will eventually be a Union once we have more than one format type
+    )
     schemaless: bool = Field(
         title="Schemaless",
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
@@ -123,13 +57,46 @@ class FileBasedStreamConfig(BaseModel):
 
     @validator("format", pre=True)
     def transform_format(cls, v: Mapping[str, str]) -> Any:
+        # The difference between legacy and new format is that the new format is a mapping of file type to format
+        # This allows us to support multiple file types for a single stream
         if isinstance(v, Mapping):
             file_type = v.get("filetype", "")
             if file_type:
-                if file_type.casefold() not in VALID_FILE_TYPES:
-                    raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                return {file_type: {key: val for key, val in v.items()}}
+                return cls._transform_legacy_config(v, file_type)
+            else:
+                if len(v) > 1:
+                    raise ValueError(
+                        f"Format can only have one file type specified, got {v}"
+                    )  # FIXME: remove this check when we support multiple file types for a single stream
+                try:
+                    return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
+                except KeyError as e:
+                    raise ValueError(f"Format filetype {e.args[0]} is not a supported file type")
         return v
+
+    @classmethod
+    def _transform_legacy_config(cls, legacy_config: Mapping[str, Any], file_type: str) -> Mapping[str, Any]:
+        if file_type.casefold() not in VALID_FILE_TYPES:
+            raise ValueError(f"Format filetype {file_type} is not a supported file type")
+        if file_type.casefold() == "parquet":
+            legacy_config = cls._transform_legacy_parquet_config(legacy_config)
+        return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in legacy_config.items()})}
+
+    @classmethod
+    def _transform_legacy_parquet_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        The legacy parquet parser converts decimal fields to numbers. This isn't desirable because it can lead to precision loss.
+        To avoid introducing a breaking change with the new default, we will set decimal_as_float to True in the legacy configs.
+        """
+        if config.get("filetype") != "parquet":
+            raise ValueError(
+                f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
+            )
+        if config.get("decimal_as_float"):
+            raise ValueError(
+                "Received legacy parquet file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
+            )
+        return {**config, **{"decimal_as_float": True}}
 
     @validator("input_schema", pre=True)
     def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
