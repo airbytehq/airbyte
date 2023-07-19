@@ -12,23 +12,24 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSc
 class EmitRecordPolicy(AbstractSchemaValidationPolicy):
     name = "emit_record"
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
+    def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> bool:
         return True
 
 
 class SkipRecordPolicy(AbstractSchemaValidationPolicy):
     name = "skip_record"
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
-        return schema is not None and (record is not None and conforms_to_schema(record, schema))
+    def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> bool:
+        return schema is not None and record is not None and conforms_to_schema(record, schema)
 
 
 class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):
     name = "wait_for_discover"
     validate_schema_before_sync = True
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
-        # FIXME: this does not handle the case of a None record
+    def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> bool:
+        if record is None:
+            return True
         if schema is None or not conforms_to_schema(record, schema):
             raise StopSyncPerValidationPolicy(FileBasedSourceError.STOP_SYNC_PER_SCHEMA_VALIDATION_POLICY)
         return True

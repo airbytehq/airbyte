@@ -11,7 +11,7 @@ class AbstractSchemaValidationPolicy(ABC):
     validate_schema_before_sync = False  # Whether to verify that records conform to the schema during the stream's availabilty check
 
     @abstractmethod
-    def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
+    def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> bool:
         """
         Return True if the record passes the user's validation policy.
         """

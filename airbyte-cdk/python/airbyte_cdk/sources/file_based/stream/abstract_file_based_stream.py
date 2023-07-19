@@ -127,7 +127,7 @@ class AbstractFileBasedStream(Stream):
         except KeyError:
             raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
 
-    def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
+    def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]]) -> bool:
         if self.validation_policy:
             return self.validation_policy.record_passes_validation_policy(record=record, schema=self.catalog_schema)
         else:
