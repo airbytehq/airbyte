@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
-import org.mockito.internal.verification.NoInteractions;
 
 public class TyperDeduperTest {
 
@@ -57,9 +56,9 @@ public class TyperDeduperTest {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.empty());
 
     typerDeduper.createFinalTables();
-    inOrder.verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream");
-    inOrder.verify(destinationHandler).execute("CREATE TABLE append_ns.append_stream");
-    inOrder.verify(destinationHandler).execute("CREATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream");
+    verify(destinationHandler).execute("CREATE TABLE append_ns.append_stream");
+    verify(destinationHandler).execute("CREATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -73,7 +72,7 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler, new NoInteractions()).execute(any());
+    verify(destinationHandler, never()).execute(any());
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -87,11 +86,9 @@ public class TyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
 
     typerDeduper.createFinalTables();
-
-    inOrder = inOrder(destinationHandler);
-    inOrder.verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
-    inOrder.verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
-    inOrder.verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -105,7 +102,7 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler, new NoInteractions()).execute(any());
+    verify(destinationHandler, never()).execute(any());
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -119,14 +116,12 @@ public class TyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.createFinalTables();
-
-    inOrder = inOrder(destinationHandler);
     // NB: We only create one tmp table here.
     // Also, we need to alter the existing _real_ table, not the tmp table!
-    inOrder.verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
-    inOrder.verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    inOrder.verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
-    inOrder.verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
+    verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -149,5 +144,6 @@ public class TyperDeduperTest {
   void nonexistentStream() {
     assertThrows(IllegalArgumentException.class,
         () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream"));
+    verifyNoInteractions(ignoreStubs(destinationHandler));
   }
 }
