@@ -5,7 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -63,7 +63,7 @@ class QuadernoStream(HttpStream):
         """
         if response.headers["x-pages-hasmore"] == "true":
             parsed_url = urlparse(response.headers["x-pages-nextpage"])
-            return parse_qs(parsed_url.query)
+            return dict(parse_qsl(parsed_url.query))
 
         return None
 
@@ -71,7 +71,7 @@ class QuadernoStream(HttpStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """Define any query parameters to be set."""
-        params = {"limit": 10}
+        params = {"limit": 100}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -84,44 +84,20 @@ class QuadernoStream(HttpStream):
         yield from response_json
 
 
-class Customers(QuadernoStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
-
-
 # Basic incremental stream
-class IncrementalQuadernoStream(QuadernoStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
+class IncrementalQuadernoStream(QuadernoStream):
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+        The cursor field used by this stream. This field's presence tells the framework this in an incremental stream.
+        Required for incremental.
 
         :return str: The name of the cursor field.
         """
-        return []
+        return "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """

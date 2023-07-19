@@ -23,7 +23,7 @@ class TestQuadernoStream(unittest.TestCase):
         response_mock = Mock()
         response_mock.headers = {
             'x-pages-hasmore': 'true',
-            'x-pages-nextpage': 'https://test_account.quadernoapp.com/api/invoices?limit=10&created_before=1337'
+            'x-pages-nextpage': 'https://test_account.quadernoapp.com/api/invoices?limit=100&created_before=1337'
         }
 
         # Call the next_page_token method
@@ -31,7 +31,7 @@ class TestQuadernoStream(unittest.TestCase):
 
         # Assertions
         self.assertIsNotNone(next_page_token)
-        self.assertEqual(next_page_token, {'limit': ['10'], 'created_before': ['1337']})
+        self.assertEqual(next_page_token, {'limit': '100', 'created_before': '1337'})
 
     def test_next_page_token_no_more(self):
         # Mock the response with headers indicating there's no more page
@@ -48,18 +48,18 @@ class TestQuadernoStream(unittest.TestCase):
 
     def test_request_params_with_next_page_token(self):
         # Call the request_params method with a next_page_token
-        next_page_token = {'limit': 10, 'created_before': 1337}
+        next_page_token = {'limit': 100, 'created_before': 1337}
         params = self.stream.request_params(stream_state={}, next_page_token=next_page_token)
 
         # Assertions
-        self.assertEqual(params, {'limit': 10, 'created_before': 1337})
+        self.assertEqual(params, {'limit': 100, 'created_before': 1337})
 
     def test_request_params_without_next_page_token(self):
         # Call the request_params method without a next_page_token
         params = self.stream.request_params(stream_state={})
 
         # Assertions
-        self.assertEqual(params, {'limit': 10})
+        self.assertEqual(params, {'limit': 100})
 
     def test_parse_response(self):
         # Mock the response.json() method
