@@ -5,14 +5,15 @@
 from typing import Any, Mapping, Type
 
 import pytest as pytest
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.csv_format import QuotingBehavior
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig
 from pydantic import ValidationError
 
 
 @pytest.mark.parametrize(
     "file_type, input_format, expected_format, expected_error",
     [
-        pytest.param("csv", {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": "Quote All"}, {"delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL}, None, id="test_valid_format"),
+        pytest.param("csv", {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": "Quote All"}, {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL}, None, id="test_valid_format"),
         pytest.param("csv", {"filetype": "csv", "double_quote": False}, {"delimiter": ",", "quote_char": "\"", "encoding": "utf8", "double_quote": False, "quoting_behavior": QuotingBehavior.QUOTE_SPECIAL_CHARACTERS}, None, id="test_default_format_values"),
         pytest.param("csv", {"filetype": "csv", "delimiter": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_delimiter"),
         pytest.param("csv", {"filetype": "csv", "quote_char": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_quote_char"),
@@ -39,7 +40,6 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
     else:
         actual_config = FileBasedStreamConfig(**stream_config)
         if actual_config.format is not None:
-            assert not hasattr(actual_config.format[file_type], "filetype")
             for expected_format_field, expected_format_value in expected_format.items():
                 assert isinstance(actual_config.format[file_type], CsvFormat)
                 assert getattr(actual_config.format[file_type], expected_format_field) == expected_format_value
@@ -84,3 +84,19 @@ def test_legacy_format() -> None:
             assert getattr(actual_config.format["csv"], expected_format_field) == expected_format_value
     else:
         assert False, "Expected format to be set"
+
+
+def test_multiple_file_formats_are_not_supported() -> None:
+    formats = {
+        "csv": {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True, "quoting_behavior": QuotingBehavior.QUOTE_ALL},
+        "parquet": {"filetype": "parquet", "decimal_as_float": True}
+    }
+    stream_config = {
+        "name": "stream1",
+        "file_type": "csv",
+        "globs": ["*"],
+        "validation_policy": "emit_record_on_schema_mismatch",
+        "format": formats
+    }
+    with pytest.raises(ValidationError):
+        FileBasedStreamConfig(**stream_config)

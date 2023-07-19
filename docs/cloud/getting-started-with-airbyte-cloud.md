@@ -197,6 +197,9 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 
 ### United States and Airbyte Default
 #### GCP region: us-west3
+
+[comment]: # (IMPORTANT: if changing the list of IP addresses below, you must also update the connector.airbyteCloudIpAddresses LaunchDarkly flag to show the new list so that the correct list is shown in the Airbyte Cloud UI, then reach out to the frontend team and ask them to update the default value in the useAirbyteCloudIps hook!)
+
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
