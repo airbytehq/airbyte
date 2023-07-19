@@ -17,8 +17,9 @@ from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
-    SessionTokenAuthenticator,
+    LegacySessionTokenAuthenticator,
 )
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider, TokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -59,6 +60,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
@@ -108,6 +112,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from isodate import parse_duration
 from pydantic import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
@@ -161,6 +166,7 @@ class ModelToComponentFactory:
             DefaultPaginatorModel: self.create_default_paginator,
             DpathExtractorModel: self.create_dpath_extractor,
             ExponentialBackoffStrategyModel: self.create_exponential_backoff_strategy,
+            SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
             HttpRequesterModel: self.create_http_requester,
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
@@ -179,7 +185,7 @@ class ModelToComponentFactory:
             RemoveFieldsModel: self.create_remove_fields,
             RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
-            SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
+            LegacySessionTokenAuthenticatorModel: self.create_legacy_session_token_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
             SpecModel: self.create_spec,
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
@@ -236,12 +242,17 @@ class ModelToComponentFactory:
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
     @staticmethod
-    def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs: Any) -> ApiKeyAuthenticator:
+    def create_api_key_authenticator(
+        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+    ) -> ApiKeyAuthenticator:
         if model.inject_into is None and model.header is None:
             raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
 
         if model.inject_into is not None and model.header is not None:
             raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
 
         request_option = (
             RequestOption(
@@ -257,8 +268,35 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            api_token=model.api_token or "", request_option=request_option, config=config, parameters=model.parameters or {}
+            token_provider=token_provider
+            if token_provider is not None
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            request_option=request_option,
+            config=config,
+            parameters=model.parameters or {},
         )
+
+    def create_session_token_authenticator(
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
+    ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
+        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
+        token_provider = SessionTokenProvider(
+            login_requester=login_requester,
+            session_token_path=model.session_token_path,
+            expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
+            parameters=model.parameters or {},
+            message_repository=self._message_repository,
+        )
+        if model.request_authentication.type == "Bearer":
+            return ModelToComponentFactory.create_bearer_authenticator(
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""), config, token_provider=token_provider
+            )
+        else:
+            return ModelToComponentFactory.create_api_key_authenticator(
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),
+                config=config,
+                token_provider=token_provider,
+            )
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
@@ -267,9 +305,15 @@ class ModelToComponentFactory:
         )
 
     @staticmethod
-    def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, **kwargs: Any) -> BearerAuthenticator:
+    def create_bearer_authenticator(
+        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+    ) -> BearerAuthenticator:
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            api_token=model.api_token,
+            token_provider=token_provider
+            if token_provider is not None
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
             config=config,
             parameters=model.parameters or {},
         )
@@ -619,7 +663,7 @@ class ModelToComponentFactory:
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
             if model.authenticator
             else None
         )
@@ -814,10 +858,10 @@ class ModelToComponentFactory:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
 
     @staticmethod
-    def create_session_token_authenticator(
-        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
-    ) -> SessionTokenAuthenticator:
-        return SessionTokenAuthenticator(
+    def create_legacy_session_token_authenticator(
+        model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
+    ) -> LegacySessionTokenAuthenticator:
+        return LegacySessionTokenAuthenticator(
             api_url=url_base,
             header=model.header,
             login_url=model.login_url,
