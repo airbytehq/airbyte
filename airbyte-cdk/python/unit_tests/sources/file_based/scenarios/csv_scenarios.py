@@ -80,10 +80,10 @@ single_csv_scenario = (
                                     "description": "The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
                                     "oneOf": [
                                         {
-                                            "type": "string"
+                                            "type": "object"
                                         },
                                         {
-                                            "type": "object"
+                                            "type": "string"
                                         }
                                     ]
                                 },
