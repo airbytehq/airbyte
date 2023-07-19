@@ -122,15 +122,16 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
 
   enum AirbyteProtocolType implements AirbyteType {
     // Protocol types are ordered by precedence in the case of a Union that contains multiple types.
-    BOOLEAN,
-    INTEGER,
-    NUMBER,
+    // Priority is given to wider scope types over narrower ones.
+    STRING,
+    DATE,
+    TIME_WITHOUT_TIMEZONE,
+    TIME_WITH_TIMEZONE,
     TIMESTAMP_WITHOUT_TIMEZONE,
     TIMESTAMP_WITH_TIMEZONE,
-    DATE,
-    TIME_WITH_TIMEZONE,
-    TIME_WITHOUT_TIMEZONE,
-    STRING,
+    NUMBER,
+    INTEGER,
+    BOOLEAN,
     UNKNOWN;
 
     public static AirbyteProtocolType matches(final String type) {

@@ -8,30 +8,18 @@ import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTy
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AirbyteTypeUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
-
-  // Map from a protocol type to what other protocol types should take precedence over it if present
-  // in a OneOf
-  private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
-      AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
-      AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
-      AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING));
 
   protected static boolean nodeMatches(final JsonNode node, final String value) {
     if (node == null || !node.isTextual()) {
@@ -83,49 +71,20 @@ public class AirbyteTypeUtils {
 
   // Picks which type in a Union takes precedence
   public static AirbyteType chooseUnionType(final Union u) {
-    final List<AirbyteType> options = u.options();
-
-    // record what types are present
-    Array foundArrayType = null;
-    Struct foundStructType = null;
-    final Map<AirbyteProtocolType, Boolean> typePresenceMap = new HashMap<>();
-    Arrays.stream(AirbyteProtocolType.values()).map(type -> typePresenceMap.put(type, false));
-
-    // looping through the options only once for efficiency
-    for (final AirbyteType option : options) {
-      if (option instanceof final Array a) {
-        foundArrayType = a;
-      } else if (option instanceof final Struct s) {
-        foundStructType = s;
-      } else if (option instanceof final AirbyteProtocolType p) {
-        typePresenceMap.put(p, true);
-      }
-    }
-
-    if (foundArrayType != null) {
-      return foundArrayType;
-    } else if (foundStructType != null) {
-      return foundStructType;
-    } else {
-      for (final AirbyteProtocolType protocolType : AirbyteProtocolType.values()) {
-        if (typePresenceMap.getOrDefault(protocolType, false)) {
-          boolean foundExcludedTypes = false;
-          final List<AirbyteProtocolType> excludedTypes = 
-              EXCLUDED_PROTOCOL_TYPES_MAP.getOrDefault(protocolType, Collections.emptyList());
-          for (final AirbyteProtocolType excludedType : excludedTypes) {
-            if (typePresenceMap.getOrDefault(excludedType, false)) {
-              foundExcludedTypes = true;
-              break;
-            }
+    final Comparator<AirbyteType> comparator = Comparator.comparing(t ->
+        {
+          if (t instanceof Array) {
+            return -2;
+          } else if (t instanceof Struct) {
+            return -1;
+          } else if (t instanceof final AirbyteProtocolType p) {
+            return List.of(AirbyteProtocolType.values()).indexOf(p);
           }
-          if (!foundExcludedTypes) {
-            return protocolType;
-          }
+          return Integer.MAX_VALUE;
         }
-      }
-    }
+    );
 
-    return UNKNOWN;
+    return u.options().stream().min(comparator).orElse(UNKNOWN);
   }
 
 }
