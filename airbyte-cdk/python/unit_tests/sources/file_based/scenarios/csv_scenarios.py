@@ -176,6 +176,18 @@ single_csv_scenario = (
                                                                 "items": {
                                                                     "type": "string"
                                                                 }
+                                                            },
+                                                            "skip_rows_before_header": {
+                                                                "title": "Skip Rows Before Header",
+                                                                "description": "The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
+                                                                "default": 0,
+                                                                "type": "integer"
+                                                            },
+                                                            "skip_rows_after_header": {
+                                                                "title": "Skip Rows After Header",
+                                                                "description": "The number of rows to skip after the header row.",
+                                                                "default": 0,
+                                                                "type": "integer"
                                                             }
                                                         }
                                                     },
