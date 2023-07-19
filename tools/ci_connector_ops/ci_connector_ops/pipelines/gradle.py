@@ -135,6 +135,5 @@ class GradleTask(Step, ABC):
                     f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
                 ]
             )
-            await with_cache.exit_code()
-            return with_cache
+            return await with_cache
         return gradle_container
