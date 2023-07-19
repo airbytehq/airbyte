@@ -50,7 +50,8 @@ def check_migration_guide(connector: Connector) -> bool:
                 ordered_heading_versions.append(version)
 
         if ordered_breaking_changes != ordered_heading_versions:
-            print(f"Migration guide file for {connector.name} has missing or misordered version headings.")
+            print(f"Migration guide file for {connector.name} has incorrect version headings.")
+            print(f"Check for missing, extra, or misordered headings, or headers with typos.")
             print(f"Expected headings: {ordered_expected_headings}")
             return False
 
