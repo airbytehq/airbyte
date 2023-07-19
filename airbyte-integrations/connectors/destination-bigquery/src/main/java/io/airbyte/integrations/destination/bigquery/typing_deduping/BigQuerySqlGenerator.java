@@ -26,7 +26,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
@@ -454,15 +453,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamId stream) {
-    return Optional.of(new StringSubstitutor(Map.of(
+  public String overwriteFinalTable(final String finalSuffix, final StreamId stream) {
+    return new StringSubstitutor(Map.of(
         "final_table_id", stream.finalTableId(QUOTE),
         "tmp_final_table", stream.finalTableId(finalSuffix, QUOTE),
         "real_final_table", stream.finalName(QUOTE))).replace(
             """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-            """));
+            """);
   }
 
 }

@@ -70,8 +70,6 @@ public class BigQueryStagingConsumerFactory {
 
     CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(use1s1t, typerDeduper);
 
-    CheckedConsumer<BigQueryWriteConfig, Exception> replaceFinalTableConsumer = getReplaceFinalTableConsumer(use1s1t, typerDeduper);
-
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigs, use1s1t, typerDeduper),
@@ -79,7 +77,7 @@ public class BigQueryStagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer),
+        onCloseFunction(bigQueryGcsOperations, writeConfigs, use1s1t, typerDeduper),
         catalog,
         json -> true,
         defaultNamespace);
@@ -227,7 +225,8 @@ public class BigQueryStagingConsumerFactory {
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                          final CheckedConsumer<BigQueryWriteConfig, Exception> replaceFinalTableConsumer) {
+                                          final boolean use1s1t,
+                                          final TyperDeduper<TableDefinition> typerDeduper) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
@@ -238,19 +237,12 @@ public class BigQueryStagingConsumerFactory {
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         bigQueryGcsOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
-        // replace final table
-        replaceFinalTableConsumer.accept(writeConfig);
+      }
+      if (use1s1t) {
+        typerDeduper.commitFinalTables();
       }
       LOGGER.info("Cleaning up destination completed.");
     };
-  }
-
-  private CheckedConsumer<BigQueryWriteConfig, Exception> getReplaceFinalTableConsumer(boolean use1s1t, final TyperDeduper<TableDefinition> typerDeduper) {
-    if (use1s1t) {
-      return (writeConfig) -> typerDeduper.commitFinalTable(writeConfig.namespace(), writeConfig.streamName());
-    } else {
-      return (writeConfig) -> {};
-    }
   }
 
 }

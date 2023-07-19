@@ -568,7 +568,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public void testRenameFinalTable() throws InterruptedException {
     createFinalTable("_tmp");
 
-    final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig().id()).get();
+    final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig().id());
     destinationHandler.execute(sql);
 
     final Table table = bq.getTable(testDataset, "users_final");

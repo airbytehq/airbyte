@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * <ol>
  *   <li>{@link #createFinalTables()} once at the start of the sync</li>
  *   <li>{@link #typeAndDedupe(String, String)} as needed throughoug the sync</li>
- *   <li>{@link #commitFinalTable(String, String)} once at the end of the sync</li>
+ *   <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
  * Note that createFinalTables initializes some internal state. The other methods will throw an exception
  * if that method was not called.
@@ -82,9 +82,12 @@ public class TyperDeduper<DialectTableDefinition> {
   }
 
   /**
-   * Execute typing and deduping for a stream (i.e. fetch new raw records into the final table, etc.).
+   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table, etc.).
    * <p>
    * This method is thread-safe; multiple threads can call it concurrently.
+   *
+   * @param originalNamespace The stream's namespace, as declared in the configured catalog
+   * @param originalName The stream's name, as declared in the configured catalog
    */
   public void typeAndDedupe(String originalNamespace, String originalName) throws Exception {
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
@@ -95,19 +98,19 @@ public class TyperDeduper<DialectTableDefinition> {
   }
 
   /**
-   * Does any "end of sync" work for a stream.For most streams, this is a noop.
+   * Does any "end of sync" work. For most streams, this is a noop.
    * <p>
    * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table into the final table.
    */
-  public void commitFinalTable(String originalNamespace, String originalName) throws Exception {
-    final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
-    if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
-      String finalSuffix = overwriteStreamsWithTmpTable.get(streamConfig.id());
-      if (finalSuffix != null && !finalSuffix.isEmpty()) {
-        final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(finalSuffix, streamConfig.id());
-        if (overwriteFinalTable.isPresent()) {
-          LOGGER.info("Overwriting final table with tmp table for stream {}.{}", originalNamespace, originalName);
-          destinationHandler.execute(overwriteFinalTable.get());
+  public void commitFinalTables() throws Exception {
+    for (StreamConfig streamConfig : parsedCatalog.streams()) {
+      if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
+        StreamId streamId = streamConfig.id();
+        String finalSuffix = overwriteStreamsWithTmpTable.get(streamId);
+        if (finalSuffix != null && !finalSuffix.isEmpty()) {
+          final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(finalSuffix, streamId);
+          LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
+          destinationHandler.execute(overwriteFinalTable);
         }
       }
     }

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.util.Optional;
-
 public interface SqlGenerator<DialectTableDefinition> {
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
@@ -59,6 +57,6 @@ public interface SqlGenerator<DialectTableDefinition> {
    * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is non-empty.
    * Callers are responsible for verifying those are true.
    */
-  Optional<String> overwriteFinalTable(String finalSuffix, StreamId stream);
+  String overwriteFinalTable(String finalSuffix, StreamId stream);
 
 }
