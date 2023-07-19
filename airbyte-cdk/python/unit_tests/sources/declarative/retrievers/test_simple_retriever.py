@@ -75,10 +75,6 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_request_body_json.return_value = request_body_json
     request_kwargs = {"kwarg": "value"}
     requester.request_kwargs.return_value = request_kwargs
-    cache_filename = "cache"
-    requester.cache_filename = cache_filename
-    use_cache = True
-    requester.use_cache = use_cache
 
     retriever = SimpleRetriever(
         name="stream_name",
@@ -112,8 +108,8 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.backoff_time(requests.Response()) == backoff_time
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
-    assert retriever.cache_filename == cache_filename
-    assert retriever.use_cache == use_cache
+    assert retriever.cache_filename == "stream_name.yml"
+    assert not retriever.use_cache
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
