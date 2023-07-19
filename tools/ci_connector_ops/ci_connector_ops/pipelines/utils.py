@@ -7,14 +7,13 @@ from __future__ import annotations
 
 import datetime
 import json
+import os
 import re
 import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
-
-from gitdb.util import os
 
 import anyio
 import asyncer
