@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 import sys
 from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
@@ -19,6 +18,10 @@ def check_migration_guide(connector: Connector) -> bool:
         return True
 
     migration_guide_file_path = connector.migration_guide_file_path
+    # list files in the documentation directory to check if the migration guide exists
+    files = os.listdir(connector.documentation_directory)
+    files.sort()
+    print(files)
     if not migration_guide_file_path.exists():
         print(f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder.")
         return False
