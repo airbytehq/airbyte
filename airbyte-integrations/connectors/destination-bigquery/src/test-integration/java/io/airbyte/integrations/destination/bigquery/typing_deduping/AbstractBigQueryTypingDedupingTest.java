@@ -58,7 +58,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     }
     // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
     // so we don't need to do any existence checks here.
-    bq.delete(TableId.of("airbyte", streamNamespace + "_" + streamName));
+    bq.delete(TableId.of("airbyte", streamNamespace + "_ab__ab_" + streamName));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 }
