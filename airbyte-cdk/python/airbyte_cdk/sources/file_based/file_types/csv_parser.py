@@ -66,13 +66,13 @@ class CsvParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[Optional[Dict[str, Any]]]:
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
-        null_values = config_format.null_values if config_format else set()
         if config_format:
             if not isinstance(config_format, CsvFormat):
                 raise ValueError(f"Invalid format config: {config_format}")
+            null_values = config_format.null_values if config_format else []
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
             # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
             dialect_name = config.name + DIALECT_NAME
@@ -92,12 +92,12 @@ class CsvParser(FileTypeParser):
         else:
             with stream_reader.open_file(file) as fp:
                 reader = csv.DictReader(fp)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, null_values, logger)
+                yield from self._read_and_cast_types(reader, schema, [], logger)
 
     @staticmethod
     def _read_and_cast_types(
         reader: csv.DictReader, schema: Optional[Mapping[str, Any]], null_values: List[str], logger: logging.Logger  # type: ignore
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
 
@@ -115,7 +115,7 @@ class CsvParser(FileTypeParser):
                 yield CsvParser._to_nullable(cast_types(row, property_types, logger), null_values)
 
     @staticmethod
-    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional:
+    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional[Dict[str, Optional[str]]]:
         if any(key is None for key in row.keys()):
             return None
         nullable = row | {k: None if v in null_values else v for k, v in row.items()}

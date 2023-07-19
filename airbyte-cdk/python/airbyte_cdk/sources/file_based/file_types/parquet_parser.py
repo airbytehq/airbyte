@@ -4,7 +4,7 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -40,7 +40,7 @@ class ParquetParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[Optional[Dict[str, Any]]]:
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
