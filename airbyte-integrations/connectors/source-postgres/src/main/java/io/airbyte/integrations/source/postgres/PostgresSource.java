@@ -290,9 +290,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
       // from being able to pick their own cursor.
       final List<AirbyteStream> streams = catalog.getStreams().stream()
-          // We want to make sure every stream can be synced in INCREMENTAL mode and never in FULL_REFRESH
-          // mode for xmin.
-          .map(PostgresCatalogHelper::overrideSyncModesForXmin)
+          .map(PostgresCatalogHelper::overrideSyncModes)
           .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
           .collect(toList());
 
