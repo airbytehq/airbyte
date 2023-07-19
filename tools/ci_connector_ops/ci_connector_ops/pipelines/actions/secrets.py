@@ -71,7 +71,10 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
         gcp_gsm_env_variable_name (str, optional): The name of the environment variable holding credentials to connect to Google Secret Manager. Defaults to "GCP_GSM_CREDENTIALS".
 
     Returns:
-        int: The exit code of the ci-credentials update-secrets command.
+        container (Container): The executed ci-credentials update-secrets command.
+
+    Raises:
+        ExecError: If the command returns a non-zero exit code.
     """
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
