@@ -33,26 +33,11 @@ public class AirbyteTypeUtils {
       AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
       AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING));
 
-  protected static boolean nodeIsType(final JsonNode node, final String type) {
+  protected static boolean nodeMatches(final JsonNode node, final String value) {
     if (node == null || !node.isTextual()) {
       return false;
     }
-    return node.equals(TextNode.valueOf(type));
-  }
-
-  private static boolean nodeIsOrContainsType(final JsonNode node, final String type) {
-    if (node == null) {
-      return false;
-    } else if (node.isTextual()) {
-      return nodeIsType(node, type);
-    } else if (node.isArray()) {
-      for (final JsonNode element : node) {
-        if (nodeIsType(element, type)) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return node.equals(TextNode.valueOf(value));
   }
 
   // Extracts the appropriate protocol type from the representative JSON
@@ -62,30 +47,30 @@ public class AirbyteTypeUtils {
       return matches(node.asText());
     }
 
-    // Or, JSON could be a node with fields
+    // or, JSON could be a node with fields
     final JsonNode propertyType = node.get("type");
     final JsonNode airbyteType = node.get("airbyte_type");
     final JsonNode format = node.get("format");
 
-    if (nodeIsOrContainsType(propertyType, "boolean")) {
+    if (nodeMatches(propertyType, "boolean")) {
       return BOOLEAN;
-    } else if (nodeIsOrContainsType(propertyType, "integer")) {
+    } else if (nodeMatches(propertyType, "integer")) {
       return INTEGER;
-    } else if (nodeIsOrContainsType(propertyType, "number")) {
-      return nodeIsType(airbyteType, "integer") ? INTEGER : NUMBER;
-    } else if (nodeIsOrContainsType(propertyType, "string")) {
-      if (nodeIsOrContainsType(format, "date")) {
+    } else if (nodeMatches(propertyType, "number")) {
+      return nodeMatches(airbyteType, "integer") ? INTEGER : NUMBER;
+    } else if (nodeMatches(propertyType, "string")) {
+      if (nodeMatches(format, "date")) {
         return DATE;
-      } else if (nodeIsType(format, "time")) {
-        if (nodeIsType(airbyteType, "time_without_timezone")) {
+      } else if (nodeMatches(format, "time")) {
+        if (nodeMatches(airbyteType, "time_without_timezone")) {
           return TIME_WITHOUT_TIMEZONE;
-        } else if (nodeIsType(airbyteType, "time_with_timezone")) {
+        } else if (nodeMatches(airbyteType, "time_with_timezone")) {
           return TIME_WITH_TIMEZONE;
         }
-      } else if (nodeIsOrContainsType(format, "date-time")) {
-        if (nodeIsType(airbyteType, "timestamp_without_timezone")) {
+      } else if (nodeMatches(format, "date-time")) {
+        if (nodeMatches(airbyteType, "timestamp_without_timezone")) {
           return TIMESTAMP_WITHOUT_TIMEZONE;
-        } else if (airbyteType == null || nodeIsType(airbyteType, "timestamp_with_timezone")) {
+        } else if (airbyteType == null || nodeMatches(airbyteType, "timestamp_with_timezone")) {
           return TIMESTAMP_WITH_TIMEZONE;
         }
       } else {

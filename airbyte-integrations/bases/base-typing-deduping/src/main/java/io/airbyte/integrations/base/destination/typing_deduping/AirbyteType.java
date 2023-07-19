@@ -5,7 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.getAirbyteProtocolType;
-import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.nodeIsType;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.nodeMatches;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,9 +38,9 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       final JsonNode topLevelType = schema.get("type");
       if (topLevelType != null) {
         if (topLevelType.isTextual()) {
-          if (nodeIsType(topLevelType, "object")) {
+          if (nodeMatches(topLevelType, "object")) {
             return getStruct(schema);
-          } else if (nodeIsType(topLevelType, "array")) {
+          } else if (nodeMatches(topLevelType, "array")) {
             return getArray(schema);
           }
         } else if (topLevelType.isArray()) {
@@ -102,18 +102,22 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       } else if (typeOptions.get(0).equals("array")) {
         return getArray(schema);
       } else {
-        return getAirbyteProtocolType(schema);
+        return getAirbyteProtocolType(getTrimmedJsonSchema(schema, typeOptions.get(0)));
       }
     }
 
-    final List<AirbyteType> options = typeOptions.stream().map(typeOption -> {
-      // Recurse into a schema that forces a specific one of each option
-      final JsonNode schemaClone = schema.deepCopy();
-      // schema is guaranteed to be an object here, because we know it has a `type` key
-      ((ObjectNode) schemaClone).put("type", typeOption);
-      return fromJsonSchema(schemaClone);
-    }).toList();
+    // Recurse into a schema that forces a specific one of each option
+    final List<AirbyteType> options = typeOptions.stream().map(typeOption ->
+      fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))).toList();
     return new OneOf(options);
+  }
+
+  // Duplicates the JSON schema but keeps only one type
+  private static JsonNode getTrimmedJsonSchema(final JsonNode schema, final String type) {
+    final JsonNode schemaClone = schema.deepCopy();
+    // schema is guaranteed to be an object here, because we know it has a `type` key
+    ((ObjectNode) schemaClone).put("type", type);
+    return schemaClone;
   }
 
   enum AirbyteProtocolType implements AirbyteType {

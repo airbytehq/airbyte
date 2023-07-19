@@ -63,7 +63,7 @@ public class AirbyteTypeTest {
                          },
                          "key9": {
                            "type": "string",
-                           "format": ["date-time", "foo"],
+                           "format": "date-time",
                            "airbyte_type": "timestamp_with_timezone"
                          },
                          "key10": {
@@ -114,7 +114,7 @@ public class AirbyteTypeTest {
                          },
                          "key9": {
                            "type": ["string"],
-                           "format": ["date-time", "foo"],
+                           "format": "date-time",
                            "airbyte_type": "timestamp_with_timezone"
                          },
                          "key10": {
@@ -165,7 +165,7 @@ public class AirbyteTypeTest {
                          },
                          "key9": {
                            "type": ["null", "string"],
-                           "format": ["date-time", "foo"],
+                           "format": "date-time",
                            "airbyte_type": "timestamp_with_timezone"
                          },
                          "key10": {
