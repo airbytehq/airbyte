@@ -1,0 +1,87 @@
+{
+  "type": "object",
+  "description": "Evidence are proofs of customers' location that must be stored to comply with tax rules.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object.",
+      "readOnly": true,
+      "example": 92732431
+    },
+    "additional_evidence": {
+      "type": "string",
+      "nullable": true,
+      "description": "Additional evidence used to proof the customer's location. Required if there's a `additional_evidence_country'.",
+      "example": "Phone bill"
+    },
+    "additional_evidence_country": {
+      "type": "string",
+      "nullable": true,
+      "description": "2-letter ISO 3166-1 code.",
+      "example": "DE"
+    },
+    "bank_country": {
+      "type": "string",
+      "nullable": true,
+      "description": "2-letter ISO 3166-1 code.",
+      "example": "DE"
+    },
+    "billing_country": {
+      "type": "string",
+      "nullable": true,
+      "description": "2-letter ISO 3166-1 code.",
+      "example": "DE"
+    },
+    "created_at": {
+      "type": "integer",
+      "readOnly": true,
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "example": "1593260908"
+    },
+    "document_id": {
+      "type": "integer",
+      "description": "Unique identifier for the related invoice.",
+      "example": 43123
+    },
+    "ip_address": {
+      "type": "string",
+      "nullable": true,
+      "description": "The customer's IP address",
+      "example": "127.0.0.1"
+    },
+    "ip_country": {
+      "type": "string",
+      "nullable": true,
+      "readOnly": true,
+      "description": "2-letter ISO 3166-1 code.",
+      "example": "DE"
+    },
+    "notes": {
+      "type": "string",
+      "nullable": true,
+      "description": "Internal notes about the evidence.",
+      "example": "Some private notes about the evidence."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "unsettled",
+        "conflicting",
+        "confirmed"
+      ],
+      "default": "unsettled",
+      "description": "State of the evidence"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the object",
+      "readOnly": true,
+      "example": "https://quadernoapp.com/api/evidence/92732431"
+    }
+  },
+  "required": [
+    "document_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

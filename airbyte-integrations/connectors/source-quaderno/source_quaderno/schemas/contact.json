@@ -1,0 +1,178 @@
+{
+  "type": "object",
+  "description": "Any customer or vendor who appears on your invoices, credit notes, and expenses.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object.",
+      "readOnly": true,
+      "example": 92732431
+    },
+    "city": {
+      "type": "string",
+      "nullable": true,
+      "description": "City/District/Suburb/Town/Village.",
+      "example": "Pasadena"
+    },
+    "contact_person": {
+      "type": "string",
+      "nullable": true,
+      "description": "If the contact is a `company`, this is its contact person."
+    },
+    "country": {
+      "type": "string",
+      "description": "2-letter [ISO country code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes).",
+      "example": "US"
+    },
+    "created_at": {
+      "type": "integer",
+      "readOnly": true,
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "example": 1648037653
+    },
+    "department": {
+      "type": "string",
+      "nullable": true,
+      "description": "If the contact is a `company`, this is the deparment."
+    },
+    "discount": {
+      "oneOf": [
+        {
+          "type": "number",
+          "format": "float"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Default discount for this contact.",
+      "example": 0
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "nullable": true,
+      "description": "The contact's email address",
+      "example": "leonard@gmail.com"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "The contact's first name. Only if the contact is a `person`.",
+      "example": "Leonard"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "The contact's full name.",
+      "example": "Leonard Hofstadter"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "company",
+        "person"
+      ],
+      "default": "company",
+      "description": "The type of contact.",
+      "example": "person"
+    },
+    "language": {
+      "type": "string",
+      "description": "The contact's preferred language. 2-letter [ISO language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Should be included in the account's translations list.",
+      "example": "EN"
+    },
+    "last_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "The contact's last name. Only if the contact is a `person`.",
+      "example": "Hofstadter"
+    },
+    "notes": {
+      "type": "string",
+      "nullable": true,
+      "description": "Internal notes about the contact.",
+      "example": "Some private notes about the contact."
+    },
+    "phone_1": {
+      "type": "string",
+      "nullable": true,
+      "description": "The contact's phone number.",
+      "example": "202-555-0104"
+    },
+    "postal_code": {
+      "type": "string",
+      "nullable": true,
+      "description": "ZIP or postal code.",
+      "example": "91104"
+    },
+    "processor": {
+      "type": "string",
+      "nullable": true,
+      "description": "The external platform where the contact was imported from, if applicable.",
+      "example": "stripe"
+    },
+    "processor_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "The ID the `payment_processor` assigned to the contact.",
+      "example": "cus_999999999999"
+    },
+    "permalink": {
+      "type": "string",
+      "format": "uri",
+      "description": "The URL for the hosted billing area, where customers can download their invoices and update their billing details.",
+      "readOnly": true,
+      "example": "https://quadernoapp.com/billing/123345abcdef67890"
+    },
+    "region": {
+      "type": "string",
+      "nullable": true,
+      "description": "State/Province/Region.",
+      "example": "CA"
+    },
+    "street_line_1": {
+      "type": "string",
+      "nullable": true,
+      "description": "Address line 1 (Street address/PO Box).",
+      "example": "2311 North Los Robles Av."
+    },
+    "street_line_2": {
+      "type": "string",
+      "nullable": true,
+      "description": "Address line 2 (Apartment/Suite/Unit/Building).",
+      "example": "Apartment C"
+    },
+    "tax_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "The contact's tax identification number. Quaderno can validate EU VAT numbers, ABN, and NZBN."
+    },
+    "tax_status": {
+      "type": "string",
+      "enum": [
+        "taxable",
+        "exempt",
+        "reverse"
+      ],
+      "description": "Specifies the tax status of the contact.",
+      "default": "taxable"
+    },
+    "web": {
+      "type": "string",
+      "nullable": true,
+      "format": "uri",
+      "description": "The contact's website",
+      "example": "https://theelevatorisbroken.com"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the object",
+      "readOnly": true,
+      "example": "https://quadernoapp.com/api/contacts/92732431"
+    }
+  },
+  "required": [
+    "first_name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,154 @@
+{
+  "type": "object",
+  "description": "Products describe the specific goods or services you offer to your customers. You can use them in your invoices and checkout links.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object.",
+      "readOnly": true,
+      "example": 92732431
+    },
+    "code": {
+      "type": "string",
+      "description": "The product\u2019s SKU (Stock Keeping Unit) describe specific product variations, taking into account any combination of: attributes, currency, and cost.",
+      "example": "012345678901-MFN"
+    },
+    "country": {
+      "type": "string",
+      "nullable": true,
+      "description": "2-letter [ISO country code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes). Required if `tax_based_on` is `country`.",
+      "example": "US"
+    },
+    "created_at": {
+      "type": "integer",
+      "readOnly": true,
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "example": "1593260908"
+    },
+    "currency": {
+      "type": "string",
+      "nullable": true,
+      "description": "Three-letter [ISO currency code](https://en.wikipedia.org/wiki/ISO_4217), in uppercase. Must be a supported currency in your payment processors.",
+      "example": "USD"
+    },
+    "description": {
+      "type": "string",
+      "nullable": true,
+      "description": "The product\u2019s description, meant to be displayable to the customer. Use this field to optionally store a long form explanation of the product being sold for your own rendering purposes."
+    },
+    "paypal_interval_duration": {
+      "type": "integer",
+      "nullable": true,
+      "description": "Only for `subscriptions`. Number of times the charge should recur.",
+      "example": 1
+    },
+    "paypal_interval_frequency": {
+      "type": "integer",
+      "nullable": true,
+      "description": "Only for PayPal `subscriptions`. The number of intervals between subscription billings."
+    },
+    "paypal_interval_unit": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly",
+      "description": "Only for PayPal `subscriptions`. Specifies billing frequency.",
+      "example": "monthly"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "one_off",
+        "subscription"
+      ],
+      "default": "one_off",
+      "description": "The type of transaction: one-off purchase or subscription."
+    },
+    "name": {
+      "type": "string",
+      "description": "The product\u2019s name, meant to be displayable to the customer.",
+      "example": "Ruby Essentials"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "good",
+        "service"
+      ],
+      "default": "service",
+      "description": "The type of the product. The product is either a tangible `good` or a `service`."
+    },
+    "stripe_plan_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Only for Stripe `subscriptions`. ID of the Stripe price related to the subscription.",
+      "example": "price_1GtYUvKYlo3Dy5yXgrQS"
+    },
+    "tax_based_on": {
+      "type": "string",
+      "enum": [
+        "customer_country",
+        "country"
+      ],
+      "default": "customer_country",
+      "description": "How taxes are going to be calculated: based on the customer country or a particular country."
+    },
+    "tax_class": {
+      "type": "string",
+      "enum": [
+        "eservice",
+        "ebook",
+        "saas",
+        "standard",
+        "reduced"
+      ],
+      "default": "eservice",
+      "description": "The tax class that applies to the product."
+    },
+    "tax_type": {
+      "type": "string",
+      "enum": [
+        "excluded",
+        "included"
+      ],
+      "default": "included",
+      "description": "Specify if taxes are included or excluded in the `unit_cost`."
+    },
+    "unit_cost": {
+      "type": "string",
+      "description": "The unit amount to be charged",
+      "example": "9.99"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the object",
+      "readOnly": true,
+      "example": "https://quadernoapp.com/api/products/92732431"
+    },
+    "stock": {
+      "type": "string",
+      "nullable": true,
+      "description": "The stock of the physical product.",
+      "example": "10"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "description",
+    "name",
+    "product_type",
+    "unit_cost",
+    "stock",
+    "tax_class",
+    "kind",
+    "tax_type",
+    "tax_based_on"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

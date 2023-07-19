@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "description": "The payment associated with the invoice.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object.",
+      "readOnly": true,
+      "example": 92732431
+    },
+    "amount_cents": {
+      "type": "number",
+      "format": "float",
+      "description": "Paid amount.",
+      "example": 56.6
+    },
+    "created_at": {
+      "type": "integer",
+      "readOnly": true,
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "example": "1593260908"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Default is current date.",
+      "example": "2020-06-27"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "cash",
+        "wire_transfer",
+        "direct_debit",
+        "check",
+        "iou",
+        "paypal",
+        "other",
+        "credit"
+      ],
+      "nullable": true,
+      "description": "",
+      "example": "credit_card"
+    },
+    "payment_processor": {
+      "type": "string",
+      "nullable": true,
+      "description": "The payment processor used to process the payment.",
+      "example": "stripe"
+    },
+    "payment_processor_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "The ID the `payment_processor` assigned to the payment.",
+      "example": "ch_999999999999"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the object",
+      "readOnly": true,
+      "example": "https://quadernoapp.com/api/payments/92732431"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

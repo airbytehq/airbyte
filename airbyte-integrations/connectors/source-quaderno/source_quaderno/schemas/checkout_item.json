@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "description": "A Checkout Item represents every product being purchased in a Checkout Session.",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "format": "float",
+      "nullable": true,
+      "description": "Unit price of the item being purchased.",
+      "example": 9.99
+    },
+    "currency": {
+      "type": "string",
+      "nullable": true,
+      "description": "Three-letter [ISO currency code](https://en.wikipedia.org/wiki/ISO_4217), in uppercase. Must be a supported currency in your payment processors.",
+      "example": "USD"
+    },
+    "description": {
+      "type": "string",
+      "nullable": true,
+      "description": "The description of the item being purchased."
+    },
+    "name": {
+      "type": "string",
+      "nullable": true,
+      "description": "The name of the item being purchased.",
+      "example": "Ruby Essentials"
+    },
+    "product": {
+      "type": "string",
+      "nullable": true,
+      "description": "The SKU of the Quaderno `Product` being purchased.",
+      "example": "012345678901-MFN"
+    },
+    "quantity": {
+      "type": "integer",
+      "default": 1,
+      "description": "Quantity of the item being purchased.",
+      "example": 1
+    }
+  },
+  "required": [
+    "product"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

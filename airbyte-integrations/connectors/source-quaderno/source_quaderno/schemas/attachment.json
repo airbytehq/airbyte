@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Invoices and expenses can have attached files.",
+  "properties": {
+    "data": {
+      "type": "string",
+      "description": "File data enconded in base64."
+    },
+    "filename": {
+      "type": "string",
+      "description": "Name of the attached file.",
+      "example": "ticket.jpeg"
+    },
+    "public": {
+      "type": "boolean",
+      "description": "Visibility of attached file. Public attachments can be seen and downloaded by customers.",
+      "default": false,
+      "example": true
+    }
+  },
+  "required": [
+    "data",
+    "filename"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}
