@@ -347,14 +347,14 @@ public class AirbyteTypeTest {
   @Test
   public void testUnionComplex() {
     final JsonNode schema = Jsons.deserialize("""
-                                        {
-                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
-                                          "properties": {
-                                            "foo": {"type": "string"}
-                                          },
-                                          "items": {"type": "string"}
-                                        }
-                                        """);
+                                              {
+                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
+                                                "properties": {
+                                                  "foo": {"type": "string"}
+                                                },
+                                                "items": {"type": "string"}
+                                              }
+                                              """);
 
     final AirbyteType parsed = fromJsonSchema(schema);
 
@@ -374,10 +374,10 @@ public class AirbyteTypeTest {
   @Test
   public void testUnionUnderspecifiedNonPrimitives() {
     final JsonNode schema = Jsons.deserialize("""
-                                        {
-                                          "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
-                                        }
-                                        """);
+                                              {
+                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
+                                              }
+                                              """);
 
     final AirbyteType parsed = fromJsonSchema(schema);
 

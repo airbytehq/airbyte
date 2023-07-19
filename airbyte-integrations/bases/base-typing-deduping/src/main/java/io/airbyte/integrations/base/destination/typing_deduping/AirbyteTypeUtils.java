@@ -71,18 +71,16 @@ public class AirbyteTypeUtils {
 
   // Picks which type in a Union takes precedence
   public static AirbyteType chooseUnionType(final Union u) {
-    final Comparator<AirbyteType> comparator = Comparator.comparing(t ->
-        {
-          if (t instanceof Array) {
-            return -2;
-          } else if (t instanceof Struct) {
-            return -1;
-          } else if (t instanceof final AirbyteProtocolType p) {
-            return List.of(AirbyteProtocolType.values()).indexOf(p);
-          }
-          return Integer.MAX_VALUE;
-        }
-    );
+    final Comparator<AirbyteType> comparator = Comparator.comparing(t -> {
+      if (t instanceof Array) {
+        return -2;
+      } else if (t instanceof Struct) {
+        return -1;
+      } else if (t instanceof final AirbyteProtocolType p) {
+        return List.of(AirbyteProtocolType.values()).indexOf(p);
+      }
+      return Integer.MAX_VALUE;
+    });
 
     return u.options().stream().min(comparator).orElse(UNKNOWN);
   }

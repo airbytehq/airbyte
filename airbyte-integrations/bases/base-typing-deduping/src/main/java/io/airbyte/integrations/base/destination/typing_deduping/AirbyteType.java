@@ -105,8 +105,7 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     }
 
     // Recurse into a schema that forces a specific one of each option
-    final List<AirbyteType> options = typeOptions.stream().map(typeOption ->
-      fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))).toList();
+    final List<AirbyteType> options = typeOptions.stream().map(typeOption -> fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))).toList();
     return new Union(options);
   }
 
@@ -120,11 +119,12 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
 
   /**
    * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
-   * Priority is given to wider scope types over narrower ones.
-   * (Note that because of dedup logic in {@link AirbyteType#fromJsonSchema(JsonNode)}, at most one
-   * string or date/time type can exist in a Union.)
+   * Priority is given to wider scope types over narrower ones. (Note that because of dedup logic in
+   * {@link AirbyteType#fromJsonSchema(JsonNode)}, at most one string or date/time type can exist in a
+   * Union.)
    */
   enum AirbyteProtocolType implements AirbyteType {
+
     STRING,
     DATE,
     TIME_WITHOUT_TIMEZONE,
