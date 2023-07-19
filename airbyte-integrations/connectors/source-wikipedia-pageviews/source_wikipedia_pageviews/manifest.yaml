@@ -15,7 +15,7 @@ definitions:
       datetime: "{{config.start}}"
       datetime_format: "%Y%m%d"
     end_datetime:
-      datetime: "{{config.start}}"
+      datetime: "{{config.end}}"
       datetime_format: "%Y%m%d"
     step: "P1D"
     cursor_field: "timestamp"
@@ -23,11 +23,15 @@ definitions:
     cursor_granularity: "P1D"
   per_article_incremental_sync:
     type: DatetimeBasedCursor
-    start_datetime: "{{config.start}}"
-    end_datetime: "{{config.end}}"
+    start_datetime:
+      datetime: "{{config.start}}"
+      datetime_format: "%Y%m%d"
+    end_datetime:
+      datetime: "{{config.end}}"
+      datetime_format: "%Y%m%d"
     step: "P1D"
     cursor_field: "timestamp"
-    datetime_format: "%Y%m%d"
+    datetime_format: "%Y%m%d%H"
     cursor_granularity: "P1D"
 
   per_article_requester:
