@@ -60,7 +60,7 @@ inputs:
   dagger_cli_commit:
     description: "Commit SHA of dagger-cli to use"
     required: false
-    default: "6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
+    default: "c7a440a47f8bde4c552962114bcf608a60809972"
   ci_job_key:
     description: "CI job key"
     required: false

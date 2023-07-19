@@ -50,11 +50,11 @@ for storing list of profiles that later be used by all the streams to get
 profile id. Also it stores pydantic model and API url for requests.
 
 AmazonAdsStream is Http based class, it used for making request that could be
-accomlished by single http call (any but report streams).
+accomplished by single http call (any but report streams).
 
 SubProfilesStream is subclass for http streams to perform read_records from
 basic class for EACH profile from self._profiles list. Also provides support
-for Amazon Ads API pagintaion. This is base class for all the sync http streams
+for Amazon Ads API pagination. This is base class for all the sync http streams
 that used by source.
 
 ReportStream (It implemented on report_stream.py file) is subclass for async

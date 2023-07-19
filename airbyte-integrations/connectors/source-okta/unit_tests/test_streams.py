@@ -264,6 +264,17 @@ class TestStreamGroupMembers:
         inputs = {"response": requests.get(f"{api_url}"), "stream_state": MagicMock(), "stream_slice": {"group_id": "test_group_id"}}
         assert list(stream.parse_response(**inputs)) == [group_members_instance]
 
+    def test_group_members_request_params_with_latest_entry(self, patch_base_class, group_members_instance, url_base, api_url, start_date):
+        stream = GroupMembers(url_base=url_base, start_date=start_date)
+        inputs = {
+            "stream_slice": {"group_id": "some_group"},
+            "stream_state": {"id": "some_test_id"},
+        }
+        assert stream.request_params(**inputs) == {
+            "limit": 200,
+            "after": "some_test_id",
+        }
+
     def test_group_members_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
     ):
