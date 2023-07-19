@@ -101,7 +101,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.13.0  | 2023-07-18 | [28466](https://github.com/airbytehq/airbyte/pull/28466) | Pin source API version                                                                                                                               |
 | 3.12.0  | 2023-05-20 | [26208](https://github.com/airbytehq/airbyte/pull/26208) | Add new stream `Persons`                                                                                                                             |
 | 3.11.0  | 2023-06-26 | [27734](https://github.com/airbytehq/airbyte/pull/27734) | License Update: Elv2 stream                                                                                                                          |
 | 3.10.0  | 2023-06-22 | [27132](https://github.com/airbytehq/airbyte/pull/27132) | Add `CreditNotes` stream                                                                                                                             |
