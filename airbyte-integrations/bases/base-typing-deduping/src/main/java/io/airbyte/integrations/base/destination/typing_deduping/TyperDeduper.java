@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class TyperDeduper<DialectTableDefinition> {
   private static final Logger LOGGER = LoggerFactory.getLogger(TyperDeduper.class);
 
-  private static final String DEFAULT_OVERWRITE_TABLE_SUFFIX = "";
+  private static final String NO_SUFFIX = "";
   private static final String TMP_OVERWRITE_TABLE_SUFFIX = "_airbyte_tmp";
 
   private final SqlGenerator<DialectTableDefinition> sqlGenerator;
@@ -36,10 +36,10 @@ public class TyperDeduper<DialectTableDefinition> {
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isEmpty()) {
         // If the table doesn't exist, create it
-        destinationHandler.execute(sqlGenerator.createTable(stream, DEFAULT_OVERWRITE_TABLE_SUFFIX));
+        destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX));
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // We're creating this table for the first time. Write directly into it.
-          overwriteStreamsWithTmpTable.put(stream.id(), DEFAULT_OVERWRITE_TABLE_SUFFIX);
+          overwriteStreamsWithTmpTable.put(stream.id(), NO_SUFFIX);
         }
       } else {
         // If the table _does_ exist, make sure it has the right schema
@@ -48,7 +48,7 @@ public class TyperDeduper<DialectTableDefinition> {
           if (destinationHandler.isFinalTableEmpty(stream.id())) {
             // The table already exists but is empty. We'll load data incrementally.
             // (this might be because the user ran a reset, which creates an empty table)
-            overwriteStreamsWithTmpTable.put(stream.id(), DEFAULT_OVERWRITE_TABLE_SUFFIX);
+            overwriteStreamsWithTmpTable.put(stream.id(), NO_SUFFIX);
           } else {
             // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the
             // end of the sync.
@@ -66,7 +66,7 @@ public class TyperDeduper<DialectTableDefinition> {
   public void typeAndDedupe(String originalNamespace, String originalName) throws Exception {
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     String suffix;
-    suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), DEFAULT_OVERWRITE_TABLE_SUFFIX);
+    suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), NO_SUFFIX);
     final String sql = sqlGenerator.updateTable(suffix, streamConfig);
     destinationHandler.execute(sql);
   }
