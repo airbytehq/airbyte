@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -22,7 +21,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
    * The generated SQL may throw an exception if the table already exists. Callers should use
-   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known to exist.
+   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
+   * to exist.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -31,15 +31,18 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   /**
    * Check the final table's schema and compare it to what the stream config would generate.
+   *
    * @param stream the stream/stable in question
    * @param existingTable the existing table mapped to the stream
    * @return whether the existing table matches the expected schema
-   * @throws TableNotMigratedException if the table does not contain all {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS}
+   * @throws TableNotMigratedException if the table does not contain all
+   *         {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS}
    */
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
   /**
    * SQL Statements which will rebuild the final table using the raw table data
+   *
    * @param stream the stream to rebuild
    * @return an ordered sequence of SQL statements to execute to rebuild the final table.
    */
@@ -74,4 +77,5 @@ public interface SqlGenerator<DialectTableDefinition> {
   Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
 
   AlterTableReport buildAlterTableReport(final StreamConfig stream, final DialectTableDefinition existingTable);
+
 }

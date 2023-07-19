@@ -84,11 +84,11 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    *         deduping.
    */
   public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
-     if (!containsKey(key)) {
+    if (!containsKey(key)) {
       return false;
-     }
+    }
 
-     return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
+    return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
   }
 
   /**
@@ -107,8 +107,8 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   /**
    * Meant to be called after
-   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)}
-   * will set a streams last operation to the current time and increase its index reference in
+   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)} will set
+   * a streams last operation to the current time and increase its index reference in
    * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
    *
    * @param key the stream to update
