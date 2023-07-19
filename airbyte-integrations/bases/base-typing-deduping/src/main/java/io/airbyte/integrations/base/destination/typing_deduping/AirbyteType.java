@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,AirbyteProtocolType {
+public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,UnsupportedOneOf,Union {
 
   Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
 
@@ -31,7 +31,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    * it's an {@link Struct} schema, and then call {@link Struct#properties()} to get the columns.
    * <p>
    * If the top-level schema is not an object, then we can't really do anything with it, and should
-   * probably fail the sync. (but see also {@link OneOf#asColumns()}).
+   * probably fail the sync. (but see also {@link Union#asColumns()}).
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
     try {
@@ -95,7 +95,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
       }
     });
 
-    // we encounter an array of types that actually represents a single type rather than a OneOf
+    // we encounter an array of types that actually represents a single type rather than a Union
     if (typeOptions.size() == 1) {
       if (typeOptions.get(0).equals("object")) {
         return getStruct(schema);
@@ -109,7 +109,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     // Recurse into a schema that forces a specific one of each option
     final List<AirbyteType> options = typeOptions.stream().map(typeOption ->
       fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))).toList();
-    return new OneOf(options);
+    return new Union(options);
   }
 
   // Duplicates the JSON schema but keeps only one type
@@ -121,7 +121,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
   }
 
   enum AirbyteProtocolType implements AirbyteType {
-    // Protocol types are ordered by precedence in the case of a OneOf that contains multiple types.
+    // Protocol types are ordered by precedence in the case of a Union that contains multiple types.
     BOOLEAN,
     INTEGER,
     NUMBER,
@@ -158,7 +158,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
   /**
    * Represents a {oneOf: [...]} schema.
    * <p>
-   * This is purely a legacy type that we should eventually delete. See also {@link OneOf}.
+   * This is purely a legacy type that we should eventually delete. See also {@link Union}.
    */
   record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
 
@@ -177,7 +177,7 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
    * <li>Delete UnsupportedOneOf</li>
    * </ol>
    */
-  record OneOf(List<AirbyteType> options) implements AirbyteType {
+  record Union(List<AirbyteType> options) implements AirbyteType {
 
     /**
      * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level

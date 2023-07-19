@@ -6,14 +6,15 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType.*;
 import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.fromJsonSchema;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.chooseUnionType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -325,9 +326,9 @@ public class AirbyteTypeTest {
   }
 
   @Test
-  public void testOneOf() {
+  public void testUnion() {
 
-    final String oneOfSchema = """
+    final String unionSchema = """
                                {
                                  "type": ["string", "number"]
                                }
@@ -337,12 +338,12 @@ public class AirbyteTypeTest {
     options.add(STRING);
     options.add(NUMBER);
 
-    final OneOf oneOf = new OneOf(options);
-    assertEquals(oneOf, fromJsonSchema(Jsons.deserialize(oneOfSchema)));
+    final Union union = new Union(options);
+    assertEquals(union, fromJsonSchema(Jsons.deserialize(unionSchema)));
   }
 
   @Test
-  public void testOneOfComplex() {
+  public void testUnionComplex() {
     final JsonNode schema = Jsons.deserialize("""
                                         {
                                           "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
@@ -355,7 +356,7 @@ public class AirbyteTypeTest {
 
     final AirbyteType parsed = fromJsonSchema(schema);
 
-    final AirbyteType expected = new OneOf(List.of(
+    final AirbyteType expected = new Union(List.of(
         STRING,
         new Struct(new LinkedHashMap<>() {
 
@@ -369,7 +370,7 @@ public class AirbyteTypeTest {
   }
 
   @Test
-  public void testOneOfUnderspecifiedNonPrimitives() {
+  public void testUnionUnderspecifiedNonPrimitives() {
     final JsonNode schema = Jsons.deserialize("""
                                         {
                                           "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
@@ -378,7 +379,7 @@ public class AirbyteTypeTest {
 
     final AirbyteType parsed = fromJsonSchema(schema);
 
-    final AirbyteType expected = new OneOf(List.of(
+    final AirbyteType expected = new Union(List.of(
         STRING,
         new Struct(new LinkedHashMap<>()),
         new Array(UNKNOWN)));
@@ -423,38 +424,38 @@ public class AirbyteTypeTest {
   }
 
   @Test
-  public void testChooseOneOf() {
+  public void testChooseUnion() {
     // test ordering
 
-    OneOf o = new OneOf(ImmutableList.of(STRING, DATE));
-    assertEquals(DATE, AirbyteTypeUtils.chooseOneOfType(o));
+    Union u = new Union(ImmutableList.of(STRING, DATE));
+    assertEquals(DATE, chooseUnionType(u));
 
     final Array a = new Array(TIME_WITH_TIMEZONE);
-    o = new OneOf(ImmutableList.of(TIMESTAMP_WITH_TIMEZONE, a));
-    assertEquals(a, AirbyteTypeUtils.chooseOneOfType(o));
+    u = new Union(ImmutableList.of(TIMESTAMP_WITH_TIMEZONE, a));
+    assertEquals(a, chooseUnionType(u));
 
     final LinkedHashMap<String, AirbyteType> properties = new LinkedHashMap<>();
     properties.put("key1", UNKNOWN);
     properties.put("key2", TIME_WITHOUT_TIMEZONE);
     final Struct s = new Struct(properties);
-    o = new OneOf(ImmutableList.of(TIMESTAMP_WITHOUT_TIMEZONE, s));
-    assertEquals(s, AirbyteTypeUtils.chooseOneOfType(o));
+    u = new Union(ImmutableList.of(TIMESTAMP_WITHOUT_TIMEZONE, s));
+    assertEquals(s, chooseUnionType(u));
 
     // test exclusion
 
-    o = new OneOf(ImmutableList.of(BOOLEAN, INTEGER));
-    assertEquals(INTEGER, AirbyteTypeUtils.chooseOneOfType(o));
+    u = new Union(ImmutableList.of(BOOLEAN, INTEGER));
+    assertEquals(INTEGER, chooseUnionType(u));
 
-    o = new OneOf(ImmutableList.of(INTEGER, NUMBER, DATE));
-    assertEquals(NUMBER, AirbyteTypeUtils.chooseOneOfType(o));
+    u = new Union(ImmutableList.of(INTEGER, NUMBER, DATE));
+    assertEquals(NUMBER, chooseUnionType(u));
 
-    o = new OneOf(ImmutableList.of(BOOLEAN, NUMBER, STRING));
-    assertEquals(STRING, AirbyteTypeUtils.chooseOneOfType(o));
+    u = new Union(ImmutableList.of(BOOLEAN, NUMBER, STRING));
+    assertEquals(STRING, chooseUnionType(u));
   }
 
   @Test
   public void testAsColumns() {
-    final OneOf o = new OneOf(List.of(
+    final Union u = new Union(List.of(
         STRING,
         new Struct(new LinkedHashMap<>() {
 
@@ -465,11 +466,11 @@ public class AirbyteTypeTest {
         }),
         new Array(STRING),
         // This is bad behavior, but it matches current behavior so we'll test it.
-        // Ideally, we would recognize that the sub-oneOfs are also objects.
-        new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
+        // Ideally, we would recognize that the sub-unions are also objects.
+        new Union(List.of(new Struct(new LinkedHashMap<>()))),
         new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
-    final LinkedHashMap<String, AirbyteType> columns = o.asColumns();
+    final LinkedHashMap<String, AirbyteType> columns = u.asColumns();
 
     assertEquals(
         new LinkedHashMap<>() {
@@ -484,28 +485,28 @@ public class AirbyteTypeTest {
 
   @Test
   public void testAsColumnsMultipleObjects() {
-    final OneOf o = new OneOf(List.of(
+    final Union u = new Union(List.of(
         new Struct(new LinkedHashMap<>()),
         new Struct(new LinkedHashMap<>())));
 
     // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
     // warning for now.
-    assertEquals(new LinkedHashMap<>(), o.asColumns());
+    assertEquals(new LinkedHashMap<>(), u.asColumns());
   }
 
   @Test
   public void testAsColumnsNoObjects() {
-    final OneOf o = new OneOf(List.of(
+    final Union u = new Union(List.of(
         STRING,
         new Array(STRING),
         new UnsupportedOneOf(new ArrayList<>()),
         // Similar to testAsColumns(), this is bad behavior.
-        new OneOf(List.of(new Struct(new LinkedHashMap<>()))),
+        new Union(List.of(new Struct(new LinkedHashMap<>()))),
         new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
 
     // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
     // warning for now.
-    assertEquals(new LinkedHashMap<>(), o.asColumns());
+    assertEquals(new LinkedHashMap<>(), u.asColumns());
   }
 
 }

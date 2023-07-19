@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,9 +81,9 @@ public class AirbyteTypeUtils {
     return UNKNOWN;
   }
 
-  // Picks which type in a OneOf takes precedence
-  public static AirbyteType chooseOneOfType(final OneOf o) {
-    final List<AirbyteType> options = o.options();
+  // Picks which type in a Union takes precedence
+  public static AirbyteType chooseUnionType(final Union u) {
+    final List<AirbyteType> options = u.options();
 
     // record what types are present
     Array foundArrayType = null;

@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
@@ -43,12 +43,12 @@ public class BigQuerySqlGeneratorTest {
     assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(a));
     assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(new UnsupportedOneOf(new ArrayList<>())));
 
-    OneOf o = new OneOf(ImmutableList.of(s));
-    assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(o));
-    o = new OneOf(ImmutableList.of(a));
-    assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(o));
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER));
-    assertEquals(StandardSQLTypeName.NUMERIC, generator.toDialectType(o));
+    Union u = new Union(ImmutableList.of(s));
+    assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(u));
+    u = new Union(ImmutableList.of(a));
+    assertEquals(StandardSQLTypeName.JSON, generator.toDialectType(u));
+    u = new Union(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER));
+    assertEquals(StandardSQLTypeName.NUMERIC, generator.toDialectType(u));
   }
 
   @Test

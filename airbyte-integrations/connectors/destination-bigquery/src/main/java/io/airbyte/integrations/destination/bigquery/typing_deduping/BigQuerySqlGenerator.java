@@ -17,8 +17,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
@@ -99,8 +99,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       return StandardSQLTypeName.JSON;
     } else if (type instanceof UnsupportedOneOf) {
       return StandardSQLTypeName.JSON;
-    } else if (type instanceof final OneOf o) {
-      final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
+    } else if (type instanceof final Union u) {
+      final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseUnionType(u);
       final StandardSQLTypeName dialectType;
       if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
         dialectType = StandardSQLTypeName.JSON;
@@ -115,9 +115,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
-    if (airbyteType instanceof final OneOf o) {
-      // This is guaranteed to not be a OneOf, so we won't recurse infinitely
-      final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
+    if (airbyteType instanceof final Union u) {
+      // This is guaranteed to not be a Union, so we won't recurse infinitely
+      final AirbyteType chosenType = AirbyteTypeUtils.chooseUnionType(u);
       return extractAndCast(column, chosenType);
     } else if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
