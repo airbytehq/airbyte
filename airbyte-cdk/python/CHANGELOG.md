@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
 ## 0.46.0
 Remove pyarrow from main dependency and add it to extras
 
