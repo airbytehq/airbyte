@@ -18,7 +18,9 @@ public class TyperDeduper<DialectTableDefinition> {
   private final ParsedCatalog parsedCatalog;
   private final Map<StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
 
-  public TyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator, DestinationHandler<DialectTableDefinition> destinationHandler, ParsedCatalog parsedCatalog) {
+  public TyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
+                      DestinationHandler<DialectTableDefinition> destinationHandler,
+                      ParsedCatalog parsedCatalog) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;

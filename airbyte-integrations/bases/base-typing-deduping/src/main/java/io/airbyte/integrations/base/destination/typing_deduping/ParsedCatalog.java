@@ -4,9 +4,18 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.List;
 
 public record ParsedCatalog(List<StreamConfig> streams) {
+
+  public StreamConfig getStream(AirbyteStreamNameNamespacePair streamId) {
+    return getStream(streamId.getNamespace(), streamId.getName());
+  }
+
+  public StreamConfig getStream(StreamId streamId) {
+    return getStream(streamId.originalNamespace(), streamId.originalName());
+  }
 
   public StreamConfig getStream(String originalNamespace, String originalName) {
     return streams.stream()

@@ -71,21 +71,21 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     if (use1s1t) {
       typerDeduper.createFinalTables();
-      uploaderMap.forEach((streamId, uploader) -> uploader.createRawTable());
 
-      // For streams in overwrite mode, truncate the raw table and create a tmp table.
-      // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
-      // 1s1t mode.
-      for (final StreamConfig stream : catalog.streams()) {
+      // Set up our raw tables
+      uploaderMap.forEach((streamId, uploader) -> {
+        StreamConfig stream = catalog.getStream(streamId);
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          // drop+recreate the raw table
+          // For streams in overwrite mode, truncate the raw table.
+          // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+          // 1s1t mode.
           final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
           bigquery.delete(rawTableId);
           BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+        } else {
+          uploader.createRawTable();
         }
-      }
-
-      uploaderMap.forEach((streamId, uploader) -> uploader.createRawTable());
+      });
     }
   }
 
