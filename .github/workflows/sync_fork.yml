@@ -2,7 +2,7 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # every 30 minutes
+    - cron: '30 20 * * *' # At every 20.30 (8.30 PM) UTC timezone - 12.00 AM IST
   workflow_dispatch: # on button click
 
 jobs:
