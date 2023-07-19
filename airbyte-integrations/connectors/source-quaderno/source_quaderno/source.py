@@ -7,6 +7,9 @@ from typing import Any, List, Mapping, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import BasicHttpAuthenticator
+
+from .streams import Credits, Invoices
 
 
 # Source
@@ -38,9 +41,13 @@ class SourceQuaderno(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        Register streams.
+        Generate the streams for this source.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        
-        return []
+        auth = BasicHttpAuthenticator(username=config["apikey"], password="x")
+        streams = [
+            Invoices(authenticator=auth, config=config),
+            Credits(authenticator=auth, config=config),
+        ]
+        return streams
