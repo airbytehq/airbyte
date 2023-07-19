@@ -273,7 +273,6 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         page_count = ceil(records_count / self.page_size)
         for page_number in range(1, page_count + 1):
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
-            params["page"] = page_number
             request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice)
 
             request = self._create_prepared_request(
@@ -659,7 +658,8 @@ class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
-            params["page"] = next_page_token
+            params.pop("start_time", None)
+            params.update(next_page_token)
         return params
 
 
