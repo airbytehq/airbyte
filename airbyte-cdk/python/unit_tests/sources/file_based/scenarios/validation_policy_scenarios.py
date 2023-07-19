@@ -231,10 +231,6 @@ skip_record_scenario_single_stream = (
             },
             {
                 "level": "WARN",
-                "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=c.csv line_no=2 n_skipped=1"
-            },
-            {
-                "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=c.csv n_skipped=1 validation_policy=skip_record"
             }
         ]
@@ -289,11 +285,6 @@ skip_record_scenario_multi_stream = (
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a/a1.csv n_skipped=2 validation_policy=skip_record",
             },
             {
-                "level": "WARN",
-                "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a/a3.csv line_no=2 n_skipped=1",
-            },
-
-                {
                 "level": "WARN",
                 "message": "Records in file did not pass validation policy. stream=stream1 file=a/a3.csv n_skipped=1 validation_policy=skip_record",
             },
