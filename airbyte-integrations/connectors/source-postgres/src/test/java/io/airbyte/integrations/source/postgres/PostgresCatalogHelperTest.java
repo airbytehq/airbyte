@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 class PostgresCatalogHelperTest {
 
@@ -63,6 +65,16 @@ class PostgresCatalogHelperTest {
     assertFalse(PostgresCatalogHelper
         .setIncrementalToSourceDefined(noIncremental)
         .getSourceDefinedCursor());
+  }
+  @Test
+  public void testSetDefaultCursorFieldForCdc() {
+    final AirbyteStream cdcIncrementalStream = new AirbyteStream()
+        .withSourceDefinedCursor(true)
+        .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+    PostgresCatalogHelper.setDefaultCursorFieldForCdc(cdcIncrementalStream);
+
+    assertTrue(cdcIncrementalStream.getSourceDefinedCursor());
+    assertEquals(cdcIncrementalStream.getDefaultCursorField(), ImmutableList.of(CDC_LSN));
   }
 
   @Test

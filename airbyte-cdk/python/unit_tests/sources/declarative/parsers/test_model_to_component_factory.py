@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+# mypy: ignore-errors
+
 import datetime
 
 import pytest
