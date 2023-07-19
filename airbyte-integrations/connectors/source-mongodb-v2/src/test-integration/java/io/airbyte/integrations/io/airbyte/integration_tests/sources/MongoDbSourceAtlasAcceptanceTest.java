@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
@@ -62,9 +61,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     }
 
     final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
-    ((ObjectNode)credentialsJson).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
-    config = credentialsJson;
+    config = Jsons.deserialize(credentialsJsonString);
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
@@ -72,7 +69,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
         config.get("instance_type").get("cluster_url").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    database = new MongoDatabase(connectionString, DATABASE_NAME);
+    database = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
     final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
