@@ -7,7 +7,6 @@ from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.gradle import GradleTask
-from ci_connector_ops.pipelines.utils import with_exit_code
 from dagger import ExecError, File, QueryError
 
 

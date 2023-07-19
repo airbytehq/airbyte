@@ -12,7 +12,7 @@ import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, NamedTuple, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
 
 from gitdb.util import os
 
@@ -60,7 +60,20 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return False
 
 def secret_host_variable(client: Client, name: str, default: str = ""):
-    """Add a host environment variable as a secret in a container."""
+    """Add a host environment variable as a secret in a container.
+
+    Example:
+        >>> container.with_(secret_host_variable(client, "MY_SECRET"))
+
+    Args:
+        client (Client): The dagger client.
+        name (str): The name of the environment variable. The same name will be
+            used in the container, for the secret name and for the host variable.
+        default (str): The default value to use if the host variable is not set. Defaults to "".
+
+    Returns:
+        Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
+    """
     def _secret_host_variable(container: Container):
         return container.with_secret_variable(
             name,
@@ -70,7 +83,16 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
 
 
 def get_secret_host_variable(client: Client, name: str, default: str = "") -> Secret:
-    """Creates a dagger.Secret from a host environment variable."""
+    """Creates a dagger.Secret from a host environment variable.
+
+    Args:
+        client (Client): The dagger client.
+        name (str): The name of the environment variable. The same name will be used for the secret.
+        default (str): The default value to use if the host variable is not set. Defaults to "".
+
+    Returns:
+        Secret: A dagger secret.
+    """
     return client.set_secret(name, os.environ.get(name, default))
 
 
@@ -95,6 +117,17 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
 
 
 async def get_container_output(container: Container) -> Tuple[str, str]:
+    """Retrieve both stdout and stderr of a container, concurrently.
+
+    Args:
+        container (Container): The container to execute.
+
+    Returns:
+        Tuple[str, str]: The stdout and stderr of the container, respectively.
+
+    Raises:
+        ExecError: If the container exit code is not 0.
+    """
     async with asyncer.create_task_group() as task_group:
         soon_stdout = task_group.soonify(container.stdout)
         soon_stderr = task_group.soonify(container.stderr)
@@ -102,6 +135,18 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
 
 
 async def get_exec_result(container: Container) -> Tuple[int, str, str]:
+    """Retrieve the exit_code along with stdout and stderr of a container by handling the ExecError.
+
+    Note: It is preferrable to not worry about the exit code value and just capture
+    ExecError to handle errors. This is offered as a convenience when the exit code
+    value is actually needed.
+
+    Args:
+        container (Container): The container to execute.
+
+    Returns:
+        Tuple[int, str, str]: The exit_code, stdout and stderr of the container, respectively.
+    """
     try:
         return 0, *(await get_container_output(container))
     except ExecError as e:
