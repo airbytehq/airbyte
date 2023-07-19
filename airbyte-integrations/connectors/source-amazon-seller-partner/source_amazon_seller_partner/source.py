@@ -143,8 +143,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             if isinstance(e, StopIteration):
                 return True, None
 
-            # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
+            # Additional check, since Vendor-only accounts within Amazon Seller API
+            # will not pass the test without this exception
             if "403 Client Error" in str(e):
+                stream_to_check = VendorSalesReports(**stream_kwargs)
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
                 return True, None
 
             return False, e
