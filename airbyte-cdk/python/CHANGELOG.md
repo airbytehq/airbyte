@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
 ## 0.44.3
 [ISSUE #27494] allow for state to rely on transformed field
 
