@@ -27,8 +27,8 @@ cd airbyte
 ```yaml
 # Proxy Configuration
 # Set to empty values, e.g. "" to disable basic auth
-BASIC_AUTH_USERNAME=""
-BASIC_AUTH_PASSWORD=""
+BASIC_AUTH_USERNAME=airbyte
+BASIC_AUTH_PASSWORD=password
 ```
 
 - Start moving some data!
