@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_exec_result, secret_host_env_variable, with_exit_code
+from ci_connector_ops.pipelines.utils import get_exec_result, secret_host_variable, with_exit_code
 from dagger import Client, File, Secret
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
@@ -31,9 +31,9 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
         dagger_client.container()
         .from_("amazon/aws-cli:latest")
         .with_file(str(file_to_upload_path), file_to_upload)
-        .with_(secret_host_env_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
-        .with_(secret_host_env_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
-        .with_(secret_host_env_variable(dagger_client, "AWS_DEFAULT_REGION"))
+        .with_(secret_host_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
+        .with_(secret_host_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
+        .with_(secret_host_variable(dagger_client, "AWS_DEFAULT_REGION"))
         .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri])
     )
 
