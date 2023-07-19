@@ -9,7 +9,7 @@
     "properties": {
       "user": {
         "title": "Username",
-        "description": "The username associated with the remote server.",
+        "description": "The username to use when logging in to the remote server.",
         "type": "string",
         "order": 0
       },
