@@ -1069,14 +1069,14 @@ def test_create_default_paginator():
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
                 "paginator": {
                     "type": "DefaultPaginator",
-                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": "10"},
                     "$parameters": {"url_base": "https://physical_100.com"},
                 },
             },
             "paginator",
             DefaultPaginator(
                 pagination_strategy=OffsetIncrement(
-                    page_size=10, config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}
+                    page_size="10", config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}
                 ),
                 url_base="https://physical_100.com",
                 config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]},
