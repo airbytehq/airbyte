@@ -166,15 +166,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
    *
    * @param message record to be written
    */
-  private void processRecord(final AirbyteMessage message) throws InterruptedException {
+  private void processRecord(final AirbyteMessage message) {
     final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(streamId).upload(message);
-    if (!streamTDValve.containsKey(streamId)) {
-      streamTDValve.addStream(streamId);
-    } else if (streamTDValve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
-      doTypingAndDeduping(catalog.getStream(streamId.getNamespace(), streamId.getName()));
-      streamTDValve.updateTimeAndIncreaseInterval(streamId);
-    }
+    // We are not doing any incremental typing and de-duping for Standard Inserts, see
+    // https://github.com/airbytehq/airbyte/issues/27586
   }
 
   @Override
@@ -187,7 +183,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         if (use1s1t) {
           LOGGER.info("Attempting typing and deduping for {}", streamId);
           final StreamConfig streamConfig = catalog.getStream(streamId.getNamespace(), streamId.getName());
-          doTypingAndDeduping(streamConfig);
+          destinationHandler.doTypingAndDeduping(streamConfig,
+                  sqlGenerator,
+                  overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), ""));
           if (streamConfig.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             LOGGER.info("Overwriting final table with tmp table");
             // We're at the end of the sync. Move the tmp table to the final table.
@@ -205,15 +203,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     });
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
-    }
-  }
-
-  private void doTypingAndDeduping(final StreamConfig stream) throws InterruptedException {
-    if (use1s1t) {
-      final String suffix;
-      suffix = overwriteStreamsWithTmpTable.getOrDefault(stream.id(), "");
-      final String sql = sqlGenerator.updateTable(suffix, stream);
-      destinationHandler.execute(sql);
     }
   }
 

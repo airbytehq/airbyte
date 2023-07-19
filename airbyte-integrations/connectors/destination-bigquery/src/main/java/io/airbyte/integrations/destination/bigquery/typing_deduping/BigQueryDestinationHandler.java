@@ -14,6 +14,8 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.Comparator;
@@ -129,6 +131,24 @@ public class BigQueryDestinationHandler {
         throw new RuntimeException(ex);
       }
     });
+  }
+
+  /**
+   * Execute the SQL statements which types rows from the raw table into the final table
+   * and de-dupes both tables
+   * @param stream the raw table + final table to type and de-dupe
+   * @param sqlGenerator the sql generator to create the SQL statements
+   * @param suffix if we're using a temp table
+   * @throws InterruptedException when BigQuery cannot complete a job
+   */
+  public void doTypingAndDeduping(final StreamConfig stream,
+                                   final BigQuerySqlGenerator sqlGenerator,
+                                   final String suffix) throws InterruptedException {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      LOGGER.info("Starting Type and Dedupe Operation");
+      final String sql = sqlGenerator.updateTable(suffix, stream);
+      this.execute(sql);
+    }
   }
 
 }
