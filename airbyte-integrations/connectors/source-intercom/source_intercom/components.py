@@ -19,7 +19,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
@@ -480,7 +481,7 @@ class IntercomRateLimiter:
 
 
 @dataclass
-class HttpRequesterWithRateLimiter(Requester):
+class HttpRequesterWithRateLimiter(HttpRequester):
     """
     The difference between the built-in `HttpRequester` and this one is the custom decorator,
     applied on top of `interpret_response_status` to preserve the api calls for a defined amount of time,
@@ -543,14 +544,6 @@ class HttpRequesterWithRateLimiter(Requester):
         self._body_json_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
-
-    @property
-    def cache_filename(self) -> str:
-        return f"{self.name}.yml"
-
-    @property
-    def use_cache(self) -> bool:
-        return False
 
     def __hash__(self):
         return hash(tuple(self.__dict__))
