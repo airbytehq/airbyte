@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.sources.declarative.auth.token import SessionTokenAuthenticator, get_new_session_token
+from airbyte_cdk.sources.declarative.auth.token import LegacySessionTokenAuthenticator, get_new_session_token
 from requests.exceptions import HTTPError
 
 parameters = {"hello": "world"}
@@ -56,7 +56,7 @@ config_username_password = {
 
 
 def test_auth_header():
-    auth_header = SessionTokenAuthenticator(
+    auth_header = LegacySessionTokenAuthenticator(
         config=config,
         parameters=parameters,
         api_url=input_instance_api_url,
@@ -76,7 +76,7 @@ def test_get_token_valid_session(requests_mock):
         f"{config_session_token['instance_api_url']}user/current", json={"common_name": "common_name", "last_login": "last_login"}
     )
 
-    token = SessionTokenAuthenticator(
+    token = LegacySessionTokenAuthenticator(
         config=config_session_token,
         parameters=parameters,
         api_url=input_instance_api_url,
@@ -93,7 +93,7 @@ def test_get_token_valid_session(requests_mock):
 
 def test_get_token_invalid_session_unauthorized():
     with pytest.raises(ConnectionError):
-        _ = SessionTokenAuthenticator(
+        _ = LegacySessionTokenAuthenticator(
             config=config_session_token,
             parameters=parameters,
             api_url=input_instance_api_url,
@@ -109,7 +109,7 @@ def test_get_token_invalid_session_unauthorized():
 
 def test_get_token_invalid_username_password_unauthorized():
     with pytest.raises(HTTPError):
-        _ = SessionTokenAuthenticator(
+        _ = LegacySessionTokenAuthenticator(
             config=config_username_password,
             parameters=parameters,
             api_url=input_instance_api_url,
@@ -126,7 +126,7 @@ def test_get_token_invalid_username_password_unauthorized():
 def test_get_token_username_password(requests_mock):
     requests_mock.post(f"{config['instance_api_url']}session", json={"id": "some session id"})
 
-    token = SessionTokenAuthenticator(
+    token = LegacySessionTokenAuthenticator(
         config=config_username_password,
         parameters=parameters,
         api_url=input_instance_api_url,
@@ -144,7 +144,7 @@ def test_get_token_username_password(requests_mock):
 def test_check_is_valid_session_token(requests_mock):
     requests_mock.get(f"{config['instance_api_url']}user/current", json={"common_name": "common_name", "last_login": "last_login"})
 
-    assert SessionTokenAuthenticator(
+    assert LegacySessionTokenAuthenticator(
         config=config,
         parameters=parameters,
         api_url=input_instance_api_url,
@@ -159,7 +159,7 @@ def test_check_is_valid_session_token(requests_mock):
 
 
 def test_check_is_valid_session_token_unauthorized():
-    assert not SessionTokenAuthenticator(
+    assert not LegacySessionTokenAuthenticator(
         config=config,
         parameters=parameters,
         api_url=input_instance_api_url,
