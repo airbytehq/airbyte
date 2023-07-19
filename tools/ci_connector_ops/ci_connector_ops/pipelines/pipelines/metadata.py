@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import functools
-import os
 import uuid
 from pathlib import Path
 from typing import Optional, Set
@@ -12,7 +11,7 @@ from ci_connector_ops.pipelines.actions.environments import with_pip_packages, w
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.helpers.steps import run_steps
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently, get_secret_host_env_variable
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently, get_secret_host_variable
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"
@@ -127,10 +126,7 @@ class DeployOrchestrator(Step):
         python_base = with_python_base(self.context)
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = (
-            self.context.dagger_client.set_secret(
-                "DAGSTER_CLOUD_METADATA_API_TOKEN",
-                os.environ.get("DAGSTER_CLOUD_METADATA_API_TOKEN"),
-            )
+            get_secret_host_variable(self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN")
         )
 
         container_to_run = (
@@ -287,7 +283,7 @@ async def run_metadata_upload_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
         async with pipeline_context:
-            get_secret = functools.partial(get_secret_host_env_variable, pipeline_context.dagger_client)
+            get_secret = functools.partial(get_secret_host_variable, pipeline_context.dagger_client)
             results = await execute_concurrently(
                 [
                     MetadataUpload(
