@@ -50,6 +50,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 0.1.36  | 2022-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
 | 0.1.35  | 2022-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add  should_retry False for 402 error                                                                       |
 | 0.1.34  | 2022-05-15 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                             |
 | 0.1.33  | 2023-04-25 | [25543](https://github.com/airbytehq/airbyte/pull/25543) | Set should_retry for 104 error in stream export                                                             |
