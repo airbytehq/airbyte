@@ -555,7 +555,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
     image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
     return image_sha
 
