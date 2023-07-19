@@ -424,9 +424,11 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return params
 
 
-class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
-    Endpoints provide a cursor pagination and sorting mechanism
+    Implements cursor pagination as most streams support cursor pagination.
+    Where it is not supported such streams will override some of this functionality to
+    use offset pagination.
     """
 
     cursor_field = "updated_at"
@@ -477,7 +479,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportPaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
@@ -556,11 +558,11 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
-class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
+class OrganizationMemberships(SourceZendeskSupportPaginationStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
 
 
-class AuditLogs(SourceZendeskSupportCursorPaginationStream):
+class AuditLogs(SourceZendeskSupportPaginationStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
     # audit_logs doesn't have the 'updated_by' field
@@ -613,11 +615,11 @@ class Groups(SourceZendeskSupportStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
 
 
-class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
+class GroupMemberships(SourceZendeskSupportPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
+class SatisfactionRatings(SourceZendeskSupportPaginationStream):
     """
     SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
@@ -627,7 +629,7 @@ class TicketFields(SourceZendeskSupportStream):
     """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
 
 
-class TicketForms(SourceZendeskSupportCursorPaginationStream):
+class TicketForms(SourceZendeskSupportPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
     # Does not support cursor based pagination so using offset based pagination
@@ -648,7 +650,7 @@ class TicketForms(SourceZendeskSupportCursorPaginationStream):
         return params
 
 
-class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
+class TicketMetrics(SourceZendeskSupportPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -677,7 +679,7 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
         return params
 
 
-class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
+class TicketMetricEvents(SourceZendeskSupportPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
     """
@@ -692,7 +694,7 @@ class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
-class TicketAudits(SourceZendeskSupportCursorPaginationStream):
+class TicketAudits(SourceZendeskSupportPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
@@ -719,7 +721,7 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
         return response.json().get("before_cursor")
 
 
-class Triggers(SourceZendeskSupportCursorPaginationStream):
+class Triggers(SourceZendeskSupportPaginationStream):
     """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -738,7 +740,7 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
             params["page"] = next_page_token
         return params
 
-class Views(SourceZendeskSupportCursorPaginationStream):
+class Views(SourceZendeskSupportPaginationStream):
     """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -757,7 +759,7 @@ class Views(SourceZendeskSupportCursorPaginationStream):
             params["page"] = next_page_token
         return params
 
-class Automations(SourceZendeskSupportCursorPaginationStream):
+class Automations(SourceZendeskSupportPaginationStream):
     """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
