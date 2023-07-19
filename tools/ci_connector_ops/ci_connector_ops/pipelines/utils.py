@@ -128,8 +128,8 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
         ExecError: If the container exit code is not 0.
     """
     async with asyncer.create_task_group() as task_group:
-        soon_stdout = task_group.soonify(container.stdout)
-        soon_stderr = task_group.soonify(container.stderr)
+        soon_stdout = task_group.soonify(container.stdout)()
+        soon_stderr = task_group.soonify(container.stderr)()
     return soon_stdout.value, soon_stderr.value
 
 
