@@ -120,6 +120,7 @@ def test_chunk_date_range_without_end_date():
         {"start_date": "2022-01-27", "end_date": "2022-01-27"},
         {"start_date": "2022-01-28", "end_date": "2022-01-28"},
         {"start_date": "2022-01-29", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-30"},
     ]
     assert expected_response == slices
 
@@ -144,7 +145,7 @@ def test_chunk_date_range():
 def test_streams_count(config, mock_account_info):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 21
+    expected_streams_number = 29
     assert len(streams) == expected_streams_number
 
 

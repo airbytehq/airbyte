@@ -39,6 +39,8 @@ acceptance_tests:
             bypass_reason: Unable to populate
           - name: quotes
             bypass_reason: Unable to populate
+          - name: deals_archived
+            bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch

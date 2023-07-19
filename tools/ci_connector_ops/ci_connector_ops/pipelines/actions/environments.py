@@ -24,14 +24,14 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
 
 
-def with_python_base(context: PipelineContext, python_image_name: str = "python:3.9-slim") -> Container:
+def with_python_base(context: PipelineContext) -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:
@@ -44,13 +44,14 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     Returns:
         Container: The python base environment container.
     """
-    if not python_image_name.startswith("python:3"):
-        raise ValueError("You have to use a python image to build the python base environment")
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
     base_container = (
         context.dagger_client.container()
-        .from_(python_image_name)
+        .from_("python:3.9-slim")
+        .with_exec(["apt-get", "update"])
+        .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "pip==23.1.2"])
     )
@@ -367,10 +368,9 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment container with ci_connector_ops installed.
     """
-    python_base_environment: Container = with_python_base(context, "python:3-alpine")
-    python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
+    python_base_environment: Container = with_python_base(context)
 
-    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
+    return await with_installed_python_package(context, python_base_environment, CI_CONNECTOR_OPS_SOURCE_PATH)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:
@@ -512,8 +512,8 @@ def with_gradle(
 
     if sources_to_include:
         include += sources_to_include
-    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
@@ -527,8 +527,9 @@ def with_gradle(
         .with_workdir("/airbyte")
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
+        # TODO (ben)
+        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
+        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
         .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
 
@@ -567,7 +568,7 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    python_base_environment: Container = with_python_base(context, "python:3.9")
+    python_base_environment: Container = with_python_base(context)
     python_with_git = with_debian_packages(python_base_environment, ["git"])
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
@@ -635,6 +636,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
+        "normalization_image": "airbyte/normalization:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
@@ -642,6 +644,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
+        "normalization_image": "airbyte/normalization-clickhouse:0.4.3",
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
@@ -649,6 +652,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
+        "normalization_image": "airbyte/normalization-duckdb:0.4.3",
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
@@ -656,6 +660,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
+        "normalization_image": "airbyte/normalization-mssql:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
@@ -663,6 +668,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
+        "normalization_image": "airbyte/normalization-mysql:0.4.3",
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
@@ -670,6 +676,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
+        "normalization_image": "airbyte/normalization-oracle:0.4.3",
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
@@ -677,6 +684,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
+        "normalization_image": "airbyte/normalization:0.4.3",
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
@@ -684,6 +692,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
+        "normalization_image": "airbyte/normalization-redshift:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
@@ -691,6 +700,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
+        "normalization_image": "airbyte/normalization-snowflake:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": ["gcc-c++"],
     },
@@ -698,6 +708,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
+        "normalization_image": "airbyte/normalization-tidb:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
@@ -709,15 +720,10 @@ DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
 }
 
 
-def with_normalization(context: ConnectorContext) -> Container:
-    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
-    sshtunneling_file = context.get_repo_dir(
-        "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
-    ).file("sshtunneling.sh")
-    normalization_directory_with_build = normalization_directory.with_new_directory("build")
-    normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
-    normalization_dockerfile_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dockerfile"]
-    return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
+def with_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
+    return context.dagger_client.container(platform=build_platform).from_(
+        DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
+    )
 
 
 def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
@@ -745,13 +751,14 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])
         .with_exec(["pip3", "install", dbt_adapter_package])
-        .with_directory("airbyte_normalization", with_normalization(context).directory("/airbyte"))
+        .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
         .with_exec(["sh", "-c", "mv * .."])
         .with_workdir("/airbyte")
         .with_exec(["rm", "-rf", "airbyte_normalization"])
-        .with_workdir("/airbyte/base_python_structs")
-        .with_exec(["pip3", "install", "."])
+        # We don't install the airbyte-protocol legacy package as its not used anymore and not compatible with Cython 3.x
+        # .with_workdir("/airbyte/base_python_structs")
+        # .with_exec(["pip3", "install", "--force-reinstall", "Cython<3.0", ".",])
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
