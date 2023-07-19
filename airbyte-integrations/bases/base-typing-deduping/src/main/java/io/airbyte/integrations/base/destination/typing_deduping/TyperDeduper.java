@@ -1,6 +1,5 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +11,15 @@ import org.slf4j.LoggerFactory;
  * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to
  * call {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise
  * avoid interacting directly with these classes.
+ * <p>
+ * In a typical sync, destinations should call the methods:
+ * <ol>
+ *   <li>{@link #createFinalTables()} once at the start of the sync</li>
+ *   <li>{@link #typeAndDedupe(String, String)} as needed throughoug the sync</li>
+ *   <li>{@link #commitFinalTable(String, String)} once at the end of the sync</li>
+ * </ol>
+ * Note that createFinalTables initializes some internal state. The other methods will throw an exception
+ * if that method was not called.
  */
 public class TyperDeduper<DialectTableDefinition> {
   private static final Logger LOGGER = LoggerFactory.getLogger(TyperDeduper.class);
@@ -22,7 +30,7 @@ public class TyperDeduper<DialectTableDefinition> {
   private final SqlGenerator<DialectTableDefinition> sqlGenerator;
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
   private final ParsedCatalog parsedCatalog;
-  private final Map<StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
+  private Map<StreamId, String> overwriteStreamsWithTmpTable;
 
   public TyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
                       DestinationHandler<DialectTableDefinition> destinationHandler,
@@ -38,6 +46,11 @@ public class TyperDeduper<DialectTableDefinition> {
    * and swap it into the true final table at the end of the sync. This is to prevent user downtime during a sync.
    */
   public void createFinalTables() throws Exception {
+    if (overwriteStreamsWithTmpTable != null) {
+      throw new IllegalStateException("createFinalTables() has already been called. This is probably a bug.");
+    }
+    overwriteStreamsWithTmpTable = new HashMap<>();
+
     // For each stream, make sure that its corresponding final table exists.
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
@@ -70,6 +83,8 @@ public class TyperDeduper<DialectTableDefinition> {
 
   /**
    * Execute typing and deduping for a stream (i.e. fetch new raw records into the final table, etc.).
+   * <p>
+   * This method is thread-safe; multiple threads can call it concurrently.
    */
   public void typeAndDedupe(String originalNamespace, String originalName) throws Exception {
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);

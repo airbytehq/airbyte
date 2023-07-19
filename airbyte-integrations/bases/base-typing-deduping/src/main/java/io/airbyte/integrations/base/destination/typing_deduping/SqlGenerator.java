@@ -35,8 +35,6 @@ public interface SqlGenerator<DialectTableDefinition> {
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
    * <p>
-   * Supports both incremental and one-shot loading. (maybe.)
-   * <p>
    * Responsible for:
    * <ul>
    * <li>Pulling new raw records from a table (i.e. records with null _airbyte_loaded_at)</li>
