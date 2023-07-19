@@ -48,8 +48,8 @@ The following variables are relevant to both Docker and Kubernetes.
 
 Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
 
-1. BASIC_AUTH_USERNAME=airbyte
-2. BASIC_AUTH_PASSWORD=password
+1. BASIC_AUTH_USERNAME=""
+2. BASIC_AUTH_PASSWORD=""
 3. BASIC_AUTH_PROXY_TIMEOUT=600 - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
 
 #### Secrets
