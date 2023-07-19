@@ -55,7 +55,7 @@ The MailGun source connector supports the following [sync modes](https://docs.ai
 
 ## API method example
 
-`GET https://api.mailgun.net/v1/curated?per_page=1`
+`GET https://api.mailgun.net/v3/domains`
 
 ## Performance considerations
 
