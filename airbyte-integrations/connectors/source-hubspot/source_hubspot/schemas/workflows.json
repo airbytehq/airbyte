@@ -47,6 +47,7 @@
       "type" : ["null", "integer"]
     },
     "contactCounts": {
+      "type": ["null", "object"],
       "properties" : {
         "active": {
           "type" : ["null", "integer"]
@@ -63,6 +64,7 @@
       "type" : ["null", "integer"]
     },
     "migrationStatus": {
+      "type": ["null", "object"],
       "properties" : {
         "enrollmentMigrationStatus": {
           "type" : ["null", "string"]
@@ -91,6 +93,7 @@
       }
     },
     "updateSource": {
+      "type": ["null", "object"],
       "properties" : {
         "sourceApplication": {
           "properties" : {
@@ -108,6 +111,7 @@
       }
     },
     "creationSource": {
+      "type": ["null", "object"],
       "properties" : {
         "clonedFromWorkflowId": {
           "type" : ["null", "integer"]

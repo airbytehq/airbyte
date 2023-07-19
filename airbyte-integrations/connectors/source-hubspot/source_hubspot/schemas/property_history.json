@@ -32,7 +32,7 @@
     "source-vids": {
       "type": ["array", "null"],
       "items": {
-        "type": ["integer", "null"]
+        "type": ["null", "integer"]
       }
     }
   }

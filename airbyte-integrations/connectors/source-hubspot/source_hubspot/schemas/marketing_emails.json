@@ -638,6 +638,7 @@
       "type" : ["null", "integer"]
     },
     "styleSettings": {
+      "type": ["null", "object"],
       "properties" : {
         "background_color": {"type" : ["null", "string"]},
         "background_image": {"type" : ["null", "string"]},
