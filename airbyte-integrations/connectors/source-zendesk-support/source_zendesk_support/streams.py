@@ -425,8 +425,60 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return params
 
 
+class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+    """
+    Functionality of this class copied into a SourceZendeskSupportPaginationStream class and modified to suit rudderstack needs.
+    This class is being retained to not break existing incremental streams using this class.
+    TODO: Migrate incremental streams to SourceZendeskSupportPaginationStream also and remove this class.
+    """
+
+    cursor_field = "updated_at"
+    next_page_field = "next_page"
+    prev_start_time = None
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        """
+        return 1000
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # try to save maximum value of a cursor field
+        old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
+        new_value = str((latest_record or {}).get(self.cursor_field, ""))
+        return {self.cursor_field: max(new_value, old_value)}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
+        start_time = dict(parse_qsl(urlparse(response.json().get(self.next_page_field), "").query)).get("start_time")
+        if start_time != self.prev_start_time:
+            self.prev_start_time = start_time
+            return {self.cursor_field: int(start_time)}
+
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+        """
+        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """
+        state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
+        return calendar.timegm(pendulum.parse(state).utctimetuple())
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        if self.cursor_field:
+            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
+        else:
+            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        return params
+
+
 class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
+    Only used by streams modified by rudderstack
     Implements cursor pagination as most streams support cursor pagination.
     Where it is not supported such streams will override some of this functionality to
     use offset pagination.
@@ -486,7 +538,7 @@ class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream
         return params
 
 
-class SourceZendeskIncrementalExportStream(SourceZendeskSupportPaginationStream):
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
