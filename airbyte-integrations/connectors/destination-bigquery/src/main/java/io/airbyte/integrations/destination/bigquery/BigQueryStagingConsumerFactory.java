@@ -108,7 +108,7 @@ public class BigQueryStagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer, null),
+        onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer, baseTypeAndDedupeConsumer),
         catalog,
         json -> true,
         defaultNamespace);
@@ -125,7 +125,7 @@ public class BigQueryStagingConsumerFactory {
       if (use1s1t) {
         if (!valve.containsKey(streamId)) {
           valve.addStream(streamId);
-        } else if (valve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
+        } else if (valve.readyToTypeAndDedupe(streamId)) {
           baseTypeAndDedupeConsumer.accept(streamId);
           valve.updateTimeAndIncreaseInterval(streamId);
         }
@@ -309,19 +309,13 @@ public class BigQueryStagingConsumerFactory {
        * however, with the changes to checkpointing this will no longer be necessary since despite partial
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
-      writeConfigs.keySet().forEach(pair -> {
-        try {
-          finalTypeAndDedupeConsumer.accept(pair);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
-        bigQueryGcsOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
+      for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
+        finalTypeAndDedupeConsumer.accept(entry.getKey());
+        bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
         // replace final table
-        replaceFinalTableConsumer.accept(writeConfig);
+        replaceFinalTableConsumer.accept(entry.getValue());
       }
       LOGGER.info("Cleaning up destination completed.");
     };
