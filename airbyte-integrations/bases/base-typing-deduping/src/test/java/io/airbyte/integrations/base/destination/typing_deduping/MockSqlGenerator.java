@@ -7,12 +7,12 @@ class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
-    return new StreamId(namespace, name, rawNamespaceOverride, namespace + "_abab_" + name, namespace, name);
+    return null;
   }
 
   @Override
   public ColumnId buildColumnId(String name) {
-    return new ColumnId(name, name, name);
+    return null;
   }
 
   @Override
