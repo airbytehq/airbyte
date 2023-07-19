@@ -88,10 +88,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
                     line_no += 1
                     if record is None:
-                        #logging.warning(json.dumps(f"record is none: {record}"))
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1
-                            #logging.warning(f"record is none and does not pass validation policy")
                             yield AirbyteMessage(
                                 type=MessageType.LOG,
                                 log=AirbyteLogMessage(
@@ -102,7 +100,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                             )
                             continue
                         else:
-                            #logging.warning(f"records is not none but passes validation policy: {record}")
                             raise ValueError("record is none")
                             yield AirbyteMessage(
                                 type=MessageType.LOG,
@@ -116,7 +113,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     if self.config.schemaless:
                         record = {"data": record}
                     elif not self.record_passes_validation_policy(record):
-                        #logging.warning("skipping record")
                         n_skipped += 1
                         continue
                     record[self.ab_last_mod_col] = file_datetime_string
@@ -135,7 +131,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 break
 
             except Exception as e:
-                #logging.warning(f"caught exception: {traceback.format_exc()}")
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(

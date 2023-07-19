@@ -116,15 +116,9 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional:
-        #print("row:")
-        #print(row)
-        #print("keys")
-        ##print(row.keys())
         if any(key is None for key in row.keys()):
             return None
         nullable = row | {k: None if v in null_values else v for k, v in row.items()}
-        #print("nullable:")
-        #print(nullable)
         return nullable
 
 def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
