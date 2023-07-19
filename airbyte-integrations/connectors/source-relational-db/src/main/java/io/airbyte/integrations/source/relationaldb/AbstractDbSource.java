@@ -144,7 +144,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final Database database = createDatabase(config);
 
-    logPreSyncDebugData(database, catalog);
+    validateSyncSettings(database, catalog, state);
 
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
@@ -550,6 +550,29 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param catalog configured catalog.
    */
   protected void logPreSyncDebugData(final Database database, final ConfiguredAirbyteCatalog catalog) throws Exception {}
+
+  /**
+   * Confirms that database, config, state, and catalog are all valid. Called before syncing data.
+   * Provides some logging and raises early failure if sync is not going to be possible.
+   * 
+   * Base implementation calls logPreSyncDebugData() and checkStateAndCatalogCompatibility().
+   *
+   * @param database given database instance.
+   * @param catalog configured catalog.
+   * @param state configured catalog.
+   */
+  protected void validateSyncSettings(final Database database, final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {
+    logPreSyncDebugData(database, catalog);
+    checkStateAndCatalogCompatibility(catalog, state);
+  }
+
+  /**
+   * Checks that the state and catalog are compatible. If they are not, throws an exception.
+   *
+   * @param catalog configured catalog.
+   * @param state configured catalog.
+   */
+  protected void checkStateAndCatalogCompatibility(final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {}
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.
