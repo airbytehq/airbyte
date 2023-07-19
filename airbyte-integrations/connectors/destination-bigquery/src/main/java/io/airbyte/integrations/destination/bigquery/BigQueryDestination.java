@@ -27,6 +27,7 @@ import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
@@ -212,7 +213,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
-      throws IOException, InterruptedException {
+      throws Exception {
     // Set the default namespace on streams with null namespace. This means we don't need to repeat this
     // logic in the rest of the connector.
     // (record messages still need to handle null namespaces though, which currently happens in e.g.
@@ -331,8 +332,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         writeConfigs,
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigquery),
+        new TyperDeduper<>(sqlGenerator, new BigQueryDestinationHandler(bigquery), parsedCatalog),
         parsedCatalog);
   }
 
@@ -341,7 +341,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                      final ParsedCatalog parsedCatalog,
                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                      final BigQuerySqlGenerator sqlGenerator)
-      throws InterruptedException {
+      throws Exception {
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = getBigQuery(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
@@ -387,8 +387,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         recordFormatterCreator,
         namingResolver::getTmpTableName,
         getTargetTableNameTransformer(namingResolver),
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigQuery),
+        new TyperDeduper<>(sqlGenerator, new BigQueryDestinationHandler(bigQuery), parsedCatalog),
         parsedCatalog,
         BigQueryUtils.getDatasetId(config));
   }

@@ -57,7 +57,10 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
+   * <p>
+   * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is non-empty.
+   * Callers are responsible for verifying those are true.
    */
-  Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
+  Optional<String> overwriteFinalTable(String finalSuffix, StreamId stream);
 
 }

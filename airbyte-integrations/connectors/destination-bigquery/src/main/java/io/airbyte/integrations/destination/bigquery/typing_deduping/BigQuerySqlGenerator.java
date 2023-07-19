@@ -454,19 +454,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamConfig stream) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
-      return Optional.of(new StringSubstitutor(Map.of(
-          "final_table_id", stream.id().finalTableId(QUOTE),
-          "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
-          "real_final_table", stream.id().finalName(QUOTE))).replace(
-              """
-              DROP TABLE IF EXISTS ${final_table_id};
-              ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-              """));
-    } else {
-      return Optional.empty();
-    }
+  public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamId stream) {
+    return Optional.of(new StringSubstitutor(Map.of(
+        "final_table_id", stream.finalTableId(QUOTE),
+        "tmp_final_table", stream.finalTableId(finalSuffix, QUOTE),
+        "real_final_table", stream.finalName(QUOTE))).replace(
+            """
+            DROP TABLE IF EXISTS ${final_table_id};
+            ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+            """));
   }
 
 }
