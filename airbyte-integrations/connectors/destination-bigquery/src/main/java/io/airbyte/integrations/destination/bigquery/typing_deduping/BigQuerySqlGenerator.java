@@ -31,6 +31,7 @@ import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -296,10 +297,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             })
             .collect(Collectors.toSet());
 
-    final boolean isDestinationV2Format = FINAL_TABLE_AIRBYTE_COLUMNS.stream()
-            .allMatch(column -> containsIgnoreCase(existingSchema.keySet(), column));
+    final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 
     return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
+  }
+
+  /**
+   * Checks the schema to determine whether the table contains all expected final table airbyte columns
+   * @param columnNames the column names of the schema to check
+   * @return whether all the {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS} are present
+   */
+  @VisibleForTesting
+  public static boolean schemaContainAllFinalTableV2AirbyteColumns(Collection<String> columnNames) {
+    return FINAL_TABLE_AIRBYTE_COLUMNS.stream()
+            .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
   @Override

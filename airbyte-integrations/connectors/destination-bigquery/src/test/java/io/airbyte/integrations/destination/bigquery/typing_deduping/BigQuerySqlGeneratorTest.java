@@ -21,6 +21,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -113,6 +114,16 @@ public class BigQuerySqlGeneratorTest {
     Mockito.when(existingTable.getTimePartitioning())
             .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_airbyte_extracted_at").build());
     Assertions.assertTrue(bqSqlGenerator.partitioningMatches(existingTable));
+  }
+
+  @Test
+  public void testSchemaContainAllFinalTableV2AirbyteColumns() {
+    Assertions.assertTrue(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
+    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_extracted_at", "_airbyte_raw_id")));
+    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_raw_id")));
+    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at")));
+    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of()));
+    Assertions.assertTrue(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
   }
 
 }
