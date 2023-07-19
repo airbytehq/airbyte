@@ -134,9 +134,13 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
-    ((ObjectNode) config).with("instance_type")
-        .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
+    final String badClusterUrl = "cluster0.iqgf8.mongodb.netfail";
+    // Depending on the cluster configuration, the URL may be in one of two places in the config.
+    // Put the bad URL in both places to ensure tests always pass
+    ((ObjectNode) config).put("cluster_url", badClusterUrl);
+    ((ObjectNode) config).with("instance_type").put("cluster_url", badClusterUrl);
     final AirbyteConnectionStatus status = new MongoDbSource().check(config);
+    System.out.println("*************" + status.getMessage() + " " + status.getStatus());
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: -4"));
   }
