@@ -13,8 +13,7 @@ from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
-from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
-from dagger import Container, File, ImageLayerCompression, QueryError
+from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pydantic import ValidationError
 
 
@@ -30,14 +29,13 @@ class CheckConnectorImageDoesNotExist(Step):
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["ls", docker_repository])
         )
-        crane_ls_exit_code = await with_exit_code(crane_ls)
-        crane_ls_stderr = await with_stderr(crane_ls)
-        crane_ls_stdout = await with_stdout(crane_ls)
-        if crane_ls_exit_code != 0:
-            if "NAME_UNKNOWN" in crane_ls_stderr:
+        try:
+            crane_ls_stdout = await crane_ls.stdout()
+        except ExecError as e:
+            if "NAME_UNKNOWN" in e.stderr:
                 return StepResult(self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
             else:
-                return StepResult(self, status=StepStatus.FAILURE, stderr=crane_ls_stderr, stdout=crane_ls_stdout)
+                return StepResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
         else:  # The docker repo exists and ls was successful
             existing_tags = crane_ls_stdout.split("\n")
             docker_tag_already_exists = docker_tag in existing_tags
@@ -90,11 +88,10 @@ class PullConnectorImageFromRegistry(Step):
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
             )
-            inspect_exit_code = await with_exit_code(inspect)
-            inspect_stderr = await with_stderr(inspect)
-            inspect_stdout = await with_stdout(inspect)
-            if inspect_exit_code != 0:
-                raise Exception(f"Failed to inspect {self.context.docker_image_name}: {inspect_stderr}")
+            try:
+                inspect_stdout = await inspect.stdout()
+            except ExecError as e:
+                raise Exception(f"Failed to inspect {self.context.docker_image_name}: {e.stderr}") from e
             try:
                 for layer in json.loads(inspect_stdout)["layers"]:
                     if not layer["mediaType"].endswith("gzip"):
@@ -105,10 +102,9 @@ class PullConnectorImageFromRegistry(Step):
 
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
-            exit_code = await with_exit_code(
-                self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image_name}").with_exec(["spec"])
-            )
-            if exit_code != 0:
+            try:
+                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image_name}").with_exec(["spec"])
+            except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
                     return await self._run(attempt - 1)
