@@ -323,16 +323,16 @@ class SimpleRetriever(Retriever, HttpStream):
     @property
     def cache_filename(self) -> str:
         """
-        Return the name of cache file
+        TODO remove once simple retriever doesn't rely on HttpStream
         """
-        return self.requester.cache_filename
+        return f"{self.name}.yml"
 
     @property
     def use_cache(self) -> bool:
         """
-        If True, all records will be cached.
+        TODO remove once simple retriever doesn't rely on HttpStream
         """
-        return self.requester.use_cache
+        return False
 
     def parse_response(
         self,
