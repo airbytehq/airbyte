@@ -2,21 +2,91 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+import unittest
+from unittest.mock import MagicMock, Mock, patch
+
+from airbyte_cdk.sources import AbstractSource
 
 from source_quaderno.source import SourceQuaderno
 
 
-def test_check_connection(mocker):
-    source = SourceQuaderno()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+class TestSourceQuaderno(unittest.TestCase):
 
+    def setUp(self):
+        # Initialize the SourceQuaderno class with a mock logger
+        self.logger = Mock()
+        self.source = SourceQuaderno()
 
-def test_streams(mocker):
-    source = SourceQuaderno()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
-    assert len(streams) == expected_streams_number
+    def test_check_connection_successful(self):
+        # Mock requests.get to return a successful response
+        with patch('requests.get') as mock_get:
+            mock_get.return_value.status_code = 200
+            mock_get.return_value.json.return_value = {'identity': {'href': 'https://account_name.quadernoapp.com/api/'}}
+
+            # Provide mock configuration data
+            config = {
+                'apikey': 'VALID_API_KEY',
+                'account_name': 'account_name'
+            }
+
+            # Call the check_connection method
+            result, error = self.source.check_connection(self.logger, config)
+
+            # Assertions
+            self.assertTrue(result)
+            self.assertIsNone(error)
+            self.logger.debug.assert_called_with("Connection to Quaderno was successful.")
+
+    def test_check_connection_unsuccessful(self):
+        # Mock requests.get to return an unsuccessful response
+        with patch('requests.get') as mock_get:
+            mock_get.return_value.status_code = 401
+            mock_get.return_value.json.return_value = {'error': 'Unauthorized'}
+
+            # Provide mock configuration data
+            config = {
+                'apikey': 'INVALID_API_KEY',
+                'account_name': 'account_name'
+            }
+
+            # Call the check_connection method
+            result, error = self.source.check_connection(self.logger, config)
+
+            # Assertions
+            self.assertFalse(result)
+            self.assertEqual(error, "Authorization failed with status code 401. Error message: Unauthorized")
+            self.logger.info.assert_called_with("Connection to Quaderno was unsuccessful with status code 401.")
+
+    def test_check_connection_apikey_not_authorized(self):
+        # Mock requests.get to return a successful response, but with an incorrect account_name
+        with patch('requests.get') as mock_get:
+            mock_get.return_value.status_code = 200
+            mock_get.return_value.json.return_value = {'identity': {'href': 'https://other_account.quadernoapp.com/api/'}}
+
+            # Provide mock configuration data
+            config = {
+                'apikey': 'UNAUTHORIZED_API_KEY',
+                'account_name': 'account_name'
+            }
+
+            # Call the check_connection method
+            result, error = self.source.check_connection(self.logger, config)
+
+            # Assertions
+            self.assertFalse(result)
+            self.assertEqual(error, "The API Key is not authorized for the account.")
+            self.logger.info.assert_called_with("Connection to Quaderno was unsuccessful. The API Key is not authorized for the account.")
+
+    def test_streams(self):
+        # Provide mock configuration data
+        config = {
+            'apikey': 'YOUR_API_KEY',
+            'account_name': 'account_name'
+        }
+
+        # Call the streams method
+        streams = self.source.streams(config)
+
+        # Assertions
+        self.assertIsInstance(streams, list)
+        self.assertEqual(len(streams), 0)  # Ensure no streams are registered initially
