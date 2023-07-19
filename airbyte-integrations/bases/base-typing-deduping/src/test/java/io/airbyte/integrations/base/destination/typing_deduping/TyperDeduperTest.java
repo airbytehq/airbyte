@@ -141,7 +141,7 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM SUFFIX _airbyte_tmp");
+    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
