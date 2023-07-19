@@ -59,9 +59,8 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
           "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
-    config = Jsons.deserialize(credentialsJsonString);
+    
+    config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
