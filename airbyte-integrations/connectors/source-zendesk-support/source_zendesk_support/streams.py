@@ -425,7 +425,7 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return params
 
 
-class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
     Functionality of this class copied into a SourceZendeskSupportPaginationStream class and modified to suit rudderstack needs.
     This class is being retained to not break existing incremental streams using this class.
@@ -476,7 +476,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream):
+class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
     Only used by streams modified by rudderstack
     Implements cursor pagination as most streams support cursor pagination.
@@ -538,7 +538,7 @@ class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream
         return params
 
 
-class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportOffsetPaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
@@ -617,11 +617,11 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
-class OrganizationMemberships(SourceZendeskSupportPaginationStream):
+class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
 
 
-class AuditLogs(SourceZendeskSupportPaginationStream):
+class AuditLogs(SourceZendeskSupportCursorPaginationStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
     # audit_logs doesn't have the 'updated_by' field
@@ -674,11 +674,11 @@ class Groups(SourceZendeskSupportStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
 
 
-class GroupMemberships(SourceZendeskSupportPaginationStream):
+class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(SourceZendeskSupportPaginationStream):
+class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """
     SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
@@ -688,7 +688,7 @@ class TicketFields(SourceZendeskSupportStream):
     """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
 
 
-class TicketForms(SourceZendeskSupportPaginationStream):
+class TicketForms(SourceZendeskSupportCursorPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
     # Does not support cursor based pagination so using offset based pagination
@@ -709,11 +709,11 @@ class TicketForms(SourceZendeskSupportPaginationStream):
         return params
 
 
-class TicketMetrics(SourceZendeskSupportPaginationStream):
+class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
 
-class TicketMetricEvents(SourceZendeskSupportPaginationStream):
+class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
     """
@@ -744,7 +744,7 @@ class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
-class TicketAudits(SourceZendeskSupportPaginationStream):
+class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # ticket audits doesn't have the 'updated_by' field
@@ -756,7 +756,7 @@ class TicketAudits(SourceZendeskSupportPaginationStream):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
-class Triggers(SourceZendeskSupportPaginationStream):
+class Triggers(SourceZendeskSupportCursorPaginationStream):
     """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
 
     # sort_by not supported as request param when doing cursor pagination for this stream (returns DatabaseError)
@@ -780,11 +780,11 @@ class Triggers(SourceZendeskSupportPaginationStream):
         return math.inf
 
 
-class Views(SourceZendeskSupportPaginationStream):
+class Views(SourceZendeskSupportCursorPaginationStream):
     """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
 
 
-class Automations(SourceZendeskSupportPaginationStream):
+class Automations(SourceZendeskSupportCursorPaginationStream):
     """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
 
 
