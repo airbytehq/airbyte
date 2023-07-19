@@ -451,7 +451,9 @@ class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
-
+        """
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
+        """
         meta = response.json().get("meta", {})
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
@@ -467,6 +469,10 @@ class SourceZendeskSupportPaginationStream(SourceZendeskSupportFullRefreshStream
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
+        """
+        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
+        """
         params = {
             "start_time": parsed_state,
             "page[size]": self.page_size,
@@ -653,31 +659,6 @@ class TicketForms(SourceZendeskSupportPaginationStream):
 class TicketMetrics(SourceZendeskSupportPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
-        """
-        meta = response.json().get("meta", {})
-        return meta.get("after_cursor") if meta.get("has_more", False) else None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        """
-        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
-        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
-        """
-        params = {
-            "start_time": self.check_stream_state(stream_state),
-            "page[size]": self.page_size,
-        }
-        if next_page_token:
-            # when cursor pagination is used, we can pass only `after` and `page size` params,
-            # other params should be omitted.
-            params.pop("start_time", None)
-            params["page[after]"] = next_page_token
-        return params
-
 
 class TicketMetricEvents(SourceZendeskSupportPaginationStream):
     """
@@ -685,6 +666,22 @@ class TicketMetricEvents(SourceZendeskSupportPaginationStream):
     """
 
     cursor_field = "time"
+
+    # Expects start_time even when page[after] param is passed
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {
+            "start_time": parsed_state,
+            "page[size]": self.page_size,
+            "sort_by": self.cursor_field,
+            "sort_order": "asc",
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def path(self, **kwargs):
         return "incremental/ticket_metric_events"
@@ -697,8 +694,6 @@ class Macros(SourceZendeskSupportStream):
 class TicketAudits(SourceZendeskSupportPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
-    # can request a maximum of 1,000 results
-    page_size = 1000
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -707,76 +702,34 @@ class TicketAudits(SourceZendeskSupportPaginationStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size}
-
-        if next_page_token:
-            params["cursor"] = next_page_token
-        return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        return response.json().get("before_cursor")
-
 
 class Triggers(SourceZendeskSupportPaginationStream):
     """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
-    
+    # sort_by not supported as request param when doing cursor pagination for this stream
+    # since we are not specifying anything it uses position field by default to sort
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
-        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
-        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {
+            "start_time": parsed_state,
+            "page[size]": self.page_size,
+            "sort_order": "asc",
+        }
         if next_page_token:
-            params["page"] = next_page_token
+            params.update(next_page_token)
         return params
+
 
 class Views(SourceZendeskSupportPaginationStream):
     """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
-    
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
-        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
-        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
-        if next_page_token:
-            params["page"] = next_page_token
-        return params
 
 class Automations(SourceZendeskSupportPaginationStream):
     """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
-    
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
-        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
-        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
-        if next_page_token:
-            params["page"] = next_page_token
-        return params
 
 class Tags(SourceZendeskSupportFullRefreshStream):
     """Tags stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/tags/"""
