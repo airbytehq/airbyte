@@ -225,7 +225,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
     if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException();
+      throw new TableNotMigratedException(String.format("Stream {} has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
@@ -259,7 +259,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
   }
 
-  @Override
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
     final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
             .collect(Collectors.toMap(

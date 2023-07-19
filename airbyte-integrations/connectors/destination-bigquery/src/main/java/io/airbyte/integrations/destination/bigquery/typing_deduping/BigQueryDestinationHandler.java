@@ -106,14 +106,10 @@ public class BigQueryDestinationHandler {
    * @param existingTable the existing final table
    */
   public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
-    try {
-      if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
-        attemptSoftReset(sqlGenerator, stream);
-      } else {
-        LOGGER.info("Existing Schema matches expected schema, no alterations needed");
-      }
-    } catch (TableNotMigratedException nm) {
-      throw new RuntimeException("Cannot complete destinations v2 sync, final table not migrated: %s".formatted(stream.id().finalName()));
+    if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
+      attemptSoftReset(sqlGenerator, stream);
+    } else {
+      LOGGER.info("Existing Schema matches expected schema, no alterations needed");
     }
   }
 
