@@ -12,6 +12,7 @@ from .streams import Products, Purchases, Users
 
 # Adding this comment is a big ol' breaking change
 
+
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
