@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -314,12 +315,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public List<String> softReset(final StreamConfig stream) {
+  public String softReset(final StreamConfig stream) {
     String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     String clearLoadedAt = clearLoadedAt(stream.id());
     String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
     String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
-    return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+    return Stream.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable).collect(joining("\n\n"));
   }
 
   private String clearLoadedAt(StreamId streamId) {

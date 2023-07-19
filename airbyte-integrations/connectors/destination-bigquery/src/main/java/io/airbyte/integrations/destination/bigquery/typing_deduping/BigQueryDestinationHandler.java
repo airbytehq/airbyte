@@ -120,13 +120,11 @@ public class BigQueryDestinationHandler {
    */
   public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream) {
     LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
-    sqlGenerator.softReset(stream).forEach(sql -> {
-      try {
-        execute(sql);
-      } catch (InterruptedException | JobException ex) {
-        throw new RuntimeException(ex);
-      }
-    });
+    try {
+      execute(sqlGenerator.softReset(stream));
+    } catch (InterruptedException | JobException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   /**

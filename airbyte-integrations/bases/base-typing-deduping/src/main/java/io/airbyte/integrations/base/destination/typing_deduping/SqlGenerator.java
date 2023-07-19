@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,7 +45,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param stream the stream to rebuild
    * @return an ordered sequence of SQL statements to execute to rebuild the final table.
    */
-  List<String> softReset(final StreamConfig stream);
+  String softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
