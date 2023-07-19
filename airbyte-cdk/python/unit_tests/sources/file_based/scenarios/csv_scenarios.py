@@ -818,7 +818,6 @@ csv_legacy_format_scenario = (
                         "quote_char": "|",
                         "escape_char": "!",
                         "double_quote": True,
-                        "quoting_behavior": "Quote All"
                     }
                 }
             ]
