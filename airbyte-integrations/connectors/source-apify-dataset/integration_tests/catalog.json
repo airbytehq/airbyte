@@ -6,7 +6,14 @@
       "destination_sync_mode": "overwrite",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "data": {
+              "type": "object",
+              "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
       }
     }
   ]
