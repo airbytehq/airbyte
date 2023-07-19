@@ -286,9 +286,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final Set<String> columnsToChangeType = streamSchema.keySet().stream()
             // If it's not in the existing schema, it should already be in the columnsToAdd Set
             .filter(name -> {
-              // Big Query Columns are case-insensitive
-              final String matchedKey = matchingKey(existingSchema.keySet(), name).orElse(name);
-              return !existingSchema.getOrDefault(matchedKey, streamSchema.get(name)).equals(streamSchema.get(name));
+              // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
+              return matchingKey(existingSchema.keySet(), name)
+                      // if it does exist, only include it in this set if the type (the value in each respective map)
+                      // is different between the stream and existing schemas
+                      .map(key -> !existingSchema.getOrDefault(key, streamSchema.get(name)).equals(streamSchema.get(name)))
+                      // if there is no matching key, then don't include it because it is probably already in columnsToAdd
+                      .orElse(false);
             })
             .collect(Collectors.toSet());
 
