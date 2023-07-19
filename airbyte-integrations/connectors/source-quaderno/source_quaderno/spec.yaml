@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - api_key
     - account_name
-    - start_date
   properties:
     api_key:
       type: string
