@@ -1,5 +1,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +8,11 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to
+ * call {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise
+ * avoid interacting directly with these classes.
+ */
 public class TyperDeduper<DialectTableDefinition> {
   private static final Logger LOGGER = LoggerFactory.getLogger(TyperDeduper.class);
 
