@@ -40,6 +40,8 @@ def check_migration_guide(connector: Connector) -> bool:
         # We also have to check that the headings are in the breaking changes dict
 
         ordered_breaking_changes = sorted(breaking_changes.keys(), reverse=True)
+        ordered_expected_headings = [f"{expected_version_header_start}{version}" for version in ordered_breaking_changes]
+
         ordered_heading_versions = []
         for line in f:
             stripped_line = line.strip()
@@ -49,8 +51,7 @@ def check_migration_guide(connector: Connector) -> bool:
 
         if ordered_breaking_changes != ordered_heading_versions:
             print(f"Migration guide file for {connector.name} has missing or misordered version headings.")
-            print(f"Expected: {ordered_breaking_changes}")
-            print(f"Actual: {ordered_heading_versions}")
+            print(f"Expected headings: {ordered_expected_headings}")
             return False
 
     return True
