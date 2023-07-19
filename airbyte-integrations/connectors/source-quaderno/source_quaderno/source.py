@@ -9,7 +9,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import BasicHttpAuthenticator
 
-from .streams import Credits, Invoices
+from .streams import Contacts, Credits, Invoices
 
 
 # Source
@@ -45,9 +45,10 @@ class SourceQuaderno(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        auth = BasicHttpAuthenticator(username=config["apikey"], password="x")
+        auth = BasicHttpAuthenticator(username=config["api_key"], password="x")
         streams = [
-            Invoices(authenticator=auth, config=config),
+            Contacts(authenticator=auth, config=config),
             Credits(authenticator=auth, config=config),
+            Invoices(authenticator=auth, config=config),
         ]
         return streams

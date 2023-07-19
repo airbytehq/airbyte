@@ -4,7 +4,7 @@
 
 import unittest
 from unittest.mock import Mock
-
+from airbyte_cdk.models import SyncMode
 from source_quaderno.streams import QuadernoStream
 
 

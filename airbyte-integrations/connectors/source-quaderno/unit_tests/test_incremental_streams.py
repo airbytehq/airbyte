@@ -28,7 +28,7 @@ class TestIncrementalQuadernoStream(unittest.TestCase):
         self.assertTrue(self.stream.source_defined_cursor)
 
     def test_stream_checkpoint_interval(self):
-        self.assertIsNone(self.stream.state_checkpoint_interval)
+        self.assertEqual(self.stream.state_checkpoint_interval, 10)
 
     def test_get_updated_state(self):
         # Define a sample record and current state

@@ -93,4 +93,4 @@ class TestSourceQuaderno(unittest.TestCase):
 
         # Assertions
         self.assertIsInstance(streams, list)
-        self.assertEqual(len(streams), 0)  # Ensure no streams are registered initially
+        self.assertEqual(len(streams), 3)

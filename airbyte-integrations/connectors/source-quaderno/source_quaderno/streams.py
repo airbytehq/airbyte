@@ -101,7 +101,7 @@ class QuadernoStream(HttpStream):
 
 class IncrementalQuadernoStream(QuadernoStream):
 
-    state_checkpoint_interval = None
+    state_checkpoint_interval = 10
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -129,13 +129,19 @@ class IncrementalQuadernoStream(QuadernoStream):
         return {self.cursor_field: min(current_id, latest_record_id)}
 
 
-class Invoices(IncrementalQuadernoStream):
-
-    def path(self, **kwargs) -> str:
-        return "invoices"
-
-
 class Credits(IncrementalQuadernoStream):
 
     def path(self, **kwargs) -> str:
         return "credits"
+
+
+class Contacts(IncrementalQuadernoStream):
+
+    def path(self, **kwargs) -> str:
+        return "contacts"
+
+
+class Invoices(IncrementalQuadernoStream):
+
+    def path(self, **kwargs) -> str:
+        return "invoices"
