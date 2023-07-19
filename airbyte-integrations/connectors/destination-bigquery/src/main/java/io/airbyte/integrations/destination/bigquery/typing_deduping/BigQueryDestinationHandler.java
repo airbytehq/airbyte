@@ -133,6 +133,14 @@ public class BigQueryDestinationHandler {
     });
   }
 
+  /**
+   * Execute the SQL statements which types rows from the raw table into the final table
+   * and de-dupes both tables
+   * @param stream the raw table + final table to type and de-dupe
+   * @param sqlGenerator the sql generator to create the SQL statements
+   * @param suffix if we're using a temp table
+   * @throws InterruptedException when BigQuery cannot complete a job
+   */
   public void doTypingAndDeduping(final StreamConfig stream,
                                    final BigQuerySqlGenerator sqlGenerator,
                                    final String suffix) throws InterruptedException {
