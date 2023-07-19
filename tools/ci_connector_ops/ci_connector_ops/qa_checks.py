@@ -24,12 +24,12 @@ def check_migration_guide(connector: Connector) -> bool:
         return False
 
     # Check that the migration guide begins with # {connector name} Migration Guide
-    expected_title = f"# {connector.name} Migration Guide"
+    expected_title = f"# {connector.name_from_metadata} Migration Guide"
     expected_version_header_start = f"## Upgrading to "
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
         if not first_line == expected_title:
-            print(f"Migration guide file for {connector.name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'")
+            print(f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'")
             return False
 
         # Check that the migration guide contains a section for each breaking change key ## Upgrading to {version}

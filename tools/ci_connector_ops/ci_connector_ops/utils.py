@@ -269,6 +269,10 @@ class Connector:
         )
 
     @property
+    def name_from_metadata(self) -> Optional[str]:
+        return self.metadata.get("name") if self.metadata else None
+
+    @property
     def release_stage(self) -> Optional[str]:
         return self.metadata.get("releaseStage") if self.metadata else None
 
