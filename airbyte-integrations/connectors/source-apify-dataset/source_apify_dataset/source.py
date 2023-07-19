@@ -87,6 +87,12 @@ class SourceApifyDataset(Source):
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": True,
+                }
+            },
         }
 
         return AirbyteCatalog(
@@ -133,6 +139,6 @@ class SourceApifyDataset(Source):
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(
-                            stream=DATASET_ITEMS_STREAM_NAME, data=data, emitted_at=int(datetime.now().timestamp()) * 1000
+                            stream=DATASET_ITEMS_STREAM_NAME, data={"data": data}, emitted_at=int(datetime.now().timestamp()) * 1000
                         ),
                     )
