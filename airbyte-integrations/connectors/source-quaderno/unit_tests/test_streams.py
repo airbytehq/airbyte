@@ -18,6 +18,15 @@ class TestQuadernoStream(unittest.TestCase):
         }
         self.stream = QuadernoStream(config=config)
 
+    def test_url_base(self):
+        self.assertEqual(self.stream.url_base, "https://test_account.quadernoapp.com/api/")
+
+    def test_primary_key(self):
+        self.assertEqual(self.stream.primary_key, "id")
+
+    def test_limit(self):
+        self.assertEqual(self.stream.limit, 100)
+
     def test_next_page_token_has_more(self):
         # Mock the response with headers indicating there's another page
         response_mock = Mock()

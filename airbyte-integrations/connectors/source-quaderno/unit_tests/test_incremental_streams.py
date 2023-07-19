@@ -2,58 +2,63 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import unittest
 
-from airbyte_cdk.models import SyncMode
-from pytest import fixture
-from source_quaderno.source import IncrementalQuadernoStream
-
-
-@fixture
-def patch_incremental_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalQuadernoStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalQuadernoStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalQuadernoStream, "__abstractmethods__", set())
+from source_quaderno.streams import IncrementalQuadernoStream
 
 
-def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalQuadernoStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
-    assert stream.cursor_field == expected_cursor_field
+class TestIncrementalQuadernoStream(unittest.TestCase):
 
+    def setUp(self):
+        # Initialize the TestIncrementalQuadernoStream class with mock configuration data
+        config = {
+            'account_name': 'test_account',
+            'start_date': '2023-01-01',
+        }
+        self.stream = IncrementalQuadernoStream(config=config)
 
-def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalQuadernoStream()
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
-    assert stream.get_updated_state(**inputs) == expected_state
+    def test_cursor_field(self):
+        # By default, the cursor_field should be "id"
+        self.assertEqual(self.stream.cursor_field, "id")
 
+    def test_supports_incremental(self):
+        self.assertTrue(self.stream.supports_incremental)
 
-def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalQuadernoStream()
-    # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [None]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
+    def test_source_defined_cursor(self):
+        self.assertTrue(self.stream.source_defined_cursor)
 
+    def test_stream_checkpoint_interval(self):
+        self.assertIsNone(self.stream.state_checkpoint_interval)
 
-def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalQuadernoStream, "cursor_field", "dummy_field")
-    stream = IncrementalQuadernoStream()
-    assert stream.supports_incremental
+    def test_get_updated_state(self):
+        # Define a sample record and current state
+        latest_record = {"id": 100, "number": "004321", "issue_date": "2023-06-30"}
+        current_state = {"id": 50, "number": "001234", "issue_date": "2023-01-31"}
 
+        # Call the get_updated_state method
+        updated_state = self.stream.get_updated_state(current_state, latest_record)
 
-def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalQuadernoStream()
-    assert stream.source_defined_cursor
+        # Assertions
+        self.assertEqual(updated_state, {"id": 50})
 
+    def test_get_updated_state_empty_state(self):
+        # If the current state is empty, the cursor from the latest record should be picked
+        latest_record = {"id": 100, 'name': 'John Doe'}
+        current_state = {}
 
-def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalQuadernoStream()
-    # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = None
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval
+        # Call the get_updated_state method
+        updated_state = self.stream.get_updated_state(current_state, latest_record)
+
+        # Assertions
+        self.assertEqual(updated_state, {"id": 100})
+
+    def test_get_updated_state_latest_record_older_than_current_state(self):
+        # If the latest_record is older (smaller) than the current state, the current state should remain unchanged
+        latest_record = {"id": 50, "number": "001234", "issue_date": "2023-01-31"}
+        current_state = {"id": 100, "number": "004321", "issue_date": "2023-06-30"}
+
+        # Call the get_updated_state method
+        updated_state = self.stream.get_updated_state(current_state, latest_record)
+
+        # Assertions
+        self.assertEqual(updated_state, {"id": 50})
