@@ -1,11 +1,12 @@
 paths:
   "airbyte-integrations/connectors/**":
     - PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention)
-    - "[Breaking changes are considered](https://docs.airbyte.com/contributing-to-airbyte/#breaking-changes-to-connectors). If a **Breaking Change** is being introduced, ensure an Airbyte engineer has created a Breaking Change Plan and you've followed all steps in the [Breaking Changes Checklist](https://docs.airbyte.com/contributing-to-airbyte/#checklist-for-contributors)"
-    - Connector version has been incremented in the Dockerfile and metadata.yaml according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines
+    - "[Breaking changes are considered](https://docs.airbyte.com/contributing-to-airbyte/change-cdk-connector/#breaking-changes-to-connectors). If a **Breaking Change** is being introduced, ensure an Airbyte engineer has created a Breaking Change Plan."
+    - Connector version has been incremented in the Dockerfile and metadata.yaml according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors) guidelines
     - You've updated the connector's `metadata.yaml` file any other relevant changes, including a `breakingChanges` entry for major version bumps. See [metadata.yaml docs](https://docs.airbyte.com/connector-development/connector-metadata-file/)
     - Secrets in the connector's spec are annotated with `airbyte_secret`
     - All documentation files are up to date. (README.md, bootstrap.md, docs.md, etc...)
     - Changelog updated in `docs/integrations/<source or destination>/<name>.md` with an entry for the new version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - Migration guide updated in `docs/integrations/<source or destination>/<name>-migrations.md` with an entry for the new version, if the version is a breaking change. See migration guide [example](https://docs.airbyte.io/integrations/sources/faker-migrations)
     - The connector tests are passing in CI
     - If set, you've ensured the icon is present in the `platform-internal` repo. ([Docs](https://docs.airbyte.com/connector-development/connector-metadata-file/#the-icon-field))
