@@ -9,14 +9,12 @@ import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTy
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.slf4j.Logger;
@@ -120,9 +118,13 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     return schemaClone;
   }
 
+  /**
+   * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
+   * Priority is given to wider scope types over narrower ones.
+   * (Note that because of dedup logic in {@link AirbyteType#fromJsonSchema(JsonNode)}, at most one
+   * string or date/time type can exist in a Union.)
+   */
   enum AirbyteProtocolType implements AirbyteType {
-    // Protocol types are ordered by precedence in the case of a Union that contains multiple types.
-    // Priority is given to wider scope types over narrower ones.
     STRING,
     DATE,
     TIME_WITHOUT_TIMEZONE,

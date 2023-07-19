@@ -17,8 +17,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Stru
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class AirbyteTypeTest {
@@ -425,32 +427,23 @@ public class AirbyteTypeTest {
 
   @Test
   public void testChooseUnion() {
-    // test ordering
+    final Map<Union, AirbyteType> unionToType = new HashMap<>();
 
-    Union u = new Union(ImmutableList.of(STRING, DATE));
-    assertEquals(DATE, chooseUnionType(u));
-
-    final Array a = new Array(TIME_WITH_TIMEZONE);
-    u = new Union(ImmutableList.of(TIMESTAMP_WITH_TIMEZONE, a));
-    assertEquals(a, chooseUnionType(u));
+    final Array a = new Array(BOOLEAN);
 
     final LinkedHashMap<String, AirbyteType> properties = new LinkedHashMap<>();
     properties.put("key1", UNKNOWN);
-    properties.put("key2", TIME_WITHOUT_TIMEZONE);
+    properties.put("key2", INTEGER);
     final Struct s = new Struct(properties);
-    u = new Union(ImmutableList.of(TIMESTAMP_WITHOUT_TIMEZONE, s));
-    assertEquals(s, chooseUnionType(u));
 
-    // test exclusion
+    unionToType.put(new Union(ImmutableList.of(s, a)), a);
+    unionToType.put(new Union(ImmutableList.of(NUMBER, a)), a);
+    unionToType.put(new Union(ImmutableList.of(INTEGER, s)), s);
+    unionToType.put(new Union(ImmutableList.of(NUMBER, DATE, BOOLEAN)), DATE);
+    unionToType.put(new Union(ImmutableList.of(INTEGER, BOOLEAN, NUMBER)), NUMBER);
+    unionToType.put(new Union(ImmutableList.of(BOOLEAN, INTEGER)), INTEGER);
 
-    u = new Union(ImmutableList.of(BOOLEAN, INTEGER));
-    assertEquals(INTEGER, chooseUnionType(u));
-
-    u = new Union(ImmutableList.of(INTEGER, NUMBER, DATE));
-    assertEquals(NUMBER, chooseUnionType(u));
-
-    u = new Union(ImmutableList.of(BOOLEAN, NUMBER, STRING));
-    assertEquals(STRING, chooseUnionType(u));
+    unionToType.forEach((u, t) -> assertEquals(t, chooseUnionType(u)));
   }
 
   @Test
