@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
 ## 0.46.1
 Connector builder: warn if the max number of records was reached
 
