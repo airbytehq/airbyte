@@ -166,6 +166,7 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
             // airbyte sometimes hides some fields from their config but keeps them
             // for backward compatibility
             map.remove("airbyte_hidden");
+            map.remove("always_show");
 
             // "group" is an attribute airbyte uses internally
             map.remove("group");
