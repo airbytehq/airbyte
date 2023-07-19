@@ -12,7 +12,9 @@ import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, NamedTuple, Optional, Set, Tuple, Union
+
+from gitdb.util import os
 
 import anyio
 import asyncer
@@ -21,7 +23,7 @@ import git
 from ci_connector_ops.pipelines import consts, main_logger
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
-from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
+from dagger import Config, Connection, Client, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
@@ -57,6 +59,20 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     else:
         return False
 
+def secret_host_variable(client: Client, name: str, default: str = ""):
+    """Add a host environment variable as a secret in a container."""
+    def _secret_host_variable(container: Container):
+        return container.with_secret_variable(
+            name,
+            get_secret_host_variable(client, name, default)
+        )
+    return _secret_host_variable
+
+
+def get_secret_host_variable(client: Client, name: str, default: str = "") -> Secret:
+    """Creates a dagger.Secret from a host environment variable."""
+    return client.set_secret(name, os.environ.get(name, default))
+
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
 async def get_file_contents(container: Container, path: str) -> Optional[str]:
@@ -73,18 +89,27 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
         return await container.file(path).contents()
     except QueryError as e:
         if "no such file or directory" not in str(e):
-            # this is the hicky bit of the stopgap because
             # this error could come from a network issue
             raise
     return None
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
+async def get_container_output(container: Container) -> Tuple[str, str]:
+    async with asyncer.create_task_group() as task_group:
+        soon_stdout = task_group.soonify(container.stdout)
+        soon_stderr = task_group.soonify(container.stderr)
+    return soon_stdout.value, soon_stderr.value
+
+
+async def get_exec_result(container: Container) -> Tuple[int, str, str]:
+    try:
+        return 0, *(await get_container_output(container))
+    except ExecError as e:
+        return e.exit_code, e.stdout, e.stderr
+
+
 async def with_exit_code(container: Container) -> int:
     """Read the container exit code.
-
-    If the exit code is not 0 a QueryError is raised. We extract the non-zero exit code from the QueryError message.
 
     Args:
         container (Container): The container from which you want to read the exit code.
@@ -93,38 +118,26 @@ async def with_exit_code(container: Container) -> int:
         int: The exit code.
     """
     try:
-        await container.exit_code()
-    except QueryError as e:
-        error_message = str(e)
-        if "exit code: " in error_message:
-            exit_code = re.search(r"exit code: (\d+)", error_message)
-            if exit_code:
-                return int(exit_code.group(1))
-            else:
-                return 1
-        raise
+        await container
+    except ExecError as e:
+        return e.exit_code
     return 0
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
 async def with_stderr(container: Container) -> str:
-    """Retrieve the stderr of a container and handle unexpected errors."""
+    """Retrieve the stderr of a container even on execution error."""
     try:
         return await container.stderr()
-    except QueryError as e:
-        return str(e)
+    except ExecError as e:
+        return e.stderr
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
 async def with_stdout(container: Container) -> str:
-    """Retrieve the stdout of a container and handle unexpected errors."""
+    """Retrieve the stdout of a container even on execution error."""
     try:
         return await container.stdout()
-    except QueryError as e:
-        print(f"Unexpected error while reading container stdout {str(e)}")
-        return str(e)
+    except ExecError as e:
+        return e.stdout
 
 
 def get_current_git_branch() -> str:  # noqa D103

@@ -9,7 +9,7 @@ import datetime
 from typing import TYPE_CHECKING
 
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.utils import get_file_contents
+from ci_connector_ops.pipelines.utils import get_file_contents, get_secret_host_env_variable
 from dagger import Secret
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     Returns:
         Directory: A directory with the downloaded secrets.
     """
-    gsm_secret = context.dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
+    gsm_secret = get_secret_host_env_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
     with_downloaded_secrets = (
@@ -63,7 +63,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     return connector_secrets
 
 
-async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> int:
+async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS"):
     """Use the ci-credentials tool to upload the secrets stored in the context's updated_secrets-dir.
 
     Args:
@@ -73,7 +73,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     Returns:
         int: The exit code of the ci-credentials update-secrets command.
     """
-    gsm_secret = context.dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
+    gsm_secret = get_secret_host_env_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
@@ -81,7 +81,6 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     return await (
         ci_credentials.with_directory(secrets_path, context.updated_secrets_dir)
         .with_exec(["ci_credentials", context.connector.technical_name, "update-secrets"])
-        .exit_code()
     )
 
 
