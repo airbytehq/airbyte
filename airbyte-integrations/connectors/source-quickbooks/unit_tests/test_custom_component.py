@@ -43,7 +43,7 @@ def test_dict_proxy():
     }
 
 
-def test_custom_datetime_based_cursor__update_cursor():
+def test_custom_datetime_based_cursor__close_slice():
     cursor_field_name = "airbyte_cursor"
     record_cursor_value = "2023-02-10T14:42:05-08:00"
 
@@ -58,10 +58,11 @@ def test_custom_datetime_based_cursor__update_cursor():
         parameters={}
     )
 
-    date_time_based_cursor_component.update_cursor(
+    slice_end_time = "2023-03-03T00:00:00+00:00"
+    date_time_based_cursor_component.close_slice(
         {
             "start_time": "2023-02-01T00:00:00+00:00",
-            "end_time": "2023-03-03T00:00:00+00:00"
+            "end_time": slice_end_time
         },
         {
             "Id": "1",
@@ -71,7 +72,7 @@ def test_custom_datetime_based_cursor__update_cursor():
             }
         }
     )
-    assert date_time_based_cursor_component.get_stream_state() == {cursor_field_name: record_cursor_value}
+    assert date_time_based_cursor_component.get_stream_state() == {cursor_field_name: slice_end_time}
 
 
 def test_custom_datetime_based_cursor__format_datetime():

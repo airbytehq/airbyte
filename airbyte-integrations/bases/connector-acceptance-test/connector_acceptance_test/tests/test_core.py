@@ -82,7 +82,7 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-@pytest.mark.default_timeout(10)
+@pytest.mark.default_timeout(30)
 class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
@@ -125,13 +125,6 @@ class TestSpec(BaseTest):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
-
-    def test_docker_env(self, actual_connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
-        """Check that connector's docker image has required envs"""
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
-        ), "env should be equal to space-joined entrypoint"
 
     def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
@@ -537,6 +530,30 @@ class TestSpec(BaseTest):
             assert all(
                 [additional_properties_value is True for additional_properties_value in additional_properties_values]
             ), "When set, additionalProperties field value must be true for backward compatibility."
+
+    # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
+    # But it's cumbersome to declare a separate, non configurable, test class
+    # See https://github.com/airbytehq/airbyte/issues/15551
+    def test_image_labels(self, docker_runner: ConnectorRunner, connector_metadata: dict):
+        """Check that connector's docker image has required labels"""
+        assert docker_runner.labels.get("io.airbyte.name"), "io.airbyte.name must be set in dockerfile"
+        assert docker_runner.labels.get("io.airbyte.version"), "io.airbyte.version must be set in dockerfile"
+        assert (
+            docker_runner.labels.get("io.airbyte.name") == connector_metadata["data"]["dockerRepository"]
+        ), "io.airbyte.name must be equal to dockerRepository in metadata.yaml"
+        assert (
+            docker_runner.labels.get("io.airbyte.version") == connector_metadata["data"]["dockerImageTag"]
+        ), "io.airbyte.version must be equal to dockerImageTag in metadata.yaml"
+
+    # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
+    # But it's cumbersome to declare a separate, non configurable, test class
+    # See https://github.com/airbytehq/airbyte/issues/15551
+    def test_image_environment_variables(self, docker_runner: ConnectorRunner):
+        """Check that connector's docker image has required envs"""
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+            docker_runner.entry_point
+        ), "env should be equal to space-joined entrypoint"
 
 
 @pytest.mark.default_timeout(30)

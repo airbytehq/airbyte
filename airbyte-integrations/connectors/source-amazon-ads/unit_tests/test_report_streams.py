@@ -22,6 +22,7 @@ from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsCampaigns,
     SponsoredBrandsReportStream,
+    SponsoredBrandsV3ReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
@@ -291,6 +292,22 @@ def test_brands_report_stream(config):
 
     stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+
+@responses.activate
+def test_brands_v3_report_stream(config):
+    setup_responses(
+        init_response_products=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles(profile_type="vendor")
+
+    stream = SponsoredBrandsV3ReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
@@ -881,3 +898,25 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
         if record['recordType'] not in expected_record_types:
             if flag_match_error:
                 assert False
+
+
+@pytest.mark.parametrize(
+    "metric_object, record_type",
+    [
+        ({"campaignId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}, "campaigns"),
+        ({"campaignId": ""}, "campaigns"),
+        ({"campaignId": None}, "campaigns")
+    ]
+)
+def test_get_record_id_by_report_type(config, metric_object, record_type):
+    """
+    Test if a `recordId` is allways non-empty for any given `metric_object`.
+    `recordId` is not a contant key for every report.
+    We define suitable key for every report by its type and normally it should not be empty.
+    It may be `campaignId` or `adGroupId` or any other key depending on report type (See METRICS_TYPE_TO_ID_MAP).
+    In case when it is not defined or empty (sometimes we get one record with missing data while others are populated)
+        we must return `recordId` anyway so we generate it manually.
+    """
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_record_id(metric_object, record_type), "recordId must be non-empty value"

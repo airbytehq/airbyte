@@ -1,54 +1,54 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "unremovable": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delivery": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "hidden": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "send_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "module_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "color": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "logable": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shipped": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "paid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pdf_delivery": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pdf_invoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "template": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

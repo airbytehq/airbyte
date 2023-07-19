@@ -192,6 +192,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
+  protected void addCdcDefaultCursorField(final AirbyteStream stream) {
+    // Leaving empty until cdc default cursor is implemented for MySQL
+  }
+
+  @Override
   protected Source getSource() {
     return source;
   }
@@ -208,6 +213,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(1, stateMessages.size());
+    assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_CDC_OFFSET));
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_DB_HISTORY));
