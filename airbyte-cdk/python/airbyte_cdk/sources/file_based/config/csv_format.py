@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field, validator
 from typing_extensions import Literal
@@ -45,6 +45,11 @@ class CsvFormat(BaseModel):
         title="Quoting Behavior",
         default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
         description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
+    )
+    null_values: List[str] = Field(
+        title="Null Values",
+        default=[],
+        description="A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field."
     )
 
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not

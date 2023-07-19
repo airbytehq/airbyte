@@ -6,11 +6,11 @@ import csv
 import json
 import logging
 from distutils.util import strtobool
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional, Set, List
 
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -24,6 +24,7 @@ config_to_quoting: Mapping[QuotingBehavior, int] = {
     QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
     QuotingBehavior.QUOTE_NONE: csv.QUOTE_NONE,
 }
+
 
 
 class CsvParser(FileTypeParser):
@@ -68,6 +69,7 @@ class CsvParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
+        null_values = config_format.null_values if config_format else set()
         if config_format:
             if not isinstance(config_format, CsvFormat):
                 raise ValueError(f"Invalid format config: {config_format}")
@@ -86,15 +88,15 @@ class CsvParser(FileTypeParser):
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
                 reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, logger)
+                yield from self._read_and_cast_types(reader, schema, null_values, logger)
         else:
             with stream_reader.open_file(file) as fp:
                 reader = csv.DictReader(fp)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, logger)
+                yield from self._read_and_cast_types(reader, schema, null_values, logger)
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], logger: logging.Logger  # type: ignore
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], null_values: List[str], logger: logging.Logger  # type: ignore
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -104,13 +106,26 @@ class CsvParser(FileTypeParser):
         record should be emitted.
         """
         if not schema:
-            yield from reader
+            for row in reader:
+                yield CsvParser._to_nullable(row, null_values)
 
         else:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
             for row in reader:
-                yield cast_types(row, property_types, logger)
+                yield CsvParser._to_nullable(cast_types(row, property_types, logger), null_values)
 
+    @staticmethod
+    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional:
+        #print("row:")
+        #print(row)
+        #print("keys")
+        ##print(row.keys())
+        if any(key is None for key in row.keys()):
+            return None
+        nullable = row | {k: None if v in null_values else v for k, v in row.items()}
+        #print("nullable:")
+        #print(nullable)
+        return nullable
 
 def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
     """

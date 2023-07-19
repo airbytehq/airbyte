@@ -4,7 +4,10 @@
 
 import asyncio
 import itertools
+import logging
 import traceback
+from configparser import ParsingError
+import json
 from functools import cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
@@ -16,7 +19,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     InvalidSchemaError,
     MissingSchemaError,
     SchemaInferenceError,
-    StopSyncPerValidationPolicy,
+    StopSyncPerValidationPolicy, RecordParseError,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
@@ -84,9 +87,36 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             try:
                 for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
                     line_no += 1
+                    if record is None:
+                        #logging.warning(json.dumps(f"record is none: {record}"))
+                        if not self.record_passes_validation_policy(record):
+                            n_skipped += 1
+                            #logging.warning(f"record is none and does not pass validation policy")
+                            yield AirbyteMessage(
+                                type=MessageType.LOG,
+                                log=AirbyteLogMessage(
+                                    level=Level.WARN,
+                                    message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                                    stack_trace=traceback.format_exc(),
+                                )
+                            )
+                            continue
+                        else:
+                            #logging.warning(f"records is not none but passes validation policy: {record}")
+                            raise ValueError("record is none")
+                            yield AirbyteMessage(
+                                type=MessageType.LOG,
+                                log=AirbyteLogMessage(
+                                    level=Level.ERROR,
+                                    message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                                    stack_trace=traceback.format_exc(),
+                                )
+                            )
+                            break
                     if self.config.schemaless:
                         record = {"data": record}
                     elif not self.record_passes_validation_policy(record):
+                        #logging.warning("skipping record")
                         n_skipped += 1
                         continue
                     record[self.ab_last_mod_col] = file_datetime_string
@@ -104,7 +134,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 )
                 break
 
-            except Exception:
+            except Exception as e:
+                #logging.warning(f"caught exception: {traceback.format_exc()}")
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(

@@ -20,7 +20,7 @@ class SkipRecordPolicy(AbstractSchemaValidationPolicy):
     name = "skip_record"
 
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
-        return schema is not None and conforms_to_schema(record, schema)
+        return schema is not None and (record is not None and conforms_to_schema(record, schema))
 
 
 class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):

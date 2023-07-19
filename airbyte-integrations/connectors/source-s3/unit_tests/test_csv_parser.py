@@ -412,3 +412,4 @@ class TestCsvParser(AbstractTestParser):
                     read_count += 1
             assert read_count == expected_count
             expected_file.close()
+
