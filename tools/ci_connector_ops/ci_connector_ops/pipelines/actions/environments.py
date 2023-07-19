@@ -756,6 +756,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(["sh", "-c", "mv * .."])
         .with_workdir("/airbyte")
         .with_exec(["rm", "-rf", "airbyte_normalization"])
+        # We don't install the airbyte-protocol legacy package as its not used anymore and not compatible with Cython 3.x
         # .with_workdir("/airbyte/base_python_structs")
         # .with_exec(["pip3", "install", "--force-reinstall", "Cython<3.0", ".",])
         .with_workdir("/airbyte/normalization_code")
