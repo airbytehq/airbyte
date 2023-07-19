@@ -5,6 +5,7 @@
 import calendar
 import functools
 import logging
+import math
 import re
 import time
 from abc import ABC
@@ -706,8 +707,8 @@ class TicketAudits(SourceZendeskSupportPaginationStream):
 class Triggers(SourceZendeskSupportPaginationStream):
     """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
 
-    # sort_by not supported as request param when doing cursor pagination for this stream
-    # since we are not specifying anything it uses position field by default to sort
+    # sort_by not supported as request param when doing cursor pagination for this stream (returns DatabaseError)
+    # so in this case incremental syncs for triggers cannot update state at regular intervals
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -721,6 +722,10 @@ class Triggers(SourceZendeskSupportPaginationStream):
         if next_page_token:
             params.update(next_page_token)
         return params
+    
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return math.inf
 
 
 class Views(SourceZendeskSupportPaginationStream):
