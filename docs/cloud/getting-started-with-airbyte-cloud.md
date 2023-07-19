@@ -207,17 +207,6 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 * 34.106.225.141
 
 ### European Union
-
-#### GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
-
 #### AWS region: eu-west-3
 * 13.37.4.46
 * 13.37.142.60
