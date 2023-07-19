@@ -4,13 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -23,13 +18,17 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -64,19 +63,8 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
     final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
-
-    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", ATLAS.getType())
-        .put("cluster_url", credentialsJson.get("cluster_url").asText())
-        .build());
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("user", credentialsJson.get("user").asText())
-        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put("instance_type", instanceConfig)
-        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
-        .put("auth_source", "admin")
-        .build());
+    ((ObjectNode)credentialsJson).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
+    config = credentialsJson;
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
