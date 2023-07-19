@@ -361,7 +361,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(2), Double::isFinite));
     }
     node.set(columnName, arrayNode);
   }
@@ -370,7 +370,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
+      final String moneyValue = parseMoneyValue(arrayResultSet.getString(2));
       arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
