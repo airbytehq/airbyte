@@ -48,12 +48,12 @@ public class AirbyteTypeTest {
                          "key6": {
                            "type": "string",
                            "format": "time",
-                           "airbyte_type": "timestamp_without_timezone"
+                           "airbyte_type": "time_without_timezone"
                          },
                          "key7": {
                            "type": "string",
                            "format": "time",
-                           "airbyte_type": "timestamp_with_timezone"
+                           "airbyte_type": "time_with_timezone"
                          },
                          "key8": {
                            "type": "string",
@@ -99,12 +99,12 @@ public class AirbyteTypeTest {
                          "key6": {
                            "type": ["string"],
                            "format": "time",
-                           "airbyte_type": "timestamp_without_timezone"
+                           "airbyte_type": "time_without_timezone"
                          },
                          "key7": {
                            "type": ["string"],
                            "format": "time",
-                           "airbyte_type": "timestamp_with_timezone"
+                           "airbyte_type": "time_with_timezone"
                          },
                          "key8": {
                            "type": ["string"],
@@ -150,12 +150,12 @@ public class AirbyteTypeTest {
                          "key6": {
                            "type": ["null", "string"],
                            "format": "time",
-                           "airbyte_type": "timestamp_without_timezone"
+                           "airbyte_type": "time_without_timezone"
                          },
                          "key7": {
                            "type": ["null", "string"],
                            "format": "time",
-                           "airbyte_type": "timestamp_with_timezone"
+                           "airbyte_type": "time_with_timezone"
                          },
                          "key8": {
                            "type": ["null", "string"],
