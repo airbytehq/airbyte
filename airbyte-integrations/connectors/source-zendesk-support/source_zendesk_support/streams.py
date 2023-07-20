@@ -427,9 +427,7 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
 
 class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
-    Functionality of this class copied into a SourceZendeskSupportPaginationStream class and modified to suit rudderstack needs.
-    This class is being retained to not break existing incremental streams using this class.
-    TODO: Migrate incremental streams to SourceZendeskSupportPaginationStream also and remove this class.
+    TODO: Migrate incremental streams to SourceZendeskSupportPaginationStream also and see if we can remove this class.
     """
 
     cursor_field = "updated_at"
@@ -441,7 +439,7 @@ class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefresh
         """
         Will allow the connector send state messages more frequent and not only at the end of the sync.
         """
-        return 1000
+        return self.page_size
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
@@ -479,9 +477,6 @@ class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefresh
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
     Only used by streams modified by rudderstack
-    Implements cursor pagination as most streams support cursor pagination.
-    Where it is not supported such streams will override some of this functionality to
-    use offset pagination.
     """
 
     cursor_field = "updated_at"
@@ -493,7 +488,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         """
         Will allow the connector send state messages more frequent and not only at the end of the sync.
         """
-        return 1000
+        return self.page_size
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
@@ -527,6 +522,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
         """
         params = {
+            # Latest value of state is used as start_time for making api call at the beginning of every sync run where we don't have a next-page token
             "start_time": parsed_state,
             "page[size]": self.page_size,
             "sort_by": self.cursor_field,
@@ -688,10 +684,11 @@ class TicketFields(SourceZendeskSupportStream):
     """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
 
 
-class TicketForms(SourceZendeskSupportCursorPaginationStream):
+class TicketForms(SourceZendeskSupportOffsetPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
-    # Does not support cursor based pagination so using offset based pagination
+    # next_page field from API response has page number instead of start_time being expected in parent class
+    # hence we need to override below methods
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
@@ -769,7 +766,6 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
         params = {
             "start_time": parsed_state,
             "page[size]": self.page_size,
-            "sort_order": "asc",
         }
         if next_page_token:
             params.update(next_page_token)
