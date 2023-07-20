@@ -146,7 +146,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
-    typerDeduper.commitFinalTables();
+    if (use1s1t) {
+      typerDeduper.commitFinalTables();
+    }
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }
