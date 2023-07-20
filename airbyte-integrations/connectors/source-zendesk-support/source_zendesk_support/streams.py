@@ -192,7 +192,8 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         if not self.cursor_field:
             yield from records
         else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
+            # For very 1st sync since we have no state present we need to filter records based on start_date
+            cursor_date = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
             for record in records:
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
