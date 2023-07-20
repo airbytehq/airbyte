@@ -17,6 +17,8 @@ import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -68,7 +70,30 @@ public class BigQueryStagingConsumerFactory {
         tmpTableNameTransformer,
         targetTableNameTransformer);
 
-    CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(use1s1t, typerDeduper);
+    final var overwriteStreamsWithTmpTable = createFinalTables(use1s1t, parsedCatalog, destinationHandler, sqlGenerator);
+
+    final CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> baseTypeAndDedupeConsumer = (streamId) -> {
+      final var streamConfig = parsedCatalog.getStream(streamId.getNamespace(), streamId.getName());
+      final String suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), "");
+      destinationHandler.doTypingAndDeduping(streamConfig, sqlGenerator, suffix);
+    };
+
+
+    CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> typeAndDedupeStreamFunction = incrementalTypingAndDedupingStreamConsumer(
+        sqlGenerator,
+        destinationHandler,
+        parsedCatalog,
+        use1s1t,
+        overwriteStreamsWithTmpTable,
+        baseTypeAndDedupeConsumer);
+
+    final CheckedConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer =
+        getReplaceFinalTableConsumer(
+            use1s1t,
+            sqlGenerator,
+            destinationHandler,
+            overwriteStreamsWithTmpTable,
+            parsedCatalog);
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -77,19 +102,29 @@ public class BigQueryStagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs, use1s1t, typerDeduper),
+        onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer, baseTypeAndDedupeConsumer),
         catalog,
         json -> true,
         defaultNamespace);
   }
 
-  private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typingAndDedupingStreamConsumer(final boolean use1s1t,
-                                                                                                                final TyperDeduper<TableDefinition> typerDeduper) {
-    if (use1s1t) {
-      return (streamNameNamespacePair) -> typerDeduper.typeAndDedupe(streamNameNamespacePair.getNamespace(), streamNameNamespacePair.getName());
-    } else {
-      return (streamNameNamespacePair) -> {};
-    }
+  private CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> incrementalTypingAndDedupingStreamConsumer(final BigQuerySqlGenerator sqlGenerator,
+                                                                                                                           final BigQueryDestinationHandler destinationHandler,
+                                                                                                                           final ParsedCatalog parsedCatalog,
+                                                                                                                           final boolean use1s1t,
+                                                                                                                           final Map<StreamId, String> overwriteStreamsWithTmpTable,
+                                                                                                                           final CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> baseTypeAndDedupeConsumer) {
+    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
+    return (streamId) -> {
+      if (use1s1t) {
+        if (!valve.containsKey(streamId)) {
+          valve.addStream(streamId);
+        } else if (valve.readyToTypeAndDedupe(streamId)) {
+          baseTypeAndDedupeConsumer.accept(streamId);
+          valve.updateTimeAndIncreaseInterval(streamId);
+        }
+      }
+    };
   }
 
   private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
@@ -168,8 +203,41 @@ public class BigQueryStagingConsumerFactory {
       }
       LOGGER.info("Preparing airbyte_raw tables in destination completed.");
 
-      if (use1s1t) {
-        typerDeduper.createFinalTables();
+  private Map<StreamId, String> createFinalTables(boolean use1s1t,
+                                                  final ParsedCatalog parsedCatalog,
+                                                  final BigQueryDestinationHandler destinationHandler,
+                                                  final BigQuerySqlGenerator sqlGenerator)
+      throws InterruptedException {
+    // TODO: share this code from BigQueryRecordConsumer
+    Map<StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
+    if (use1s1t) {
+      // For each stream, make sure that its corresponding final table exists.
+      for (StreamConfig stream : parsedCatalog.streams()) {
+        final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+        if (existingTable.isEmpty()) {
+          destinationHandler.execute(sqlGenerator.createTable(stream, ""));
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            // We're creating this table for the first time. Write directly into it.
+            overwriteStreamsWithTmpTable.put(stream.id(), "");
+          }
+        } else {
+
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            final BigInteger rowsInFinalTable = destinationHandler.getFinalTable(stream.id()).getNumRows();
+            if (new BigInteger("0").equals(rowsInFinalTable)) {
+              // The table already exists but is empty. We'll load data incrementally.
+              // (this might be because the user ran a reset, which creates an empty table)
+              overwriteStreamsWithTmpTable.put(stream.id(), "");
+            } else {
+              // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the
+              // end of the sync.
+              overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
+              destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
+            }
+          } else {
+            destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
+          }
+        }
       }
     };
   }
@@ -186,7 +254,7 @@ public class BigQueryStagingConsumerFactory {
                                                   final BigQueryStagingOperations bigQueryGcsOperations,
                                                   final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                   final ConfiguredAirbyteCatalog catalog,
-                                                  final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typerDeduper) {
+                                                  final CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> incrementalTypeAndDedupeConsumer) {
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
@@ -209,7 +277,7 @@ public class BigQueryStagingConsumerFactory {
         writeConfig.addStagedFile(stagedFile);
         bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
             List.of(stagedFile));
-        typerDeduper.accept(new AirbyteStreamNameNamespacePair(writeConfig.streamName(), writeConfig.namespace()));
+        incrementalTypeAndDedupeConsumer.accept(new AirbyteStreamNameNamespacePair(writeConfig.streamName(), writeConfig.namespace()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table:", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
@@ -221,12 +289,13 @@ public class BigQueryStagingConsumerFactory {
    * Tear down process, will attempt to clean out any staging area
    *
    * @param bigQueryGcsOperations collection of staging operations
-   * @param writeConfigs configuration settings used to describe how to write data and where it exists
+   * @param writeConfigs          configuration settings used to describe how to write data and where it exists
+   * @param finalTypeAndDedupeConsumer
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                          final boolean use1s1t,
-                                          final TyperDeduper<TableDefinition> typerDeduper) {
+                                          final CheckedConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer,
+                                          CheckedConsumer<AirbyteStreamNameNamespacePair, InterruptedException> finalTypeAndDedupeConsumer) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
@@ -235,11 +304,11 @@ public class BigQueryStagingConsumerFactory {
        */
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
-        bigQueryGcsOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
-      }
-      if (use1s1t) {
-        typerDeduper.commitFinalTables();
+      for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
+        finalTypeAndDedupeConsumer.accept(entry.getKey());
+        bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
+        // replace final table
+        replaceFinalTableConsumer.accept(entry.getValue());
       }
       LOGGER.info("Cleaning up destination completed.");
     };

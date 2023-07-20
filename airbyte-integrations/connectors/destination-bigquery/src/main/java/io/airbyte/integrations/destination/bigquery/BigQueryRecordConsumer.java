@@ -71,6 +71,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     if (use1s1t) {
       typerDeduper.createFinalTables();
+      // TODO call this in createFinalTables
+      destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
 
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
@@ -88,6 +90,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       });
     }
   }
+
+
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected
@@ -119,15 +123,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
    *
    * @param message record to be written
    */
-  private void processRecord(final AirbyteMessage message) throws Exception {
+  private void processRecord(final AirbyteMessage message) {
     final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(streamId).upload(message);
-    if (!streamTDValve.containsKey(streamId)) {
-      streamTDValve.addStream(streamId);
-    } else if (streamTDValve.readyToTypeAndDedupeWithAdditionalRecord(streamId)) {
-      doTypingAndDeduping(streamId);
-      streamTDValve.updateTimeAndIncreaseInterval(streamId);
-    }
+    // We are not doing any incremental typing and de-duping for Standard Inserts, see
+    // https://github.com/airbytehq/airbyte/issues/27586
   }
 
   @Override
