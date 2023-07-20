@@ -616,10 +616,12 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
 
 class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class AuditLogs(SourceZendeskSupportCursorPaginationStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
     # audit_logs doesn't have the 'updated_by' field
     cursor_field = "created_at"
@@ -703,12 +705,14 @@ class Groups(SourceZendeskSupportStream):
 
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """
     SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
+    # API accepts start_time param. Incremental sync supported natively
 
 
 class TicketFields(SourceZendeskSupportStream):
@@ -739,12 +743,14 @@ class TicketForms(SourceZendeskSupportOffsetPaginationStream):
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
     """
+    # API accepts start_time param. Natively supports incremental sync
 
     cursor_field = "time"
 
@@ -774,6 +780,7 @@ class Macros(SourceZendeskSupportStream):
 
 class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
@@ -786,6 +793,7 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
 class Triggers(SourceZendeskSupportCursorPaginationStream):
     """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
     # sort_by not supported as request param when doing cursor pagination for this stream (returns DatabaseError)
     # so in this case incremental syncs for triggers cannot update state at regular intervals
@@ -809,10 +817,12 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
 
 class Views(SourceZendeskSupportCursorPaginationStream):
     """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class Automations(SourceZendeskSupportCursorPaginationStream):
     """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class Tags(SourceZendeskSupportFullRefreshStream):
