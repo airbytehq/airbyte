@@ -392,7 +392,11 @@ class SeriesStream(IncrementalSearchableStream, ABC):
         return local_json_schema
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
+        data = response.json()
+        data["stream"] = self.name
+        data["query"] = self.query_string
+        data["data_source"] = self.data_source
+        return [data]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         self._cursor_value = self.end_date

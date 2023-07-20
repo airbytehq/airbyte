@@ -190,6 +190,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.2.1   | 2023-07-11 | [28149](https://github.com/airbytehq/airbyte/pull/28149) | Specify date format to support datepicker in UI                                              |
 | 0.2.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                         |
 | 0.1.36  | 2023-04-13 | [22223](https://github.com/airbytehq/airbyte/pull/22223) | Fix custom report with Segments dimensions                                                   |
 | 0.1.35  | 2023-05-31 | [26885](https://github.com/airbytehq/airbyte/pull/26885) | Remove `authSpecification` from spec in favour of `advancedAuth`                             |
