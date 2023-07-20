@@ -520,11 +520,12 @@ class ShippingRates(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/shipping_rates/list
     """
-    
+
     cursor_field = "created"
 
     def path(self, **kwargs):
-      return "shipping_rates"
+        return "shipping_rates"
+
 
 class Reviews(IncrementalStripeStream):
     """
@@ -535,6 +536,7 @@ class Reviews(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "reviews"
+
 
 class Subscriptions(IncrementalStripeStream):
     """

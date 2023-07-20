@@ -44,6 +44,7 @@ def test_source_streams():
     streams = SourceStripe().streams(config=config)
     assert len(streams) == 47
 
+
 @pytest.fixture(name="config")
 def config_fixture():
     config = {"client_secret": "sk_test(live)_<secret>",
