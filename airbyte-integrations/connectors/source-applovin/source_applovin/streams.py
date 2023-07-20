@@ -1,15 +1,14 @@
-from typing import Iterable, Mapping, Optional, Any
+from typing import Iterable, Mapping, Optional, Any, List
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_protocol.models import SyncMode
 
 
-class Campaigns(HttpStream):
+class ApplovinStream(HttpStream):
     url_base = "https://o.applovin.com/campaign_management/v1/"
-    primary_key = "campaign_id"
-
-    def path(self, **kwargs) -> str:
-        return "campaigns"
+    use_cache = True  # it is used in all streams
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -17,3 +16,33 @@ class Campaigns(HttpStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json
+
+class Campaigns(ApplovinStream):
+    primary_key = "campaign_id"
+
+    def path(self, **kwargs) -> str:
+        return "campaigns"
+
+
+class Creatives(HttpSubStream, ApplovinStream):
+    primary_key = "id"
+
+    def __init__(self, authenticator: TokenAuthenticator, **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            parent=Campaigns(authenticator=authenticator),
+        )
+
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        campaign_id = stream_slice["campaign_id"]
+        return f"creative_sets/{campaign_id}"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        campaigns = Campaigns(authenticator=self._session.auth)
+        for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["campaign_id"]}
+            continue
