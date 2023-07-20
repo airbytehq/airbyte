@@ -28,10 +28,10 @@ class RecordSelector(HttpSelector):
     extractor: RecordExtractor
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    record_filter: RecordFilter = None
+    record_filter: Optional[RecordFilter] = None
     transformations: List[RecordTransformation] = field(default_factory=lambda: [])
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
 
     def select_records(
