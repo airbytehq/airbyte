@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "amount_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "atm_fee": ["null", "integer"]
+      }
+    },
+    "authorization": {
+      "type": ["null", "string"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "card": {
+      "type": ["null", "string"]
+    },
+    "cardholder": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "dispute": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "merchant_amount": {
+      "type": ["null", "integer"]
+    },
+    "merchant_currency": {
+      "type": ["null", "string"]
+    },
+    "merchant_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "category": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "network_id": {
+          "type": ["null", "string"]
+        },
+        "postal_code": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "purchase_details": {
+      "$ref": "issuing_transaction_purchase_details.json"
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}

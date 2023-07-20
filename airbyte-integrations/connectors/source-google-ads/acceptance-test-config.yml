@@ -38,6 +38,10 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
       - config_path: "secrets/config_with_gaql.json"
         configured_catalog_path: "integration_tests/configured_catalog_with_gaql_only.json"
+        # This config allows to read from the click_view stream which is empty in other configs.
+        # It should be tested anyway because it has different date range compared to other streams.
+      - config_path: "secrets/config_click_view.json"
+        configured_catalog_path: "integration_tests/configured_catalog_with_click_view.json"
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"

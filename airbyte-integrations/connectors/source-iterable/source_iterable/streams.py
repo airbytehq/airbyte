@@ -88,6 +88,18 @@ class IterableStream(HttpStream, ABC):
             if response_json.get("code") in codes and msg_pattern in response_json.get("msg", ""):
                 return True
 
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+        https://github.com/airbytehq/oncall/issues/1985#issuecomment-1559276465
+        """
+        return {"timeout": (60, 300)}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json() or {}
         records = response_json.get(self.data_field, [])
@@ -216,7 +228,10 @@ class IterableExportStream(IterableStream, ABC):
         Passing stream=True argument to requests.session.send method to avoid
         loading whole analytics report content into memory.
         """
-        return {"stream": True}
+        return {
+            **super().request_kwargs(stream_state, stream_slice, next_page_token),
+            "stream": True,
+        }
 
     def get_start_date(self, stream_state: Mapping[str, Any]) -> DateTime:
         stream_state = stream_state or {}

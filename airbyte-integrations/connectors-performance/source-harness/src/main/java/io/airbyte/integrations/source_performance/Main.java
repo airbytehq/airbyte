@@ -25,12 +25,27 @@ public class Main {
     log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
+    // TODO: (ryankfu) add function parity with destination_performance
+    int numOfParallelStreams = 1;
+    String syncMode = "full_refresh";
 
+    // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
         image = args[0];
         dataset = args[1];
+      }
+      case 3 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+      }
+      case 4 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+        syncMode = args[3];
       }
       default -> {
         log.info("unexpected arguments");

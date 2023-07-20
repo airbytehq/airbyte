@@ -26,6 +26,8 @@ properties:
     type: string
   icon:
     type: string
+  iconUrl:
+    type: string
   spec:
     type: object
   tombstone:
@@ -47,6 +49,11 @@ properties:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string
     format: date
+  tags:
+    type: array
+    description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
+    items:
+      type: string
   resourceRequirements:
     "$ref": ActorDefinitionResourceRequirements.yaml
   protocolVersion:
@@ -59,3 +66,5 @@ properties:
     description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
   allowedHosts:
     "$ref": AllowedHosts.yaml
+  releases:
+    "$ref": ConnectorReleases.yaml

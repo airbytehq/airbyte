@@ -19,6 +19,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
@@ -64,6 +65,7 @@ public class PerformanceHarness {
   public static final int PORT2 = 9878;
   public static final int PORT3 = 9879;
   public static final int PORT4 = 9880;
+  public static final int STATE_FREQUENCY = 10000;
 
   public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
 
@@ -124,6 +126,8 @@ public class PerformanceHarness {
       }
     });
 
+    final String syncMode = this.catalog.getStreams().get(0).getSyncMode().name();
+
     final BufferedReader reader = loadFileFromUrl();
 
     final Pattern pattern = Pattern.compile(",");
@@ -164,6 +168,16 @@ public class PerformanceHarness {
         if (counter > 0 && counter % MEGABYTE == 0) {
           log.info("current throughput({}): {} total MB {}", counter, (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
               totalBytes / MEGABYTE);
+        }
+
+        // If sync mode is incremental, send state message every 10,000 records
+        if (syncMode.equals("INCREMENTAL") && counter % STATE_FREQUENCY == 0) {
+          final AirbyteMessage stateMessage = new AirbyteMessage()
+              .withType(Type.STATE)
+              .withState(new AirbyteStateMessage()
+                  .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                  .withData(Jsons.deserialize("{\"checkpoint\": \"" + counter + "\"}")));
+          destination.accept(stateMessage);
         }
       }
     }

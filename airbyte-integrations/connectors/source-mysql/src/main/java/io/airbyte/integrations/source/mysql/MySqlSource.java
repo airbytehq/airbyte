@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -274,7 +275,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);
+          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
 
       final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
       final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector();
@@ -393,7 +394,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-//    return super.createDatabase(sourceConfig, this::getConnectionProperties);
+    // return super.createDatabase(sourceConfig, this::getConnectionProperties);
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
@@ -419,7 +420,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
-            ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER) : new HashMap<>();
+            ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER)
+            : new HashMap<>();
     final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);

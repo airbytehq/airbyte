@@ -10,12 +10,12 @@ import pendulum as pdm
 
 from .utils import get_parent_stream_values
 
-# LinkedIn has a max of 20 fields per request. We make chunks by size of 17 fields
-# to have the `dateRange`, `pivot`, and `pivotValue` be included as well.
-FIELDS_CHUNK_SIZE = 17
+# LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields
+# to have the `dateRange` be included as well.
+FIELDS_CHUNK_SIZE = 19
 # Number of days ahead for date slices, from start date.
 WINDOW_IN_DAYS = 30
-# List of adAnalyticsV2 fields available for fetch
+# List of Reporting Metrics fields available for fetch
 ANALYTICS_FIELDS_V2: List = [
     "actionClicks",
     "adUnitClicks",
@@ -30,12 +30,19 @@ ANALYTICS_FIELDS_V2: List = [
     "costInLocalCurrency",
     "costInUsd",
     "dateRange",
+    "documentCompletions",
+    "documentFirstQuartileCompletions",
+    "documentMidpointCompletions",
+    "documentThirdQuartileCompletions",
+    "downloadClicks",
     "externalWebsiteConversions",
     "externalWebsitePostClickConversions",
     "externalWebsitePostViewConversions",
     "follows",
     "fullScreenPlays",
     "impressions",
+    "jobApplications",
+    "jobApplyClicks",
     "landingPageClicks",
     "leadGenerationMailContactInfoShares",
     "leadGenerationMailInterestedClicks",
@@ -44,14 +51,21 @@ ANALYTICS_FIELDS_V2: List = [
     "oneClickLeads",
     "opens",
     "otherEngagements",
-    "pivot",
-    "pivotValue",
     "pivotValues",
+    "postClickJobApplications",
+    "postClickJobApplyClicks",
+    "postClickRegistrations",
+    "postViewJobApplications",
+    "postViewJobApplyClicks",
+    "postViewRegistrations",
     "reactions",
+    "registrations",
     "sends",
     "shares",
+    "talentLeads",
     "textUrlClicks",
     "totalEngagements",
+    "validWorkEmailLeads",
     "videoCompletions",
     "videoFirstQuartileCompletions",
     "videoMidpointCompletions",
@@ -64,18 +78,32 @@ ANALYTICS_FIELDS_V2: List = [
     "viralCommentLikes",
     "viralComments",
     "viralCompanyPageClicks",
+    "viralDocumentCompletions",
+    "viralDocumentFirstQuartileCompletions",
+    "viralDocumentMidpointCompletions",
+    "viralDocumentThirdQuartileCompletions",
+    "viralDownloadClicks",
     "viralExternalWebsiteConversions",
     "viralExternalWebsitePostClickConversions",
     "viralExternalWebsitePostViewConversions",
     "viralFollows",
     "viralFullScreenPlays",
     "viralImpressions",
+    "viralJobApplications",
+    "viralJobApplyClicks",
     "viralLandingPageClicks",
     "viralLikes",
     "viralOneClickLeadFormOpens",
     "viralOneClickLeads",
     "viralOtherEngagements",
+    "viralPostClickJobApplications",
+    "viralPostClickJobApplyClicks",
+    "viralPostClickRegistrations",
+    "viralPostViewJobApplications",
+    "viralPostViewJobApplyClicks",
+    "viralPostViewRegistrations",
     "viralReactions",
+    "viralRegistrations",
     "viralShares",
     "viralTotalEngagements",
     "viralVideoCompletions",
@@ -85,9 +113,8 @@ ANALYTICS_FIELDS_V2: List = [
     "viralVideoThirdQuartileCompletions",
     "viralVideoViews",
 ]
-
 # Fields that are always present in fields_set chunks
-BASE_ANALLYTICS_FIELDS = ["dateRange", "pivot", "pivotValue"]
+BASE_ANALLYTICS_FIELDS = ["dateRange"]
 
 
 def chunk_analytics_fields(
@@ -154,15 +181,10 @@ def update_analytics_params(stream_slice: Mapping[str, Any]) -> Mapping[str, Any
     """
     Produces the date range parameters from input stream_slice
     """
+    date_range = stream_slice["dateRange"]
     return {
-        # Start date range
-        "dateRange.start.day": stream_slice["dateRange"]["start.day"],
-        "dateRange.start.month": stream_slice["dateRange"]["start.month"],
-        "dateRange.start.year": stream_slice["dateRange"]["start.year"],
-        # End date range
-        "dateRange.end.day": stream_slice["dateRange"]["end.day"],
-        "dateRange.end.month": stream_slice["dateRange"]["end.month"],
-        "dateRange.end.year": stream_slice["dateRange"]["end.year"],
+        "dateRange": f"(start:(year:{date_range['start.year']},month:{date_range['start.month']},day:{date_range['start.day']}),"
+        f"end:(year:{date_range['end.year']},month:{date_range['end.month']},day:{date_range['end.day']}))",
         # Chunk of fields
         "fields": stream_slice["fields"],
     }

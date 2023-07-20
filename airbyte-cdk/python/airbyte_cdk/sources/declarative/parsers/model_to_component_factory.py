@@ -11,6 +11,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -22,8 +23,9 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -71,9 +73,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    SingleUseRefreshTokenOAuthAuthenticator as SingleUseRefreshTokenOAuthAuthenticatorModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
@@ -90,7 +89,13 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
+    CursorPaginationStrategy,
+    CursorStopCondition,
+    OffsetIncrement,
+    PageIncrement,
+    StopConditionPaginationStrategyDecorator,
+)
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -98,10 +103,10 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRe
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
-from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -123,6 +128,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._message_repository = InMemoryMessageRepository()
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -161,7 +167,6 @@ class ModelToComponentFactory:
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
-            SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
             OffsetIncrementModel: self.create_offset_increment,
             PageIncrementModel: self.create_page_increment,
             ParentStreamConfigModel: self.create_parent_stream_config,
@@ -224,7 +229,26 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs) -> ApiKeyAuthenticator:
-        return ApiKeyAuthenticator(api_token=model.api_token, header=model.header, config=config, parameters=model.parameters)
+        if model.inject_into is None and model.header is None:
+            raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
+
+        if model.inject_into is not None and model.header is not None:
+            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
+        request_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.inject_into.inject_into.value),
+                field_name=model.inject_into.field_name,
+                parameters=model.parameters,
+            )
+            if model.inject_into
+            else RequestOption(
+                inject_into=RequestOptionType.header,
+                field_name=model.header,
+                parameters=model.parameters,
+            )
+        )
+        return ApiKeyAuthenticator(api_token=model.api_token, request_option=request_option, config=config, parameters=model.parameters)
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:
@@ -398,9 +422,13 @@ class ModelToComponentFactory:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
-        end_datetime = (
-            model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
-        )
+        end_datetime = None
+        if model.is_data_feed and model.end_datetime:
+            raise ValueError("Data feed does not support end_datetime")
+        if model.end_datetime:
+            end_datetime = (
+                model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
+            )
 
         end_time_option = (
             RequestOption(
@@ -433,6 +461,7 @@ class ModelToComponentFactory:
             start_time_option=start_time_option,
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
+            message_repository=self._message_repository,
             config=config,
             parameters=model.parameters,
         )
@@ -445,10 +474,22 @@ class ModelToComponentFactory:
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
 
         primary_key = model.primary_key.__root__ if model.primary_key else None
-        retriever = self._create_component_from_model(
-            model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
+        stop_condition_on_cursor = (
+            model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
-
+        transformations = []
+        if model.transformations:
+            for transformation_model in model.transformations:
+                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
+        retriever = self._create_component_from_model(
+            model=model.retriever,
+            config=config,
+            name=model.name,
+            primary_key=primary_key,
+            stream_slicer=combined_slicers,
+            stop_condition_on_cursor=stop_condition_on_cursor,
+            transformations=transformations,
+        )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
@@ -459,26 +500,17 @@ class ModelToComponentFactory:
                 options["name"] = model.name
             schema_loader = DefaultSchemaLoader(config=config, parameters=options)
 
-        transformations = []
-        if model.transformations:
-            for transformation_model in model.transformations:
-                transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
             name=model.name,
             primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
-            transformations=transformations,
             config=config,
             parameters=model.parameters,
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
-        incremental_sync = (
-            self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        )
-
         stream_slicer = None
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
@@ -490,10 +522,15 @@ class ModelToComponentFactory:
                 else self._create_component_from_model(model=stream_slicer_model, config=config)
             )
 
-        if incremental_sync and stream_slicer:
-            return CartesianProductStreamSlicer(stream_slicers=[incremental_sync, stream_slicer], parameters=model.parameters)
-        elif incremental_sync:
-            return incremental_sync
+        if model.incremental_sync and stream_slicer:
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(
+                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                ),
+                partition_router=stream_slicer,
+            )
+        elif model.incremental_sync:
+            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
             return stream_slicer
         else:
@@ -527,7 +564,9 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, *, url_base: str) -> DefaultPaginator:
+    def create_default_paginator(
+        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+    ) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -536,6 +575,10 @@ class ModelToComponentFactory:
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
         pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
+        if cursor_used_for_stop_condition:
+            pagination_strategy = StopConditionPaginationStrategyDecorator(
+                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
+            )
 
         paginator = DefaultPaginator(
             decoder=decoder,
@@ -657,8 +700,25 @@ class ModelToComponentFactory:
     def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
         return NoPagination(parameters={})
 
-    @staticmethod
-    def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+        if model.refresh_token_updater:
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+                config,
+                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
+                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
+                refresh_token_name=model.refresh_token_updater.refresh_token_name,
+                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters).eval(config),
+                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters).eval(config),
+                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters).eval(config),
+                access_token_config_path=model.refresh_token_updater.access_token_config_path,
+                refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
+                token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
+                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters).eval(config),
+                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
+                scopes=model.scopes,
+                token_expiry_date_format=model.token_expiry_date_format,
+                message_repository=self._message_repository,
+            )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
             client_id=model.client_id,
@@ -673,26 +733,6 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
-        )
-
-    @staticmethod
-    def create_single_use_refresh_token_oauth_authenticator(
-        model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
-    ) -> SingleUseRefreshTokenOauth2Authenticator:
-        return SingleUseRefreshTokenOauth2Authenticator(
-            config,
-            model.token_refresh_endpoint,
-            access_token_name=model.access_token_name,
-            refresh_token_name=model.refresh_token_name,
-            expires_in_name=model.expires_in_name,
-            client_id_config_path=model.client_id_config_path,
-            client_secret_config_path=model.client_secret_config_path,
-            access_token_config_path=model.access_token_config_path,
-            refresh_token_config_path=model.refresh_token_config_path,
-            token_expiry_date_config_path=model.token_expiry_date_config_path,
-            grant_type=model.grant_type,
-            refresh_request_body=model.refresh_request_body,
-            scopes=model.scopes,
         )
 
     @staticmethod
@@ -728,11 +768,15 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
-    def create_record_selector(self, model: RecordSelectorModel, config: Config, **kwargs) -> RecordSelector:
+    def create_record_selector(
+        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs
+    ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
-        return RecordSelector(extractor=extractor, record_filter=record_filter, parameters=model.parameters)
+        return RecordSelector(
+            extractor=extractor, config=config, record_filter=record_filter, transformations=transformations, parameters=model.parameters
+        )
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:
@@ -763,12 +807,20 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        stop_condition_on_cursor: bool = False,
+        transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config)
+        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
+
+        cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
-            self._create_component_from_model(model=model.paginator, config=config, url_base=url_base)
+            self._create_component_from_model(
+                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+            )
             if model.paginator
             else NoPagination(parameters={})
         )
@@ -780,7 +832,8 @@ class ModelToComponentFactory:
                 primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+                stream_slicer=stream_slicer,
+                cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -792,7 +845,8 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+            stream_slicer=stream_slicer,
+            cursor=cursor,
             config=config,
             parameters=model.parameters,
             disable_retries=self._disable_retries,
@@ -830,3 +884,6 @@ class ModelToComponentFactory:
         return WaitUntilTimeFromHeaderBackoffStrategy(
             header=model.header, parameters=model.parameters, config=config, min_wait=model.min_wait, regex=model.regex
         )
+
+    def get_message_repository(self):
+        return self._message_repository

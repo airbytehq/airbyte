@@ -8,7 +8,7 @@ spec:
   containers:
   - name: main
     image: airbyte/$HARNESS:dev
-    args: ["$CONNECTOR_IMAGE_NAME", "$DATASET", "$STREAM_NUMBER"]
+    args: ["$CONNECTOR_IMAGE_NAME", "$DATASET", "$STREAM_NUMBER", "$SYNC_MODE"]
     volumeMounts:
       - name: secrets-volume
         mountPath: /airbyte/secrets

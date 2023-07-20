@@ -27,6 +27,10 @@ on:
         description: "Number of streams to use for destination performance measurement."
         required: false
         default: "1"
+      sync-mode:
+        description: "Sync mode to use for destination performance measurement."
+        required: false
+        default: "full_refresh"
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -72,8 +76,10 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`.
-            For destination performance only: you can also use `stream-numbers=N` to simulate N number of parallel streams.
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, 
+            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N` 
+            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations. 
+            For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
         id: regex
@@ -146,6 +152,7 @@ jobs:
           CONN: ${{ github.event.inputs.connector }}
           DS: ${{ github.event.inputs.dataset }}
           STREAM_NUMBER: ${{ github.event.inputs.stream-number }}
+          SYNC_MODE: ${{ github.event.inputs.sync-mode }}
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
@@ -158,6 +165,7 @@ jobs:
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
           export STREAM_NUMBER=$STREAM_NUMBER
+          export SYNC_MODE=$SYNC_MODE
           export HARNESS=$HARNESS_TYPE
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"

@@ -4,21 +4,28 @@
 
 package io.airbyte.integrations.destination_async;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Parallel flushing of Destination data.
@@ -27,7 +34,7 @@ import org.apache.commons.io.FileUtils;
  * allows for parallel data flushing.
  * <p>
  * Parallelising is important as it 1) minimises Destination backpressure 2) minimises the effect of
- * IO pauses on Destination performance. The second point is particularly important since majority
+ * IO pauses on Destination performance. The second point is particularly important since a majority
  * of Destination work is IO bound.
  * <p>
  * The {@link #supervisorThread} assigns work to worker threads by looping over
@@ -41,91 +48,77 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
 
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
-  private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
   private static final long DEBUG_INITIAL_DELAY_SECS = 0L;
   private static final long DEBUG_PERIOD_SECS = 10L;
-  private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
-  private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
+
+  private final ScheduledExecutorService supervisorThread;
+  private final ExecutorService workerPool;
   private final BufferDequeue bufferDequeue;
   private final DestinationFlushFunction flusher;
-  private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
-  private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
+  private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final ScheduledExecutorService debugLoop;
+  private final RunningFlushWorkers runningFlushWorkers;
+  private final DetectStreamToFlush detectStreamToFlush;
 
-  public FlushWorkers(final BufferDequeue bufferDequeue, final DestinationFlushFunction flushFunction) {
+  private final FlushFailure flushFailure;
+
+  private final AtomicBoolean isClosing;
+  private final GlobalAsyncStateManager stateManager;
+
+  public FlushWorkers(final BufferDequeue bufferDequeue,
+                      final DestinationFlushFunction flushFunction,
+                      final Consumer<AirbyteMessage> outputRecordCollector,
+                      final FlushFailure flushFailure,
+                      final GlobalAsyncStateManager stateManager) {
     this.bufferDequeue = bufferDequeue;
+    this.outputRecordCollector = outputRecordCollector;
+    this.flushFailure = flushFailure;
+    this.stateManager = stateManager;
     flusher = flushFunction;
+    debugLoop = Executors.newSingleThreadScheduledExecutor();
+    supervisorThread = Executors.newScheduledThreadPool(1);
+    workerPool = Executors.newFixedThreadPool(5);
+    isClosing = new AtomicBoolean(false);
+    runningFlushWorkers = new RunningFlushWorkers();
+    detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
   }
 
   public void start() {
-    supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
+    supervisorThread.scheduleAtFixedRate(this::retrieveWork,
+        SUPERVISOR_INITIAL_DELAY_SECS,
+        SUPERVISOR_PERIOD_SECS,
         TimeUnit.SECONDS);
-    debugLoop.scheduleAtFixedRate(this::printWorkerInfo, DEBUG_INITIAL_DELAY_SECS, DEBUG_PERIOD_SECS, TimeUnit.SECONDS);
-  }
-
-  @Override
-  public void close() throws Exception {
-    flushAll();
-
-    supervisorThread.shutdown();
-    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Supervisor shut status: {}", supervisorShut);
-
-    log.info("Starting worker pool shutdown..");
-    workerPool.shutdown();
-    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Workers shut status: {}", workersShut);
-
-    debugLoop.shutdownNow();
+    debugLoop.scheduleAtFixedRate(this::printWorkerInfo,
+        DEBUG_INITIAL_DELAY_SECS,
+        DEBUG_PERIOD_SECS,
+        TimeUnit.SECONDS);
   }
 
   private void retrieveWork() {
-    // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
-    // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
-    // if the total size is > n, flush all buffers
-    if (bufferDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
-      flushAll();
-      return;
-    }
+    try {
+      log.info("Retrieve Work -- Finding queues to flush");
+      final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+      int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
-    final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
-    var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
+      while (allocatableThreads > 0) {
+        final Optional<StreamDescriptor> next = detectStreamToFlush.getNextStreamToFlush();
 
-    // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
-    // large, flush it first. if a queue has not been flushed in a while, flush it next.
-    // otherwise, if each individual stream has crossed a specific threshold, flush
-    for (final StreamDescriptor stream : bufferDequeue.getBufferedStreams()) {
-      if (allocatableThreads == 0) {
-        break;
-      }
-
-      // while we allow out-of-order processing for speed improvements via multiple workers reading from
-      // the same queue, also avoid scheduling more workers than what is already in progress.
-      final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).get() -
-          streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
-      final var exceedSize = inProgressSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
-      final var tooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
-          .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
-          .orElse(false);
-
-      if (exceedSize || tooLongSinceLastRecord) {
-        log.info(
-            "Allocated stream {}, exceedSize:{}, tooLongSinceLastRecord: {}, bytes in queue: {} computed in-progress bytes: {} , threshold bytes: {}",
-            stream.getName(), exceedSize, tooLongSinceLastRecord,
-            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).get()),
-            FileUtils.byteCountToDisplaySize(inProgressSizeByte),
-            FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
-        allocatableThreads--;
-        if (streamToInProgressWorkers.containsKey(stream)) {
-          streamToInProgressWorkers.get(stream).getAndAdd(1);
+        if (next.isPresent()) {
+          final StreamDescriptor desc = next.get();
+          final UUID flushWorkerId = UUID.randomUUID();
+          runningFlushWorkers.trackFlushWorker(desc, flushWorkerId);
+          allocatableThreads--;
+          flush(desc, flushWorkerId);
         } else {
-          streamToInProgressWorkers.put(stream, new AtomicInteger(1));
+          break;
         }
-        flush(stream);
       }
+    } catch (final Exception e) {
+      log.error("Flush worker error: ", e);
+      flushFailure.propagateException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -142,28 +135,101 @@ public class FlushWorkers implements AutoCloseable {
 
   }
 
-  private void flushAll() {
-    log.info("Flushing all buffers..");
-    for (final StreamDescriptor desc : bufferDequeue.getBufferedStreams()) {
-      flush(desc);
-    }
-  }
-
-  private void flush(final StreamDescriptor desc) {
+  private void flush(final StreamDescriptor desc, final UUID flushWorkerId) {
     workerPool.submit(() -> {
-      log.info("Worker picked up work..");
+      log.info("Flush Worker ({}) -- Worker picked up work.", humanReadableFlushWorkerId(flushWorkerId));
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).get());
+        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}.",
+            humanReadableFlushWorkerId(flushWorkerId),
+            desc.getNamespace(),
+            desc.getName());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
-          flusher.flush(desc, batch.getData());
+          runningFlushWorkers.registerBatchSize(desc, flushWorkerId, batch.getSizeInBytes());
+          final Map<Long, Long> stateIdToCount = batch.getData()
+              .stream()
+              .map(MessageWithMeta::stateId)
+              .collect(Collectors.groupingBy(
+                  stateId -> stateId,
+                  Collectors.counting()));
+          log.info("Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
+              humanReadableFlushWorkerId(flushWorkerId),
+              batch.getData().size(),
+              AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
+
+          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
+          emitStateMessages(batch.flushStates(stateIdToCount));
         }
 
-        log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));
+        log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
+            humanReadableFlushWorkerId(flushWorkerId),
+            bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
       } catch (final Exception e) {
+        log.error(String.format("Flush Worker (%s) -- flush worker error: ", humanReadableFlushWorkerId(flushWorkerId)), e);
+        flushFailure.propagateException(e);
         throw new RuntimeException(e);
+      } finally {
+        runningFlushWorkers.completeFlushWorker(desc, flushWorkerId);
       }
     });
+  }
+
+  @Override
+  public void close() throws Exception {
+    log.info("Closing flush workers -- waiting for all buffers to flush");
+    isClosing.set(true);
+    // wait for all buffers to be flushed.
+    while (true) {
+      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords = bufferDequeue.getBufferedStreams()
+          .stream()
+          .collect(Collectors.toMap(desc -> desc, desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
+
+      final boolean anyRecordsLeft = streamDescriptorToRemainingRecords
+          .values()
+          .stream()
+          .anyMatch(size -> size > 0);
+
+      if (!anyRecordsLeft) {
+        break;
+      }
+
+      final var workerInfo = new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
+      streamDescriptorToRemainingRecords.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue() > 0)
+          .forEach(entry -> workerInfo.append(String.format("  Namespace: %s Stream: %s -- remaining records: %d",
+              entry.getKey().getNamespace(),
+              entry.getKey().getName(),
+              entry.getValue())));
+      log.info(workerInfo.toString());
+      log.info("Waiting for all streams to flush.");
+      Thread.sleep(1000);
+    }
+    log.info("Closing flush workers -- all buffers flushed");
+
+    // before shutting down the supervisor, flush all state.
+    emitStateMessages(stateManager.flushStates());
+    supervisorThread.shutdown();
+    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
+
+    log.info("Closing flush workers -- Starting worker pool shutdown..");
+    workerPool.shutdown();
+    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
+
+    debugLoop.shutdownNow();
+  }
+
+  private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
+    partials
+        .stream()
+        .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
+        .forEach(outputRecordCollector);
+  }
+
+  private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {
+    return flushWorkerId.toString().substring(0, 5);
   }
 
 }
