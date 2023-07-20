@@ -12,6 +12,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,21 +127,26 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   }
 
   @Override
+  @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new NotImplementedException("Please use getSerializedMessageConsumer instead");
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
-    return new StagingConsumerFactory().create(
-        outputRecordCollector,
-        getDatabase(getDataSource(config)),
-        new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
-        getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-        config,
-        catalog,
-        isPurgeStagingData(config));
-  }
+    return new StagingConsumerFactory().createAsync(
+            outputRecordCollector,
+            getDatabase(getDataSource(config)),
+            new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
+            getNamingResolver(),
+            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
+            config,
+            catalog,
+            isPurgeStagingData(config));  }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
