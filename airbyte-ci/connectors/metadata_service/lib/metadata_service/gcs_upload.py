@@ -2,18 +2,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
+from pydash.objects import get
 
 import base64
 import hashlib
 import json
 import os
+import yaml
 
 from google.cloud import storage
 from google.oauth2 import service_account
 
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
+from metadata_service.utils import to_json_sanitized_dict
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -86,7 +90,46 @@ def upload_file_if_changed(
     return False, remote_blob.id
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[bool, str]:
+def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+    version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
+    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
+    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
+
+    (
+        version_uploaded,
+        version_blob_id,
+    ) = upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
+    latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
+
+    # Replace metadata file name with icon file name
+    local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
+    if local_icon_path.exists():
+        upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
+
+    return version_uploaded or latest_uploaded, version_blob_id
+
+
+def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, prerelease_tag: str) -> Tuple[bool, str]:
+    # replace any dockerImageTag references with the actual tag
+    # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
+    # where registries is a dictionary of registry name to registry object
+    metadata_dict = to_json_sanitized_dict(metadata, exclude_none=True)
+    metadata_dict["data"]["dockerImageTag"] = prerelease_tag
+    for registry in get(metadata_dict, "data.registries", {}).values():
+        if "dockerImageTag" in registry:
+            registry["dockerImageTag"] = prerelease_tag
+
+    # write metadata to yaml file in system tmp folder
+    tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / prerelease_tag / METADATA_FILE_NAME
+    tmp_metadata_file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(tmp_metadata_file_path, "w") as f:
+        yaml.dump(metadata_dict, f)
+
+    prerelease_remote_path = get_metadata_remote_file_path(metadata.data.dockerRepository, prerelease_tag)
+    return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path, disable_cache=True)
+
+
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: Optional[str] = None) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -96,10 +139,12 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
         bucket_name (str): Name of the GCS bucket to which the metadata file will be uploade.
         metadata_file_path (Path): Path to the metadata file.
         service_account_file_path (Path): Path to the JSON file with the service account allowed to read and write on the bucket.
+        prerelease (Optional[str]): Whether the connector is a prerelease or not.
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS)
+
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
@@ -108,19 +153,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 
-    version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
-    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
-    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
-
-    (
-        version_uploaded,
-        version_blob_id,
-    ) = upload_file_if_changed(metadata_file_path, bucket, version_path)
-    latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path)
-
-    # Replace metadata file name with icon file name
-    local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
-    if local_icon_path.exists():
-        upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
-
-    return version_uploaded or latest_uploaded, version_blob_id
+    if prerelease:
+        return _prerelease_upload(metadata, bucket, prerelease)
+    else:
+        return _latest_upload(metadata, bucket, metadata_file_path)
