@@ -27,7 +27,7 @@ These are non-exhaustive use cases `octavia` can be convenient for:
 - Integrating the Airbyte configuration deployment in a dev ops tooling stack: Helm, Ansible etc.
 - Streamlining the deployment of Airbyte configurations to multiple Airbyte instance.
 
-Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Discourse](https://discuss.airbyte.io/).
+Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ## Table of content
 

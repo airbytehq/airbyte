@@ -269,12 +269,57 @@
     "metrics.video_quartile_p100_rate": {
       "type": ["null", "number"]
     },
+    "metrics.active_view_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurability": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurable_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_viewability": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.interaction_event_types": {
+      "type": ["null", "string"]
+    },
+    "metrics.value_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "number"]
+    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.hour": {
       "type": ["null", "number"]
+    },
+    "segments.ad_network_type": {
+      "type": ["null", "string"]
     }
   }
 }
