@@ -8,13 +8,10 @@ from typing import Any, Iterator, Mapping
 import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from boto3 import session as boto3session
-from botocore import UNSIGNED
-from botocore.config import Config
 from botocore.exceptions import ClientError
-from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
+from .s3_utils import make_s3_client
 from .source_files_abstract.file_info import FileInfo
 from .source_files_abstract.stream import IncrementalFileStream
 
@@ -36,16 +33,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
         provider = self._provider
-        client_config = None
-        if S3File.use_aws_account(provider):
-            session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
-            )
-        else:
-            session = boto3session.Session()
-            client_config = Config(signature_version=UNSIGNED)
-        client = make_s3_client(provider, config=client_config, session=session)
-
+        client = make_s3_client(provider)
         ctoken = None
         while True:
             # list_objects_v2 doesn't like a None value for ContinuationToken

@@ -2,23 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import boto3.session
+from boto3 import session as boto3session
 from botocore.client import BaseClient, Config
+from botocore import UNSIGNED
 
-
-def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:
-    """
-    Construct boto3 resource with specified config and remote endpoint
-    :param provider provider configuration from connector configuration.
-    :param session User session to create client from.
-    :param config Client config parameter in case of using creds from .aws/config file.
-    :return Boto3 S3 resource instance.
-    """
-    client_kv_args = _get_s3_client_args(provider, config)
-    return session.resource("s3", **client_kv_args)
-
-
-def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
+def make_s3_client(provider: dict) -> BaseClient:
     """
     Construct boto3 client with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
@@ -26,11 +14,21 @@ def make_s3_client(provider: dict, session: boto3.session.Session = None, config
     :param config Client config parameter in case of using creds from .aws/config file.
     :return Boto3 S3 client instance.
     """
-    client_kv_args = _get_s3_client_args(provider, config)
-    if session is None:
-        return boto3.client("s3", **client_kv_args)
+    aws_access_key_id = provider.get("aws_access_key_id")
+    aws_secret_access_key = provider.get("aws_secret_access_key")
+    if aws_access_key_id and aws_secret_access_key:
+        session = boto3session.Session(
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+        )
     else:
-        return session.client("s3", **client_kv_args)
+        session = boto3session.Session()
+    config = None
+    # If we don't have credentials, we use unsigned requests. This is necessary for accessing public buckets.
+    if session.get_credentials() is None:
+        config = Config(signature_version=UNSIGNED)
+    client_kv_args = _get_s3_client_args(provider, config)
+    return session.client("s3", **client_kv_args)
 
 
 def _get_s3_client_args(provider: dict, config: Config) -> dict:
@@ -53,4 +51,4 @@ def _get_s3_client_args(provider: dict, config: Config) -> dict:
     return client_kv_args
 
 
-__all__ = ["make_s3_client", "make_s3_resource"]
+__all__ = ["make_s3_client"]
