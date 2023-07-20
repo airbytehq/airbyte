@@ -16,12 +16,11 @@ class SourceUpdaterHandler:
         self._source_repository = source_repository
         self._catalog_merger = catalog_merger
 
-    def handle(self, source_name: str, new_manifest_source: ManifestDeclarativeSource, main_config: Config, other_configs: Set[Config]):
+    def handle(self, source_name: str, new_manifest_source: ManifestDeclarativeSource, main_config: Config, other_configs: Set[Config]) -> None:
         # FIXME eventually extract git related command somewhere it makes sense
         # FIXME is there a state of the local git we would like to enforce?
         branch_name = f"source-updater/updating-{source_name}"
         validate_branch_process = subprocess.run(["git", "rev-parse", "--verify", branch_name])
-
         if validate_branch_process.returncode == 0:
             error_message = f"The target branch `{branch_name}` for the update operations already exist. Please make sure to push those " \
                             f"local changes before doing more changes or delete this branch "
@@ -34,7 +33,9 @@ class SourceUpdaterHandler:
             raise ValueError(error_message)
 
         catalog = self._source_repository.fetch_catalog(source_name)
-        self._catalog_merger.merge_and_save(source_name, catalog, new_manifest_source, main_config)
+        is_updated = self._catalog_merger.merge_into_catalog(source_name, catalog, new_manifest_source, main_config)
+        if is_updated:
+            self._source_repository.update_catalog(source_name, catalog)
         self._update_manifest(source_name, new_manifest_source)
         self._source_repository.upsert_secrets(source_name, other_configs.union({main_config}))
 

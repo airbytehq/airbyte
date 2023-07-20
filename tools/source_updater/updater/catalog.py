@@ -6,13 +6,13 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from updater.config import Config
-from updater.source import SourceRepository
 
 logger = logging.getLogger("catalog")
 
 
 class ConfiguredCatalogAssembler:
-    def assemble(self, manifest_streams: List[Stream]) -> ConfiguredAirbyteCatalog:
+    @staticmethod
+    def assemble(manifest_streams: List[Stream]) -> ConfiguredAirbyteCatalog:
         streams: List[ConfiguredAirbyteStream] = []
         for stream in manifest_streams:
             streams.append(
@@ -33,11 +33,10 @@ class ConfiguredCatalogAssembler:
 
 
 class CatalogMerger:
-    def __init__(self, repo: SourceRepository, catalog_assembler: ConfiguredCatalogAssembler):
-        self._repo = repo
+    def __init__(self, catalog_assembler: ConfiguredCatalogAssembler):
         self._catalog_assembler = catalog_assembler
 
-    def merge_and_save(self, source_name: str, catalog: ConfiguredAirbyteCatalog, new_source: AbstractSource, config: Config) -> None:
+    def merge_into_catalog(self, source_name: str, catalog: ConfiguredAirbyteCatalog, new_source: AbstractSource, config: Config) -> bool:
         """
         The merge does:
         * Fetch the streams from the source
@@ -68,6 +67,4 @@ class CatalogMerger:
                 if stream.stream.name in streams_to_add:
                     catalog.streams.append(stream)
 
-        if streams_to_remove or streams_to_add:
-            logger.info("Saving new catalog...")
-            self._repo.update_catalog(source_name, catalog)
+        return bool(streams_to_remove) or bool(streams_to_add)

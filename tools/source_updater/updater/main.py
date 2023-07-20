@@ -19,14 +19,6 @@ def _assemble_configs(config_path: str):
     """
     :return: the main config and the set of the other configs
     """
-    if os.path.isfile(config_path):
-        return Config(
-            "config",
-            BaseConnector.read_config(
-                config_path if config_path.endswith(_DEFAULT_CONFIG_FILE) else os.path.join(config_path, _DEFAULT_CONFIG_FILE)
-            )
-        ), set()
-
     config_files = glob.glob(os.path.join(config_path, "*.json"))
     main_config = None
     other_configs = set()
@@ -34,16 +26,20 @@ def _assemble_configs(config_path: str):
         if os.path.basename(file) == _DEFAULT_CONFIG_FILE:
             main_config = Config(
                 "config",
-                BaseConnector.read_config(
-                    config_path if config_path.endswith(_DEFAULT_CONFIG_FILE) else os.path.join(config_path, _DEFAULT_CONFIG_FILE)
+                dict(
+                    BaseConnector.read_config(
+                        config_path if config_path.endswith(_DEFAULT_CONFIG_FILE) else os.path.join(config_path, _DEFAULT_CONFIG_FILE)
+                    )
                 )
             )
         else:
             other_configs.add(
                 Config(
                     os.path.basename(file).replace(".json", ""),
-                    BaseConnector.read_config(
-                        config_path if config_path.endswith(_DEFAULT_CONFIG_FILE) else os.path.join(config_path, _DEFAULT_CONFIG_FILE)
+                    dict(
+                        BaseConnector.read_config(
+                            config_path if config_path.endswith(_DEFAULT_CONFIG_FILE) else os.path.join(config_path, _DEFAULT_CONFIG_FILE)
+                        )
                     )
                 )
             )
@@ -56,21 +52,20 @@ def _assemble_configs(config_path: str):
 @click.command()
 @click.option("--source", type=str, required=True, help="Name of the source. For example, 'source-jira'")
 @click.option("--manifest", type=str, required=True, help="Path to the new yaml manifest file")
-@click.option("--config", type=str, required=True, help="Path to the config file or directory. We recommend using `airbyte-integrations/connectors/<source_name>/secrets/updated_configurations/*.json`")
 @click.option("--debug", is_flag=True, default=False, help="Enable debug logs")
-def main(source: str, manifest: str, config: str, debug: bool) -> None:
+def main(source: str, manifest: str, debug: bool) -> None:
     source_name = source
     manifest_path = manifest
-    config_path = config
     if debug:
         logging.basicConfig(level=logging.DEBUG, force=True)
 
     logger.info("Starting the update...")
     repo = SourceRepository()
+    config_path = f"airbyte-integrations/connectors/{source_name}/secrets/updated_configurations/"
     main_config, other_configs = _assemble_configs(config_path)
 
     new_manifest_source = YamlDeclarativeSource(manifest_path)
-    handler = SourceUpdaterHandler(repo, CatalogMerger(repo, ConfiguredCatalogAssembler()))
+    handler = SourceUpdaterHandler(repo, CatalogMerger(ConfiguredCatalogAssembler()))
     handler.handle(source_name, new_manifest_source, main_config, other_configs)
 
     logger.info(f"Successfully updated source `{source_name}`!")

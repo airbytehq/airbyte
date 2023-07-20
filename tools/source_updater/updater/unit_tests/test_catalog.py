@@ -4,11 +4,10 @@ from unittest.mock import Mock
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 from updater.catalog import ConfiguredCatalogAssembler, CatalogMerger
 from updater.config import Config
-from updater.source import SourceRepository
 
 
 A_SOURCE_NAME = "a source name"
@@ -55,34 +54,33 @@ class ConfiguredCatalogAssemblerTest(unittest.TestCase):
 class CalatogMergerTest(unittest.TestCase):
     def setUp(self) -> None:
         self._assembler = Mock(spec=ConfiguredCatalogAssembler)
-        self._source_repository = Mock(spec=SourceRepository)
-        self._merger = CatalogMerger(self._source_repository, self._assembler)
+        self._merger = CatalogMerger(self._assembler)
 
     def test_given_stream_added_when_merge_and_save_then_stream_is_added_to_catalog(self):
         catalog = self._given_catalog_with_streams(NO_STREAMS)
         source = self._given_source_with_stream(["newly added source"])
 
-        self._merger.merge_and_save(A_SOURCE_NAME, catalog, source, A_CONFIG)
+        is_updated = self._merger.merge_into_catalog(A_SOURCE_NAME, catalog, source, A_CONFIG)
 
         assert catalog.streams == self._assembler.assemble.return_value.streams
-        self._source_repository.update_catalog.assert_called_once_with(A_SOURCE_NAME, catalog)
+        assert is_updated
 
     def test_given_stream_removed_when_merge_and_save_then_stream_is_removed_from_catalog(self):
         catalog = self._given_catalog_with_streams(["stream to be removed"])
         source = self._given_source_with_stream(NO_STREAMS)
 
-        self._merger.merge_and_save(A_SOURCE_NAME, catalog, source, A_CONFIG)
+        is_updated = self._merger.merge_into_catalog(A_SOURCE_NAME, catalog, source, A_CONFIG)
 
         assert catalog.streams == []
-        self._source_repository.update_catalog.assert_called_once_with(A_SOURCE_NAME, catalog)
+        assert is_updated
 
     def test_given_no_addition_or_removal_when_merge_and_save_then_do_nothing(self):
         catalog = self._given_catalog_with_streams([A_STREAM_NAME])
         source = self._given_source_with_stream([A_STREAM_NAME])
 
-        self._merger.merge_and_save(A_SOURCE_NAME, catalog, source, A_CONFIG)
+        is_updated = self._merger.merge_into_catalog(A_SOURCE_NAME, catalog, source, A_CONFIG)
 
-        assert self._source_repository.update_catalog.call_count == 0
+        assert not is_updated
 
     def _given_catalog_with_streams(self, stream_names: List[str]) -> ConfiguredAirbyteCatalog:
         catalog = Mock(spec=ConfiguredAirbyteCatalog, spec_set=[field for field in ConfiguredAirbyteCatalog.__fields__.keys()])

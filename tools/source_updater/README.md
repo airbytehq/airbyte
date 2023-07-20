@@ -5,11 +5,10 @@ CLI tooling to update the repository following a change in a low-code source.
 
 ### Install dependencies
 ```
-cd tools/source_updated
+cd tools/source_updater
 python -m venv .venv
 source .venv/bin/activate
-python setup.py install
-pip install --quiet -e ../ci_credentials
+python -m pip install .
 cd ../..
 ```
 
@@ -26,7 +25,7 @@ Now that all the dependencies are installed, change directory to be at the root 
 For more information about the parameters, you can run `python tools/source_updater/updater/main.py --help`:
 ```
 (.venv) airbyte% python tools/source_updater/updater/main.py --help
-usage: main.py [-h] --source SOURCE --manifest MANIFEST --config CONFIG [--debug]
+usage: main.py [-h] --source SOURCE --manifest MANIFEST [--debug]
 
 Source updated
 
@@ -34,6 +33,5 @@ optional arguments:
   -h, --help           show this help message and exit
   --source SOURCE      Name of the source. For example, 'source-jira'
   --manifest MANIFEST  Path to the new yaml manifest file
-  --config CONFIG      Path to the config file or directory. We recommend using `airbyte-integrations/connectors/<source_name>/secrets/updated_configurations/*.json`
   --debug              Enable debug logs
 ```
