@@ -1,4 +1,4 @@
-FROM nickgryg/alpine-pandas:3.9.12 as base
+FROM python:3.9-slim as base
 
 # build and load all requirements
 FROM base as builder
