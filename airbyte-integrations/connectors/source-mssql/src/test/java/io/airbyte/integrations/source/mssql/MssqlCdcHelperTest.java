@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class MssqlCdcHelperTest {
 
-  private static final JsonNode LEGACY_NON_CDC_CONFIG = Jsons.jsonNode(Map.of("replication_method", "STANDARD"));
+  private static final JsonNode LEGACY_NON_CDC_CONFIG = Jsons.jsonNode(Map.of("replication", "STANDARD"));
   private static final JsonNode LEGACY_CDC_CONFIG = Jsons.jsonNode(Map.of("replication_method", "CDC"));
 
   @Test
@@ -27,11 +27,11 @@ class MssqlCdcHelperTest {
     assertTrue(MssqlCdcHelper.isCdc(LEGACY_CDC_CONFIG));
 
     // new replication method config since version 0.4.0
-    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of("method", "STANDARD"))));
     assertFalse(MssqlCdcHelper.isCdc(newNonCdc));
 
-    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "method", "CDC",
             "data_to_sync", "Existing and New",
@@ -40,16 +40,16 @@ class MssqlCdcHelperTest {
 
     // migration from legacy to new config
     final JsonNode mixNonCdc = Jsons.jsonNode(Map.of(
-        "replication_method", Jsons.jsonNode(Map.of("method", "STANDARD")),
-        "replication", Jsons.jsonNode(Map.of("replication_type", "CDC"))));
+        "replication_method", Jsons.jsonNode(Map.of("replication_type", "CDC"))));
+        "replication", Jsons.jsonNode(Map.of("method", "STANDARD")),
     assertFalse(MssqlCdcHelper.isCdc(mixNonCdc));
 
     final JsonNode mixCdc = Jsons.jsonNode(Map.of(
-        "replication", Jsons.jsonNode(Map.of(
+        "replication_method", Jsons.jsonNode(Map.of(
             "replication_type", "Standard",
             "data_to_sync", "Existing and New",
             "snapshot_isolation", "Snapshot")),
-        "replication_method", Jsons.jsonNode(Map.of(
+        "replication", Jsons.jsonNode(Map.of(
             "method", "CDC",
             "data_to_sync", "Existing and New",
             "snapshot_isolation", "Snapshot"))));

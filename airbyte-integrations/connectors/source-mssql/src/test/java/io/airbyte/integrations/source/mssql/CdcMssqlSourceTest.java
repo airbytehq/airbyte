@@ -113,7 +113,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
-        .put("replication_method", replicationConfig)
+        .put("replication", replicationConfig)
         .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 

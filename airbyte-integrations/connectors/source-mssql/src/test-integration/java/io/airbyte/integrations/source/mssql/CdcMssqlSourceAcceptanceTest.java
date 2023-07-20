@@ -124,7 +124,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
-        .put("replication_method", replicationConfig)
+        .put("replication", replicationConfig)
         .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
