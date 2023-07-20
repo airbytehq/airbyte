@@ -26,12 +26,6 @@ class GradleTask(Step, ABC):
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
 
-    # These are the lines we remove from the connector gradle file to ignore specific tasks / plugins.
-    LINES_TO_REMOVE_FROM_GRADLE_FILE = [
-        # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
-        "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
-    ]
-
     @property
     def connector_java_build_cache(self) -> CacheVolume:
         return self.context.dagger_client.cache_volume("connector_java_build_cache")
@@ -49,20 +43,6 @@ class GradleTask(Step, ABC):
             str(dependency_directory)
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
-
-    async def _get_patched_connector_dir(self) -> Directory:
-        """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
-
-        Returns:
-            Directory: The patched connector directory
-        """
-
-        gradle_file_content = await self.context.get_connector_dir(include=["build.gradle"]).file("build.gradle").contents()
-        patched_file_content = ""
-        for line in gradle_file_content.split("\n"):
-            if not any(line_to_remove in line for line_to_remove in self.LINES_TO_REMOVE_FROM_GRADLE_FILE):
-                patched_file_content += line + "\n"
-        return self.context.get_connector_dir().with_new_file("build.gradle", patched_file_content)
 
     async def _get_patched_build_src_dir(self) -> Directory:
         """Patch some gradle plugins.
@@ -93,7 +73,7 @@ class GradleTask(Step, ABC):
     async def _run(self) -> StepResult:
         connector_under_test = (
             environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
-            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
