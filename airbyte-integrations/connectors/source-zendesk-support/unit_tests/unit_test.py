@@ -26,8 +26,8 @@ from source_zendesk_support.streams import (
     GroupMemberships,
     Groups,
     Macros,
-    Organizations,
     OrganizationFields,
+    Organizations,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -139,8 +139,8 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
-        ({"error": "Not sufficient permissions"}, 403, 17, [
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 19, []),
+        ({"error": "Not sufficient permissions"}, 403, 18, [
             "Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."
         ]),
     ],
