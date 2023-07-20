@@ -177,7 +177,7 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
         if start_date:
             params["start_time"] = self.str2datetime(start_date)
 
-        response = self._session.request("get", count_url).result()
+        response = self._session.request("get", count_url)
         records_count = response.json().get("count", {}).get("value", 0)
 
         return records_count
