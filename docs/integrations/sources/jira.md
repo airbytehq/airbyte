@@ -41,7 +41,7 @@ The Jira source connector supports the following [sync modes](https://docs.airby
 
 ## Troubleshooting
 
-Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
+Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Supported Streams
 
@@ -116,7 +116,7 @@ or disallow these tables to be selected when configuring a connection.
 
 ## Troubleshooting
 
-Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
+Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Rate Limiting & Performance
 

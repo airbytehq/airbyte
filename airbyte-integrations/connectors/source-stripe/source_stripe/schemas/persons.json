@@ -1,0 +1,422 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Persons Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "address_kana": {
+      "type": ["null", "string"]
+    },
+    "address_kanji": {
+      "type": ["null", "string"]
+    },
+    "first_name_kana": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "full_name_aliases": {
+      "type": ["null", "string"]
+    },
+    "id_number_secondary_provided": {
+      "type": ["null", "string"]
+    },
+    "first_name_kanji": {
+      "type": ["null", "string"]
+    },
+    "nationality": {
+      "type": ["null", "string"]
+    },
+    "political_exposure": {
+      "type": ["null", "string"]
+    },
+    "registered_address": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": ["null", "string"]
+    },
+    "address": {
+      "type": ["null", "object"],
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "line1": {
+          "type": ["null", "string"]
+        },
+        "line2": {
+          "type": ["null", "string"]
+        },
+        "postal_code": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "dob": {
+      "type": ["null", "object"],
+      "properties": {
+        "day": {
+          "type": ["null", "integer"]
+        },
+        "month": {
+          "type": ["null", "integer"]
+        },
+        "year": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "future_requirements": {
+      "type": ["null", "object"],
+      "properties": {
+        "alternatives": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              },
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "currently_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "errors": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "eventually_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "pending_verification": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "id_number_provided": {
+      "type": ["null", "boolean"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "id_number_provided": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "relationship": {
+      "type": ["null", "object"],
+      "properties": {
+        "director": {
+          "type": ["null", "boolean"]
+        },
+        "executive": {
+          "type": ["null", "boolean"]
+        },
+        "owner": {
+          "type": ["null", "boolean"]
+        },
+        "percent_ownership": {
+          "type": ["null", "string"]
+        },
+        "representative": {
+          "type": ["null", "boolean"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "requirements": {
+      "type": ["null", "object"],
+      "properties": {
+        "alternatives": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              },
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "currently_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "errors": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "eventually_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "pending_verification": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string", "object"],
+            "properties": {
+              "flat_amount": {
+                "type": ["null", "integer"]
+              },
+              "unit_amount": {
+                "type": ["null", "integer"]
+              },
+              "up_to": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "ssn_last_4_provided": {
+      "type": ["null", "boolean"]
+    },
+    "verification": {
+      "type": ["null", "object"],
+      "properties": {
+        "additional_document": {
+          "type": ["null", "object"],
+          "properties": {
+            "back": {
+              "type": ["null", "string"]
+            },
+            "details": {
+              "type": ["null", "string"]
+            },
+            "details_code": {
+              "type": ["null", "string"]
+            },
+            "front": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "details": {
+          "type": ["null", "string"]
+        },
+        "details_code": {
+          "type": ["null", "string"]
+        },
+        "document": {
+          "type": ["null", "object"],
+          "properties": {
+            "back": {
+              "type": ["null", "string"]
+            },
+            "details": {
+              "type": ["null", "string"]
+            },
+            "details_code": {
+              "type": ["null", "string"]
+            },
+            "front": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "status": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

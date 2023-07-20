@@ -1,14 +1,43 @@
 # HubSpot
 
-This page guides you through setting up the HubSpot source connector.
+This page contains the setup guide and reference information for the [HubSpot](https://www.hubspot.com/) source connector.
 
-## Prerequisite
+## Prerequisites
 
-You can use OAuth or a Private App to authenticate your HubSpot account.
+- HubSpot Account
+- **For Airbyte Open Source**: Private App with Access Token
 
-In Airbyte Cloud, we highly recommend you use OAuth and not Private App authentication as it significantly simplifies the setup process.
+## Setup guide
 
-If you are using either OAuth in Airbyte OSS or Private App authentication, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+**For Airbyte Cloud** users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+
+**For Airbyte Open Source** users we recommend Private App authentication.
+
+More information on HubSpot authentication methods can be found 
+[here](https://developers.hubspot.com/docs/api/intro-to-auth).
+
+### Step 1: Set up the authentication method
+
+#### Private App setup (Recommended for Airbyte Open Source)
+
+If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the 
+[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
+
+<!-- env:oss -->
+#### OAuth setup for Airbyte Open Source (Not recommended)
+
+If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+
+- Client ID
+- Client Secret
+- Refresh Token
+
+<!-- /env:oss -->
+
+### Step 2: Configure the scopes for your streams
+
+Next, you need to configure the appropriate scopes for the following streams. Please refer to 
+[Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -36,17 +65,29 @@ If you are using either OAuth in Airbyte OSS or Private App authentication, you 
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-## Set up the HubSpot source connector
+### Step 3: Set up the HubSpot source connector in Airbyte
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
-4. Enter a name for your source.
-5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. You can use OAuth or an Private Apps to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an Private Apps for Airbyte Open Source.
-   - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   - To authenticate using a Private App, select **Private App** from the Authentication dropdown and enter the Access Token for your HubSpot account which you can obtain by following the instructions provided by Hubspot [here](https://developers.hubspot.com/docs/api/private-apps).
-7. Click **Set up source**.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. From the **Authentication** dropdown, select your chosen authentication method:
+
+<!-- env:cloud -->
+#### For Airbyte Cloud users:
+- **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+- **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+<!-- /env:cloud -->
+   
+<!-- env:oss -->
+#### For Airbyte Open Source users:
+- **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+- **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+
+<!-- /env:oss -->
+
+5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+`yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -55,14 +96,14 @@ The HubSpot source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-## Supported Streams
-
 :::note
 There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-   :::
+:::
+
+## Supported streams
 
 The HubSpot source connector supports the following streams:
 
@@ -100,30 +141,37 @@ The HubSpot source connector supports the following streams:
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
-If you setup your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+If you set up your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
 First you need to give the connector some additional permissions:
 
 - **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
-- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your private app or oauth application and add the `crm.objects.custom.read` scope to your app's scopes. See Hubspot's instructions here.
+- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
-Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing.
+Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
-### A note on the `engagements` stream
+### Notes on the `engagements` stream
 
-Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
-
+1. Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
 - A `call` engagement has a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
 - An `email` engagement has a corresponding `engagements_metadata` object with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
+2. The `engagements` stream uses two different APIs based on the length of time since the last sync and the number of records which Airbyte hasn't yet synced.
+- **EngagementsRecent** if the following two criteria are met:
+    - The last sync was performed within the last 30 days
+    - Fewer than 10,000 records are being synced
+- **EngagementsAll** if either of these criteria are not met.
+
+Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. We therefore recommend scheduling frequent syncs.
+
 ## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-Some streams, such as `workflows` need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
+Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
 Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
@@ -138,13 +186,6 @@ Example of the output message when trying to read `workflows` stream with missin
 ```
 
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-
-### A note on the `engagements` stream
-Engagements stream uses two types of API:
-- EngagementsRecent if start_date/last_sync_date is less than 30 days and API is able to return all records (<10k)
-- EngagementsAll which extracts all records, but supports filter on connector side
-
-It means that in order to perform fast incremental sync, it should be scheduled no rarer than once at 30 days and should not sync more than 10k new records. Otherwise, sync of all records is performed with filtering on connector side. 
 
 ## Tutorials
 
