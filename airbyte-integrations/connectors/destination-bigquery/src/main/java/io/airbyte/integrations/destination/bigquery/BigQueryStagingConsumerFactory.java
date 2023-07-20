@@ -202,6 +202,8 @@ public class BigQueryStagingConsumerFactory {
         }
       }
       LOGGER.info("Preparing airbyte_raw tables in destination completed.");
+    }
+  }
 
   private Map<StreamId, String> createFinalTables(boolean use1s1t,
                                                   final ParsedCatalog parsedCatalog,
