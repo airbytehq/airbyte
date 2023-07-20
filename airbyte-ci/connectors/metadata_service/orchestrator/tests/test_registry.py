@@ -87,6 +87,26 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
             [],
             ["oss", "cloud"],
         ),
+        (
+            {"oss": {"enabled": False}, "cloud": None},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": False}},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            None,
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": True}},
+            ["oss"],
+            ["cloud"],
+        ),
     ],
 )
 def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
