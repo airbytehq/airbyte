@@ -440,8 +440,7 @@ public class AirbyteTypeTest {
     unionToType.put(new Union(ImmutableList.of(BOOLEAN, INTEGER)), INTEGER);
 
     assertAll(
-        () -> unionToType.forEach((u, t) -> assertEquals(t, u.chooseType()))
-    );
+        () -> unionToType.forEach((u, t) -> assertEquals(t, u.chooseType())));
   }
 
   @Test
