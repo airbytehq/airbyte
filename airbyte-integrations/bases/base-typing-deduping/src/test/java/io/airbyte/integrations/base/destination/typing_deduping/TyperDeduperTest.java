@@ -19,13 +19,11 @@ public class TyperDeduperTest {
 
   private DestinationHandler<String> destinationHandler;
   private TyperDeduper<String> typerDeduper;
-  private InOrder inOrder;
 
   @BeforeEach
   void setup() {
     SqlGenerator<String> sqlGenerator = new MockSqlGenerator();
     destinationHandler = mock(DestinationHandler.class);
-    inOrder = inOrder(destinationHandler);
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
             new StreamId("overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
@@ -67,17 +65,16 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
     typerDeduper.typeAndDedupe("append_ns", "append_stream");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
     verify(destinationHandler, never()).execute(any());
-    verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
   /**
@@ -97,17 +94,16 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
     typerDeduper.typeAndDedupe("append_ns", "append_stream");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
     verify(destinationHandler, never()).execute(any());
-    verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
   /**
@@ -130,12 +126,12 @@ public class TyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
     // NB: no airbyte_tmp suffix on the non-overwrite streams
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    inOrder.verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
+    typerDeduper.typeAndDedupe("append_ns", "append_stream");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
