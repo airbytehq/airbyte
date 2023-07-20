@@ -49,8 +49,10 @@ setup(
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
         "airbyte-protocol-models==0.3.6",
+        "avro~=1.11.2",
         "backoff",
         "dpath~=2.0.1",
+        "fastavro~=1.8.0",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
