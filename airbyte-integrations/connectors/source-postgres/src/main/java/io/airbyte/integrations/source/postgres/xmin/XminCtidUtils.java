@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +94,7 @@ public class XminCtidUtils {
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !streamsForCtidSync.contains(stream))
         .map(Jsons::clone)
-        .toList();
+        .collect(Collectors.toList());
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
   }
