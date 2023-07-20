@@ -7,7 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import java.util.List;
 
 /**
- * Basic SqlGenerator mock. See {@link TyperDeduperTest} for example usage.
+ * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
 class MockSqlGenerator implements SqlGenerator<String> {
 

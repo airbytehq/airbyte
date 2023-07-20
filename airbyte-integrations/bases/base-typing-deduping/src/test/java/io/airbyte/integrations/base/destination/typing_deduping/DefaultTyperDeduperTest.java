@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TyperDeduperTest {
+public class DefaultTyperDeduperTest {
 
   private MockSqlGenerator sqlGenerator;
   private DestinationHandler<String> destinationHandler;
