@@ -84,9 +84,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new ConnectionErrorException("Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("Unable to execute 'check' operation: user not authorized to access collection.");
       } else {
-        LOGGER.info("The source passed the basic operation test!");
+        LOGGER.debug("User authorized to access collection for 'check' operation.");
       }
     });
     return checkList;
