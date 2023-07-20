@@ -41,16 +41,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
-  
-  private static final Logger LOGGER = LogManager.getLogger(MongoDbSource.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -270,7 +269,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     data.putAll(database.getCollectionStats(collectionName));
     data.put("version", database.getServerVersion());
     data.put("type", database.getServerType());
-    LOGGER.info(new ObjectMessage(data));
+    LOGGER.info(Jsons.serialize(data));
   }
 
 }
