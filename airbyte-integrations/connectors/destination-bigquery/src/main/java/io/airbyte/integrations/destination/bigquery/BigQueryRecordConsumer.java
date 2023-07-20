@@ -71,8 +71,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     if (use1s1t) {
       typerDeduper.createFinalTables();
-      // TODO call this in createFinalTables
-      destinationHandler.prepareFinalTable(sqlGenerator, stream, existingTable.get());
 
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {

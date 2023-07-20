@@ -7,24 +7,21 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
+import com.google.cloud.bigquery.JobException;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatistics;
-import com.google.cloud.bigquery.JobException;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
-
-import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

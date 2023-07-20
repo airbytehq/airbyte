@@ -318,7 +318,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     String clearLoadedAt = clearLoadedAt(stream.id());
     String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
-    String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
+    String overwriteFinalTable = overwriteFinalTableStatement(stream.id(), SOFT_RESET_SUFFIX);
     return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
@@ -565,15 +565,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String overwriteFinalTable(final String finalSuffix, final StreamConfig stream) {
-    return Optional.of(overwriteFinalTableStatement(stream, finalSuffix));
+  public String overwriteFinalTable(final String finalSuffix, final StreamId streamId) {
+    return overwriteFinalTableStatement(streamId, finalSuffix);
   }
 
-  private String overwriteFinalTableStatement(StreamConfig stream, String finalSuffix) {
+  private String overwriteFinalTableStatement(StreamId streamId, String finalSuffix) {
     return new StringSubstitutor(Map.of(
-            "final_table_id", stream.id().finalTableId(QUOTE),
-            "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
-            "real_final_table", stream.id().finalName(QUOTE))).replace(
+            "final_table_id", streamId.finalTableId(QUOTE),
+            "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),
+            "real_final_table", streamId.finalName(QUOTE))).replace(
             """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
