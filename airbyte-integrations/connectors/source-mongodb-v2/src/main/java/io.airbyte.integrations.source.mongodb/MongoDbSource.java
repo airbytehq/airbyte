@@ -122,7 +122,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .build();
 
       tableInfos.add(tableInfo);
-      recordStatistics(database, collectionName);
     });
     return tableInfos;
   }
