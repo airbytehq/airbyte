@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,13 +40,14 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
+  // TODO: Make softReset a single SQL statement rather than a list
   /**
    * SQL Statements which will rebuild the final table using the raw table data
    *
    * @param stream the stream to rebuild
    * @return an ordered sequence of SQL statements to execute to rebuild the final table.
    */
-  String softReset(final StreamConfig stream);
+  List<String> softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.

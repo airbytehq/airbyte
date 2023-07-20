@@ -21,6 +21,8 @@ FROM airbyte/integration-base-java:dev
 RUN yum install -y python3 python3-devel jq sshpass git && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
+  pip3 install wheel && \
+  pip3 install "Cython<3.0" "pyyaml==5.4" --no-build-isolation && \
   pip3 install dbt-bigquery==1.0.0
 
 # Luckily, none of normalization's files conflict with destination-bigquery's files :)
