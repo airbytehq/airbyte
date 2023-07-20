@@ -13,11 +13,13 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+pyarrow_dependency = "pyarrow==12.0.1"
+
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.44.2",
+    version="0.47.1",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -56,7 +58,7 @@ setup(
         "genson==1.2.2",
         "pydantic~=1.9.2",
         "python-dateutil",
-        "PyYAML~=5.4",
+        "PyYAML>=6.0.1",
         "requests",
         "requests_cache",
         "Deprecated~=1.2",
@@ -68,16 +70,21 @@ setup(
     extras_require={
         "dev": [
             "freezegun",
-            "MyPy~=0.812",
+            "mypy",
             "pytest",
             "pytest-cov",
             "pytest-mock",
             "requests-mock",
             "pytest-httpserver",
+            "pandas==2.0.3",
+            pyarrow_dependency,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
+        ],
+        "file-based": [
+            pyarrow_dependency,
         ],
     },
 )

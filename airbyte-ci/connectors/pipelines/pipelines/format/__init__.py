@@ -89,7 +89,7 @@ async def run_connectors_format_pipelines(
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             if requires_dind:
-                tg_main.start_soon(dockerd_service.exit_code)
+                tg_main.start_soon(dockerd_service.sync)
                 await anyio.sleep(10)  # Wait for the docker service to be ready
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"Format - {context.connector.technical_name}")

@@ -20,16 +20,16 @@ def check_migration_guide(connector: Connector) -> bool:
 
     migration_guide_file_path = connector.migration_guide_file_path
     if not migration_guide_file_path.exists():
-        print(f"Migration guide file is missing for {connector.name}.")
+        print(f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder.")
         return False
 
     # Check that the migration guide begins with # {connector name} Migration Guide
-    expected_title = f"# {connector.name} Migration Guide"
+    expected_title = f"# {connector.name_from_metadata} Migration Guide"
     expected_version_header_start = f"## Upgrading to "
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
         if not first_line == expected_title:
-            print(f"Migration guide file for {connector.name} does not start with the correct header.")
+            print(f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'")
             return False
 
         # Check that the migration guide contains a section for each breaking change key ## Upgrading to {version}
@@ -40,6 +40,8 @@ def check_migration_guide(connector: Connector) -> bool:
         # We also have to check that the headings are in the breaking changes dict
 
         ordered_breaking_changes = sorted(breaking_changes.keys(), reverse=True)
+        ordered_expected_headings = [f"{expected_version_header_start}{version}" for version in ordered_breaking_changes]
+
         ordered_heading_versions = []
         for line in f:
             stripped_line = line.strip()
@@ -48,9 +50,9 @@ def check_migration_guide(connector: Connector) -> bool:
                 ordered_heading_versions.append(version)
 
         if ordered_breaking_changes != ordered_heading_versions:
-            print(f"Migration guide file for {connector.name} has missing or misordered version headings.")
-            print(f"Expected: {ordered_breaking_changes}")
-            print(f"Actual: {ordered_heading_versions}")
+            print(f"Migration guide file for {connector.name} has incorrect version headings.")
+            print(f"Check for missing, extra, or misordered headings, or headers with typos.")
+            print(f"Expected headings: {ordered_expected_headings}")
             return False
 
     return True

@@ -37,7 +37,7 @@ class FormatConnectorCode(Step):
     async def _run(self) -> StepResult:
         formatted = (
             environments.with_testing_dependencies(self.context)
-            .with_mounted_directory("/connector_code", self.context.get_connector_dir())
+            .with_mounted_directory("/connector_code", await self.context.get_connector_dir())
             .with_workdir("/connector_code")
             .with_exec(self.licenseheaders_cmd)
             .with_exec(self.isort_cmd)

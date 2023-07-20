@@ -9,6 +9,7 @@ from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.utils.object_helpers import to_json_sanitized_dict
 
 from typing import List
 
@@ -54,7 +55,12 @@ def generate_and_persist_registry(
     for blob in registry_entry_file_blobs:
         registry_entry, connector_type = read_registry_entry_blob(blob)
         plural_connector_type = f"{connector_type}s"
-        registry_dict[plural_connector_type].append(registry_entry)
+
+        # We santiize the registry entry to ensure its in a format
+        # that can be parsed by pydantic.
+        registry_entry_dict = to_json_sanitized_dict(registry_entry)
+
+        registry_dict[plural_connector_type].append(registry_entry_dict)
 
     registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 

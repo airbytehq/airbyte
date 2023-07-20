@@ -229,13 +229,13 @@
         "group": "advanced",
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "title": "Standard (Xmin)",
+            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
-                "const": "Standard",
+                "const": "Xmin",
                 "order": 0
               }
             }
@@ -299,6 +299,18 @@
                 ],
                 "default": "After loading Data in the destination",
                 "order": 7
+              }
+            }
+          },
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "order": 8
               }
             }
           }

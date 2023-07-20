@@ -162,6 +162,13 @@ jobs:
     name: "Airbyte CDK: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
@@ -251,6 +258,13 @@ jobs:
     name: "Connectors Base: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        # We checkout master to run mypy the CDK files that were modified in the PR.
+        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
+        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
+        with:
+          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:

@@ -145,6 +145,7 @@ class QaChecks(Step):
         include = [
             str(self.context.connector.code_directory),
             str(self.context.connector.documentation_file_path),
+            str(self.context.connector.migration_guide_file_path),
             str(self.context.connector.icon_path),
         ]
         if (

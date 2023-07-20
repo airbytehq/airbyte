@@ -87,7 +87,7 @@ async def run_connectors_pipelines(
         # See https://github.com/airbytehq/airbyte/issues/27233
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
-            tg_main.start_soon(dockerd_service.exit_code)
+            tg_main.start_soon(dockerd_service.sync)
             await anyio.sleep(10)  # Wait for the docker service to be ready
             async with anyio.create_task_group() as tg_connectors:
                 for context in contexts:

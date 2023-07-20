@@ -25,10 +25,12 @@ grpcio = "^1.47.0"
 poetry2setup = "^1.1.0"
 slack-sdk = "^3.21.3"
 poetry = "^1.5.1"
+pydantic = "^1.10.6"
 
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.23"
+pdbpp = "^0.10.3"
 
 
 [tool.poetry.group.test.dependencies]
