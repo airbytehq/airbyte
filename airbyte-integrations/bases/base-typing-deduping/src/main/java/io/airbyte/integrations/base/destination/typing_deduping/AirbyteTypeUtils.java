@@ -88,9 +88,9 @@ public class AirbyteTypeUtils {
       if (nodeIsOrContainsType(format, "date")) {
         return AirbyteProtocolType.DATE;
       } else if (nodeIsType(format, "time")) {
-        if (nodeIsType(airbyteType, "timestamp_without_timezone")) {
+        if (nodeIsType(airbyteType, "time_without_timezone")) {
           return AirbyteProtocolType.TIME_WITHOUT_TIMEZONE;
-        } else if (nodeIsType(airbyteType, "timestamp_with_timezone")) {
+        } else if (nodeIsType(airbyteType, "time_with_timezone")) {
           return AirbyteProtocolType.TIME_WITH_TIMEZONE;
         }
       } else if (nodeIsOrContainsType(format, "date-time")) {
