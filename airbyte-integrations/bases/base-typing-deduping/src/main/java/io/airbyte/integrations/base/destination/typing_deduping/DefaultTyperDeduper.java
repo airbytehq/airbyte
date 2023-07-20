@@ -38,8 +38,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private Map<StreamId, String> overwriteStreamsWithTmpTable;
 
   public DefaultTyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
-                      DestinationHandler<DialectTableDefinition> destinationHandler,
-                      ParsedCatalog parsedCatalog) {
+                             DestinationHandler<DialectTableDefinition> destinationHandler,
+                             ParsedCatalog parsedCatalog) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;

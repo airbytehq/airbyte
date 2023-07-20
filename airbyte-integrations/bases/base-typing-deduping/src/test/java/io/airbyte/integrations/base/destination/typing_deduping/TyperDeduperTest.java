@@ -107,7 +107,8 @@ public class TyperDeduperTest {
   }
 
   /**
-   * When there's an existing empty table with the right schema, we don't need to do anything during setup.
+   * When there's an existing empty table with the right schema, we don't need to do anything during
+   * setup.
    */
   @Test
   void existingEmptyTableMatchingSchema() throws Exception {
@@ -154,8 +155,8 @@ public class TyperDeduperTest {
   }
 
   /**
-   * When there's an existing table nonempty table with the right schema, we don't need to modify it, but OVERWRITE
-   * streams still need to create a tmp table.
+   * When there's an existing table nonempty table with the right schema, we don't need to modify it,
+   * but OVERWRITE streams still need to create a tmp table.
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
