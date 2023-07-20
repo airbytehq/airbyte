@@ -356,7 +356,9 @@ class TestSpec(BaseTest):
 
         for forbidden_key in forbidden_keys:
             # remove forbidden keys if they are used as properties directly
-            for path, _value in dpath.util.search(actual_connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True):
+            for path, _value in dpath.util.search(
+                actual_connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True
+            ):
                 found_keys.remove(path)
 
         if len(found_keys) > 0:
