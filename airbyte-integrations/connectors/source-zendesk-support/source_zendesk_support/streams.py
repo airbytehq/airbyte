@@ -582,6 +582,7 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportOffsetPaginationS
             yield record
 
 
+ALL_EVENTS = "all"
 class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExportStream):
     """Incremental Export from TicketEvents stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
@@ -606,7 +607,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
             for event in record.get(self.response_target_entity, []):
-                if event.get("event_type") == self.event_type:
+                if self.event_type == ALL_EVENTS or event.get("event_type") == self.event_type:
                     if self.update_event_from_record:
                         for prop in self.list_entities_from_event:
                             event[prop] = record.get(prop)
@@ -647,6 +648,36 @@ class Tickets(SourceZendeskIncrementalExportStream):
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
         return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
+
+
+class TicketEvents(SourceZendeskSupportTicketEventsExportStream):
+    """
+    {
+            "child_events": [
+                {
+                    "id": 378467814112,
+                    "via": "Chat",
+                    "via_reference_id": null,
+                    "comment_present": true,
+                    "comment_public": false,
+                    "event_type": "Comment"
+                }
+                ...
+            ],
+            "id": 378467814092,
+            "ticket_id": 522,
+            "timestamp": 1522700679,
+            "created_at": "2018-04-02T20:24:39Z",
+            "updater_id": 361993150032,
+            "via": "Chat",
+            "event_type": "Audit"
+            ...
+    }
+    Sample ticket event response. We are emitting each child event as a separate record with some properties from parent ticket event like ticket_id, timestamp, created_at
+    """
+    cursor_field = "created_at"
+    list_entities_from_event = ["ticket_id", "timestamp", cursor_field]
+    event_type = ALL_EVENTS
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):

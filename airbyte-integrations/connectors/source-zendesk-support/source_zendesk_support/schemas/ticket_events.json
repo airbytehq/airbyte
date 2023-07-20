@@ -1,0 +1,34 @@
+{
+    "properties": {
+      "created_at": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "timestamp": {
+        "type": ["null", "integer"]
+      },
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "ticket_id": {
+        "type": ["null", "integer"]
+      },
+      "event_type": {
+        "type": ["null", "string"]
+      },
+      "via_reference_id": {
+        "type": ["null", "integer"]
+      },
+      "via": {
+        "type": ["null", "string"]
+      },
+      "comment_present": {
+        "type": ["null", "boolean"]
+      },
+      "comment_public": {
+        "type": ["null", "boolean"]
+      }
+    },
+    "type": ["null", "object"]
+  }
+  
