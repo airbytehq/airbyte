@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_audienceproject.streams import IncrementalAudienceprojectStream, Campaigns
+from source_audienceproject.streams import Campaigns, IncrementalAudienceprojectStream
 
 authenticator = ""
 config = {}
 parent = Campaigns
+
 
 @fixture
 def patch_incremental_base_class(mocker):

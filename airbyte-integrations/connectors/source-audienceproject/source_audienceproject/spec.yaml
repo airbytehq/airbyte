@@ -67,7 +67,7 @@ connectionSpecification:
         Returns campaigns with a given status.
         Provided as a comma separated string without spaces.
         Allowed values: deleted, active, archived, dirty.
-        Default value: active, dirty, archived.
+        Default value: active, dirty, archived, new.
     date_flag:
       type: boolean
       order: 4

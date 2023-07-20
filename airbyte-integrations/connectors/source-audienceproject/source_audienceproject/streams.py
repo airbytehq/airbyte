@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union, List
-from airbyte_cdk.models import SyncMode
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 
-DEFAULT_CAMPAIGN_STATUS = "deleted,active,archived,dirty"
+DEFAULT_CAMPAIGN_STATUS = "deleted,active,archived,dirty,new"
 DEFAULT_END_DATE = pendulum.yesterday().date()
 DEFAULT_DATE_FLAG = False
 
@@ -18,6 +20,7 @@ DEFAULT_DATE_FLAG = False
 class AudienceprojectStream(HttpStream, ABC):
     url_base = "https://campaign-api.audiencereport.com/"
     oauth_url_base = "https://oauth.audiencereport.com/"
+    raise_on_http_errors = True
 
     def __init__(self, config: Mapping[str, Any], authenticator, parent):
         super().__init__(parent)
@@ -36,15 +39,15 @@ class AudienceprojectStream(HttpStream, ABC):
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
-        data = response.json().get("data")
-        if data:
-            data["campaign_id"] = stream_slice["campaign_id"]
-            yield data
+        if response.status_code == 200:
+            data = response.json().get("data")
+            if data:
+                data["campaign_id"] = stream_slice["campaign_id"]
+                yield data
 
     @staticmethod
     def _get_time_interval(
-            starting_date: Union[pendulum.datetime, str],
-            ending_date: Union[pendulum.datetime, str]
+        starting_date: Union[pendulum.datetime, str], ending_date: Union[pendulum.datetime, str]
     ) -> Iterable[Tuple[pendulum.datetime, pendulum.datetime]]:
         if isinstance(starting_date, str):
             start_date = pendulum.parse(starting_date).date()
@@ -55,9 +58,9 @@ class AudienceprojectStream(HttpStream, ABC):
         if end_date < start_date:
             raise ValueError(
                 f"""Provided start date has to be before end_date.
-                     Start date: {start_date} -> end date: {end_date}""")
+                     Start date: {start_date} -> end date: {end_date}"""
+            )
         return start_date, end_date
-
 
     def stream_slices(
         self, sync_mode: SyncMode.incremental, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -70,6 +73,34 @@ class AudienceprojectStream(HttpStream, ABC):
             )
             for record in parent_records:
                 yield {"campaign_id": record.get("id")}
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 409:
+            self.logger.error(f"Skipping stream {self.name}. Full error message: {response.text}")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        self.logger.debug(
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+        )
+        response: requests.Response = self._session.send(request, **request_kwargs)
+        if self.logger.isEnabledFor(logging.DEBUG):
+            self.logger.debug(
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+            )
+        if self.should_retry(response):
+            custom_backoff_time = self.backoff_time(response)
+            error_message = self.error_message(response)
+            if custom_backoff_time:
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                )
+            else:
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
+        elif self.raise_on_http_errors:
+            self.logger.error(response.status_code)
+        return response
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -113,26 +144,19 @@ class Campaigns(AudienceprojectStream, ABC):
         return {"start": self.start, "maxResults": self.max_records}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"type": "all", "sortDirection": "asc"}
         params.update({"status": self.config.get("campaign_status")}) if self.config.get("campaign_status") else params.update(
-            {"status": DEFAULT_CAMPAIGN_STATUS})
+            {"status": DEFAULT_CAMPAIGN_STATUS}
+        )
         date_required = self.config.get("date_flag") if self.config.get("date_flag") else DEFAULT_DATE_FLAG
         if date_required:
-            stream_start, stream_end = self._get_time_interval(
-                self.config.get("start_date"), self.config.get("end_date"))
-            params.update({
-                "creationDate": stream_start,
-                "reportEnd": stream_end
-            })
+            stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+            params.update({"creationDate": stream_start, "reportEnd": stream_end})
         if next_page_token:
             params.update(**next_page_token)
         return params
-
 
     @property
     def use_cache(self) -> bool:
@@ -220,5 +244,3 @@ class Report(AudienceprojectStream, HttpSubStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"reports/{stream_slice['campaign_id']}"
-
-
