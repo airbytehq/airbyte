@@ -5,9 +5,10 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-RUN apk --no-cache upgrade \
+
+RUN apt-get update \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base swig libffi-dev libstdc++
+    && apt-get install -y --no-cache build-essential cmake g++ libffi-dev libstdc++6
 
 COPY setup.py ./
 
