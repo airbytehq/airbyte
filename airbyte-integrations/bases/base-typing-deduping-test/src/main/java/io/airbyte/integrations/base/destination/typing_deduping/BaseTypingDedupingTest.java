@@ -137,7 +137,7 @@ public abstract class BaseTypingDedupingTest {
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * @return A suffix which is different for each concurrent test run.
+   * @return A suffix which is different for each concurrent test, but stable within a single test.
    */
   protected synchronized String getUniqueSuffix() {
     if (randomSuffix == null) {
