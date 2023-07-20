@@ -46,7 +46,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
@@ -270,11 +269,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     data.putAll(database.getCollectionStats(collectionName));
     data.put("version", database.getServerVersion());
     data.put("type", database.getServerType());
-    final Map<String,Object> structuredLog = new HashMap<>();
-    structuredLog.put("severity", Level.INFO.name());
-    structuredLog.put("time", System.currentTimeMillis());
-    structuredLog.putAll(data);
-    System.out.println(Jsons.serialize(structuredLog));
+    LOGGER.info(Jsons.serialize(data));
   }
 
 }
