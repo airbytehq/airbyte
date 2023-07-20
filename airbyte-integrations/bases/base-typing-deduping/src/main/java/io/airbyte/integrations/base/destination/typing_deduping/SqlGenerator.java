@@ -76,4 +76,5 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Drop the previous final table, and rename the new final table to match the old final table.
    */
   Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
+
 }

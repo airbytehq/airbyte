@@ -9,7 +9,9 @@ package io.airbyte.integrations.base.destination.typing_deduping;
  * have the expected columns used by airbyte.
  */
 public class TableNotMigratedException extends RuntimeException {
-    public TableNotMigratedException(String message) {
-        super(message);
-    }
+
+  public TableNotMigratedException(String message) {
+    super(message);
+  }
+
 }
