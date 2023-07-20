@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/destination-langchain
   githubIssueLabel: destination-langchain
   icon: langchain.svg
