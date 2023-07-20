@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
@@ -46,7 +47,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         uploaderMap,
         outputRecordCollector,
         "test-dataset-id",
-        new DefaultTyperDeduper<>(mock(BigQuerySqlGenerator.class), mock(BigQueryDestinationHandler.class), parsedCatalog),
+        new NoopTyperDeduper(),
         parsedCatalog);
   }
 
