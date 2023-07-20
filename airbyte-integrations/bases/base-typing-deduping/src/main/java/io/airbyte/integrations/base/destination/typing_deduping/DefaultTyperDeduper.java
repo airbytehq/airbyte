@@ -53,7 +53,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    */
   public void prepareFinalTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
-      throw new IllegalStateException("createFinalTables() has already been called. This is probably a bug.");
+      throw new IllegalStateException("Tables were already prepared.");
     }
     overwriteStreamsWithTmpTable = new HashMap<>();
 
