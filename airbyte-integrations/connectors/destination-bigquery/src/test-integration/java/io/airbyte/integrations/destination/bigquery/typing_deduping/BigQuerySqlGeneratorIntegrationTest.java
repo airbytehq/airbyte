@@ -22,14 +22,14 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.RecordDiffer;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.RecordDiffer;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -114,8 +114,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @BeforeAll
   public static void setup() throws Exception {
-    String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
-    JsonNode config = Jsons.deserialize(rawConfig);
+    final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
+    final JsonNode config = Jsons.deserialize(rawConfig);
 
     bq = BigQueryDestination.getBigQuery(config);
     destinationHandler = new BigQueryDestinationHandler(bq);
@@ -145,7 +145,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
-    StreamConfig stream = incrementalDedupStreamConfig();
+    final StreamConfig stream = incrementalDedupStreamConfig();
 
     destinationHandler.execute(GENERATOR.createTable(stream, ""));
 
@@ -811,7 +811,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createFinalTable("");
   }
 
-  private void createFinalTable(String suffix) throws InterruptedException {
+  private void createFinalTable(final String suffix) throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
                 "dataset", testDataset,
@@ -877,7 +877,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
    * That's annoying for us since we're working with small test data, so just pull everything into a list.
    */
-  public static List<JsonNode> toJsonRecords(TableResult result) {
+  public static List<JsonNode> toJsonRecords(final TableResult result) {
     return result.streamAll().map(row -> toJson(result.getSchema(), row)).toList();
   }
 
@@ -886,12 +886,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * This method does that conversion, using the schema to determine which type is most appropriate. Then we just dump
    * everything into a jsonnode for interop with RecordDiffer.
    */
-  private static JsonNode toJson(Schema schema, FieldValueList row) {
+  private static JsonNode toJson(final Schema schema, final FieldValueList row) {
     final ObjectNode json = (ObjectNode) Jsons.emptyObject();
     for (int i = 0; i < schema.getFields().size(); i++) {
       final Field field = schema.getFields().get(i);
       final FieldValue value = row.get(i);
-      JsonNode typedValue;
+      final JsonNode typedValue;
       if (!value.isNull()) {
         typedValue = switch (field.getType().getStandardType()) {
           case BOOL -> Jsons.jsonNode(value.getBooleanValue());
