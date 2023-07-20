@@ -1,19 +1,22 @@
-FROM nickgryg/alpine-pandas:3.9.12 as base
+FROM python:3.9-slim as base
 
 # build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-RUN apk --no-cache upgrade \
+
+RUN apt-get update \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base swig libffi-dev libstdc++
+    && apt-get install -y build-essential cmake g++ libffi-dev libstdc++6
 
 COPY setup.py ./
 
 RUN pip install --upgrade pip
 
-## Workaround for https://github.com/yaml/pyyaml/issues/601
+# This is required because the current connector dependency is not compatible with the CDK version
+# An older CDK version will be used, which depends on pyYAML 5.4, for which we need to pin Cython to <3.0
+# As of today the CDK version that satisfies the main dependency requirements, is 0.1.80 ...
 RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolation
 
 # install necessary packages to a temporary folder
@@ -30,7 +33,7 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+RUN apt-get install bash
 
 # copy payload code only
 COPY main.py ./
@@ -39,5 +42,5 @@ COPY destination_langchain ./destination_langchain
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.0.2
+LABEL io.airbyte.version=0.0.3
 LABEL io.airbyte.name=airbyte/destination-langchain
