@@ -237,28 +237,28 @@ def build(ctx: click.Context) -> bool:
     "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="SPEC_CACHE_GCS_CREDENTIALS",
 )
 @click.option(
     "--spec-cache-bucket-name",
     help="The name of the GCS bucket where specs will be cached.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
 @click.option(
     "--metadata-service-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting the metadata files.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="METADATA_SERVICE_GCS_CREDENTIALS",
 )
 @click.option(
     "--metadata-service-bucket-name",
     help="The name of the GCS bucket where metadata files will be uploaded.",
     type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    required=True,
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
 @click.option(
@@ -306,7 +306,6 @@ def publish(
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
 
-    validate_publish_options(pre_release, ctx.obj)
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -362,13 +361,6 @@ def publish(
     return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
 
 
-def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
-    """Validate that the publish options are set correctly."""
-    for k in ["spec_cache_bucket_name", "spec_cache_gcs_credentials", "metadata_service_bucket_name", "metadata_service_gcs_credentials"]:
-        if not pre_release and context_object.get(k) is None:
-            click.Abort(f'The --{k.replace("_", "-")} option is required when running a main release publish pipeline.')
-
-
 @connectors.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
 @click.pass_context
 def list(
@@ -405,7 +397,6 @@ def list(
 @connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
 @click.pass_context
 def format(ctx: click.Context) -> bool:
-
     if ctx.obj["modified"]:
         # We only want to format the connector that with modified files on the current branch.
         connectors_and_files_to_format = [

@@ -71,9 +71,13 @@ class MetadataUpload(PoetryRun):
         metadata_service_gcs_credentials_secret: dagger.Secret,
         docker_hub_username_secret: dagger.Secret,
         docker_hub_password_secret: dagger.Secret,
+        pre_release: bool = False,
+        pre_release_tag: Optional[str] = None,
     ):
         title = f"Upload {metadata_path}"
         self.gcs_bucket_name = metadata_bucket_name
+        self.pre_release = pre_release
+        self.pre_release_tag = pre_release_tag
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
 
         # Ensure the icon file is included in the upload
@@ -93,14 +97,12 @@ class MetadataUpload(PoetryRun):
         )
 
     async def _run(self) -> StepResult:
-        return await super()._run(
-            [
-                "metadata_service",
-                "upload",
-                METADATA_FILE_NAME,
-                self.gcs_bucket_name,
-            ]
-        )
+        upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
+
+        if self.pre_release:
+            upload_command += ["--prerelease", self.pre_release_tag]
+
+        return await super()._run(upload_command)
 
 
 class DeployOrchestrator(Step):

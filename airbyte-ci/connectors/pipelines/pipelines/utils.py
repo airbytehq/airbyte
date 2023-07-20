@@ -302,12 +302,14 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     """Check if the provided file has an ignored extension."""
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
+
 def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
     """Check if the file path starts with the connector dependency path."""
     given_file_path_parts = given_file_path.parts
     starts_with_path_parts = starts_with_path.parts
 
-    return given_file_path_parts[:len(starts_with_path_parts)] == starts_with_path_parts
+    return given_file_path_parts[: len(starts_with_path_parts)] == starts_with_path_parts
+
 
 def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
     """Find all connectors whose dependencies were modified."""
@@ -329,6 +331,7 @@ def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) ->
 
     return modified_connectors
 
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -337,10 +340,7 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    all_connector_dependencies = [
-        (connector, connector.get_local_dependency_paths())
-        for connector in get_all_released_connectors()
-    ]
+    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
 
     # Ignore files with certain extensions
     modified_files = [file for file in modified_files if not _is_ignored_file(file)]

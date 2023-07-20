@@ -21,7 +21,7 @@ class CheckConnectorImageDoesNotExist(Step):
     title = "Check if the connector docker image does not exist on the registry."
 
     async def _run(self) -> StepResult:
-        docker_repository, docker_tag = self.context.docker_image_name.split(":")
+        docker_repository, docker_tag = self.context.docker_image.split(":")
         crane_ls = (
             environments.with_crane(
                 self.context,
@@ -40,8 +40,8 @@ class CheckConnectorImageDoesNotExist(Step):
             existing_tags = crane_ls_stdout.split("\n")
             docker_tag_already_exists = docker_tag in existing_tags
             if docker_tag_already_exists:
-                return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_name} already exists.")
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_name}.")
+                return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
+            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
 
 
 class PushConnectorImageToRegistry(Step):
@@ -49,12 +49,12 @@ class PushConnectorImageToRegistry(Step):
 
     @property
     def latest_docker_image_name(self):
-        return f"{self.context.metadata['dockerRepository']}:latest"
+        return f"{self.context.docker_repository}:latest"
 
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
-                f"docker.io/{self.context.docker_image_name}",
+                f"docker.io/{self.context.docker_image}",
                 platform_variants=built_containers_per_platform[1:],
                 forced_compression=ImageLayerCompression.Gzip,
             )
@@ -68,7 +68,7 @@ class PushConnectorImageToRegistry(Step):
         except QueryError as e:
             if attempts > 0:
                 self.context.logger.error(str(e))
-                self.context.logger.warn(f"Failed to publish {self.context.docker_image_name}. Retrying. {attempts} attempts left.")
+                self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
@@ -86,41 +86,41 @@ class PullConnectorImageFromRegistry(Step):
         """
         for platform in consts.BUILD_PLATFORMS:
             inspect = environments.with_crane(self.context).with_exec(
-                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
             )
             try:
                 inspect_stdout = await inspect.stdout()
             except ExecError as e:
-                raise Exception(f"Failed to inspect {self.context.docker_image_name}: {e.stderr}") from e
+                raise Exception(f"Failed to inspect {self.context.docker_image}: {e.stderr}") from e
             try:
                 for layer in json.loads(inspect_stdout)["layers"]:
                     if not layer["mediaType"].endswith("gzip"):
                         return False
                 return True
             except (KeyError, json.JSONDecodeError) as e:
-                raise Exception(f"Failed to parse manifest for {self.context.docker_image_name}: {inspect_stdout}") from e
+                raise Exception(f"Failed to parse manifest for {self.context.docker_image}: {inspect_stdout}") from e
 
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image_name}").with_exec(["spec"])
+                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"])
             except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
                     return await self._run(attempt - 1)
                 else:
-                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
+                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
             if not await self.check_if_image_only_has_gzip_layers():
                 return StepResult(
                     self,
                     status=StepStatus.FAILURE,
-                    stderr=f"Image {self.context.docker_image_name} does not only have gzip compressed layers. Please rebuild the connector with Docker < 21.",
+                    stderr=f"Image {self.context.docker_image} does not only have gzip compressed layers. Please rebuild the connector with Docker < 21.",
                 )
             else:
                 return StepResult(
                     self,
                     status=StepStatus.SUCCESS,
-                    stdout=f"Pulled {self.context.docker_image_name} and validated it has gzip only compressed layers and we can run spec on it.",
+                    stdout=f"Pulled {self.context.docker_image} and validated it has gzip only compressed layers and we can run spec on it.",
                 )
         except QueryError as e:
             if attempt > 0:
@@ -140,7 +140,7 @@ class UploadSpecToCache(Step):
 
     @property
     def spec_key_prefix(self):
-        return "specs/" + self.context.docker_image_name.replace(":", "/")
+        return "specs/" + self.context.docker_image.replace(":", "/")
 
     @property
     def cloud_spec_key(self):
@@ -216,17 +216,16 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         ConnectorReport: The reports holding publish results.
     """
 
-    if not context.pre_release:
-        metadata_upload_step = metadata.MetadataUpload(
-            context=context,
-            metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
-            docker_hub_username_secret=context.docker_hub_username_secret,
-            docker_hub_password_secret=context.docker_hub_password_secret,
-            metadata_bucket_name=context.metadata_bucket_name,
-            metadata_path=context.metadata_path,
-        )
-    else:
-        metadata_upload_step = None
+    metadata_upload_step = metadata.MetadataUpload(
+        context=context,
+        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
+        docker_hub_username_secret=context.docker_hub_username_secret,
+        docker_hub_password_secret=context.docker_hub_password_secret,
+        metadata_bucket_name=context.metadata_bucket_name,
+        metadata_path=context.metadata_path,
+        pre_release=context.pre_release,
+        pre_release_tag=context.docker_image_tag,
+    )
 
     def create_connector_report(results: List[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
@@ -235,7 +234,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     async with semaphore:
         async with context:
-            # TODO add a strucutre to hold the results of each step. and perform skips and failures.
+            # TODO add a strucutre to hold the results of each step. and perform skips and failures
 
             results = []
 
@@ -251,11 +250,11 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
-            if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
+            if check_connector_image_results.status is StepStatus.SKIPPED:
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
-                already_published_connector = context.dagger_client.container().from_(context.docker_image_from_metadata)
+                already_published_connector = context.dagger_client.container().from_(context.docker_image)
                 upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
                 results.append(upload_to_spec_cache_results)
                 if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
@@ -296,10 +295,8 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            if not context.pre_release:
-                # Only upload to metadata service bucket if the connector is not a pre-release.
-                metadata_upload_results = await metadata_upload_step.run()
-                results.append(metadata_upload_results)
+            metadata_upload_results = await metadata_upload_step.run()
+            results.append(metadata_upload_results)
 
             return create_connector_report(results)
 
