@@ -32,6 +32,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,11 +234,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
-    LOGGER.info("Alter Table Report {} {} {} {}; Clustering {}; Partitioning {}",
+    LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
             alterTableReport.columnsToAdd(),
             alterTableReport.columnsToRemove(),
             alterTableReport.columnsToChangeType(),
-            alterTableReport.isDestinationV2Format(),
             tableClusteringMatches,
             tablePartitioningMatches);
 
@@ -246,17 +246,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @VisibleForTesting
   public boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
-    return existingTable.getClustering() == null ? false : containsAllIgnoreCase(
-            existingTable.getClustering().getFields().stream().collect(Collectors.toSet()),
+    return existingTable.getClustering() != null
+        && containsAllIgnoreCase(
+            new HashSet<>(existingTable.getClustering().getFields()),
             clusteringColumns(stream));
   }
 
   @VisibleForTesting
   public boolean partitioningMatches(StandardTableDefinition existingTable) {
-    return existingTable.getTimePartitioning() == null ? false : existingTable.getTimePartitioning()
+    return existingTable.getTimePartitioning() != null
+        && existingTable.getTimePartitioning()
             .getField()
-            .equalsIgnoreCase("_airbyte_extracted_at") &&
-            TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
+            .equalsIgnoreCase("_airbyte_extracted_at")
+        && TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
   }
 
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
