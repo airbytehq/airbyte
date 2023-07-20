@@ -120,7 +120,7 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
       return SnapshotIsolation.from(snapshotIsolation.asText());
@@ -131,7 +131,7 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
       return DataToSync.from(dataToSync.asText());
