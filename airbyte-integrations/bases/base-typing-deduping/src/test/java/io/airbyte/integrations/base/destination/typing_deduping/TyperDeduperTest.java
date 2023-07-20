@@ -13,12 +13,11 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 
 public class TyperDeduperTest {
 
   private DestinationHandler<String> destinationHandler;
-  private TyperDeduper<String> typerDeduper;
+  private TyperDeduper typerDeduper;
 
   @BeforeEach
   void setup() {
@@ -47,7 +46,7 @@ public class TyperDeduperTest {
             null,
             null)));
 
-    typerDeduper = new TyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog);
   }
 
   /**
@@ -57,7 +56,7 @@ public class TyperDeduperTest {
   void emptyDestination() throws Exception {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.empty());
 
-    typerDeduper.createFinalTables();
+    typerDeduper.prepareFinalTables();
     verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream");
     verify(destinationHandler).execute("CREATE TABLE append_ns.append_stream");
     verify(destinationHandler).execute("CREATE TABLE dedup_ns.dedup_stream");
@@ -86,7 +85,7 @@ public class TyperDeduperTest {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
 
-    typerDeduper.createFinalTables();
+    typerDeduper.prepareFinalTables();
     verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
     verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
     verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
@@ -115,7 +114,7 @@ public class TyperDeduperTest {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
-    typerDeduper.createFinalTables();
+    typerDeduper.prepareFinalTables();
     // NB: We only create one tmp table here.
     // Also, we need to alter the existing _real_ table, not the tmp table!
     verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");

@@ -26,6 +26,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -236,10 +238,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalog);
 
     final BigQuery bigquery = getBigQuery(config);
-    TyperDeduper<TableDefinition> typerDeduper = new TyperDeduper<>(
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigquery),
-        parsedCatalog);
+    TyperDeduper typerDeduper;
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      typerDeduper = new DefaultTyperDeduper<>(
+          sqlGenerator,
+          new BigQueryDestinationHandler(bigquery),
+          parsedCatalog);
+    } else {
+      typerDeduper = new NoopTyperDeduper();
+    }
 
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -324,7 +331,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final ParsedCatalog parsedCatalog,
                                                            final Consumer<AirbyteMessage> outputRecordCollector,
-                                                           final TyperDeduper<TableDefinition> typerDeduper)
+                                                           final TyperDeduper typerDeduper)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
@@ -347,7 +354,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                      final ConfiguredAirbyteCatalog catalog,
                                                      final ParsedCatalog parsedCatalog,
                                                      final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final TyperDeduper<TableDefinition> typerDeduper)
+                                                     final TyperDeduper typerDeduper)
       throws Exception {
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);

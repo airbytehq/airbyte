@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -45,13 +44,13 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
   private final boolean use1s1t;
-  private final TyperDeduper<TableDefinition> typerDeduper;
+  private final TyperDeduper typerDeduper;
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
                                 final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String defaultDatasetId,
-                                TyperDeduper<TableDefinition> typerDeduper,
+                                TyperDeduper typerDeduper,
                                 final ParsedCatalog catalog) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
@@ -69,9 +68,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   protected void startTracked() throws Exception {
     // todo (cgardens) - move contents of #write into this method.
 
+    typerDeduper.prepareFinalTables();
     if (use1s1t) {
-      typerDeduper.createFinalTables();
-
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
         StreamConfig stream = catalog.getStream(streamId);
@@ -135,26 +133,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        if (use1s1t) {
-          LOGGER.info("Attempting typing and deduping for {}", streamId);
-          doTypingAndDeduping(streamId);
-        }
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
-    if (use1s1t) {
-      typerDeduper.commitFinalTables();
-    }
+    typerDeduper.commitFinalTables();
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
-    }
-  }
-
-  private void doTypingAndDeduping(final AirbyteStreamNameNamespacePair stream) throws Exception {
-    if (use1s1t) {
-      typerDeduper.typeAndDedupe(stream.getNamespace(), stream.getName());
     }
   }
 
