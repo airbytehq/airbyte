@@ -173,8 +173,8 @@ class UploadSpecToCache(Step):
         spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
         return self._parse_spec_output(spec_output)
 
-    def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
-        return self.context.get_connector_dir().with_new_file(name, spec).file(name)
+    async def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
+        return (await self.context.get_connector_dir()).with_new_file(name, spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
         try:
@@ -183,10 +183,10 @@ class UploadSpecToCache(Step):
         except InvalidSpecOutputError as e:
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
-        specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, self._get_spec_as_file(oss_spec))]
+        specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
         if oss_spec != cloud_spec:
-            specs_to_uploads.append(self.cloud_spec_key, self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
+            specs_to_uploads.append(self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
 
         for key, file in specs_to_uploads:
             exit_code, stdout, stderr = await upload_to_gcs(
