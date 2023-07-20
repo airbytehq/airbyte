@@ -109,9 +109,26 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
 # Source
 class SourceSurveycto(AbstractSource):
+    
+    def _base64_encode(self, string: str) -> str:
+        return base64.b64encode(string.encode("ascii")).decode("ascii")
+    
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return True, None
 
+        server_name=config['server_name']
+        form_id=config['form_id'][0]
+        url=f"https://{server_name}.surveycto.com/" + f"api/v2/forms/data/wide/json/{form_id}?date=Jan 09, 2100 00:00:00 AM"
+        user_name_password = f"{config['username']}:{config['password']}"
+        auth_token = self._base64_encode(user_name_password)
+        headers = {"Authorization": "Basic " + auth_token}
+        response = requests.get(url, headers=headers)
+
+        if response.status_code==200:
+            return True, None
+        else:
+            return False, None
+        
+        
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
         streams = []
