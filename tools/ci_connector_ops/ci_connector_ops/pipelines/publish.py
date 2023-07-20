@@ -174,7 +174,7 @@ class UploadSpecToCache(Step):
         return self._parse_spec_output(spec_output)
 
     async def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
-        return await self.context.get_connector_dir().with_new_file(name, spec).file(name)
+        return (await self.context.get_connector_dir()).with_new_file(name, spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
         try:
