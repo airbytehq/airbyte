@@ -365,8 +365,8 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Run a sync, then remove the {@code name} column from the schema and run a second sync. Verify that the final table
-   * doesn't contain the `name` column after the second sync.
+   * Run a sync, then remove the {@code name} column from the schema and run a second sync. Verify
+   * that the final table doesn't contain the `name` column after the second sync.
    */
   @Test
   public void testIncrementalSyncDropOneColumn() throws Exception {
