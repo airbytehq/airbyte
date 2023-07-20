@@ -369,6 +369,10 @@ class ExponentialBackoffStrategy(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class SessionTokenRequestBearerAuthenticator(BaseModel):
+    type: Literal["Bearer"]
+
+
 class HttpMethodEnum(Enum):
     GET = "GET"
     POST = "POST"
@@ -631,8 +635,8 @@ class Schemas(BaseModel):
         extra = Extra.allow
 
 
-class SessionTokenAuthenticator(BaseModel):
-    type: Literal["SessionTokenAuthenticator"]
+class LegacySessionTokenAuthenticator(BaseModel):
+    type: Literal["LegacySessionTokenAuthenticator"]
     header: str = Field(
         ...,
         description="The name of the session token header that will be injected in the request",
@@ -939,6 +943,19 @@ class DpathExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class SessionTokenRequestApiKeyAuthenticator(BaseModel):
+    type: Literal["ApiKey"]
+    inject_into: RequestOption = Field(
+        ...,
+        description="Configure how the API Key will be sent in requests to the source API.",
+        examples=[
+            {"inject_into": "header", "field_name": "Authorization"},
+            {"inject_into": "request_parameter", "field_name": "authKey"},
+        ],
+        title="Inject API Key Into Outgoing HTTP Request",
+    )
+
+
 class ListPartitionRouter(BaseModel):
     type: Literal["ListPartitionRouter"]
     cursor_field: str = Field(
@@ -1002,6 +1019,92 @@ class CompositeErrorHandler(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class DeclarativeSource(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    type: Literal["DeclarativeSource"]
+    check: CheckStream
+    streams: List[DeclarativeStream]
+    version: str
+    schemas: Optional[Schemas] = None
+    definitions: Optional[Dict[str, Any]] = None
+    spec: Optional[Spec] = None
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.",
+    )
+
+
+class DeclarativeStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["DeclarativeStream"]
+    retriever: Union[CustomRetriever, SimpleRetriever] = Field(
+        ...,
+        description="Component used to coordinate how records are extracted across stream slices and request pages.",
+        title="Retriever",
+    )
+    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = Field(
+        None,
+        description="Component used to fetch data incrementally based on a time field in the data.",
+        title="Incremental Sync",
+    )
+    name: Optional[str] = Field("", description="The stream name.", example=["Users"], title="Name")
+    primary_key: Optional[PrimaryKey] = Field("", description="The primary key of the stream.", title="Primary Key")
+    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = Field(
+        None,
+        description="Component used to retrieve the schema for the current stream.",
+        title="Schema Loader",
+    )
+    transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = Field(
+        None,
+        description="A list of transformations to be applied to each output record.",
+        title="Transformations",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
+class SessionTokenAuthenticator(BaseModel):
+    type: Literal["SessionTokenAuthenticator"]
+    login_requester: HttpRequester = Field(
+        ...,
+        description="Description of the request to perform to obtain a session token to perform data requests. The response body is expected to be a JSON object with a session token property.",
+        examples=[
+            {
+                "type": "HttpRequester",
+                "url_base": "https://my_api.com",
+                "path": "/login",
+                "authenticator": {
+                    "type": "BasicHttpAuthenticator",
+                    "username": "{{ config.username }}",
+                    "password": "{{ config.password }}",
+                },
+            }
+        ],
+        title="Login Requester",
+    )
+    session_token_path: List[str] = Field(
+        ...,
+        description="The path in the response body returned from the login requester to the session token.",
+        examples=[["access_token"], ["result", "token"]],
+        title="Session Token Path",
+    )
+    expiration_duration: Optional[str] = Field(
+        None,
+        description="The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.",
+        examples=["PT1H", "P1D"],
+        title="Expiration Duration",
+    )
+    request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
+        ...,
+        description="Authentication method to use for requests sent to the API, specifying how to inject the session token.",
+        title="Data request authentication",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
 class HttpRequester(BaseModel):
     type: Literal["HttpRequester"]
     url_base: str = Field(
@@ -1032,6 +1135,7 @@ class HttpRequester(BaseModel):
             OAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
         ]
     ] = Field(
         None,
@@ -1085,53 +1189,6 @@ class HttpRequester(BaseModel):
             {"sort_by[asc]": "updated_at"},
         ],
         title="Query Parameters",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
-class DeclarativeSource(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    type: Literal["DeclarativeSource"]
-    check: CheckStream
-    streams: List[DeclarativeStream]
-    version: str
-    schemas: Optional[Schemas] = None
-    definitions: Optional[Dict[str, Any]] = None
-    spec: Optional[Spec] = None
-    metadata: Optional[Dict[str, Any]] = Field(
-        None,
-        description="For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.",
-    )
-
-
-class DeclarativeStream(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    type: Literal["DeclarativeStream"]
-    retriever: Union[CustomRetriever, SimpleRetriever] = Field(
-        ...,
-        description="Component used to coordinate how records are extracted across stream slices and request pages.",
-        title="Retriever",
-    )
-    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = Field(
-        None,
-        description="Component used to fetch data incrementally based on a time field in the data.",
-        title="Incremental Sync",
-    )
-    name: Optional[str] = Field("", description="The stream name.", example=["Users"], title="Name")
-    primary_key: Optional[PrimaryKey] = Field("", description="The primary key of the stream.", title="Primary Key")
-    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = Field(
-        None,
-        description="Component used to retrieve the schema for the current stream.",
-        title="Schema Loader",
-    )
-    transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = Field(
-        None,
-        description="A list of transformations to be applied to each output record.",
-        title="Transformations",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -1201,4 +1258,5 @@ class SubstreamPartitionRouter(BaseModel):
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
 DeclarativeStream.update_forward_refs()
+SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

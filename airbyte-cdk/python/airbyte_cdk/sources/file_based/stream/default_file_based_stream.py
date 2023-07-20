@@ -74,6 +74,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         if schema is None:
             # On read requests we should always have the catalog available
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
+        # The stream only supports a single file type, so we can use the same parser for all files
         parser = self.get_parser(self.config.file_type)
         for file in stream_slice["files"]:
             # only serialize the datetime once
