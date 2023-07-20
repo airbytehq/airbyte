@@ -37,16 +37,11 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
       TEN_MINUTES_MILLIS,
       FIFTEEN_MINUTES_MILLIS);
 
-  // Constantly getting the system time adds a bit of overhead, adding a minimum record count
-  // To reduce calls for system time
-  private static final int MINIMUM_RECORD_INTERVAL = 100;
-
   private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
   private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Integer> incrementalIndex;
 
   private final Supplier<Long> nowness;
-  private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> recordCounts;
 
   public TypeAndDedupeOperationValve() {
     this(SYSTEM_NOW);
@@ -60,7 +55,6 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
   public TypeAndDedupeOperationValve(Supplier<Long> nownessSupplier) {
     super();
     incrementalIndex = new ConcurrentHashMap<>();
-    recordCounts = new ConcurrentHashMap<>();
     this.nowness = nownessSupplier;
   }
 
@@ -68,9 +62,6 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
   public Long put(final AirbyteStreamNameNamespacePair key, final Long value) {
     if (!incrementalIndex.containsKey(key)) {
       incrementalIndex.put(key, 0);
-    }
-    if (!recordCounts.containsKey(key)) {
-      recordCounts.put(key, 1l);
     }
     return super.put(key, value);
 
@@ -92,17 +83,12 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    * @return a boolean indicating whether we have crossed the interval threshold for typing and
    *         deduping.
    */
-  public boolean readyToTypeAndDedupeWithAdditionalRecord(final AirbyteStreamNameNamespacePair key) {
-    return false;
-    // if (!containsKey(key)) {
-    // return false;
-    // }
-    // recordCounts.put(key, recordCounts.get(key) + 1);
-    // if (recordCounts.get(key) % MINIMUM_RECORD_INTERVAL == 0) {
-    // return nowness.get() - get(key) >
-    // typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
-    // }
-    // return false;
+  public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
+    if (!containsKey(key)) {
+      return false;
+    }
+
+    return nowness.get() - get(key) > typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
   }
 
   /**
@@ -121,8 +107,8 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   /**
    * Meant to be called after
-   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupeWithAdditionalRecord(AirbyteStreamNameNamespacePair)}
-   * will set a streams last operation to the current time and increase its index reference in
+   * {@link TypeAndDedupeOperationValve#readyToTypeAndDedupe(AirbyteStreamNameNamespacePair)} will set
+   * a streams last operation to the current time and increase its index reference in
    * {@link TypeAndDedupeOperationValve#typeAndDedupeIncreasingIntervals}
    *
    * @param key the stream to update
@@ -140,16 +126,6 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    */
   public Long getIncrementInterval(final AirbyteStreamNameNamespacePair key) {
     return typeAndDedupeIncreasingIntervals.get(incrementalIndex.get(key));
-  }
-
-  /**
-   * Get the current record count per stream
-   *
-   * @param key the stream in question
-   * @return the recrod count
-   */
-  public Long getRecordCount(final AirbyteStreamNameNamespacePair key) {
-    return recordCounts.get(key);
   }
 
 }

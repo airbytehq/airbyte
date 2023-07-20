@@ -443,19 +443,16 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
     Returns:
         Container: A container with connector acceptance tests installed.
     """
+    test_input = await context.get_connector_dir()
+    cat_config = yaml.safe_load(await test_input.file("acceptance-test-config.yml").contents())
 
-    patched_cat_config = context.connector.acceptance_test_config
-    patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
-        ":dev", f":{context.git_revision}"
-    )
-    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, patched_cat_config["connector_image"])
+    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, cat_config["connector_image"])
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
 
-    test_input = context.get_connector_dir().with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
     return (
         with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
@@ -512,6 +509,7 @@ def with_gradle(
 
     if sources_to_include:
         include += sources_to_include
+    # TODO re-enable once we have fixed the over caching issue
     # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
     # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
@@ -750,6 +748,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])
+        # Workaround for https://github.com/yaml/pyyaml/issues/601
+        .with_exec(["pip3", "install", "Cython<3.0", "pyyaml~=5.4", "--no-build-isolation"])
         .with_exec(["pip3", "install", dbt_adapter_package])
         .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
@@ -828,7 +828,7 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
     connector_container = (
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .build(context.get_connector_dir())
+        .build(await context.get_connector_dir())
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
     cdk_version = await get_cdk_version_from_python_connector(connector_container)
@@ -845,7 +845,7 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
     connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
-    connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
+    connector_dir_with_finalize_script = await context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
     if not finalize_scripts:
         return connector_container
@@ -898,7 +898,7 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "--upgrade", "pip"])
         .with_exec(["apt-get", "install", "-y", "tzdata"])
-        .with_file("setup.py", context.get_connector_dir(include="setup.py").file("setup.py"))
+        .with_file("setup.py", await context.get_connector_dir(include="setup.py").file("setup.py"))
     )
 
     for dependency_path in setup_dependencies_to_mount:
@@ -913,8 +913,8 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", "Etc/UTC")
         .with_exec(["apt-get", "install", "-y", "bash"])
-        .with_file("main.py", context.get_connector_dir(include="main.py").file("main.py"))
-        .with_directory(snake_case_name, context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_file("main.py", await context.get_connector_dir(include="main.py").file("main.py"))
+        .with_directory(snake_case_name, await context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
         .with_entrypoint(entrypoint)
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
