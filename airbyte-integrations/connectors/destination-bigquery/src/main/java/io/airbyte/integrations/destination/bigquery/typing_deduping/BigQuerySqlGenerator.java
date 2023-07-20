@@ -291,7 +291,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               return matchingKey(existingSchema.keySet(), name)
                       // if it does exist, only include it in this set if the type (the value in each respective map)
                       // is different between the stream and existing schemas
-                      .map(key -> !existingSchema.getOrDefault(key, streamSchema.get(name)).equals(streamSchema.get(name)))
+                      .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
                       // if there is no matching key, then don't include it because it is probably already in columnsToAdd
                       .orElse(false);
             })
