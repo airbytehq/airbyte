@@ -21,7 +21,7 @@ import click
 import git
 from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
-from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
+from connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Client, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account

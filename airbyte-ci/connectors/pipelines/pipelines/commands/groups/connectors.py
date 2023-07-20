@@ -20,7 +20,7 @@ from pipelines.pipelines.connectors import run_connectors_pipelines
 from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from pipelines.tests import run_connector_test_pipeline
 from pipelines.utils import DaggerPipelineCommand, get_modified_connectors
-from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
+from connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.table import Table
 from rich.text import Text
 

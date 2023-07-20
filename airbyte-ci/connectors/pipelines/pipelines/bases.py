@@ -21,7 +21,7 @@ from anyio import Path
 from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
-from ci_connector_ops.utils import console
+from connector_ops.utils import console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group

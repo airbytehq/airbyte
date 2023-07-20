@@ -15,7 +15,7 @@ development environment of choice. To activate it from the terminal, run:
 
 ```bash
 source .venv/bin/activate
-pip install -e . # assuming you are in the ./airbyte-ci/connector_ops directory
+pip install -e . # assuming you are in the ./airbyte-ci/connectors/connector_ops directory
 ```
 
 pip will make binaries for all the commands in setup.py, so you can run `allowed-hosts-checks` directly from the virtual-env
@@ -31,5 +31,5 @@ pip install -e ".[tests]"
 Unit tests are currently configured to be run from the base `airbyte` directory. You can run the tests from that directory with the following command:
 
 ```
-pytest -s airbyte-ci/connector_ops/tests
+pytest -s airbyte-ci/connector_ops/connectors/tests
 ```

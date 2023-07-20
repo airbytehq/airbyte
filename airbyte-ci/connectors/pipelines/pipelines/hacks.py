@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import requests
 import yaml
-from ci_connector_ops.utils import ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
 
 if TYPE_CHECKING:
