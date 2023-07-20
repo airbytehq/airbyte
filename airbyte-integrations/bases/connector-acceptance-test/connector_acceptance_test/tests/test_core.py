@@ -46,6 +46,7 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
+from connector_acceptance_test.utils.compare import diff_dicts
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 from jsonschema._utils import flatten
 
@@ -1059,7 +1060,7 @@ class TestBasicRead(BaseTest):
                 if ignored_fields:
                     delete_fields(r1, ignored_fields)
                     delete_fields(r2, ignored_fields)
-                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
+                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values\n{diff_dicts(actual, expected)}"
         else:
             _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
             expected = set(map(_make_hashable, expected))
