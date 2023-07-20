@@ -47,8 +47,6 @@ class Record(Mapping[str, Any]):
         return item in self._data
 
     def __eq__(self, other):
-        if isinstance(other, dict):
-            return self._data == other
         if isinstance(other, Record):
             # noinspection PyProtectedMember
             return self._data == other._data
