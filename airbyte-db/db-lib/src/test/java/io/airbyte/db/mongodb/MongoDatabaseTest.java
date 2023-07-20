@@ -4,6 +4,8 @@
 
 package io.airbyte.db.mongodb;
 
+import static io.airbyte.db.mongodb.MongoDatabase.COLLECTION_COUNT_KEY;
+import static io.airbyte.db.mongodb.MongoDatabase.COLLECTION_STORAGE_SIZE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,11 +18,14 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import com.mongodb.connection.ClusterType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
@@ -35,6 +40,7 @@ class MongoDatabaseTest {
   private static final String COLLECTION_NAME = "movies";
   private static final String DB_NAME = "airbyte_test";
   private static final Integer DATASET_SIZE = 10000;
+  private static final String MONGO_DB_VERSION = "6.0.8";
 
   private static MongoDBContainer MONGO_DB;
 
@@ -42,7 +48,7 @@ class MongoDatabaseTest {
 
   @BeforeAll
   static void init() {
-    MONGO_DB = new MongoDBContainer("mongo:6.0.8");
+    MONGO_DB = new MongoDBContainer("mongo:" + MONGO_DB_VERSION);
     MONGO_DB.start();
 
     try (final MongoClient client = MongoClients.create(MONGO_DB.getReplicaSetUrl() + "?retryWrites=false")) {
@@ -143,4 +149,20 @@ class MongoDatabaseTest {
     assertEquals(DATASET_SIZE.longValue(), results.count());
   }
 
+  @Test
+  void testGetCollectionStatistics() {
+    final Map<String,Object> statistics = mongoDatabase.getCollectionStats(COLLECTION_NAME);
+    assertEquals(DATASET_SIZE, statistics.get(COLLECTION_COUNT_KEY));
+    assertEquals(4096, statistics.get(COLLECTION_STORAGE_SIZE_KEY));
+  }
+
+  @Test
+  void testGetServerType() {
+    assertEquals(ClusterType.UNKNOWN.name(), mongoDatabase.getServerType());
+  }
+
+  @Test
+  void testGetServerVersion() {
+    assertEquals(MONGO_DB_VERSION, mongoDatabase.getServerVersion());
+  }
 }
