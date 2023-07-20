@@ -1,1 +1,0 @@
-{"type": "RECORD", "record": {"stream": "airbyte_acceptable_table", "emitted_at": 1664705198575, "data": { "customer_key": "cus_RLy78bKgtWrQXH", "amount": 0, "currency": "EUR", "metadata": { "key": "test" }}}}

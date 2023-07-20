@@ -9,7 +9,11 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
+from logging import getLogger
+
 from destination_partnerstack.client import PartnerStackClient
+
+logger = getLogger("airbyte")
 
 
 class DestinationPartnerstack(Destination):
@@ -21,7 +25,9 @@ class DestinationPartnerstack(Destination):
             if message.type == Type.STATE:
                 yield message
             elif message.type == Type.RECORD:
-                client.write(message.record.data)
+                response = client.write(message.record.data)
+                if response.status_code != 200:
+                    logger.error({"record": message.record.data, "error": response.json()})
             else:
                 continue
 
