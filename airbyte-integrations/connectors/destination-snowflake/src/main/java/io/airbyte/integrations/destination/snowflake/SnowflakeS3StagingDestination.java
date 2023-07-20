@@ -146,7 +146,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
             CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
             config,
             catalog,
-            isPurgeStagingData(config));  }
+            isPurgeStagingData(config));
+  }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");

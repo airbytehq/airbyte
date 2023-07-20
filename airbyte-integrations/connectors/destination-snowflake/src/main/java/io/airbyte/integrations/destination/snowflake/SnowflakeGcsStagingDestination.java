@@ -155,5 +155,6 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
             CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
             config,
             catalog,
-            isPurgeStagingData(config));  }
+            isPurgeStagingData(config));
+  }
 }
