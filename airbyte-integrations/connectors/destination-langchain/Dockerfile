@@ -13,7 +13,9 @@ COPY setup.py ./
 
 RUN pip install --upgrade pip
 
-## Workaround for https://github.com/yaml/pyyaml/issues/601
+# This is required because the current connector dependency is not compatible with the CDK version
+# An older CDK version will be used, which depends on pyYAML 5.4, for which we need to pin Cython to <3.0
+# As of today the CDK version that satisfies the main dependency requirements, is 0.1.80 ...
 RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolation
 
 # install necessary packages to a temporary folder
