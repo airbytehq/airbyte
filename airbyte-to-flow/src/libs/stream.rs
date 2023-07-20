@@ -50,7 +50,8 @@ pub fn stream_airbyte_responses(
                     log: Some(Log {
                         level: LogLevel::Debug,
                         message: format!("Encountered error while trying to parse ATF Message: {:?} in line {:?}", e, line)
-                    })
+                    }),
+                    trace: None,
                 }
             }
         };
@@ -62,10 +63,13 @@ pub fn stream_airbyte_responses(
         Ok(Some(message))
     })
     .try_filter_map(|message| async {
-        // For AirbyteLogMessages, log them and then filter them out
+        // For logs and traces, log them and then filter them out
         // so that we don't have to handle them elsewhere
         if let Some(log) = message.log {
             log.log();
+            Ok(None)
+        } else if let Some(trace) = message.trace {
+            trace.trace();
             Ok(None)
         } else {
             Ok(Some(message))
@@ -164,6 +168,7 @@ mod test {
             record: None,
             spec: None,
             catalog: None,
+            trace: None,
             connection_status: Some(ConnectionStatus {
                 status: Status::Succeeded,
                 message: Some("test".to_string()),
@@ -193,6 +198,7 @@ mod test {
             record: None,
             spec: None,
             catalog: None,
+            trace: None,
             connection_status: Some(ConnectionStatus {
                 status: Status::Succeeded,
                 message: Some("test".to_string()),
@@ -222,6 +228,7 @@ mod test {
             record: None,
             spec: None,
             catalog: None,
+            trace: None,
             connection_status: Some(ConnectionStatus {
                 status: Status::Succeeded,
                 message: Some("test".to_string()),

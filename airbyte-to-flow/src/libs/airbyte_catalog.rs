@@ -169,6 +169,21 @@ impl Log {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Trace {
+    #[serde(rename="type")]
+    pub type_: String,
+
+    #[serde(flatten)]
+    extra: HashMap<String, serde_json::Value>,
+}
+impl Trace {
+    pub fn trace(&self) {
+        tracing::debug!("{}: {:?}", self.type_, self.extra);
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub struct State {
@@ -213,6 +228,7 @@ pub enum MessageType {
     Record,
     State,
     Log,
+    Trace,
     Spec,
     ConnectionStatus,
     Catalog,
@@ -225,6 +241,7 @@ pub struct Message {
     pub message_type: MessageType,
 
     pub log: Option<Log>,
+    pub trace: Option<Trace>,
     pub state: Option<State>,
     pub record: Option<Record>,
     pub connection_status: Option<ConnectionStatus>,
