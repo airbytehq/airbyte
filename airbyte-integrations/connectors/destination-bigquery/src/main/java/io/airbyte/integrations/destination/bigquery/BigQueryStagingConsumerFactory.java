@@ -169,9 +169,8 @@ public class BigQueryStagingConsumerFactory {
           // TODO: this might need special handling during the migration
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
-
-        typerDeduper.prepareFinalTables();
       }
+      typerDeduper.prepareFinalTables();
       LOGGER.info("Preparing airbyte_raw tables in destination completed.");
     };
   }
