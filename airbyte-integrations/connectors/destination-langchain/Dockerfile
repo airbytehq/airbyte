@@ -8,7 +8,7 @@ WORKDIR /airbyte/integration_code
 
 RUN apt-get update \
     && pip install --upgrade pip \
-    && apt-get install -y --no-cache build-essential cmake g++ libffi-dev libstdc++6
+    && apt-get install -y build-essential cmake g++ libffi-dev libstdc++6
 
 COPY setup.py ./
 
@@ -33,7 +33,7 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+RUN apt-get install bash
 
 # copy payload code only
 COPY main.py ./
