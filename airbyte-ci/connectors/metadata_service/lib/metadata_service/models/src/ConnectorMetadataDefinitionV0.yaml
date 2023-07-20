@@ -25,6 +25,7 @@ properties:
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
+    additionalProperties: false
     properties:
       name:
         type: string
