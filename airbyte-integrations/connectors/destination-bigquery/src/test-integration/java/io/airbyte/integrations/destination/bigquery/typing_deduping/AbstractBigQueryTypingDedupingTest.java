@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.QueryJobConfiguration;
@@ -23,7 +24,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   @Override
   public JsonNode generateConfig() throws IOException {
     final String datasetId = "typing_deduping_default_dataset" + getUniqueSuffix();
-    JsonNode config = BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId);
+    final String stagingPath = "test_path" + getUniqueSuffix();
+    final ObjectNode config = BigQueryDestinationTestUtils.createConfig(Path.of(getConfigPath()), datasetId, stagingPath);
     bq = BigQueryDestination.getBigQuery(config);
     return config;
   }
