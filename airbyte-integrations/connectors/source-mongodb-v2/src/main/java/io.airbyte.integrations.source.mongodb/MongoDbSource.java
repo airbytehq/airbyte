@@ -46,7 +46,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
@@ -267,10 +266,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public void close() {}
 
   private void recordStatistics(final MongoDatabase database, final String collectionName) {
-    final Map<String,Object> data = new HashMap<>();
+    final Map<String, Object> data = new HashMap<>();
     data.putAll(database.getCollectionStats(collectionName));
     data.put("version", database.getServerVersion());
     data.put("type", database.getServerType());
     LOGGER.info("{}", Jsons.serialize(data));
   }
+
 }

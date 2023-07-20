@@ -133,10 +133,10 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     }
   }
 
-  public Map<String,Object> getCollectionStats(final String collectionName) {
+  public Map<String, Object> getCollectionStats(final String collectionName) {
     final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
     return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
-            COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+        COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
   }
 
   public String getServerType() {

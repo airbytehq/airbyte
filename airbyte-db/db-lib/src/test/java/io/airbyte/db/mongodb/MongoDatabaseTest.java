@@ -16,6 +16,7 @@ import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.connection.ClusterType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import com.mongodb.connection.ClusterType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
@@ -151,7 +150,7 @@ class MongoDatabaseTest {
 
   @Test
   void testGetCollectionStatistics() {
-    final Map<String,Object> statistics = mongoDatabase.getCollectionStats(COLLECTION_NAME);
+    final Map<String, Object> statistics = mongoDatabase.getCollectionStats(COLLECTION_NAME);
     assertEquals(DATASET_SIZE, statistics.get(COLLECTION_COUNT_KEY));
     assertEquals(4096, statistics.get(COLLECTION_STORAGE_SIZE_KEY));
   }
@@ -165,4 +164,5 @@ class MongoDatabaseTest {
   void testGetServerVersion() {
     assertEquals(MONGO_DB_VERSION, mongoDatabase.getServerVersion());
   }
+
 }
