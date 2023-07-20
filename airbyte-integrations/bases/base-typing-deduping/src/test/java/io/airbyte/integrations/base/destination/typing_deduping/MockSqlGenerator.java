@@ -43,12 +43,12 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(String finalSuffix, StreamConfig stream) {
+  public String updateTable(StreamConfig stream, String finalSuffix) {
     return "UPDATE TABLE " + stream.id().finalTableId(finalSuffix, "");
   }
 
   @Override
-  public String overwriteFinalTable(String finalSuffix, StreamId stream) {
+  public String overwriteFinalTable(StreamId stream, String finalSuffix) {
     return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId(finalSuffix, "");
   }
 

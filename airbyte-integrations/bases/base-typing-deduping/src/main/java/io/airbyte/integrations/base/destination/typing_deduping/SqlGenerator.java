@@ -64,10 +64,10 @@ public interface SqlGenerator<DialectTableDefinition> {
    * isolation. However, this interface only requires a single mega-method.
    *
    * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
-   *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
-   *        sync to a temp table and then swap it into the final table at the end.
+   *                    final table directly. Useful for full refresh overwrite syncs, where we write the entire
+   *                    sync to a temp table and then swap it into the final table at the end.
    */
-  String updateTable(String finalSuffix, final StreamConfig stream);
+  String updateTable(final StreamConfig stream, String finalSuffix);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
@@ -75,6 +75,6 @@ public interface SqlGenerator<DialectTableDefinition> {
    * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
    * non-empty. Callers are responsible for verifying those are true.
    */
-  String overwriteFinalTable(String finalSuffix, StreamId stream);
+  String overwriteFinalTable(StreamId stream, String finalSuffix);
 
 }

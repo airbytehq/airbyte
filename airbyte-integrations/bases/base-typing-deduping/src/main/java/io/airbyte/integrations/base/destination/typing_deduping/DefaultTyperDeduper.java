@@ -110,7 +110,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     String suffix;
     suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), NO_SUFFIX);
-    final String sql = sqlGenerator.updateTable(suffix, streamConfig);
+    final String sql = sqlGenerator.updateTable(streamConfig, suffix);
     destinationHandler.execute(sql);
   }
 
@@ -126,7 +126,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         StreamId streamId = streamConfig.id();
         String finalSuffix = overwriteStreamsWithTmpTable.get(streamId);
         if (finalSuffix != null && !finalSuffix.isEmpty()) {
-          final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(finalSuffix, streamId);
+          final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
           LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
           destinationHandler.execute(overwriteFinalTable);
         }

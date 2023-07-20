@@ -395,7 +395,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
+    final String sql = GENERATOR.updateTable(incrementalDedupStreamConfig(), "_foo");
     destinationHandler.execute(sql);
 
     final TableResult finalTable = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build());
@@ -489,7 +489,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", incrementalDedupStreamConfig());
+    final String sql = GENERATOR.updateTable(incrementalDedupStreamConfig(), "");
     destinationHandler.execute(sql);
 
     // TODO
@@ -517,7 +517,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", incrementalAppendStreamConfig());
+    final String sql = GENERATOR.updateTable(incrementalAppendStreamConfig(), "_foo");
     destinationHandler.execute(sql);
 
     // TODO
@@ -551,7 +551,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", fullRefreshAppendStreamConfig());
+    final String sql = GENERATOR.updateTable(fullRefreshAppendStreamConfig(), "_foo");
     destinationHandler.execute(sql);
 
     // TODO
@@ -568,7 +568,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public void testRenameFinalTable() throws InterruptedException {
     createFinalTable("_tmp");
 
-    final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig().id());
+    final String sql = GENERATOR.overwriteFinalTable(fullRefreshOverwriteStreamConfig().id(), "_tmp");
     destinationHandler.execute(sql);
 
     final Table table = bq.getTable(testDataset, "users_final");
@@ -589,7 +589,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
     // TODO better asserts
@@ -633,7 +633,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
@@ -677,7 +677,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
@@ -724,7 +724,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
     // Run the second round of typing and deduping. This should do nothing to the final table, because
     // the delete is outdated.
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();

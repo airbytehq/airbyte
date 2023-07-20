@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -317,7 +316,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public List<String> softReset(final StreamConfig stream) {
     String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     String clearLoadedAt = clearLoadedAt(stream.id());
-    String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
+    String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX);
     String overwriteFinalTable = overwriteFinalTableStatement(stream.id(), SOFT_RESET_SUFFIX);
     return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -330,7 +329,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final String finalSuffix, final StreamConfig stream) {
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
     String validatePrimaryKeys = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
@@ -565,7 +564,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String overwriteFinalTable(final String finalSuffix, final StreamId streamId) {
+  public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return overwriteFinalTableStatement(streamId, finalSuffix);
   }
 
