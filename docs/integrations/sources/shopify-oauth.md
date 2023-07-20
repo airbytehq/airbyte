@@ -151,4 +151,4 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| 0.1.0   | 2023-07-20 | [___](https://github.com/airbytehq/airbyte/pull/___) | Initial OAuth version connector release |
+| 0.1.0   | 2023-07-20 | [28507](https://github.com/airbytehq/airbyte/pull/28507) | Initial OAuth version connector release |
