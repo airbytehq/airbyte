@@ -7,8 +7,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import asyncer
-from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import get_exec_result, secret_host_variable, with_exit_code
 from dagger import Client, File, Secret
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
@@ -28,16 +27,13 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
     """
     s3_uri = f"s3://{bucket}/{key}"
     file_to_upload: File = dagger_client.host().directory(".", include=[str(file_to_upload_path)]).file(str(file_to_upload_path))
-    aws_access_key_id: Secret = dagger_client.host().env_variable("AWS_ACCESS_KEY_ID").secret()
-    aws_secret_access_key: Secret = dagger_client.host().env_variable("AWS_SECRET_ACCESS_KEY").secret()
-    aws_region: Secret = dagger_client.host().env_variable("AWS_DEFAULT_REGION").secret()
     return await with_exit_code(
         dagger_client.container()
         .from_("amazon/aws-cli:latest")
         .with_file(str(file_to_upload_path), file_to_upload)
-        .with_secret_variable("AWS_ACCESS_KEY_ID", aws_access_key_id)
-        .with_secret_variable("AWS_SECRET_ACCESS_KEY", aws_secret_access_key)
-        .with_secret_variable("AWS_DEFAULT_REGION", aws_region)
+        .with_(secret_host_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
+        .with_(secret_host_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
+        .with_(secret_host_variable(dagger_client, "AWS_DEFAULT_REGION"))
         .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri])
     )
 
@@ -86,9 +82,4 @@ async def upload_to_gcs(
         gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "activate-service-account", "--key-file", "credentials.json"])
 
     gcloud_cp_container = gcloud_auth_container.with_exec(cp_command)
-
-    async with asyncer.create_task_group() as task_group:
-        soon_exit_code = task_group.soonify(with_exit_code)(gcloud_cp_container)
-        soon_stderr = task_group.soonify(with_stderr)(gcloud_cp_container)
-        soon_stdout = task_group.soonify(with_stdout)(gcloud_cp_container)
-    return soon_exit_code.value, soon_stdout.value, soon_stderr.value
+    return await get_exec_result(gcloud_cp_container)
