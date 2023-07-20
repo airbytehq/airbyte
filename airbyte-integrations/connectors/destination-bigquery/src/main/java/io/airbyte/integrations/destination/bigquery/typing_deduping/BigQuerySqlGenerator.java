@@ -14,22 +14,20 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -38,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -99,8 +96,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       return StandardSQLTypeName.JSON;
     } else if (type instanceof UnsupportedOneOf) {
       return StandardSQLTypeName.JSON;
-    } else if (type instanceof final OneOf o) {
-      final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
+    } else if (type instanceof final Union u) {
+      final AirbyteType typeWithPrecedence = u.chooseType();
       final StandardSQLTypeName dialectType;
       if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
         dialectType = StandardSQLTypeName.JSON;
@@ -115,9 +112,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
-    if (airbyteType instanceof OneOf o) {
-      // This is guaranteed to not be a OneOf, so we won't recurse infinitely
-      final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
+    if (airbyteType instanceof final Union u) {
+      // This is guaranteed to not be a Union, so we won't recurse infinitely
+      final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType);
     } else if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
@@ -160,7 +157,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   // TODO maybe make this a BiMap and elevate this method and its inverse (toDestinationSQLType?) to the SQLGenerator?
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      // TODO doublecheck these
       case STRING -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
@@ -201,7 +197,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private List<String> clusteringColumns(final StreamConfig stream) {
-    List<String> clusterColumns = new ArrayList<>();
+    final List<String> clusterColumns = new ArrayList<>();
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing deduping, therefore we have a primary key.
       // Cluster on all the PK columns
@@ -230,7 +226,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
-    if (existingTable instanceof StandardTableDefinition standardExistingTable) {
+    if (existingTable instanceof final StandardTableDefinition standardExistingTable) {
       tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
@@ -246,14 +242,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  public boolean clusteringMatches(StreamConfig stream, StandardTableDefinition existingTable) {
+  public boolean clusteringMatches(final StreamConfig stream, final StandardTableDefinition existingTable) {
     return existingTable.getClustering() == null ? false : containsAllIgnoreCase(
             existingTable.getClustering().getFields().stream().collect(Collectors.toSet()),
             clusteringColumns(stream));
   }
 
   @VisibleForTesting
-  public boolean partitioningMatches(StandardTableDefinition existingTable) {
+  public boolean partitioningMatches(final StandardTableDefinition existingTable) {
     return existingTable.getTimePartitioning() == null ? false : existingTable.getTimePartitioning()
             .getField()
             .equalsIgnoreCase("_airbyte_extracted_at") &&
@@ -308,21 +304,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * @return whether all the {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS} are present
    */
   @VisibleForTesting
-  public static boolean schemaContainAllFinalTableV2AirbyteColumns(Collection<String> columnNames) {
+  public static boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
     return FINAL_TABLE_AIRBYTE_COLUMNS.stream()
             .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
 
   @Override
   public List<String> softReset(final StreamConfig stream) {
-    String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
-    String clearLoadedAt = clearLoadedAt(stream.id());
-    String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
-    String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    final String clearLoadedAt = clearLoadedAt(stream.id());
+    final String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
+    final String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
     return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
-  private String clearLoadedAt(StreamId streamId) {
+  private String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
             .replace("""
             UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
@@ -510,7 +506,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
@@ -573,7 +569,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
   }
 
-  private String overwriteFinalTableStatement(StreamConfig stream, String finalSuffix) {
+  private String overwriteFinalTableStatement(final StreamConfig stream, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
             "final_table_id", stream.id().finalTableId(QUOTE),
             "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
