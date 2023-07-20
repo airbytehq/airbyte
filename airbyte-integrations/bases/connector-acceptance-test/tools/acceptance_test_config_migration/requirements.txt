@@ -35,7 +35,7 @@ pprintpp==0.4.0
 py==1.11.0
 pyaml==21.10.1
 pydantic==1.9.2
-Pygments==2.13.0
+Pygments==2.15.0
 pyparsing==3.0.9
 pyrepl==0.9.0
 pyrsistent==0.19.2
