@@ -23,6 +23,8 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,4 +103,33 @@ public class XminCtidUtils {
 
   }
 
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+    final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
+        .ctidStreams()
+        .streamsForCtidSync().stream().filter(c -> Objects.equals(
+            streamPair,
+            new AirbyteStreamNameNamespacePair(c.getStream().getName(), c.getStream().getNamespace())))
+        .findFirst();
+    foundStream.ifPresent(c -> {
+      categorisedStreams.remainingStreams().streamsForXminSync().add(c);
+      categorisedStreams.ctidStreams().streamsForCtidSync().remove(c);
+      LOGGER.info("Reclassified {}.{} as xmin stream", c.getStream().getNamespace(), c.getStream().getName());
+    });
+
+    // Should there ever be a matching ctid state when ctid is not possible?
+    final Optional<AirbyteStateMessage> foundStateMessage = categorisedStreams
+        .ctidStreams()
+        .statesFromCtidSync().stream().filter(m -> Objects.equals(streamPair,
+            new AirbyteStreamNameNamespacePair(
+                m.getStream().getStreamDescriptor().getName(),
+                m.getStream().getStreamDescriptor().getNamespace())))
+        .findFirst();
+    foundStateMessage.ifPresent(m -> {
+      categorisedStreams.remainingStreams().statesFromXminSync().add(m);
+      categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
+    });
+  }
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+    streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
+  }
 }
