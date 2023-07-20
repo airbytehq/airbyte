@@ -191,7 +191,8 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         if not self.cursor_field:
             yield from records
         else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
+            # For very 1st sync since we have no state present we need to filter records based on start_date
+            cursor_date = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
             for record in records:
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
@@ -424,9 +425,9 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return params
 
 
-class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
-    Endpoints provide a cursor pagination and sorting mechanism
+    TODO: Migrate incremental streams to SourceZendeskSupportPaginationStream also and see if we can remove this class.
     """
 
     cursor_field = "updated_at"
@@ -436,9 +437,9 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """
-        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        Will allow the connector send state messages more frequently and not only at the end of the sync.
         """
-        return 1000
+        return self.page_size
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
@@ -473,7 +474,68 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
+class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+    """
+    Only used by streams supporting cursor pagination
+    """
+
+    cursor_field = "updated_at"
+    next_page_field = "next_page"
+    prev_start_time = None
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        Will allow the connector send state messages more frequently and not only at the end of the sync.
+        """
+        return self.page_size
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # try to save maximum value of a cursor field
+        old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
+        new_value = str((latest_record or {}).get(self.cursor_field, ""))
+        return {self.cursor_field: max(new_value, old_value)}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
+        """
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
+        """
+        meta = response.json().get("meta", {})
+        return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
+
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+        """
+        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """
+        state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
+        return calendar.timegm(pendulum.parse(state).utctimetuple())
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        """
+        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
+        """
+        params = {
+            # Latest value of state is used as start_time for making api call at the beginning of every sync run where we don't have a next-page token
+            # start_time Not necessarily supported by all streams
+            "start_time": parsed_state,
+            "page[size]": self.page_size,
+            "sort_by": self.cursor_field,
+            "sort_order": "asc",
+        }
+        if next_page_token:
+            params.pop("start_time", None)
+            params.update(next_page_token)
+        return params
+
+
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportOffsetPaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
@@ -521,6 +583,7 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
             yield record
 
 
+ALL_EVENTS = "all"
 class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExportStream):
     """Incremental Export from TicketEvents stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
@@ -545,7 +608,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
             for event in record.get(self.response_target_entity, []):
-                if event.get("event_type") == self.event_type:
+                if self.event_type == ALL_EVENTS or event.get("event_type") == self.event_type:
                     if self.update_event_from_record:
                         for prop in self.list_entities_from_event:
                             event[prop] = record.get(prop)
@@ -554,29 +617,13 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
 
 class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        meta = response.json().get("meta", {})
-        return meta.get("after_cursor") if meta.get("has_more", False) else None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {
-            "start_time": self.check_stream_state(stream_state),
-            "page[size]": self.page_size,
-        }
-        if next_page_token:
-            params.pop("start_time", None)
-            params["page[after]"] = next_page_token
-        return params
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class AuditLogs(SourceZendeskSupportCursorPaginationStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
-    # can request a maximum of 1,00 results
-    page_size = 100
     # audit_logs doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -606,6 +653,36 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
 
 
+class TicketEvents(SourceZendeskSupportTicketEventsExportStream):
+    """
+    {
+            "child_events": [
+                {
+                    "id": 378467814112,
+                    "via": "Chat",
+                    "via_reference_id": null,
+                    "comment_present": true,
+                    "comment_public": false,
+                    "event_type": "Comment"
+                }
+                ...
+            ],
+            "id": 378467814092,
+            "ticket_id": 522,
+            "timestamp": 1522700679,
+            "created_at": "2018-04-02T20:24:39Z",
+            "updater_id": 361993150032,
+            "via": "Chat",
+            "event_type": "Audit"
+            ...
+    }
+    Sample ticket event response. We are emitting each child event as a separate record with some properties from parent ticket event like ticket_id, timestamp, created_at
+    """
+    cursor_field = "created_at"
+    list_entities_from_event = ["ticket_id", "timestamp", cursor_field]
+    event_type = ALL_EVENTS
+
+
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
     Fetch the TicketComments incrementaly from TicketEvents Export stream
@@ -629,29 +706,25 @@ class Groups(SourceZendeskSupportStream):
 
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
-        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
-        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
-        if next_page_token:
-            params["page"] = next_page_token
-        return params
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """
     SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
+    # API accepts start_time param. Incremental sync supported natively
 
+
+class TicketFields(SourceZendeskSupportStream):
+    """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
+
+
+class TicketForms(SourceZendeskSupportOffsetPaginationStream):
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
+
+    # next_page field from API response has page number instead of start_time being expected in parent class
+    # hence we need to override below methods
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
@@ -661,7 +734,7 @@ class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        params = {"page": 1, "per_page": self.page_size, "sort_by": self.cursor_field, "sort_order": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
@@ -669,49 +742,34 @@ class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
         return params
 
 
-class TicketFields(SourceZendeskSupportStream):
-    """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
-
-
-class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
-
-
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
-        """
-        meta = response.json().get("meta", {})
-        return meta.get("after_cursor") if meta.get("has_more", False) else None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        """
-        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
-        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
-        """
-        params = {
-            "start_time": self.check_stream_state(stream_state),
-            "page[size]": self.page_size,
-        }
-        if next_page_token:
-            # when cursor pagination is used, we can pass only `after` and `page size` params,
-            # other params should be omitted.
-            params.pop("start_time", None)
-            params["page[after]"] = next_page_token
-        return params
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
     """
+    # API accepts start_time param. Natively supports incremental sync
 
     cursor_field = "time"
+
+    # Expects start_time even when page[after] param is passed
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {
+            "start_time": parsed_state,
+            "page[size]": self.page_size,
+            "sort_by": self.cursor_field,
+            "sort_order": "asc",
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def path(self, **kwargs):
         return "incremental/ticket_metric_events"
@@ -723,9 +781,8 @@ class Macros(SourceZendeskSupportStream):
 
 class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
-    # can request a maximum of 1,000 results
-    page_size = 1000
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -734,18 +791,39 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size}
 
+class Triggers(SourceZendeskSupportCursorPaginationStream):
+    """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-triggers"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
+
+    # sort_by not supported as request param when doing cursor pagination for this stream (returns DatabaseError)
+    # so in this case incremental syncs for triggers cannot update state at regular intervals
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {
+            "start_time": parsed_state,
+            "page[size]": self.page_size,
+        }
         if next_page_token:
-            params["cursor"] = next_page_token
+            params.update(next_page_token)
         return params
+    
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return None
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        return response.json().get("before_cursor")
+
+class Views(SourceZendeskSupportCursorPaginationStream):
+    """Views stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/views/#list-views"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
+
+
+class Automations(SourceZendeskSupportCursorPaginationStream):
+    """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
+    # API does not accept start_time param. Uses client side filtering for incremental sync
 
 
 class Tags(SourceZendeskSupportFullRefreshStream):

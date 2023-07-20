@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Triggers Schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "actions": {
+      "items": {
+        "properties": {
+          "field": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": true
+      },
+      "type": ["null", "array"]
+    },
+    "conditions": {
+      "properties": {
+        "all": {
+          "items": {
+            "properties": {
+              "field": {
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        },
+        "any": {
+          "items": {
+            "properties": {
+              "field": {
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "number"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
+    },
+    "category_id": {
+      "type": ["null", "number"]
+    }
+  }
+}
