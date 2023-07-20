@@ -47,7 +47,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     try:
         gradle_file_content = await connector_dir.file("build.gradle").contents()
     except DaggerError:
-        context.logger.warn(f"Could not find build.gradle file in {connector_dir}. Skipping patching.")
+        context.logger.info("Could not find build.gradle file in the connector directory. Skipping patching.")
         return connector_dir
 
     context.logger.warn("Patching build.gradle file to remove normalization build.")
