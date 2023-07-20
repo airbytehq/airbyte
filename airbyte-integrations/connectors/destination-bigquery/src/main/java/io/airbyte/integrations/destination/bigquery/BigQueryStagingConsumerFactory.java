@@ -171,7 +171,7 @@ public class BigQueryStagingConsumerFactory {
         }
       }
       typerDeduper.prepareFinalTables();
-      LOGGER.info("Preparing airbyte_raw tables in destination completed.");
+      LOGGER.info("Preparing tables in destination completed.");
     };
   }
 
