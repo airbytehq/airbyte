@@ -67,8 +67,6 @@ public class BigQueryStagingConsumerFactory {
         tmpTableNameTransformer,
         targetTableNameTransformer);
 
-    final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> baseTypeAndDedupeConsumer =
-        (streamId) -> typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
     CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
 
@@ -79,7 +77,7 @@ public class BigQueryStagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs, typerDeduper, baseTypeAndDedupeConsumer),
+        onCloseFunction(bigQueryGcsOperations, writeConfigs, typerDeduper),
         catalog,
         json -> true,
         defaultNamespace);
@@ -223,12 +221,10 @@ public class BigQueryStagingConsumerFactory {
    *
    * @param bigQueryGcsOperations collection of staging operations
    * @param writeConfigs          configuration settings used to describe how to write data and where it exists
-   * @param finalTypeAndDedupeConsumer
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                          final TyperDeduper typerDeduper,
-                                          final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> finalTypeAndDedupeConsumer) {
+                                          final TyperDeduper typerDeduper) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
@@ -238,7 +234,7 @@ public class BigQueryStagingConsumerFactory {
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        finalTypeAndDedupeConsumer.accept(entry.getKey());
+        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();
