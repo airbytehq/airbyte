@@ -24,7 +24,7 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -512,8 +512,8 @@ def with_gradle(
 
     if sources_to_include:
         include += sources_to_include
-    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
@@ -555,7 +555,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
     image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
     return image_sha
 
@@ -756,8 +756,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(["sh", "-c", "mv * .."])
         .with_workdir("/airbyte")
         .with_exec(["rm", "-rf", "airbyte_normalization"])
-        .with_workdir("/airbyte/base_python_structs")
-        .with_exec(["pip3", "install", "."])
+        # We don't install the airbyte-protocol legacy package as its not used anymore and not compatible with Cython 3.x
+        # .with_workdir("/airbyte/base_python_structs")
+        # .with_exec(["pip3", "install", "--force-reinstall", "Cython<3.0", ".",])
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
