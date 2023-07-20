@@ -126,7 +126,7 @@ class SourceSurveycto(AbstractSource):
         if response.status_code==200:
             return True, None
         else:
-            return False, None
+            return False, "Connection failed check for valid Username ,password, servername or form id"
         
         
     def generate_streams(self, config: str) -> List[Stream]:
