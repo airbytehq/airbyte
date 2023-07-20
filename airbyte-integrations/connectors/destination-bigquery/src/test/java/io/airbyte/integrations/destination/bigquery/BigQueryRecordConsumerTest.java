@@ -10,8 +10,8 @@ import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -46,7 +46,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         uploaderMap,
         outputRecordCollector,
         "test-dataset-id",
-        new TyperDeduper<>(mock(BigQuerySqlGenerator.class), mock(BigQueryDestinationHandler.class), parsedCatalog),
+        new DefaultTyperDeduper<>(mock(BigQuerySqlGenerator.class), mock(BigQueryDestinationHandler.class), parsedCatalog),
         parsedCatalog);
   }
 

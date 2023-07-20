@@ -16,12 +16,13 @@ import org.junit.jupiter.api.Test;
 
 public class TyperDeduperTest {
 
+  private MockSqlGenerator sqlGenerator;
   private DestinationHandler<String> destinationHandler;
   private TyperDeduper typerDeduper;
 
   @BeforeEach
   void setup() {
-    SqlGenerator<String> sqlGenerator = new MockSqlGenerator();
+    sqlGenerator = new MockSqlGenerator();
     destinationHandler = mock(DestinationHandler.class);
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
@@ -86,9 +87,9 @@ public class TyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
 
     typerDeduper.prepareFinalTables();
-    verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
-    verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
-    verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("SOFT RESET overwrite_ns.overwrite_stream");
+    verify(destinationHandler).execute("SOFT RESET append_ns.append_stream");
+    verify(destinationHandler).execute("SOFT RESET dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -106,6 +107,19 @@ public class TyperDeduperTest {
   }
 
   /**
+   * When there's an existing empty table with the right schema, we don't need to do anything during setup.
+   */
+  @Test
+  void existingEmptyTableMatchingSchema() throws Exception {
+    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
+    sqlGenerator.setExistingSchemaMatch(true);
+
+    typerDeduper.prepareFinalTables();
+    verify(destinationHandler, never()).execute(any());
+  }
+
+  /**
    * When there's an existing table nonempty table, we should alter it. For the OVERWRITE stream, we
    * also need to write to a tmp table, and overwrite the real table at the end of the sync.
    */
@@ -117,10 +131,10 @@ public class TyperDeduperTest {
     typerDeduper.prepareFinalTables();
     // NB: We only create one tmp table here.
     // Also, we need to alter the existing _real_ table, not the tmp table!
-    verify(destinationHandler).execute("ALTER TABLE overwrite_ns.overwrite_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("SOFT RESET overwrite_ns.overwrite_stream");
     verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    verify(destinationHandler).execute("ALTER TABLE append_ns.append_stream WITH EXISTING foo");
-    verify(destinationHandler).execute("ALTER TABLE dedup_ns.dedup_stream WITH EXISTING foo");
+    verify(destinationHandler).execute("SOFT RESET append_ns.append_stream");
+    verify(destinationHandler).execute("SOFT RESET dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -136,6 +150,23 @@ public class TyperDeduperTest {
 
     typerDeduper.commitFinalTables();
     verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
+    verifyNoMoreInteractions(ignoreStubs(destinationHandler));
+  }
+
+  /**
+   * When there's an existing table nonempty table with the right schema, we don't need to modify it, but OVERWRITE
+   * streams still need to create a tmp table.
+   */
+  @Test
+  void existingNonemptyTableMatchingSchema() throws Exception {
+    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
+    sqlGenerator.setExistingSchemaMatch(true);
+
+    typerDeduper.prepareFinalTables();
+    // NB: We only create one tmp table here.
+    // Also, we need to alter the existing _real_ table, not the tmp table!
+    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 

@@ -4,10 +4,18 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.util.List;
+
 /**
  * Basic SqlGenerator mock. See {@link TyperDeduperTest} for example usage.
  */
 class MockSqlGenerator implements SqlGenerator<String> {
+
+  private boolean existingSchemaMatch = false;
+
+  public void setExistingSchemaMatch(boolean existingSchemaMatch) {
+    this.existingSchemaMatch = existingSchemaMatch;
+  }
 
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
@@ -25,8 +33,13 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String alterTable(StreamConfig stream, String existingTable) {
-    return "ALTER TABLE " + stream.id().finalTableId("") + " WITH EXISTING " + existingTable;
+  public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, String existingTable) throws TableNotMigratedException {
+    return existingSchemaMatch;
+  }
+
+  @Override
+  public List<String> softReset(StreamConfig stream) {
+    return List.of("SOFT RESET " + stream.id().finalTableId(""));
   }
 
   @Override

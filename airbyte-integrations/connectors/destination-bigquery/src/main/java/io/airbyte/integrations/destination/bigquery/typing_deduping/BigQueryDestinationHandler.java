@@ -7,16 +7,13 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
-import com.google.cloud.bigquery.JobException;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatistics;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.util.Comparator;
@@ -98,54 +95,6 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
                   childJobStats.getEndTime() - childJobStats.getStartTime());
             }
           });
-    }
-  }
-
-  /**
-   * Ensures that the final table has a schema which is compatible with the incoming stream.
-   * @param sqlGenerator A bigquery sql generator to create sql statements
-   * @param stream the incoming stream
-   * @param existingTable the existing final table
-   */
-  public void prepareFinalTable(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream, final TableDefinition existingTable) {
-    if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable)) {
-      attemptSoftReset(sqlGenerator, stream);
-    } else {
-      LOGGER.info("Existing Schema matches expected schema, no alterations needed");
-    }
-  }
-
-  /**
-   * Attempt to rebuild the final table from the raw table without recopying over data (soft-reset)
-   * @param sqlGenerator A bigquery sql generator to create sql statements
-   * @param stream the incoming stream
-   */
-  public void attemptSoftReset(final BigQuerySqlGenerator sqlGenerator, final StreamConfig stream) {
-    LOGGER.info("Attempting Soft Reset for Stream {}", stream.id().finalName());
-    sqlGenerator.softReset(stream).forEach(sql -> {
-      try {
-        execute(sql);
-      } catch (InterruptedException | JobException ex) {
-        throw new RuntimeException(ex);
-      }
-    });
-  }
-
-  /**
-   * Execute the SQL statements which types rows from the raw table into the final table
-   * and de-dupes both tables
-   * @param stream the raw table + final table to type and de-dupe
-   * @param sqlGenerator the sql generator to create the SQL statements
-   * @param suffix if we're using a temp table
-   * @throws InterruptedException when BigQuery cannot complete a job
-   */
-  public void doTypingAndDeduping(final StreamConfig stream,
-                                   final BigQuerySqlGenerator sqlGenerator,
-                                   final String suffix) throws InterruptedException {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      LOGGER.info("Starting Type and Dedupe Operation");
-      final String sql = sqlGenerator.updateTable(suffix, stream);
-      this.execute(sql);
     }
   }
 
