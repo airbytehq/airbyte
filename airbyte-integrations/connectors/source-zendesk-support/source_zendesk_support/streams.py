@@ -5,7 +5,6 @@
 import calendar
 import functools
 import logging
-import math
 import re
 import time
 from abc import ABC
@@ -438,7 +437,7 @@ class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefresh
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """
-        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        Will allow the connector send state messages more frequently and not only at the end of the sync.
         """
         return self.page_size
 
@@ -477,7 +476,7 @@ class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefresh
 
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
-    Only used by streams modified by rudderstack
+    Only used by streams supporting cursor pagination
     """
 
     cursor_field = "updated_at"
@@ -487,7 +486,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """
-        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        Will allow the connector send state messages more frequently and not only at the end of the sync.
         """
         return self.page_size
 
@@ -524,6 +523,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         """
         params = {
             # Latest value of state is used as start_time for making api call at the beginning of every sync run where we don't have a next-page token
+            # start_time Not necessarily supported by all streams
             "start_time": parsed_state,
             "page[size]": self.page_size,
             "sort_by": self.cursor_field,
@@ -813,7 +813,7 @@ class Triggers(SourceZendeskSupportCursorPaginationStream):
     
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        return math.inf
+        return None
 
 
 class Views(SourceZendeskSupportCursorPaginationStream):
