@@ -54,7 +54,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
 
     Job job = bq.create(JobInfo.of(QueryJobConfiguration.newBuilder(sql).build()));
     job = job.waitFor();
-    // waitFor() seems to throw an exception, but javadoc says we're supposed to handle this case
+    // waitFor() seems to throw an exception if the query failed, but javadoc says we're supposed to handle this case
     if (job.getStatus().getError() != null) {
       throw new RuntimeException(job.getStatus().getError().toString());
     }
