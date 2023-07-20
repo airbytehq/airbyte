@@ -4,18 +4,14 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType.*;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.*;
 import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.fromJsonSchema;
-import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.chooseUnionType;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -443,7 +439,9 @@ public class AirbyteTypeTest {
     unionToType.put(new Union(ImmutableList.of(INTEGER, BOOLEAN, NUMBER)), NUMBER);
     unionToType.put(new Union(ImmutableList.of(BOOLEAN, INTEGER)), INTEGER);
 
-    unionToType.forEach((u, t) -> assertEquals(t, chooseUnionType(u)));
+    assertAll(
+        () -> unionToType.forEach((u, t) -> assertEquals(t, u.chooseType()))
+    );
   }
 
   @Test

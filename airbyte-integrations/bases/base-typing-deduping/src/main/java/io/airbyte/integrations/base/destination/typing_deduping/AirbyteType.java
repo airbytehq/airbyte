@@ -4,16 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.getAirbyteProtocolType;
-import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils.nodeMatches;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Union;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
+import com.fasterxml.jackson.databind.node.TextNode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,UnsupportedOneOf,Union {
 
-  Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
+  Logger LOGGER = LoggerFactory.getLogger(AirbyteType.class);
 
   /**
    * The most common call pattern is probably to use this method on the stream schema, verify that
@@ -54,11 +47,18 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
         // This is for backwards-compatibility with legacy normalization.
         return getStruct(schema);
       }
-      return getAirbyteProtocolType(schema);
+      return AirbyteProtocolType.fromJson(schema);
     } catch (final Exception e) {
       LOGGER.error("Exception parsing JSON schema {}: {}; returning UNKNOWN.", schema, e);
       return AirbyteProtocolType.UNKNOWN;
     }
+  }
+
+  static boolean nodeMatches(final JsonNode node, final String value) {
+    if (node == null || !node.isTextual()) {
+      return false;
+    }
+    return node.equals(TextNode.valueOf(value));
   }
 
   private static Struct getStruct(final JsonNode schema) {
@@ -100,7 +100,7 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
       } else if (typeOptions.get(0).equals("array")) {
         return getArray(schema);
       } else {
-        return getAirbyteProtocolType(getTrimmedJsonSchema(schema, typeOptions.get(0)));
+        return AirbyteProtocolType.fromJson(getTrimmedJsonSchema(schema, typeOptions.get(0)));
       }
     }
 
@@ -115,95 +115,6 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     // schema is guaranteed to be an object here, because we know it has a `type` key
     ((ObjectNode) schemaClone).put("type", type);
     return schemaClone;
-  }
-
-  /**
-   * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
-   * Priority is given to wider scope types over narrower ones. (Note that because of dedup logic in
-   * {@link AirbyteType#fromJsonSchema(JsonNode)}, at most one string or date/time type can exist in a
-   * Union.)
-   */
-  enum AirbyteProtocolType implements AirbyteType {
-
-    STRING,
-    DATE,
-    TIME_WITHOUT_TIMEZONE,
-    TIME_WITH_TIMEZONE,
-    TIMESTAMP_WITHOUT_TIMEZONE,
-    TIMESTAMP_WITH_TIMEZONE,
-    NUMBER,
-    INTEGER,
-    BOOLEAN,
-    UNKNOWN;
-
-    public static AirbyteProtocolType matches(final String type) {
-      try {
-        return AirbyteProtocolType.valueOf(type.toUpperCase());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.error(String.format("Could not find matching AirbyteProtocolType for \"%s\": %s", type, e));
-        return UNKNOWN;
-      }
-    }
-
-  }
-
-  /**
-   * @param properties Use LinkedHashMap to preserve insertion order.
-   */
-  record Struct(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
-
-  }
-
-  record Array(AirbyteType items) implements AirbyteType {
-
-  }
-
-  /**
-   * Represents a {oneOf: [...]} schema.
-   * <p>
-   * This is purely a legacy type that we should eventually delete. See also {@link Union}.
-   */
-  record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
-
-  }
-
-  /**
-   * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf: [{type: a},
-   * {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
-   * <p>
-   * Eventually we should:
-   * <ol>
-   * <li>Announce a breaking change to handle both oneOf styles the same</li>
-   * <li>Test against some number of API sources to verify that they won't break badly</li>
-   * <li>Update {@link AirbyteType#fromJsonSchema(JsonNode)} to parse both styles into
-   * SupportedOneOf</li>
-   * <li>Delete UnsupportedOneOf</li>
-   * </ol>
-   */
-  record Union(List<AirbyteType> options) implements AirbyteType {
-
-    /**
-     * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
-     * schema looks like this, we still want to be able to extract the object properties (i.e. treat it
-     * as though the string option didn't exist).
-     *
-     * @throws IllegalArgumentException if we cannot extract columns from this schema
-     */
-    public LinkedHashMap<String, AirbyteType> asColumns() {
-      final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
-      if (numObjectOptions > 1) {
-        LOGGER.error("Can't extract columns from a schema with multiple object options");
-        return new LinkedHashMap<>();
-      }
-
-      return (options.stream().filter(o -> o instanceof Struct).findFirst())
-          .map(o -> ((Struct) o).properties())
-          .orElseGet(() -> {
-            LOGGER.error("Can't extract columns from a schema with no object options");
-            return new LinkedHashMap<>();
-          });
-    }
-
   }
 
 }
