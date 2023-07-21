@@ -325,7 +325,7 @@ def test_migration_documentation_url_default():
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
             "registries": {"oss": {"enabled": True}},
-            "releases": {"breakingChanges": {"1.0.0": {}}},
+            "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
         }
     }
 
