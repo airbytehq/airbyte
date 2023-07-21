@@ -121,7 +121,7 @@ public class DefaultTyperDeduperTest {
   }
 
   /**
-   * When there's an existing table nonempty table, we should alter it. For the OVERWRITE stream, we
+   * When there's an existing nonempty table, we should alter it. For the OVERWRITE stream, we
    * also need to write to a tmp table, and overwrite the real table at the end of the sync.
    */
   @Test
