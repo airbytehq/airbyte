@@ -345,6 +345,8 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         """
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
+        if self._ignore_pagination:
+            return None
         response_json = response.json()
         return None if response_json.get(END_OF_STREAM_KEY, False) else {"cursor": response_json.get("after_cursor")}
 
