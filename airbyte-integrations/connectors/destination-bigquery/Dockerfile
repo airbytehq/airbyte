@@ -21,6 +21,7 @@ FROM airbyte/integration-base-java:dev
 RUN yum install -y python3 python3-devel jq sshpass git && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
+  # these two lines are a workaround for https://github.com/yaml/pyyaml/issues/601
   pip3 install wheel && \
   pip3 install "Cython<3.0" "pyyaml==5.4" --no-build-isolation && \
   pip3 install dbt-bigquery==1.0.0
@@ -46,7 +47,7 @@ ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.5.4
+LABEL io.airbyte.version=1.5.5
 LABEL io.airbyte.name=airbyte/destination-bigquery
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
