@@ -354,7 +354,7 @@ class BulkSalesforceStream(SalesforceStream):
                     and error_message.startswith("Implementation restriction")
                 ):
                     message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
-                    self.logger.error(message)
+                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
                 elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
                     message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
                     self.logger.error(message)
