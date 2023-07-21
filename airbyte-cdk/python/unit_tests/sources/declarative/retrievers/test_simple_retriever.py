@@ -648,22 +648,22 @@ def test_emit_log_request_response_messages(mocker):
     assert message_repository.log_message.call_args_list[0].args[0] == Level.DEBUG
     assert message_repository.log_message.call_args_list[0].args[1]() == format_http_message_mock.return_value
 
-def test_duplicate_request_params_are_simplified():
+@pytest.mark.parametrize(
+    "path, params, expected_url", [
+        pytest.param("v1/endpoint?param1=value1", {}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", {"param1": "value1"}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://airbyt.io/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, None, id="test_duplicate_params_different_value"),
+    ]
+)
+def test_duplicate_request_params_are_simplified(path, params, expected_url):
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
     cursor = MagicMock(spec=Cursor)
     cursor.select_state = MagicMock(return_value=A_SLICE_STATE)
-
     requester.get_url_base.return_value = "https://airbyt.io"
-    params = {"param1": "value1"}
-    path = "v1/endpoint?param1=value1"
-    headers = {}
-    json = {}
-    data = {}
-
-    # Note, the request params can come from the path too!
-
     retriever = SimpleRetriever(
         name="stream_name",
         primary_key=primary_key,
@@ -676,5 +676,9 @@ def test_duplicate_request_params_are_simplified():
         config={},
     )
 
-    prepared_request = retriever._create_prepared_request(path, headers, params, json, data)
-    assert prepared_request.url == "https://airbyt.io/v1/endpoint?param1=value1"
+    if expected_url is None:
+        with pytest.raises(ValueError):
+            retriever._create_prepared_request(path=path, params=params)
+    else:
+        prepared_request = retriever._create_prepared_request(path=path, params=params)
+        assert prepared_request.url == expected_url
