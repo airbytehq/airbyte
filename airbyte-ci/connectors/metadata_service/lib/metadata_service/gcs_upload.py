@@ -91,25 +91,28 @@ def upload_file_if_changed(
 
 
 def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
     latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
-    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
+    return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
-    (
-        version_uploaded,
-        version_blob_id,
-    ) = upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
-    latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
-    # Replace metadata file name with icon file name
+def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+    version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
+    return upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
+
+
+def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
     local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
-    if local_icon_path.exists():
-        upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
+    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
+    if not local_icon_path.exists():
+        return False, f"No Icon found at {local_icon_path}"
+    return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
-    return version_uploaded or latest_uploaded, version_blob_id
 
+def create_prerelease_metadata_file(metadata_file_path: Path, prerelease_tag: str) -> Path:
+    metadata, error = validate_and_load(metadata_file_path, [])
+    if metadata is None:
+        raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
-def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, prerelease_tag: str) -> Tuple[bool, str]:
     # replace any dockerImageTag references with the actual tag
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
@@ -125,8 +128,7 @@ def _prerelease_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.
     with open(tmp_metadata_file_path, "w") as f:
         yaml.dump(metadata_dict, f)
 
-    prerelease_remote_path = get_metadata_remote_file_path(metadata.data.dockerRepository, prerelease_tag)
-    return upload_file_if_changed(tmp_metadata_file_path, bucket, prerelease_remote_path, disable_cache=True)
+    return tmp_metadata_file_path
 
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: Optional[str] = None) -> Tuple[bool, str]:
@@ -143,6 +145,12 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
+    version_uploaded = False
+    latest_uploaded = False
+
+    if prerelease:
+        metadata_file_path = create_prerelease_metadata_file(metadata_file_path, prerelease)
+
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS)
 
     if metadata is None:
@@ -153,7 +161,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 
-    if prerelease:
-        return _prerelease_upload(metadata, bucket, prerelease)
-    else:
-        return _latest_upload(metadata, bucket, metadata_file_path)
+    _icon_upload(metadata, bucket, metadata_file_path)
+
+    version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
+    if not prerelease:
+        latest_uploaded, _latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
+
+    return version_uploaded or latest_uploaded, version_blob_id
