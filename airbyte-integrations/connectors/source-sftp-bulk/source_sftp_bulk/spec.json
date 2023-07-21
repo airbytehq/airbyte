@@ -24,6 +24,7 @@
         "description": "The password used for authentication when logging in to the remote server.",
         "type": "string",
         "airbyte_secret": true,
+        "always_show": true,
         "order": 1
       },
       "private_key": {
@@ -31,6 +32,7 @@
         "description": "SSH private key used for authentication when logging in to the remote server.",
         "type": "string",
         "multiline": true,
+        "always_show": true,
         "order": 2
       },
       "host": {
@@ -62,7 +64,8 @@
         "default": "csv",
         "enum": ["csv", "json"],
         "order": 6,
-        "examples": ["csv", "json"]
+        "examples": ["csv", "json"],
+        "always_show": true
       },
       "separator": {
         "title": "CSV Separator",
