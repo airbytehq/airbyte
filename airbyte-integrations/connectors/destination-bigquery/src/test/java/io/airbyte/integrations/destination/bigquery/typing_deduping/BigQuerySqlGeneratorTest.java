@@ -31,7 +31,7 @@ import org.mockito.Mockito;
 
 public class BigQuerySqlGeneratorTest {
 
-  private final BigQuerySqlGenerator generator = new BigQuerySqlGenerator();
+  private final BigQuerySqlGenerator generator = new BigQuerySqlGenerator("US");
 
   @Test
   public void testToDialectType() {
@@ -66,7 +66,6 @@ public class BigQuerySqlGeneratorTest {
 
   @Test
   public void testClusteringMatches() {
-    final var bqSqlGenerator = new BigQuerySqlGenerator();
     StreamConfig stream = new StreamConfig(null,
             null,
             DestinationSyncMode.APPEND_DEDUP,
@@ -77,12 +76,12 @@ public class BigQuerySqlGeneratorTest {
     // Clustering is null
     StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
     Mockito.when(existingTable.getClustering()).thenReturn(null);
-    Assertions.assertFalse(bqSqlGenerator.clusteringMatches(stream, existingTable));
+    Assertions.assertFalse(generator.clusteringMatches(stream, existingTable));
 
     // Clustering does not contain all fields
     Mockito.when(existingTable.getClustering())
             .thenReturn(Clustering.newBuilder().setFields(List.of("_airbyte_extracted_at")).build());
-    Assertions.assertFalse(bqSqlGenerator.clusteringMatches(stream, existingTable));
+    Assertions.assertFalse(generator.clusteringMatches(stream, existingTable));
     
     // Clustering matches
     stream = new StreamConfig(null,
@@ -91,29 +90,28 @@ public class BigQuerySqlGeneratorTest {
             null,
             null,
             null);
-    Assertions.assertTrue(bqSqlGenerator.clusteringMatches(stream, existingTable));
+    Assertions.assertTrue(generator.clusteringMatches(stream, existingTable));
   }
 
   @Test
   public void testPartitioningMatches() {
-    final var bqSqlGenerator = new BigQuerySqlGenerator();
     StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
     // Partitioning is null
     Mockito.when(existingTable.getTimePartitioning()).thenReturn(null);
-    Assertions.assertFalse(bqSqlGenerator.partitioningMatches(existingTable));
+    Assertions.assertFalse(generator.partitioningMatches(existingTable));
     // incorrect field
     Mockito.when(existingTable.getTimePartitioning())
             .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build());
-    Assertions.assertFalse(bqSqlGenerator.partitioningMatches(existingTable));
+    Assertions.assertFalse(generator.partitioningMatches(existingTable));
     // incorrect partitioning scheme
     Mockito.when(existingTable.getTimePartitioning())
             .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.YEAR).setField("_airbyte_extracted_at").build());
-    Assertions.assertFalse(bqSqlGenerator.partitioningMatches(existingTable));
+    Assertions.assertFalse(generator.partitioningMatches(existingTable));
 
     // partitioning matches
     Mockito.when(existingTable.getTimePartitioning())
             .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_airbyte_extracted_at").build());
-    Assertions.assertTrue(bqSqlGenerator.partitioningMatches(existingTable));
+    Assertions.assertTrue(generator.partitioningMatches(existingTable));
   }
 
   @Test
