@@ -1,10 +1,11 @@
 # SFTP Bulk
-This page contains the setup guide and reference information for the FTP source connector.
+This page contains the setup guide and reference information for the SFTP Bulk source connector.
 
-This connector allows you to:
-- Fetch files from an FTP server matching a folder path and define an optional file pattern to bulk ingest files into a single stream
-- Incrementally load files into your destination from an FTP server based on when files were last added or modified
-- Optionally load only the latest file matching a folder path and optional pattern and overwrite the data in your destination (helpful when a snapshot file gets added on a regular basis containing the latest data)
+This connector provides the following features not found in the standard SFTP source connector:
+
+- **Bulk Ingestion of Files**: Efficiently ingest multiple files from an SFTP server. This capability enables you to consolidate and process multiple files as a single data stream in your destination system.
+- **Incremental Loading**: The connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their last modification or creation time. This ensures that only new or updated files are processed during synchronization.
+- **Load Latest File**: Optionally, you can choose to load only the most recent file from the specified folder path, along with an optional pattern. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data. By enabling this option, you can overwrite the data in your destination with the latest information from the SFTP server's most recent file.
 
 ## Prerequisites
 
@@ -61,7 +62,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
 6. Enter a **Stream Name**. This will be the name of the stream that will be outputted to your destination.
 7. Provide a **Start Date** using the provided datepicker, or by programmatically entering the date in the format `YYYY-MM-DDT00:00:00Z`. Incremental syncs will only sync files modified/added after this date.
-8. Enter your authentication credentials for the FTP server (**Password** and/or **Private Key**).
+8. Enter your authentication credentials for the SFTP server (**Password** and/or **Private Key**).
 7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
 ## Optional fields
