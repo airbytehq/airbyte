@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
+import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatistics;
 import com.google.cloud.bigquery.QueryJobConfiguration;
@@ -28,9 +29,11 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
 
   private final BigQuery bq;
+  private final String datasetLocation;
 
-  public BigQueryDestinationHandler(final BigQuery bq) {
+  public BigQueryDestinationHandler(final BigQuery bq, String datasetLocation) {
     this.bq = bq;
+    this.datasetLocation = datasetLocation;
   }
 
   @Override
@@ -52,7 +55,11 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     final UUID queryId = UUID.randomUUID();
     LOGGER.info("Executing sql {}: {}", queryId, sql);
 
-    Job job = bq.create(JobInfo.of(QueryJobConfiguration.newBuilder(sql).build()));
+    /*
+    If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery doesn't do a good job of
+    inferring the query location. Pass it in explicitly.
+     */
+    Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
     job = job.waitFor();
     // waitFor() seems to throw an exception if the query failed, but javadoc says we're supposed to handle this case
     if (job.getStatus().getError() != null) {

@@ -12,7 +12,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
@@ -228,7 +227,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       }
     }
 
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
+    String datasetLocation = BigQueryUtils.getDatasetLocation(config);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
     final CatalogParser catalogParser;
     if (config.hasNonNull(RAW_NAMESPACE_OVERRIDE) && !Strings.isNullOrEmpty(config.get(RAW_NAMESPACE_OVERRIDE).asText())) {
       catalogParser = new CatalogParser(sqlGenerator, config.get(RAW_NAMESPACE_OVERRIDE).asText());
@@ -242,7 +242,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (TypingAndDedupingFlag.isDestinationV2()) {
       typerDeduper = new DefaultTyperDeduper<>(
           sqlGenerator,
-          new BigQueryDestinationHandler(bigquery),
+          new BigQueryDestinationHandler(bigquery, datasetLocation),
           parsedCatalog);
     } else {
       typerDeduper = new NoopTyperDeduper();
