@@ -23,9 +23,12 @@ TRANSIENT_EXCEPTIONS = (
 logger = logging.getLogger("airbyte")
 
 
+SendRequestCallableType = Callable[[PreparedRequest, Mapping[str, Any]], Response]
+
+
 def default_backoff_handler(
     max_tries: Optional[int], factor: float, **kwargs: Any
-) -> Callable[[Callable[[PreparedRequest, Mapping[str, Any]], Response]], Callable[[PreparedRequest, Mapping[str, Any]], Response]]:
+) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, RequestException) and exc.response:
@@ -43,6 +46,7 @@ def default_backoff_handler(
             if give_up:
                 logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
             return give_up
+        # Only RequestExceptions are retryable, so if we get here, it's not retryable
         return False
 
     return backoff.on_exception(
