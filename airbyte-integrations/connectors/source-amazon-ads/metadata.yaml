@@ -23,4 +23,9 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   tags:
     - language:python
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: "Attribution report stream schemas fix."
+        upgradeDeadline: "2023-07-24"
 metadataSpecVersion: "1.0"
