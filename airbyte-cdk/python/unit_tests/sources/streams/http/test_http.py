@@ -22,9 +22,10 @@ class StubBasicReadHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = ""
 
-    def __init__(self, **kwargs):
+    def __init__(self, deduplicate_query_params: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.resp_counter = 1
+        self._deduplicate_query_params = deduplicate_query_params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -36,6 +37,9 @@ class StubBasicReadHttpStream(HttpStream):
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
+
+    def must_deduplicate_query_params(self) -> bool:
+        return self._deduplicate_query_params
 
 
 def test_default_authenticator():
@@ -528,18 +532,19 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 
 @pytest.mark.parametrize(
-    "path, params, expected_url", [
-        pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
-        pytest.param("v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
-        pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param("v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
-        pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
-        pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, None, id="test_duplicate_params_different_value"),
+    "deduplicate_query_params, path, params, expected_url", [
+        pytest.param(True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param(True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param(True, "v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param(True, "v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param(True, "v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
+        pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
+        pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, None, id="test_duplicate_params_different_value"),
+        pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, "v1/endpoint?param1=value1", id="test_same_params_different_value_no_deduplication"),
     ]
 )
-def test_duplicate_request_params_are_simplified(path, params, expected_url):
-    stream = StubBasicReadHttpStream()
+def test_duplicate_request_params_are_simplified(deduplicate_query_params, path, params, expected_url):
+    stream = StubBasicReadHttpStream(deduplicate_query_params)
 
     if expected_url is None:
         with pytest.raises(ValueError):

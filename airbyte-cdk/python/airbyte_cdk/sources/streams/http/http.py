@@ -262,6 +262,9 @@ class HttpStream(Stream, ABC):
         """
         return ""
 
+    def must_deduplicate_query_params(self) -> bool:
+        return False
+
     def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
         if params is None:
             params = {}
@@ -285,7 +288,10 @@ class HttpStream(Stream, ABC):
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> requests.PreparedRequest:
         url = self._join_url(self.url_base, path)
-        query_args = self.deduplicate_query_params(url, params)
+        if self.must_deduplicate_query_params():
+            query_args = self.deduplicate_query_params(url, params)
+        else:
+            query_args = params or {}
         args = {"method": self.http_method, "url": url, "headers": headers, "params": query_args}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:

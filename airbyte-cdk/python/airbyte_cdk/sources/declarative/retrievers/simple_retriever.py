@@ -483,6 +483,9 @@ class SimpleRetriever(Retriever, HttpStream):
     ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
+    def must_deduplicate_query_params(self) -> bool:
+        return True
+
 
 @dataclass
 class SimpleRetrieverTestReadDecorator(SimpleRetriever):
