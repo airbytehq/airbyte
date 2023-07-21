@@ -262,20 +262,19 @@ class HttpStream(Stream, ABC):
         """
         return ""
 
-    def must_deduplicate_query_params(self) -> bool:
-        return True
-
-    def deduplicate_query_params(self, url: str, params: MutableMapping[str, Any]) -> None:
+    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+        if params is None:
+            params = {}
         query_string = urllib.parse.urlparse(url).query
-        query_dict = urllib.parse.parse_qs(query_string)
+        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
 
-        for query_param_key, query_param_value in query_dict.items():
-            if query_param_key in params:
-                if params[query_param_key] != query_param_value[0]:
-                    raise ValueError(
-                        f"query param {query_param_key} is already in params with different value {params[query_param_key]} and {query_param_value}"
-                    )
-                params.pop(query_param_key)
+        duplicate_keys = {k for k in query_dict.keys() if k in params}
+        for param in duplicate_keys:
+            if params[param] != query_dict[param]:
+                raise ValueError(
+                    f"Found the same query parameter {param} with different values in the URL and the request parameters: {query_dict[param]} != {params[param]}"
+                )
+        return {k: v for k, v in params.items() if k not in duplicate_keys}
 
     def _create_prepared_request(
         self,
@@ -286,9 +285,7 @@ class HttpStream(Stream, ABC):
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> requests.PreparedRequest:
         url = self._join_url(self.url_base, path)
-        query_args = dict(params or {})
-        if self.must_deduplicate_query_params():
-            self.deduplicate_query_params(url, query_args)
+        query_args = self.deduplicate_query_params(url, params)
         args = {"method": self.http_method, "url": url, "headers": headers, "params": query_args}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:

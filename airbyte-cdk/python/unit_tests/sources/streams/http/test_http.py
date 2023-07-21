@@ -525,3 +525,25 @@ def test_default_get_error_display_message_handles_http_error(mocker):
 def test_join_url(test_name, base_url, path, expected_full_url):
     actual_url = HttpStream._join_url(base_url, path)
     assert actual_url == expected_full_url
+
+
+@pytest.mark.parametrize(
+    "path, params, expected_url", [
+        pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param("v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, None, id="test_duplicate_params_different_value"),
+    ]
+)
+def test_duplicate_request_params_are_simplified(path, params, expected_url):
+    stream = StubBasicReadHttpStream()
+
+    if expected_url is None:
+        with pytest.raises(ValueError):
+            stream._create_prepared_request(path=path, params=params)
+    else:
+        prepared_request = stream._create_prepared_request(path=path, params=params)
+        assert prepared_request.url == expected_url
