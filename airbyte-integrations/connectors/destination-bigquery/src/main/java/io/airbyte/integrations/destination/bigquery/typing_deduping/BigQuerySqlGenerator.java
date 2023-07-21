@@ -222,7 +222,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
     if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException(String.format("Stream {} has not been migrated to the Destinations V2 format", stream.id().finalName()));
+      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
