@@ -1,4 +1,4 @@
-# SFTP  Bulk
+# SFTP Bulk
 This page contains the setup guide and reference information for the FTP source connector.
 
 This connector allows you to:
@@ -92,11 +92,12 @@ log-([0-9]{4})([0-9]{2})([0-9]{2})
 ```
 
 This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
-4. Check `Most recent file` (Optional) if you only want to sync the most recent file matching a folder path and optional file pattern
+
+4. **Most Recent File**: Toggle this option if you only want to sync the most recent file located in the folder path. This may be useful when dealing with data sources that generate frequent updates, such as log files or real-time data feeds. Set to False by default.
 
 ## Supported sync modes
 
-The FTP source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Support  | Notes                                                                                 |
 |:------------------------------|:--------:|:--------------------------------------------------------------------------------------|
