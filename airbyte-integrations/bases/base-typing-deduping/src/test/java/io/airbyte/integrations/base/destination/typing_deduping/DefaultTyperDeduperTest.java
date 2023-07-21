@@ -121,8 +121,8 @@ public class DefaultTyperDeduperTest {
   }
 
   /**
-   * When there's an existing nonempty table, we should alter it. For the OVERWRITE stream, we
-   * also need to write to a tmp table, and overwrite the real table at the end of the sync.
+   * When there's an existing nonempty table, we should alter it. For the OVERWRITE stream, we also
+   * need to write to a tmp table, and overwrite the real table at the end of the sync.
    */
   @Test
   void existingNonemptyTable() throws Exception {
@@ -130,7 +130,8 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.prepareFinalTables();
-    // NB: We only create a tmp table for the overwrite stream, and do _not_ soft reset the existing overwrite stream's table.
+    // NB: We only create a tmp table for the overwrite stream, and do _not_ soft reset the existing
+    // overwrite stream's table.
     verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
     verify(destinationHandler).execute("SOFT RESET append_ns.append_stream");
     verify(destinationHandler).execute("SOFT RESET dedup_ns.dedup_stream");
@@ -153,8 +154,8 @@ public class DefaultTyperDeduperTest {
   }
 
   /**
-   * When there's an existing nonempty table with the right schema, we don't need to modify it,
-   * but OVERWRITE streams still need to create a tmp table.
+   * When there's an existing nonempty table with the right schema, we don't need to modify it, but
+   * OVERWRITE streams still need to create a tmp table.
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
