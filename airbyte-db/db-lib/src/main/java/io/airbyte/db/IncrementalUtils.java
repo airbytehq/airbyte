@@ -15,10 +15,7 @@ public class IncrementalUtils {
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static String getCursorField(final ConfiguredAirbyteStream stream) {
-    if (stream.getDataToSyncConfig().replication_method == ReplicationMethod.CDC) {
-      // FIXME: This isn't the best place for this test to happen. Move to a proper validation method.
-      throw new IllegalStateException("Attempted to run incremental sync with a cursor field when CDC replication was specified. Please reset your stream if you want to change replication methods.");
-    else if (stream.getCursorField().size() == 0) {
+    if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
     } else if (stream.getCursorField().size() > 1) {
       throw new IllegalStateException("Source does not support nested cursor fields.");

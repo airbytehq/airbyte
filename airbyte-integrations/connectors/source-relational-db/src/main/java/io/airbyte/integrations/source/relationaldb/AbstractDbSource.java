@@ -144,7 +144,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final Database database = createDatabase(config);
 
-    validateSyncSettings(database, catalog, state);
+    validateSyncSettings(database, catalog, stateManager);
 
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
@@ -561,18 +561,46 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param catalog configured catalog.
    * @param state configured catalog.
    */
-  protected void validateSyncSettings(final Database database, final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {
+  protected void validateSyncSettings(final Database database, final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) throws Exception {
     logPreSyncDebugData(database, catalog);
-    validateStateAndCatalogCompatibility(catalog, state);
+    validateStateAndCatalogCompatibility(catalog, stateManager);
   }
 
   /**
-   * Checks that the state and catalog are compatible. If they are not, throws an exception.
+   * Checks that the state and catalog are compatible. Throws IllegalStateException if state is not compatible.
    *
    * @param catalog configured catalog.
-   * @param state configured catalog.
+   * @param state state manager.
    */
-  protected void validateStateAndCatalogCompatibility(final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {}
+  protected void validateStateAndCatalogCompatibility(final ConfiguredAirbyteCatalog catalog, final StateManager state) throws IllegalStateException {
+    List<String> errorMessages = new ArrayList<>();
+    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final SyncMode configured_sync_mode = stream.getSyncMode();
+      if (stream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        /* No state requirements for full refresh. */
+        continue;
+      }
+      final AirbyteStreamNameNamespacePair name_pair = AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream);
+      final List<String> catalog_cursor_fields = stream.getCursorField();
+      final Optional<String> state_cursor_field = state.getCursorField(name_pair);
+
+      Optional<String> catalog_cursor_field = catalog_cursor_fields.stream().findFirst();
+      if (Objects.equals(state_cursor_field, catalog_cursor_field)) {
+        /* Cursors match. */
+        continue;
+      } else {
+        /* FIXME: Improve this check. Right now it is only inequality that throws an error, which is probably not the correct logic. */
+        errorMessages.add("Stream: '" + name_pair.toString() + "', Configured Cursor: '" + catalog_cursor_fields + "', State Cursor: '" + state_cursor_field.orElse("Not found in state.") + "'\n ");
+      }
+    }
+    if (!errorMessages.isEmpty()) {
+      String errorMessage = "Attempted to run incremental sync for one ore more streams with a cursor field when CDC replication was specified.\n" +
+              String.join("\n", errorMessages) +
+              "Please reset your stream if you want to change replication methods.";
+      throw new IllegalStateException(errorMessage);
+    }
+  }
+
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.
