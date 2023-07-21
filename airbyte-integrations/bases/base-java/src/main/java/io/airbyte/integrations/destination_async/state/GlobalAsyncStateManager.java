@@ -151,27 +151,27 @@ public class GlobalAsyncStateManager {
       synchronized (this) {
         final LinkedList<Long> stateIdQueue = entry.getValue();
         while (true) {
-            final Long oldestState = stateIdQueue.peek();
-            if (oldestState == null) {
-              break;
-            }
-
-            // technically possible this map hasn't been updated yet.
-            final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
-            if (noCorrespondingStateMsg) {
-              break;
-            }
-
-            final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
-            final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
-            if (noPrevRecs || allRecsEmitted) {
-              var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
-              output.add(stateIdToState.get(oldestState).getLeft());
-              bytesFlushed += stateIdToState.get(oldestState).getRight();
-            } else {
-              break;
-            }
+          final Long oldestState = stateIdQueue.peek();
+          if (oldestState == null) {
+            break;
           }
+
+          // technically possible this map hasn't been updated yet.
+          final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
+          if (noCorrespondingStateMsg) {
+            break;
+          }
+
+          final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
+          final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
+          if (noPrevRecs || allRecsEmitted) {
+            var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
+            output.add(stateIdToState.get(oldestState).getLeft());
+            bytesFlushed += stateIdToState.get(oldestState).getRight();
+          } else {
+            break;
+          }
+        }
       }
     }
 
@@ -181,7 +181,8 @@ public class GlobalAsyncStateManager {
 
   private Long getStateIdAndIncrement(final StreamDescriptor streamDescriptor, final long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
-    // As concurrent collections do not guarantee data consistency when iterating, use `get` instead of `containsKey`.
+    // As concurrent collections do not guarantee data consistency when iterating, use `get` instead of
+    // `containsKey`.
     if (streamToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
