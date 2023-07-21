@@ -32,8 +32,11 @@ JsonSchema = Mapping[str, Any]
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
-    module: Any = inspect.getmodule(cls)
-    return module.__name__.split(".")[0]  # type: ignore
+    module = inspect.getmodule(cls)
+    if module is not None:
+        return module.__name__.split(".")[0]
+    else:
+        raise ValueError(f"Could not find package name for class {cls}")
 
 
 class IncrementalMixin(ABC):
