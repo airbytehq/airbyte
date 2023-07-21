@@ -7,8 +7,7 @@ from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.gradle import GradleTask
-from ci_connector_ops.pipelines.utils import with_exit_code
-from dagger import File, QueryError
+from dagger import ExecError, File, QueryError
 
 
 class BuildConnectorDistributionTar(GradleTask):
@@ -22,7 +21,7 @@ class BuildConnectorDistributionTar(GradleTask):
                 self.context,
                 self.build_include,
             )
-            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
         )
@@ -52,8 +51,9 @@ class BuildConnectorImage(BuildConnectorImageBase):
     async def _run(self, distribution_tar: File) -> StepResult:
         try:
             java_connector = await environments.with_airbyte_java_connector(self.context, distribution_tar, self.build_platform)
-            spec_exit_code = await with_exit_code(java_connector.with_exec(["spec"]))
-            if spec_exit_code != 0:
+            try:
+                await java_connector.with_exec(["spec"])
+            except ExecError:
                 return StepResult(
                     self, StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {self.build_platform}."
                 )
