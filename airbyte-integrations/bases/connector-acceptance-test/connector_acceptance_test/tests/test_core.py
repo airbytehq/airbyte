@@ -126,6 +126,8 @@ class TestSpec(BaseTest):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
+        else:
+            pytest.skip("The spec.yaml or spec.json does not exist. Hence, comparison with the actual one can't be performed")
 
     def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
