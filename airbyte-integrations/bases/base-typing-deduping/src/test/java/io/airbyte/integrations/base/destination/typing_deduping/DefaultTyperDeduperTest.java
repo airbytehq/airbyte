@@ -153,7 +153,7 @@ public class DefaultTyperDeduperTest {
   }
 
   /**
-   * When there's an existing table nonempty table with the right schema, we don't need to modify it,
+   * When there's an existing nonempty table with the right schema, we don't need to modify it,
    * but OVERWRITE streams still need to create a tmp table.
    */
   @Test
