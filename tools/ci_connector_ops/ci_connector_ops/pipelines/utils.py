@@ -153,7 +153,7 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     """
     try:
         return 0, *(await get_container_output(container))
-    except (ExecError) as e:
+    except ExecError as e:
         return e.exit_code, e.stdout, e.stderr
 
 
