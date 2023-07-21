@@ -271,13 +271,8 @@ class HttpStream(Stream, ABC):
         query_string = urllib.parse.urlparse(url).query
         query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
 
-        duplicate_keys = {k for k in query_dict.keys() if k in params}
-        for param in duplicate_keys:
-            if params[param] != query_dict[param]:
-                raise ValueError(
-                    f"Found the same query parameter {param} with different values in the URL and the request parameters: {query_dict[param]} != {params[param]}"
-                )
-        return {k: v for k, v in params.items() if k not in duplicate_keys}
+        duplicate_keys_with_same_value = {k for k in query_dict.keys() if params.get(k) == query_dict[k]}
+        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
     def _create_prepared_request(
         self,
