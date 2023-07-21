@@ -130,9 +130,7 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.prepareFinalTables();
-    // NB: We only create one tmp table here.
-    // Also, we need to alter the existing _real_ table, not the tmp table!
-    verify(destinationHandler).execute("SOFT RESET overwrite_ns.overwrite_stream");
+    // NB: We only create a tmp table for the overwrite stream, and do _not_ soft reset the existing overwrite stream's table.
     verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
     verify(destinationHandler).execute("SOFT RESET append_ns.append_stream");
     verify(destinationHandler).execute("SOFT RESET dedup_ns.dedup_stream");

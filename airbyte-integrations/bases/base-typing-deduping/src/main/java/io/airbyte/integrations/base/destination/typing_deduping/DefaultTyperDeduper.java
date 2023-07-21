@@ -64,22 +64,18 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     for (StreamConfig stream : parsedCatalog.streams()) {
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {
-        // The table exists. Make sure it has the right schema.
-        if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
+        // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && !destinationHandler.isFinalTableEmpty(stream.id())) {
+          // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
+          // end of the sync.
+          overwriteStreamsWithTmpTable.add(stream.id());
+          destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX));
+        }
+        if (!overwriteStreamsWithTmpTable.contains(stream.id()) && !sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
+          // We're loading data directly into the existing table. Make sure it has the right schema.
           LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
           for (String sql : sqlGenerator.softReset(stream)) {
             destinationHandler.execute(sql);
-          }
-        } else {
-          LOGGER.info("Existing schema for stream {} matches expected schema, no alterations needed", stream.id().finalTableId(""));
-        }
-        // Decide whether we're writing to it directly, or using a tmp table.
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          if (!destinationHandler.isFinalTableEmpty(stream.id())) {
-            // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the
-            // end of the sync.
-            overwriteStreamsWithTmpTable.add(stream.id());
-            destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX));
           }
         }
       } else {
