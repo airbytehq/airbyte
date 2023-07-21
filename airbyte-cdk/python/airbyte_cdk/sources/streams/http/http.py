@@ -263,7 +263,7 @@ class HttpStream(Stream, ABC):
         return ""
 
     def must_deduplicate_query_params(self) -> bool:
-        return False
+        return True
 
     def deduplicate_query_params(self, url: str, params: MutableMapping[str, Any]) -> None:
         query_string = urllib.parse.urlparse(url).query
