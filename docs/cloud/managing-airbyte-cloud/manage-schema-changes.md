@@ -17,7 +17,6 @@ When a column is deleted, the values for that column will stop updating for the 
 When a new stream is detected and propagated, the first sync will fill all data in as if it is a historical sync. When a stream is deleted from the source, the stream will stop updating, and we leave any existing data in the destination. The rest of the enabled streams will continue syncing.
 
 In all cases, if a breaking change is detected, the connection will be paused for manual review to prevent future syncs from failing. Breaking schema changes occur when:
-* The data type of a field from the source changes
 * An existing primary key is removed from the source
 * An existing cursor is removed from the source
 
@@ -45,7 +44,6 @@ To review non-breaking schema changes:
 ## Fix breaking schema changes
 
 Breaking schema changes occur when:
-* The data type of a field from the source changes
 * An existing primary key is removed from the source
 * An existing cursor is removed from the source
 
@@ -82,7 +80,7 @@ In addition to Airbyte Cloud’s automatic schema change detection, you can manu
 
  3. In the **Activate the streams you want to sync** table, click **Refresh source schema** to fetch the schema of your data source.
 
- 2. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.
+ 4. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.
 
 ## Manage Schema Change Notifications
 [Refer to our notification documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#enable-schema-update-notifications) to understand how to stay updated on any schema updates to your connections.
