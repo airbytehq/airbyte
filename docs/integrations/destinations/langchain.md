@@ -98,6 +98,7 @@ qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", 
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556)     | Correctly dedupe records with composite and nested primary keys  |
 | 0.0.3   | 2023-07-20 | [#28509](https://github.com/airbytehq/airbyte/pull/28509)     | Change the base image to python:3.9-slim to fix build  |
 | 0.0.2   | 2023-07-18 | [#26184](https://github.com/airbytehq/airbyte/pull/28398)     | Adjust python dependencies and release on cloud  |
 | 0.0.1   | 2023-07-12 | [#26184](https://github.com/airbytehq/airbyte/pull/26184)     | Initial release  |
