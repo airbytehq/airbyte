@@ -69,9 +69,9 @@ public class MongoUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
   // Shared constants
-  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
+  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
-  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
+  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   public static final String USER = "user";
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
@@ -114,6 +114,12 @@ public class MongoUtils {
     return objectNode;
   }
 
+  public static JsonNode toJsonNode(final BsonDocument document, final List<String> columnNames) {
+    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    formatDocument(document, objectNode, columnNames);
+    return objectNode;
+  }
+
   public static Object getBsonValue(final BsonType type, final String value) {
     try {
       return switch (type) {
@@ -146,6 +152,10 @@ public class MongoUtils {
 
   private static void formatDocument(final Document document, final ObjectNode objectNode, final List<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
+    formatDocument(bsonDocument, objectNode, columnNames);
+  }
+
+  private static void formatDocument(final BsonDocument bsonDocument, final ObjectNode objectNode, final List<String> columnNames) {
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
     } catch (final Exception e) {
@@ -179,7 +189,7 @@ public class MongoUtils {
    */
   public static boolean tlsEnabledForStandaloneInstance(final JsonNode config, final JsonNode instanceConfig) {
     return config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
-        : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
+        : (!instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean());
   }
 
   public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {

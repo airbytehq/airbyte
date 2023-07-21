@@ -134,7 +134,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
-| :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.5.4   | 2023-07-17 | [\#28382](https://github.com/airbytehq/airbyte/pull/28382) | Destination v2 Schema Change Detection                                                                                   |
 | 1.5.3   | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                     |
 | 1.5.2   | 2023-07-05 | [\#27936](https://github.com/airbytehq/airbyte/pull/27936) | Internal scaffolding change for future development                                                                       |
 | 1.5.1   | 2023-06-30 | [\#27891](https://github.com/airbytehq/airbyte/pull/27891) | Revert bugged update                                                                                                     |
