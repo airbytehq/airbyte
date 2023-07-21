@@ -543,7 +543,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, "v1/endpoint?param1=value1", id="test_same_params_different_value_no_deduplication"),
     ]
 )
-def test_duplicate_request_params_are_simplified(deduplicate_query_params, path, params, expected_url):
+def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
     stream = StubBasicReadHttpStream(deduplicate_query_params)
 
     if expected_url is None:
