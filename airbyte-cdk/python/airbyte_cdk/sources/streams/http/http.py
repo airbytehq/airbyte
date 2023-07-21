@@ -382,7 +382,7 @@ class HttpStream(Stream, ABC):
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)  # type: ignore
+        return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
