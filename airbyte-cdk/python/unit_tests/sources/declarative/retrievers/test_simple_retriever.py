@@ -652,6 +652,8 @@ def test_emit_log_request_response_messages(mocker):
     "path, params, expected_url", [
         pytest.param("v1/endpoint?param1=value1", {}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_only_in_path"),
         pytest.param("v1/endpoint", {"param1": "value1"}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", None, "https://airbyt.io/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param("v1/endpoint?param1=value1", None, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
         pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://airbyt.io/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
         pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
         pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, None, id="test_duplicate_params_different_value"),

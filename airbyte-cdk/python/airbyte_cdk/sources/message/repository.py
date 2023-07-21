@@ -9,11 +9,11 @@ from collections import deque
 from typing import Callable, Iterable, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
+from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 _LOGGER = logging.getLogger("MessageRepository")
 _SUPPORTED_MESSAGE_TYPES = {Type.CONTROL, Type.LOG}
-JsonType = Union[dict[str, "JsonType"], list["JsonType"], str, int, float, bool, None]
 LogMessage = dict[str, JsonType]
 
 _SEVERITY_BY_LOG_LEVEL = {
