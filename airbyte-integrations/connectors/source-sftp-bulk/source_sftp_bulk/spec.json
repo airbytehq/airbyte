@@ -15,20 +15,20 @@
     "properties": {
       "username": {
         "title": "Username",
-        "description": "The username associated with the remote server.",
+        "description": "The username to use when logging in to the remote server.",
         "type": "string",
         "order": 0
       },
       "password": {
         "title": "Password",
-        "description": "The password used to .",
+        "description": "The password used for authentication when logging in to the remote server.",
         "type": "string",
         "airbyte_secret": true,
         "order": 1
       },
       "private_key": {
         "title": "Private Key",
-        "description": "The private key",
+        "description": "SSH private key used for authentication when logging in to the remote server.",
         "type": "string",
         "multiline": true,
         "order": 2
@@ -42,7 +42,7 @@
       },
       "port": {
         "title": "Port",
-        "description": "The port number to connect to the remote server.",
+        "description": "The port number used by the remote server for SFTP connections.",
         "type": "integer",
         "default": 22,
         "examples": ["22"],
@@ -74,7 +74,7 @@
       },
       "folder_path": {
         "title": "Folder Path",
-        "description": "The optional directory to search files for sync.",
+        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide' target='_blank'>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": ["/logs/2022"],
@@ -82,7 +82,7 @@
       },
       "file_pattern": {
         "title": "File Pattern",
-        "description": "The optional regular expression to specify files for sync in a chosen Folder Path.",
+        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide` target='_blank'>setup guide</a> for more information.",
         "type": "string",
         "default": "",
         "examples": [
@@ -92,7 +92,7 @@
       },
       "file_most_recent": {
         "title": "Most recent file",
-        "description": "Sync only the most recent file for the configured folder path and file pattern",
+        "description": "Toggle on to sync only the most recently modified file that matches the folder path and file pattern.",
         "type": "boolean",
         "default": false,
         "order": 10
