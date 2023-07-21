@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3.csv;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -24,16 +25,30 @@ import java.util.UUID;
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
-  /**
-   * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on
-   * S3CsvWriter.
-   */
+  private static final List<String> LEGACY_COLUMN_NAMES = List.of(
+      JavaBaseConstants.COLUMN_NAME_AB_ID,
+      JavaBaseConstants.COLUMN_NAME_DATA,
+      JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  // TODO does this need to have loaded_at explicitly?
+  // TODO does this need to be in a different order? (raw_id, extracted_at, loaded_at, data)
+  private static final List<String> V2_COLUMN_NAMES = List.of(
+      JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+      JavaBaseConstants.COLUMN_NAME_DATA,
+      JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+
+  private final List<String> header;
+
+  public StagingDatabaseCsvSheetGenerator() {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      this.header = V2_COLUMN_NAMES;
+    } else {
+      this.header = LEGACY_COLUMN_NAMES;
+    }
+  }
+
   @Override
   public List<String> getHeaderRow() {
-    return List.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return header;
   }
 
   @Override
