@@ -10,9 +10,9 @@
     "type": "object",
     "required": ["fe_host"],
     "properties": {
-      "fe_host": {
-        "title": "FeHost",
-        "description": "Hostname of the starrocks fe.",
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the StarRocks.",
         "type": "string",
         "order": 0
       },
