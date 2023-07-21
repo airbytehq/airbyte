@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
@@ -24,23 +23,23 @@ public class CatalogParser {
     this(sqlGenerator, DEFAULT_RAW_TABLE_NAMESPACE);
   }
 
-  public CatalogParser(final SqlGenerator<?> sqlGenerator, String rawNamespaceOverride) {
+  public CatalogParser(final SqlGenerator<?> sqlGenerator, final String rawNamespaceOverride) {
     this.sqlGenerator = sqlGenerator;
     this.rawNamespaceOverride = rawNamespaceOverride;
   }
 
-  public ParsedCatalog parseCatalog(ConfiguredAirbyteCatalog catalog) {
+  public ParsedCatalog parseCatalog(final ConfiguredAirbyteCatalog catalog) {
     // this code is bad and I feel bad
     // it's mostly a port of the old normalization logic to prevent tablename collisions.
     // tbh I have no idea if it works correctly.
     final List<StreamConfig> streamConfigs = new ArrayList<>();
-    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final StreamConfig originalStreamConfig = toStreamConfig(stream);
       // Use empty string quote because we don't really care
       if (streamConfigs.stream().anyMatch(s -> s.id().finalTableId("").equals(originalStreamConfig.id().finalTableId("")))
           || streamConfigs.stream().anyMatch(s -> s.id().rawTableId("").equals(originalStreamConfig.id().rawTableId("")))) {
-        String originalNamespace = stream.getStream().getNamespace();
-        String originalName = stream.getStream().getName();
+        final String originalNamespace = stream.getStream().getNamespace();
+        final String originalName = stream.getStream().getName();
         // ... this logic is ported from legacy normalization, and maybe should change?
         // We're taking a hash of the quoted namespace and the unquoted stream name
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
@@ -59,13 +58,13 @@ public class CatalogParser {
     return new ParsedCatalog(streamConfigs);
   }
 
-  private StreamConfig toStreamConfig(ConfiguredAirbyteStream stream) {
-    AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
-    LinkedHashMap<String, AirbyteType> airbyteColumns;
-    if (schema instanceof Struct o) {
+  private StreamConfig toStreamConfig(final ConfiguredAirbyteStream stream) {
+    final AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
+    final LinkedHashMap<String, AirbyteType> airbyteColumns;
+    if (schema instanceof final Struct o) {
       airbyteColumns = o.properties();
-    } else if (schema instanceof AirbyteType.OneOf o) {
-      airbyteColumns = o.asColumns();
+    } else if (schema instanceof final Union u) {
+      airbyteColumns = u.asColumns();
     } else {
       throw new IllegalArgumentException("Top-level schema must be an object");
     }
@@ -89,8 +88,8 @@ public class CatalogParser {
     // as with the tablename collisions thing above - we're trying to preserve legacy normalization's
     // naming conventions here.
     final LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
-    for (Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
-      ColumnId originalColumnId = sqlGenerator.buildColumnId(entry.getKey());
+    for (final Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
+      final ColumnId originalColumnId = sqlGenerator.buildColumnId(entry.getKey());
       ColumnId columnId;
       if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(originalColumnId.canonicalName()))) {
         // None of the existing columns have the same name. We can add this new column as-is.
@@ -101,7 +100,7 @@ public class CatalogParser {
         int i = 1;
         while (true) {
           columnId = sqlGenerator.buildColumnId(entry.getKey() + "_" + i);
-          String canonicalName = columnId.canonicalName();
+          final String canonicalName = columnId.canonicalName();
           if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(canonicalName))) {
             break;
           } else {

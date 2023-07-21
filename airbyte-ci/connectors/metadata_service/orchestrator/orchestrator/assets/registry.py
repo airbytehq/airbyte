@@ -8,8 +8,8 @@ from dagster import asset, OpExecutionContext, MetadataValue, Output
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.utils import to_json_sanitized_dict
 from orchestrator.assets.registry_entry import read_registry_entry_blob
-from orchestrator.utils.object_helpers import to_json_sanitized_dict
 
 from typing import List
 

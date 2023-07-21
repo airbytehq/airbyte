@@ -19,7 +19,7 @@ class FormatConnectorCode(GradleTask):
     async def _run(self) -> StepResult:
         formatted = (
             environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
-            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             .with_exec(["./gradlew", "format"])
         )
         exit_code, stdout, stderr = await get_exec_result(formatted)
