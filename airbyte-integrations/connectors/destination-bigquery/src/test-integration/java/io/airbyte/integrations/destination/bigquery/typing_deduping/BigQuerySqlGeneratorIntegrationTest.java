@@ -5,12 +5,18 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
@@ -59,7 +65,7 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
-  private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator("US");
   public static final ColumnId ID_COLUMN = GENERATOR.buildColumnId("id");
   public static final List<ColumnId> PRIMARY_KEY = List.of(ID_COLUMN);
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
@@ -120,7 +126,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final JsonNode config = Jsons.deserialize(rawConfig);
 
     bq = BigQueryDestination.getBigQuery(config);
-    destinationHandler = new BigQueryDestinationHandler(bq);
+    destinationHandler = new BigQueryDestinationHandler(bq, "US");
   }
 
   @BeforeEach
@@ -179,6 +185,30 @@ public class BigQuerySqlGeneratorIntegrationTest {
             Field.of("unknown", legacySQLTypeName(StandardSQLTypeName.JSON))),
         schema);
     // TODO this should assert partitioning/clustering configs
+  }
+
+  @Test
+  public void testCreateTableInOtherRegion() throws InterruptedException {
+    final StreamConfig stream = incrementalDedupStreamConfig();
+    BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
+    // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
+    bq.getDataset(testDataset).delete();
+
+    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(stream, ""));
+
+    // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
+    // Give ourselves 2 minutes just in case.
+    for (int i = 0; i < 120; i++) {
+      final Dataset dataset = bq.getDataset(DatasetId.of(bq.getOptions().getProjectId(), testDataset));
+      if (dataset == null) {
+        LOGGER.info("Sleeping and trying again... ({})", i);
+        Thread.sleep(1000);
+      } else {
+        assertEquals("asia-east1", dataset.getLocation());
+        return;
+      }
+    }
+    fail("Dataset does not exist");
   }
 
   @Test
