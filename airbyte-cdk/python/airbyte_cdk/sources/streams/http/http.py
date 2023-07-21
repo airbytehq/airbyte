@@ -296,8 +296,7 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        request = requests.Request(**args | {})
-        prepared_request = self._session.prepare_request(request)
+        prepared_request = self._session.prepare_request(requests.Request(**args))
 
         return prepared_request
 
