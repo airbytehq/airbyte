@@ -80,13 +80,21 @@ class DocumentProcessor:
                     pass  # if the field doesn't exist, do nothing
         metadata = self._truncate_metadata(metadata)
         stream_identifier = self._stream_identifier(record)
-        current_stream = self.streams[stream_identifier]
+        current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
         if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-            # TODO support nested and composite primary keys
-            metadata[METADATA_RECORD_ID_FIELD] = record.data[current_stream.primary_key[0][0]]
+            metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
         return metadata
+
+    def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> dict:
+        primary_key = []
+        for key in stream.primary_key:
+            try:
+                primary_key.append(str(dpath.util.get(record.data, key)))
+            except KeyError:
+                primary_key.append("__not_found__")
+        return "_".join(primary_key)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
         """
