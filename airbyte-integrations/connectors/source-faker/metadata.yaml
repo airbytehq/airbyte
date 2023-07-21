@@ -4,7 +4,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 3.0.2
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-faker
   githubIssueLabel: source-faker
   icon: faker.svg
@@ -30,4 +30,9 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   tags:
     - language:python
+  releases:
+    breakingChanges:
+      4.0.0:
+        message: "This is a breaking change message"
+        upgradeDeadline: "2023-07-19"
 metadataSpecVersion: "1.0"
