@@ -465,6 +465,7 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
 
         return result
 
+
 class FbaShipmentsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
