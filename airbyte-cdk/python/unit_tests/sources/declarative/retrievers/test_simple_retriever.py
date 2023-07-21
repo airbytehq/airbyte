@@ -648,6 +648,7 @@ def test_emit_log_request_response_messages(mocker):
     assert message_repository.log_message.call_args_list[0].args[0] == Level.DEBUG
     assert message_repository.log_message.call_args_list[0].args[1]() == format_http_message_mock.return_value
 
+
 @pytest.mark.parametrize(
     "path, params, expected_url", [
         pytest.param("v1/endpoint?param1=value1", {}, "https://airbyt.io/v1/endpoint?param1=value1", id="test_params_only_in_path"),
