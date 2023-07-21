@@ -3,8 +3,8 @@
 #
 
 import logging
-from itertools import chain
 from http import HTTPStatus
+from itertools import chain
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
