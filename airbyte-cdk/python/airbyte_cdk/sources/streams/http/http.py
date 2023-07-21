@@ -144,7 +144,7 @@ class HttpStream(Stream, ABC):
 
     def request_params(
             self,
-            stream_state: Mapping[str, Any],
+            stream_state: Optional[Mapping[str, Any]],
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
@@ -156,7 +156,7 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None
+            self, stream_state: Optional[Mapping[str, Any]], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -165,7 +165,7 @@ class HttpStream(Stream, ABC):
 
     def request_body_data(
             self,
-            stream_state: Mapping[str, Any],
+            stream_state: Optional[Mapping[str, Any]],
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping[str, Any], str]]:
@@ -182,7 +182,7 @@ class HttpStream(Stream, ABC):
 
     def request_body_json(
             self,
-            stream_state: Mapping[str, Any],
+            stream_state: Optional[Mapping[str, Any]],
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -195,7 +195,7 @@ class HttpStream(Stream, ABC):
 
     def request_kwargs(
             self,
-            stream_state: Mapping[str, Any],
+            stream_state: Optional[Mapping[str, Any]],
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
@@ -281,7 +281,11 @@ class HttpStream(Stream, ABC):
             json: Optional[Mapping[str, Any]] = None,
             data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self._join_url(self.url_base, path), "headers": headers, "params": dict(params or {})}
+        url = self._join_url(self.url_base, path)
+        query_args = dict(params or {})
+        if self.must_deduplicate_query_params():
+            self.deduplicate_query_params(url, query_args)
+        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_args}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -291,8 +295,6 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        if self.must_deduplicate_query_params():
-            self.deduplicate_query_params(args["url"], args["params"])
         request = requests.Request(**args | {})
         prepared_request = self._session.prepare_request(request)
 
@@ -447,7 +449,7 @@ class HttpStream(Stream, ABC):
     def _read_pages(
             self,
             records_generator_fn: Callable[
-                [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+                [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
             ],
             stream_slice: Optional[Mapping[str, Any]] = None,
             stream_state: Optional[Mapping[str, Any]] = None,
@@ -484,7 +486,7 @@ class HttpStream(Stream, ABC):
 
 
 class HttpSubStream(HttpStream, ABC):
-    def __init__(self, parent: HttpStream, **kwargs):
+    def __init__(self, parent: HttpStream, **kwargs: Any):
         """
         :param parent: should be the instance of HttpStream class
         """
