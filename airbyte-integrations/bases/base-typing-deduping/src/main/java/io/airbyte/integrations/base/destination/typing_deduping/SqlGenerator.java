@@ -4,72 +4,14 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface SqlGenerator<DialectTableDefinition> {
 
-  /**
-   * In general, callers should not directly instantiate this class. Use
-   * {@link #buildStreamId(String, String, String)} instead.
-   * <p>
-   * All names/namespaces are intended to be quoted, but do not explicitly contain quotes. For
-   * example, finalName might be "foo bar"; the caller is required to wrap that in quotes before using
-   * it in a query.
-   *
-   * @param finalNamespace the namespace where the final table will be created
-   * @param finalName the name of the final table
-   * @param rawNamespace the namespace where the raw table will be created (typically "airbyte")
-   * @param rawName the name of the raw table (typically namespace_name, but may be different if there
-   *        are collisions). There is no rawNamespace because we assume that we're writing raw tables
-   *        to the airbyte namespace.
-   */
-  record StreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
-
-    /**
-     * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience
-     * method to generate that syntax.
-     */
-    public String finalTableId(String quote) {
-      return quote + finalNamespace + quote + "." + quote + finalName + quote;
-    }
-
-    public String finalTableId(String suffix, String quote) {
-      return quote + finalNamespace + quote + "." + quote + finalName + suffix + quote;
-    }
-
-    public String rawTableId(String quote) {
-      return quote + rawNamespace + quote + "." + quote + rawName + quote;
-    }
-
-    public String finalName(final String quote) {
-      return quote + finalName + quote;
-    }
-
-    public String finalNamespace(final String quote) {
-      return quote + finalNamespace + quote;
-    }
-
-  }
-
-  /**
-   * In general, callers should not directly instantiate this class. Use
-   * {@link #buildColumnId(String)} instead.
-   *
-   * @param name the name of the column in the final table. Callers should prefer
-   *        {@link #name(String)} when using the column in a query.
-   * @param originalName the name of the field in the raw JSON blob
-   * @param canonicalName the name of the field according to the destination. Used for deduping.
-   *        Useful if a destination warehouse handles columns ignoring case, but preserves case in the
-   *        table schema.
-   */
-  record ColumnId(String name, String originalName, String canonicalName) {
-
-    public String name(final String quote) {
-      return quote + name + quote;
-    }
-
-  }
+  Set<String> FINAL_TABLE_AIRBYTE_COLUMNS = Set.of("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta");
+  String SOFT_RESET_SUFFIX = "_ab_soft_reset";
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
@@ -79,7 +21,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
    * The generated SQL may throw an exception if the table already exists. Callers should use
-   * {@link #alterTable(StreamConfig, java.lang.Object)} if the table is known to exist.
+   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
+   * to exist.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -87,13 +30,24 @@ public interface SqlGenerator<DialectTableDefinition> {
   String createTable(final StreamConfig stream, final String suffix);
 
   /**
-   * Generate a SQL statement to alter an existing table to match the given stream.
-   * <p>
-   * The operations may differ based on the existing table definition (BigQuery does not allow
-   * altering a partitioning scheme and requires you to recreate+rename the table; snowflake only
-   * allows altering some column types to certain other types, etc.).
+   * Check the final table's schema and compare it to what the stream config would generate.
+   *
+   * @param stream the stream/stable in question
+   * @param existingTable the existing table mapped to the stream
+   * @return whether the existing table matches the expected schema
+   * @throws TableNotMigratedException if the table does not contain all
+   *         {@link SqlGenerator#FINAL_TABLE_AIRBYTE_COLUMNS}
    */
-  String alterTable(final StreamConfig stream, DialectTableDefinition existingTable);
+  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
+
+  // TODO: Make softReset a single SQL statement rather than a list
+  /**
+   * SQL Statements which will rebuild the final table using the raw table data
+   *
+   * @param stream the stream to rebuild
+   * @return an ordered sequence of SQL statements to execute to rebuild the final table.
+   */
+  List<String> softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
