@@ -23,8 +23,8 @@ from ci_connector_ops.pipelines.consts import (
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
-from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify
+from dagger import CacheSharingMode, CacheVolume, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -373,20 +373,21 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_python_package(context, python_base_environment, CI_CONNECTOR_OPS_SOURCE_PATH)
 
 
-def with_global_dockerd_service(dagger_client: Client) -> Container:
+def with_dockerd_service(context: ConnectorContext) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
-        dagger_client (Client): The dagger client used to create the container.
+        context (ConnectorContext): The current connector context.
     Returns:
         Container: The container running dockerd as a service
     """
     return (
-        dagger_client.container()
+        context.dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
+        .with_env_variable("CONNECTOR_NAME", context.connector.technical_name)
         .with_mounted_cache(
             "/tmp",
-            dagger_client.cache_volume("shared-tmp"),
+            context.dagger_client.cache_volume(f"shared-tmp-{slugify(context.connector.technical_name)}"),
         )
         .with_exposed_port(2375)
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
@@ -405,12 +406,16 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = context.dockerd_service
-    docker_hostname = "global-docker-host"
+    dockerd_service = with_dockerd_service(context)
+    docker_hostname = f"{slugify(context.connector.technical_name)}-docker-host"
     return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
-        .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+        .with_service_binding(docker_hostname, dockerd_service)
+        .with_mounted_cache(
+            "/tmp",
+            context.dagger_client.cache_volume(f"shared-tmp-{slugify(context.connector.technical_name)}"),
+            sharing=CacheSharingMode.PRIVATE,
+        )
     )
 
 
