@@ -5,6 +5,7 @@
 """This module groups util function used in pipelines."""
 from __future__ import annotations
 
+import contextlib
 import datetime
 import json
 import os
@@ -115,6 +116,17 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     return None
 
 
+@contextlib.contextmanager
+def catch_exec_error_group():
+    try:
+        yield
+    except anyio.ExceptionGroup as eg:
+        for e in eg.exceptions:
+            if isinstance(e, ExecError):
+                raise e
+        raise
+
+
 async def get_container_output(container: Container) -> Tuple[str, str]:
     """Retrieve both stdout and stderr of a container, concurrently.
 
@@ -123,18 +135,11 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
 
     Returns:
         Tuple[str, str]: The stdout and stderr of the container, respectively.
-
-    Raises:
-        ExecError: If the container exit code is not 0.
     """
-    try:
+    with catch_exec_error_group():
         async with asyncer.create_task_group() as task_group:
             soon_stdout = task_group.soonify(container.stdout)()
             soon_stderr = task_group.soonify(container.stderr)()
-    except anyio.ExceptionGroup as e:
-        if isinstance(e.exceptions[0], ExecError):
-            raise e.exceptions[0]
-        raise
     return soon_stdout.value, soon_stderr.value
 
 
