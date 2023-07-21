@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * In a typical sync, destinations should call the methods:
  * <ol>
  * <li>{@link #prepareFinalTables()} once at the start of the sync</li>
- * <li>{@link #typeAndDedupe(String, String)} as needed throughoug the sync</li>
+ * <li>{@link #typeAndDedupe(String, String)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
  * Note that createFinalTables initializes some internal state. The other methods will throw an
