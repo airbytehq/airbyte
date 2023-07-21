@@ -6,7 +6,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Callable, Iterable, Union, Deque, Optional, List
+from typing import Callable, Deque, Iterable, List, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.utils.types import JsonType

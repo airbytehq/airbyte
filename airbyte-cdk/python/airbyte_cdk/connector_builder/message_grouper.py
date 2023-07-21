@@ -37,6 +37,7 @@ from airbyte_protocol.models.airbyte_protocol import (
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
 
+
 class MessageGrouper:
     logger = logging.getLogger("airbyte.connector-builder")
 

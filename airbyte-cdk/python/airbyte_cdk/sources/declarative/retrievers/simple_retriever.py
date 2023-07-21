@@ -188,7 +188,10 @@ class SimpleRetriever(Retriever, HttpStream):
         return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping, **auth_options_mapping}
 
     def request_headers(
-        self, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
