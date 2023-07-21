@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -45,6 +46,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Dict[str, Any]:
+        avro_format = config.format[config.file_type] if config.format else AvroFormat()
         with stream_reader.open_file(file) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
@@ -52,27 +54,30 @@ class AvroParser(FileTypeParser):
             unsupported_type = avro_schema["type"]
             raise ValueError(f"Only record based avro files are supported. Found {unsupported_type}")
         json_schema = {
-            field["name"]: AvroParser._convert_avro_type_to_json(field["name"], field["type"]) for field in avro_schema["fields"]
+            field["name"]: AvroParser._convert_avro_type_to_json(avro_format, field["name"], field["type"]) for field in avro_schema["fields"]
         }
         return json_schema
 
     @classmethod
-    def _convert_avro_type_to_json(cls, field_name: str, avro_field: str) -> Mapping[str, Any]:
+    def _convert_avro_type_to_json(cls, avro_format: AvroFormat, field_name: str, avro_field: str) -> Mapping[str, Any]:
         if isinstance(avro_field, str) and avro_field in AVRO_TYPE_TO_JSON_TYPE:
+            # Legacy behavior to retain backwards compatibility. Long term we should always represent doubles as strings
+            if avro_field == "double" and avro_format.decimal_as_float:
+                return {"type": "number"}
             return {"type": AVRO_TYPE_TO_JSON_TYPE[avro_field]}
         if isinstance(avro_field, Mapping):
             if avro_field["type"] == "record":
                 return {
                     "type": "object",
                     "properties": {
-                        object_field["name"]: {**AvroParser._convert_avro_type_to_json(object_field["name"], object_field["type"])}
+                        object_field["name"]: AvroParser._convert_avro_type_to_json(avro_format, object_field["name"], object_field["type"])
                         for object_field in avro_field["fields"]
                     },
                 }
             elif avro_field["type"] == "array":
                 if "items" not in avro_field:
                     raise ValueError(f"{field_name} array type does not have a required field items")
-                return {"type": "array", "items": {**AvroParser._convert_avro_type_to_json("", avro_field["items"])}}
+                return {"type": "array", "items": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["items"])}
             elif avro_field["type"] == "enum":
                 if "symbols" not in avro_field:
                     raise ValueError(f"{field_name} enum type does not have a required field symbols")
@@ -82,7 +87,7 @@ class AvroParser(FileTypeParser):
             elif avro_field["type"] == "map":
                 if "values" not in avro_field:
                     raise ValueError(f"{field_name} map type does not have a required field values")
-                return {"type": "object", "additionalProperties": {**AvroParser._convert_avro_type_to_json("", avro_field["values"])}}
+                return {"type": "object", "additionalProperties": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["values"])}
             elif avro_field["type"] == "fixed" and avro_field.get("logicalType") != "duration":
                 if "size" not in avro_field:
                     raise ValueError(f"{field_name} fixed type does not have a required field size")
@@ -119,18 +124,21 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
+        avro_format = config.format[config.file_type] if config.format else AvroFormat()
         with stream_reader.open_file(file) as fp:
             avro_reader = fastavro.reader(fp)
             schema = avro_reader.writer_schema
             schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
             for record in avro_reader:
                 yield {
-                        record_field: self._to_output_value(schema_field_name_to_type[record_field], record[record_field])
+                        record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
                         for record_field, record_value in schema_field_name_to_type.items()
                     }
 
-    def _to_output_value(self, record_type: Mapping[str, Any], record_value: Any) -> Any:
+    def _to_output_value(self, avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
         if not isinstance(record_type, Mapping):
+            if record_type == "double" and not avro_format.decimal_as_float:
+                return str(record_value)
             return record_value
         if record_type.get("logicalType") == "uuid":
             return uuid.UUID(bytes=record_value)

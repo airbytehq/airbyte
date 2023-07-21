@@ -279,7 +279,7 @@ multiple_avro_combine_schema_scenario = (
         [
             {
                 "data": {
-                    "col_double": 20.02,
+                    "col_double": "20.02",
                     "col_string": "Robbers",
                     "col_album": {"album": "The 1975"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
@@ -289,7 +289,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": 20.23,
+                    "col_double": "20.23",
                     "col_string": "Somebody Else",
                     "col_album": {"album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
@@ -299,7 +299,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": 1975.1975,
+                    "col_double": "1975.1975",
                     "col_string": "It's Not Living (If It's Not with You)",
                     "col_song": {"title": "Love It If We Made It"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
@@ -309,7 +309,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": 5791.5791,
+                    "col_double": "5791.5791",
                     "col_string": "The 1975",
                     "col_song": {"title": "About You"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
@@ -379,7 +379,7 @@ avro_all_types_scenario = (
                     "col_int": 27,
                     "col_long": 1992,
                     "col_float": 999.09723456,
-                    "col_double": 9123456.12394,
+                    "col_double": "9123456.12394",
                     "col_bytes": "\x00\x01\x02\x03",
                     "col_string": "Love It If We Made It",
                     "col_record": {"artist": "The 1975", "song": "About You", "year": 2022},
@@ -618,6 +618,108 @@ multiple_streams_avro_scenario = (
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 },
+            ]
+        }
+    )
+).build()
+
+avro_file_with_decimal_as_float_scenario = (
+    TestScenarioBuilder()
+    .set_name("avro_file_with_decimal_as_float_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "avro",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "avro": {
+                            "filetype": "avro",
+                            "decimal_as_float": True
+                        }
+                    }
+                }
+            ]
+        }
+    )
+    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+    .set_file_type("avro")
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col_double": 20.02,
+                    "col_string": "Robbers",
+                    "col_album": {"album": "The 1975"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_url": "a.avro",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col_double": 20.23,
+                    "col_string": "Somebody Else",
+                    "col_album": {"album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_url": "a.avro",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col_double": 1975.1975,
+                    "col_string": "It's Not Living (If It's Not with You)",
+                    "col_song": {"title": "Love It If We Made It"},
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
+                    "_ab_source_file_url": "b.avro",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col_double": 5791.5791,
+                    "col_string": "The 1975",
+                    "col_song": {"title": "About You"},
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
+                    "_ab_source_file_url": "b.avro",
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col_double": {"type": "number"},
+                            "col_string": {"type": "string"},
+                            "col_album": {
+                                "properties": {
+                                    "album": {"type": "string"},
+                                },
+                                "type": "object",
+                            },
+                            "col_song": {
+                                "properties": {
+                                    "title": {"type": "string"},
+                                },
+                                "type": "object",
+                            },
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
             ]
         }
     )

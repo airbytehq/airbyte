@@ -102,7 +102,13 @@ single_csv_scenario = (
                                                                 "default": "avro",
                                                                 "enum": ["avro"],
                                                                 "type": "string",
-                                                            }
+                                                            },
+                                                            "decimal_as_float": {
+                                                                "title": "Convert Decimal Fields to Floats",
+                                                                "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
+                                                                "default": False,
+                                                                "type": "boolean",
+                                                            },
                                                         },
                                                     },
                                                     {

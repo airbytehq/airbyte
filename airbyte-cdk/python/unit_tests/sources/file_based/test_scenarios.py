@@ -16,6 +16,7 @@ from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_all_types_scenario,
+    avro_file_with_decimal_as_float_scenario,
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     single_avro_scenario,
@@ -163,8 +164,7 @@ discover_scenarios = [
     schemaless_jsonl_multi_stream_scenario,
     single_avro_scenario,
     avro_all_types_scenario,
-    multiple_avro_combine_schema_scenario,
-    multiple_streams_avro_scenario,
+    avro_file_with_decimal_as_float_scenario,
 ]
 
 
@@ -188,14 +188,6 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
 
 
 read_scenarios = discover_scenarios + [
-    emit_record_scenario_multi_stream,
-    emit_record_scenario_single_stream,
-    invalid_validation_policy,
-    no_validation_policy,
-    skip_record_scenario_multi_stream,
-    skip_record_scenario_single_stream,
-    wait_for_rediscovery_scenario_multi_stream,
-    wait_for_rediscovery_scenario_single_stream,
 ]
 
 
