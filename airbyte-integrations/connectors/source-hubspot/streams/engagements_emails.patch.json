@@ -6,6 +6,24 @@
         "type": ["null", "integer", "string"],
         "format": "integer"
       }
+    },
+    "tickets": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer"
+      }
+    },
+    "companies": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer"
+      }
     }
   }
 }
