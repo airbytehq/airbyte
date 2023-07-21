@@ -11,8 +11,9 @@ from unittest.mock import MagicMock
 import mock
 import pendulum
 import pytest
+from requests import HTTPError
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
+from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError, HubspotInvalidAuth
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
@@ -59,6 +60,16 @@ def test_check_connection_invalid_config(config):
 def test_check_connection_exception(config):
     ok, error_msg = SourceHubspot().check_connection(logger, config=config)
 
+    assert not ok
+    assert error_msg
+
+
+def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
+    responses = [
+        {"json": {"message": "invalid client_id"}, "status_code": 400},
+    ]
+    requests_mock.register_uri("POST", "/oauth/v1/token", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_client_id)
     assert not ok
     assert error_msg
 
