@@ -22,7 +22,7 @@ import git
 from ci_connector_ops.pipelines import consts, main_logger
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
-from dagger import Config, Connection, Client, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
@@ -58,6 +58,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     else:
         return False
 
+
 def secret_host_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container.
 
@@ -73,11 +74,10 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     Returns:
         Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
     """
+
     def _secret_host_variable(container: Container):
-        return container.with_secret_variable(
-            name,
-            get_secret_host_variable(client, name, default)
-        )
+        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+
     return _secret_host_variable
 
 
@@ -148,7 +148,11 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     """
     try:
         return 0, *(await get_container_output(container))
-    except ExecError as e:
+    except (anyio.ExceptionGroup, ExecError) as e:
+        if isinstance(e, anyio.ExceptionGroup):
+            for error in e.exceptions:
+                if isinstance(error, ExecError):
+                    return error.exit_code, error.stdout, error.stderr
         return e.exit_code, e.stdout, e.stderr
 
 
