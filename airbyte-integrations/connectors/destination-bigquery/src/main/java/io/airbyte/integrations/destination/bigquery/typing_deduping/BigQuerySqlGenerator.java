@@ -49,6 +49,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
+  private final String datasetLocation;
+
+  /**
+   * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler} setting the query
+   *                        execution location, but let's be explicit since this is typically a compliance requirement.
+   */
+  public BigQuerySqlGenerator(String datasetLocation) {
+    this.datasetLocation = datasetLocation;
+  }
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
@@ -179,11 +188,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
+        "dataset_location", datasetLocation,
         "final_table_id", stream.id().finalTableId(suffix, QUOTE),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
+            CREATE SCHEMA IF NOT EXISTS ${final_namespace}
+            OPTIONS(location="${dataset_location}");
 
             CREATE OR REPLACE TABLE ${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
