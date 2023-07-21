@@ -127,9 +127,14 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
     Raises:
         ExecError: If the container exit code is not 0.
     """
-    async with asyncer.create_task_group() as task_group:
-        soon_stdout = task_group.soonify(container.stdout)()
-        soon_stderr = task_group.soonify(container.stderr)()
+    try:
+        async with asyncer.create_task_group() as task_group:
+            soon_stdout = task_group.soonify(container.stdout)()
+            soon_stderr = task_group.soonify(container.stderr)()
+    except anyio.ExceptionGroup as e:
+        if isinstance(e.exceptions[0], ExecError):
+            raise e.exceptions[0]
+        raise
     return soon_stdout.value, soon_stderr.value
 
 
@@ -148,11 +153,7 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     """
     try:
         return 0, *(await get_container_output(container))
-    except (anyio.ExceptionGroup, ExecError) as e:
-        if isinstance(e, anyio.ExceptionGroup):
-            for error in e.exceptions:
-                if isinstance(error, ExecError):
-                    return error.exit_code, error.stdout, error.stderr
+    except (ExecError) as e:
         return e.exit_code, e.stdout, e.stderr
 
 
