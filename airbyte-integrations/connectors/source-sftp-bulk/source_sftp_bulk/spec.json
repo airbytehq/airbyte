@@ -9,26 +9,25 @@
       "host",
       "port",
       "stream_name",
-      "start_date",
-      "folder_path"
+      "start_date"
     ],
     "additionalProperties": true,
     "properties": {
       "username": {
-        "title": "User Name",
-        "description": "The server user",
+        "title": "Username",
+        "description": "The username associated with the remote server.",
         "type": "string",
         "order": 0
       },
       "password": {
         "title": "Password",
-        "description": "OS-level password for logging into the jump server host",
+        "description": "The password used to .",
         "type": "string",
         "airbyte_secret": true,
         "order": 1
       },
       "private_key": {
-        "title": "Private key",
+        "title": "Private Key",
         "description": "The private key",
         "type": "string",
         "multiline": true,
@@ -36,29 +35,29 @@
       },
       "host": {
         "title": "Host Address",
-        "description": "The server host address",
+        "description": "The remote server's host address.",
         "type": "string",
         "examples": ["www.host.com", "192.0.2.1"],
         "order": 3
       },
       "port": {
         "title": "Port",
-        "description": "The server port",
+        "description": "The port number to connect to the remote server.",
         "type": "integer",
         "default": 22,
         "examples": ["22"],
         "order": 4
       },
       "stream_name": {
-        "title": "Stream name",
-        "description": "The name of the stream or table you want to create",
+        "title": "Stream Name",
+        "description": "The name of the stream or table you want to create.",
         "type": "string",
         "examples": ["ftp_contacts"],
         "order": 5
       },
       "file_type": {
-        "title": "File type",
-        "description": "The file type you want to sync. Currently only 'csv' and 'json' files are supported.",
+        "title": "File Type",
+        "description": "The file type you want to sync. Currently only CSV and JSON files are supported.",
         "type": "string",
         "default": "csv",
         "enum": ["csv", "json"],
@@ -66,7 +65,7 @@
         "examples": ["csv", "json"]
       },
       "separator": {
-        "title": "CSV Separator (Optional)",
+        "title": "CSV Separator",
         "description": "The separator used in the CSV files. Define None if you want to use the Sniffer functionality",
         "type": "string",
         "default": ",",
@@ -74,16 +73,16 @@
         "order": 7
       },
       "folder_path": {
-        "title": "Folder Path (Optional)",
-        "description": "The directory to search files for sync",
+        "title": "Folder Path",
+        "description": "The optional directory to search files for sync.",
         "type": "string",
         "default": "",
         "examples": ["/logs/2022"],
         "order": 8
       },
       "file_pattern": {
-        "title": "File Pattern (Optional)",
-        "description": "The regular expression to specify files for sync in a chosen Folder Path",
+        "title": "File Pattern",
+        "description": "The optional regular expression to specify files for sync in a chosen Folder Path.",
         "type": "string",
         "default": "",
         "examples": [
@@ -92,7 +91,7 @@
         "order": 9
       },
       "file_most_recent": {
-        "title": "Most recent file (Optional)",
+        "title": "Most recent file",
         "description": "Sync only the most recent file for the configured folder path and file pattern",
         "type": "boolean",
         "default": false,
