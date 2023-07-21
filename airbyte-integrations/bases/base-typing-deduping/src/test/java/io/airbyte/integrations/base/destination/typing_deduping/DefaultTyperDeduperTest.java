@@ -22,7 +22,7 @@ public class DefaultTyperDeduperTest {
 
   @BeforeEach
   void setup() {
-    sqlGenerator = new MockSqlGenerator();
+    sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
@@ -114,7 +114,7 @@ public class DefaultTyperDeduperTest {
   void existingEmptyTableMatchingSchema() throws Exception {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
-    sqlGenerator.setExistingSchemaMatch(true);
+    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareFinalTables();
     verify(destinationHandler, never()).execute(any());
@@ -160,7 +160,7 @@ public class DefaultTyperDeduperTest {
   void existingNonemptyTableMatchingSchema() throws Exception {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
-    sqlGenerator.setExistingSchemaMatch(true);
+    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareFinalTables();
     // NB: We only create one tmp table here.

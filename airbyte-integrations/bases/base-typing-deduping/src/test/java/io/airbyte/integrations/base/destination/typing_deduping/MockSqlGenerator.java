@@ -11,12 +11,6 @@ import java.util.List;
  */
 class MockSqlGenerator implements SqlGenerator<String> {
 
-  private boolean existingSchemaMatch = false;
-
-  public void setExistingSchemaMatch(boolean existingSchemaMatch) {
-    this.existingSchemaMatch = existingSchemaMatch;
-  }
-
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
     return null;
@@ -34,7 +28,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, String existingTable) throws TableNotMigratedException {
-    return existingSchemaMatch;
+    return false;
   }
 
   @Override
