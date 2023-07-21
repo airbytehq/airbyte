@@ -76,8 +76,9 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
             if (configuration instanceof QueryJobConfiguration qc) {
               JobStatistics.QueryStatistics childQueryStats = childJob.getStatistics();
               String truncatedQuery = qc.getQuery()
-                  .substring(0, Math.min(100, qc.getQuery().length()))
-                  .replaceAll("\n", " ");
+                  .replaceAll("\n", " ")
+                  .replaceAll(" +", " ")
+                  .substring(0, Math.min(100, qc.getQuery().length()));
               if (!truncatedQuery.equals(qc.getQuery())) {
                 truncatedQuery += "...";
               }
