@@ -1,4 +1,4 @@
-# Source Tiktok-Marketing Migration Guide
+# Source Amazon Ads Migration Guide
 
 ## Upgrading to 3.0.0
 
