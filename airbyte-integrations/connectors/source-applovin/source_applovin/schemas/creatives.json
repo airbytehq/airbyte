@@ -4,6 +4,9 @@
   "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
     "campaign_id": {
       "type": ["null", "string"]
     },
