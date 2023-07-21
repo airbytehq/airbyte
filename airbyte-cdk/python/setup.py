@@ -13,7 +13,7 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-avro_dependency = "avro~=1.11.2",
+avro_dependency = "avro~=1.11.2"
 fastavro_dependency = "fastavro~=1.8.0"
 pyarrow_dependency = "pyarrow==12.0.1"
 

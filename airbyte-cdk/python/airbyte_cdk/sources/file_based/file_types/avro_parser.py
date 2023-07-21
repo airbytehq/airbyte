@@ -7,11 +7,11 @@ import uuid
 from typing import Any, Dict, Iterable, Mapping
 
 import fastavro
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -47,6 +47,9 @@ class AvroParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Dict[str, Any]:
         avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        if not isinstance(avro_format, AvroFormat):
+            raise ValueError(f"Expected ParquetFormat, got {avro_format}")
+
         with stream_reader.open_file(file) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
@@ -54,7 +57,8 @@ class AvroParser(FileTypeParser):
             unsupported_type = avro_schema["type"]
             raise ValueError(f"Only record based avro files are supported. Found {unsupported_type}")
         json_schema = {
-            field["name"]: AvroParser._convert_avro_type_to_json(avro_format, field["name"], field["type"]) for field in avro_schema["fields"]
+            field["name"]: AvroParser._convert_avro_type_to_json(avro_format, field["name"], field["type"])
+            for field in avro_schema["fields"]
         }
         return json_schema
 
@@ -87,7 +91,10 @@ class AvroParser(FileTypeParser):
             elif avro_field["type"] == "map":
                 if "values" not in avro_field:
                     raise ValueError(f"{field_name} map type does not have a required field values")
-                return {"type": "object", "additionalProperties": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["values"])}
+                return {
+                    "type": "object",
+                    "additionalProperties": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["values"]),
+                }
             elif avro_field["type"] == "fixed" and avro_field.get("logicalType") != "duration":
                 if "size" not in avro_field:
                     raise ValueError(f"{field_name} fixed type does not have a required field size")
@@ -125,17 +132,21 @@ class AvroParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        if not isinstance(avro_format, AvroFormat):
+            raise ValueError(f"Expected ParquetFormat, got {avro_format}")
+
         with stream_reader.open_file(file) as fp:
             avro_reader = fastavro.reader(fp)
             schema = avro_reader.writer_schema
             schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
             for record in avro_reader:
                 yield {
-                        record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
-                        for record_field, record_value in schema_field_name_to_type.items()
-                    }
+                    record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
+                    for record_field, record_value in schema_field_name_to_type.items()
+                }
 
-    def _to_output_value(self, avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
+    @staticmethod
+    def _to_output_value(avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
         if not isinstance(record_type, Mapping):
             if record_type == "double" and not avro_format.decimal_as_float:
                 return str(record_value)
