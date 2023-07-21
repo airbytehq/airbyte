@@ -647,3 +647,34 @@ def test_emit_log_request_response_messages(mocker):
     assert len(message_repository.log_message.call_args_list) == 1
     assert message_repository.log_message.call_args_list[0].args[0] == Level.DEBUG
     assert message_repository.log_message.call_args_list[0].args[1]() == format_http_message_mock.return_value
+
+def test_duplicate_request_params_are_simplified():
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    cursor = MagicMock(spec=Cursor)
+    cursor.select_state = MagicMock(return_value=A_SLICE_STATE)
+
+    requester.get_url_base.return_value = "https://airbyt.io"
+    params = {"param1": "value1"}
+    path = "v1/endpoint?param1=value1"
+    headers = {}
+    json = {}
+    data = {}
+
+    # Note, the request params can come from the path too!
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=cursor,
+        cursor=cursor,
+        parameters={},
+        config={},
+    )
+
+    prepared_request = retriever._create_prepared_request(path, headers, params, json, data)
+    assert prepared_request.url == "https://airbyt.io/v1/endpoint?param1=value1"

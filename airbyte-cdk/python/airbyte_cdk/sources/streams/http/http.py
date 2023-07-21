@@ -5,6 +5,7 @@
 
 import logging
 import os
+import urllib
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -276,8 +277,24 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
+        print(f"args: {args}")
+        print(f"params:")
+        query_string = urllib.parse.urlparse(args["url"]).query
+        query_dict = urllib.parse.parse_qs(query_string)
+        print(query_dict)
 
-        return self._session.prepare_request(requests.Request(**args))
+
+        for query_param_key, query_param_value in query_dict.items():
+            if query_param_key in params:
+                #TODO: check if they are the same!
+                print(f"query_param: {query_param_key}")
+                params.pop(query_param_key)
+                print(f"query dict after pop: {params}")
+        request = requests.Request(**args)
+        prepared_request = self._session.prepare_request(request)
+        print(f"prepared_request: {prepared_request.url}")
+
+        return prepared_request
 
     @classmethod
     def _join_url(cls, url_base: str, path: str):
