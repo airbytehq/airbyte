@@ -270,10 +270,20 @@ class Form(IncrementalStream):
 
 # Source
 class SourceCommcare(AbstractSource):
+    
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        if "api_key" not in config:
-            return False, None
-        return True, None
+        
+        project_space=config['project_space']
+        url = f"https://www.commcarehq.org/a/{project_space}/api/v0.5/form"
+        api_key= config['api_key']
+        headers = {
+                "Authorization": f"ApiKey {api_key}"
+        }
+        response= requests.get(url, headers=headers)
+        if response.status_code==200:
+            return True, None
+        else:
+            return False, "Invalid Api key or project space"
 
     def base_schema(self):
         return {
