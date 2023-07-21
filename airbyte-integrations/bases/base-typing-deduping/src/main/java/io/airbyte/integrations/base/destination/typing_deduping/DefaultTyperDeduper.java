@@ -8,6 +8,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +126,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
         StreamId streamId = streamConfig.id();
         String finalSuffix = overwriteStreamsWithTmpTable.get(streamId);
-        if (finalSuffix != null && !finalSuffix.isEmpty()) {
+        if (!StringUtils.isEmpty(finalSuffix)) {
           final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
           LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
           destinationHandler.execute(overwriteFinalTable);
