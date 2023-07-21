@@ -555,7 +555,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * Confirms that database, config, state, and catalog are all valid. Called before syncing data.
    * Provides some logging and raises early failure if sync is not going to be possible.
    * 
-   * Base implementation calls logPreSyncDebugData() and checkStateAndCatalogCompatibility().
+   * Base implementation calls logPreSyncDebugData() and validateStateAndCatalogCompatibility().
    *
    * @param database given database instance.
    * @param catalog configured catalog.
@@ -563,7 +563,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected void validateSyncSettings(final Database database, final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {
     logPreSyncDebugData(database, catalog);
-    checkStateAndCatalogCompatibility(catalog, state);
+    validateStateAndCatalogCompatibility(catalog, state);
   }
 
   /**
@@ -572,7 +572,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param catalog configured catalog.
    * @param state configured catalog.
    */
-  protected void checkStateAndCatalogCompatibility(final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {}
+  protected void validateStateAndCatalogCompatibility(final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {}
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.
