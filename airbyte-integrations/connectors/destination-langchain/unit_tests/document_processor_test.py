@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
+import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from destination_langchain.config import ProcessingConfigModel
@@ -205,6 +205,7 @@ def test_process_multiple_chunks_with_relevant_fields():
     for chunk in chunks:
         assert chunk.metadata["age"] == 25
     assert id_to_delete is None
+
 
 @pytest.mark.parametrize(
     "primary_key_value, stringified_primary_key, primary_key",
