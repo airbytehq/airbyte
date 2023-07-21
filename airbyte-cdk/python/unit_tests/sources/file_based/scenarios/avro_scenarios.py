@@ -4,6 +4,7 @@
 
 import datetime
 import decimal
+import uuid
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
@@ -94,6 +95,7 @@ _avro_all_types_file = {
                 {"name": "col_fixed", "type": {"type": "fixed", "name": "MyFixed", "size": 4}},
                 # Logical Types
                 {"name": "col_decimal", "type": {"type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 5}},
+                {"name": "col_uuid", "type": {"type": "bytes", "logicalType": "uuid"}},
                 {"name": "col_date", "type": {"type": "int", "logicalType": "date"}},
                 {"name": "col_time_millis", "type": {"type": "int", "logicalType": "time-millis"}},
                 {"name": "col_time_micros", "type": {"type": "long", "logicalType": "time-micros"}},
@@ -122,6 +124,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
+                uuid.UUID('123e4567-e89b-12d3-a456-426655440000').bytes,
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
@@ -396,11 +399,14 @@ avro_all_types_scenario = (
                     },
                     "col_fixed": "\x12\x34\x56\x78",
                     "col_decimal": 1234.56789,
+                    "col_uuid": "123e4567-e89b-12d3-a456-426655440000",
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
                     "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
+                    "col_local_timestamp_millis": "2022-05-29T00:00:00.456000",
+                    "col_local_timestamp_micros": "2022-05-30T00:00:00.456789",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
                     "_ab_source_file_url": "a.avro",
                 },
@@ -432,6 +438,7 @@ avro_all_types_scenario = (
                             },
                             "col_string": {"type": "string"},
                             "col_decimal": {"pattern": "^-?\\d{(1, 5)}(?:\\.\\d(1, 5))?$", "type": "string"},
+                            "col_uuid": {"type": "string"},
                             "col_date": {"format": "date", "type": "string"},
                             "col_time_millis": {"type": "integer"},
                             "col_time_micros": {"type": "integer"},

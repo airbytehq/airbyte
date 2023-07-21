@@ -13,6 +13,8 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+avro_dependency = "avro~=1.11.2",
+fastavro_dependency = "fastavro~=1.8.0"
 pyarrow_dependency = "pyarrow==12.0.1"
 
 setup(
@@ -49,10 +51,8 @@ setup(
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
         "airbyte-protocol-models==0.3.6",
-        "avro~=1.11.2",
         "backoff",
         "dpath~=2.0.1",
-        "fastavro~=1.8.0",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
@@ -71,6 +71,8 @@ setup(
     python_requires=">=3.8",
     extras_require={
         "dev": [
+            avro_dependency,
+            fastavro_dependency,
             "freezegun",
             "mypy",
             "pytest",
@@ -86,6 +88,8 @@ setup(
             "sphinx-rtd-theme~=1.0",
         ],
         "file-based": [
+            avro_dependency,
+            fastavro_dependency,
             pyarrow_dependency,
         ],
     },

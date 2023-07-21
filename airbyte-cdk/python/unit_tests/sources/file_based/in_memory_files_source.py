@@ -153,7 +153,7 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
     """
 
     def open_file(self, file: RemoteFile) -> IOBase:
-        return io.BytesIO(self._make_file_contents(file.uri))  # am i returning the right type
+        return io.BytesIO(self._make_file_contents(file.uri))
 
     def _make_file_contents(self, file_name: str) -> bytes:
         contents = self.files[file_name]["contents"]

@@ -119,6 +119,7 @@ from airbyte_cdk.sources.file_based.file_types import AvroParser
         ),
         pytest.param({"type": "bytes", "logicalType": "decimal", "scale": 4}, None, ValueError, id="test_decimal_missing_precision"),
         pytest.param({"type": "bytes", "logicalType": "decimal", "precision": 9}, None, ValueError, id="test_decimal_missing_scale"),
+        pytest.param({"type": "bytes", "logicalType": "uuid"}, {"type": "string"}, None, id="test_uuid"),
         pytest.param({"type": "int", "logicalType": "date"}, {"type": "string", "format": "date"}, None, id="test_date"),
         pytest.param({"type": "int", "logicalType": "time-millis"}, {"type": "integer"}, None, id="test_time_millis"),
         pytest.param({"type": "long", "logicalType": "time-micros"}, {"type": "integer"}, None, id="test_time_micros"),
@@ -126,6 +127,11 @@ from airbyte_cdk.sources.file_based.file_types import AvroParser
             {"type": "long", "logicalType": "timestamp-millis"}, {"type": "string", "format": "date-time"}, None, id="test_timestamp_millis"
         ),
         pytest.param({"type": "long", "logicalType": "timestamp-micros"}, {"type": "string"}, None, id="test_timestamp_micros"),
+        pytest.param(
+            {"type": "long", "logicalType": "local-timestamp-millis"}, {"type": "string", "format": "date-time"}, None, id="test_local_timestamp_millis"
+        ),
+        pytest.param({"type": "long", "logicalType": "local-timestamp-micros"}, {"type": "string"}, None, id="test_local_timestamp_micros"),
+
     ],
 )
 def test_convert_primitive_avro_type_to_json(avro_type, expected_json_type, expected_error):
