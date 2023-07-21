@@ -63,14 +63,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
-      if (existingTable.isEmpty()) {
-        // The table doesn't exist. Create it.
-        destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX));
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          // We're creating this table for the first time. Write directly into it.
-          overwriteStreamsWithTmpTable.put(stream.id(), NO_SUFFIX);
-        }
-      } else {
+      if (existingTable.isPresent()) {
         // The table exists. Make sure it has the right schema.
         if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
           LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
@@ -92,6 +85,13 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
             overwriteStreamsWithTmpTable.put(stream.id(), TMP_OVERWRITE_TABLE_SUFFIX);
             destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX));
           }
+        }
+      } else {
+        // The table doesn't exist. Create it.
+        destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX));
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+          // We're creating this table for the first time. Write directly into it.
+          overwriteStreamsWithTmpTable.put(stream.id(), NO_SUFFIX);
         }
       }
     }
