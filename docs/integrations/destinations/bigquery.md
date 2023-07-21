@@ -135,8 +135,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.5.5   | 2023-07-20 | [\#28490](https://github.com/airbytehq/airbyte/pull/28490) | Fix schema change detection in OVERWRITE mode when existing table is empty; other code refactoring                       |
-| 1.5.4   | 2023-07-17 | [\#28382](https://github.com/airbytehq/airbyte/pull/28382) | Destination v2 Schema Change Detection                                                                                   |
+| 1.5.6   | 2023-07-21 | [\#28580](https://github.com/airbytehq/airbyte/pull/28580) | Destinations v2: Create dataset in user-specified location                                                               |
+| 1.5.5   | 2023-07-20 | [\#28490](https://github.com/airbytehq/airbyte/pull/28490) | Destinations v2: Fix schema change detection in OVERWRITE mode when existing table is empty; other code refactoring      |
+| 1.5.4   | 2023-07-17 | [\#28382](https://github.com/airbytehq/airbyte/pull/28382) | Destinations v2: Schema Change Detection                                                                                 |
 | 1.5.3   | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                     |
 | 1.5.2   | 2023-07-05 | [\#27936](https://github.com/airbytehq/airbyte/pull/27936) | Internal scaffolding change for future development                                                                       |
 | 1.5.1   | 2023-06-30 | [\#27891](https://github.com/airbytehq/airbyte/pull/27891) | Revert bugged update                                                                                                     |
