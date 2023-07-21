@@ -5,6 +5,7 @@
 """This module groups util function used in pipelines."""
 from __future__ import annotations
 
+import contextlib
 import datetime
 import json
 import os
@@ -22,7 +23,7 @@ import git
 from ci_connector_ops.pipelines import consts, main_logger
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
-from dagger import Config, Connection, Client, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
@@ -58,6 +59,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     else:
         return False
 
+
 def secret_host_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container.
 
@@ -73,11 +75,10 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     Returns:
         Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
     """
+
     def _secret_host_variable(container: Container):
-        return container.with_secret_variable(
-            name,
-            get_secret_host_variable(client, name, default)
-        )
+        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+
     return _secret_host_variable
 
 
@@ -115,6 +116,17 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     return None
 
 
+@contextlib.contextmanager
+def catch_exec_error_group():
+    try:
+        yield
+    except anyio.ExceptionGroup as eg:
+        for e in eg.exceptions:
+            if isinstance(e, ExecError):
+                raise e
+        raise
+
+
 async def get_container_output(container: Container) -> Tuple[str, str]:
     """Retrieve both stdout and stderr of a container, concurrently.
 
@@ -123,13 +135,11 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
 
     Returns:
         Tuple[str, str]: The stdout and stderr of the container, respectively.
-
-    Raises:
-        ExecError: If the container exit code is not 0.
     """
-    async with asyncer.create_task_group() as task_group:
-        soon_stdout = task_group.soonify(container.stdout)()
-        soon_stderr = task_group.soonify(container.stderr)()
+    with catch_exec_error_group():
+        async with asyncer.create_task_group() as task_group:
+            soon_stdout = task_group.soonify(container.stdout)()
+            soon_stderr = task_group.soonify(container.stderr)()
     return soon_stdout.value, soon_stderr.value
 
 
@@ -302,12 +312,14 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     """Check if the provided file has an ignored extension."""
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
+
 def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
     """Check if the file path starts with the connector dependency path."""
     given_file_path_parts = given_file_path.parts
     starts_with_path_parts = starts_with_path.parts
 
-    return given_file_path_parts[:len(starts_with_path_parts)] == starts_with_path_parts
+    return given_file_path_parts[: len(starts_with_path_parts)] == starts_with_path_parts
+
 
 def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
     """Find all connectors whose dependencies were modified."""
@@ -329,6 +341,7 @@ def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) ->
 
     return modified_connectors
 
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -337,10 +350,7 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    all_connector_dependencies = [
-        (connector, connector.get_local_dependency_paths())
-        for connector in get_all_released_connectors()
-    ]
+    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
 
     # Ignore files with certain extensions
     modified_files = [file for file in modified_files if not _is_ignored_file(file)]
