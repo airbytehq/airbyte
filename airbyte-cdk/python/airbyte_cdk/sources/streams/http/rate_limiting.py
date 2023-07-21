@@ -75,6 +75,8 @@ def user_defined_backoff_handler(max_tries: Optional[int], **kwargs: Any) -> Cal
         _, exc, _ = sys.exc_info()
         if isinstance(exc, RequestException):
             logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+        else:
+            logger.error(f"Max retry limit reached for unknown request and response")
 
     return backoff.on_exception(
         backoff.constant,
