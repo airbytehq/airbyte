@@ -8,7 +8,8 @@ import logging
 from distutils.util import strtobool
 from typing import Any, Dict, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -35,6 +36,8 @@ class CsvParser(FileTypeParser):
     ) -> Dict[str, Any]:
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
+            if not isinstance(config_format, CsvFormat):
+                raise ValueError(f"Invalid format config: {config_format}")
             dialect_name = config.name + DIALECT_NAME
             csv.register_dialect(
                 dialect_name,
@@ -66,6 +69,8 @@ class CsvParser(FileTypeParser):
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
+            if not isinstance(config_format, CsvFormat):
+                raise ValueError(f"Invalid format config: {config_format}")
             # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
             # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
             dialect_name = config.name + DIALECT_NAME

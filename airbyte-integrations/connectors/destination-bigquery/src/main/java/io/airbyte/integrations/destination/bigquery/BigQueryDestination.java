@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
@@ -25,8 +26,11 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
@@ -212,7 +216,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
-      throws IOException, InterruptedException {
+      throws Exception {
     // Set the default namespace on streams with null namespace. This means we don't need to repeat this
     // logic in the rest of the connector.
     // (record messages still need to handle null namespaces though, which currently happens in e.g.
@@ -233,13 +237,24 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
     ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalog);
 
+    final BigQuery bigquery = getBigQuery(config);
+    TyperDeduper typerDeduper;
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      typerDeduper = new DefaultTyperDeduper<>(
+          sqlGenerator,
+          new BigQueryDestinationHandler(bigquery),
+          parsedCatalog);
+    } else {
+      typerDeduper = new NoopTyperDeduper();
+    }
+
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
-      return getStandardRecordConsumer(config, catalog, parsedCatalog, outputRecordCollector, sqlGenerator);
+      return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     } else {
-      return getGcsRecordConsumer(config, catalog, parsedCatalog, outputRecordCollector, sqlGenerator);
+      return getGcsRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
   }
 
@@ -311,14 +326,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return namingResolver.getRawTableName(streamName);
   }
 
-  private AirbyteMessageConsumer getStandardRecordConsumer(final JsonNode config,
+  private AirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
+                                                           final JsonNode config,
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final ParsedCatalog parsedCatalog,
                                                            final Consumer<AirbyteMessage> outputRecordCollector,
-                                                           BigQuerySqlGenerator sqlGenerator)
+                                                           final TyperDeduper typerDeduper)
       throws IOException {
-    final BigQuery bigquery = getBigQuery(config);
-
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
@@ -331,19 +345,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         writeConfigs,
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigquery),
+        typerDeduper,
         parsedCatalog);
   }
 
-  public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
+  public AirbyteMessageConsumer getGcsRecordConsumer(BigQuery bigQuery,
+                                                     final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
                                                      final ParsedCatalog parsedCatalog,
                                                      final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final BigQuerySqlGenerator sqlGenerator)
-      throws InterruptedException {
+                                                     final TyperDeduper typerDeduper)
+      throws Exception {
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final BigQuery bigQuery = getBigQuery(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
@@ -387,8 +400,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         recordFormatterCreator,
         namingResolver::getTmpTableName,
         getTargetTableNameTransformer(namingResolver),
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigQuery),
+        typerDeduper,
         parsedCatalog,
         BigQueryUtils.getDatasetId(config));
   }
