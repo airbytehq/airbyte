@@ -74,9 +74,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         if (!overwriteStreamsWithTmpTable.contains(stream.id()) && !sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
           // We're loading data directly into the existing table. Make sure it has the right schema.
           LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
-          for (String sql : sqlGenerator.softReset(stream)) {
-            destinationHandler.execute(sql);
-          }
+          destinationHandler.execute(sqlGenerator.softReset(stream));
         }
       } else {
         // The table doesn't exist. Create it.

@@ -192,7 +192,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${column_declarations}
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY ${cluster_config}
+            CLUSTER BY ${cluster_config};
             """);
   }
 
@@ -311,12 +311,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public List<String> softReset(final StreamConfig stream) {
+  public String softReset(final StreamConfig stream) {
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX);
-    final String overwriteFinalTable = overwriteFinalTableStatement(stream.id(), SOFT_RESET_SUFFIX);
-    return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
+    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
   private String clearLoadedAt(final StreamId streamId) {
@@ -328,8 +328,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String updateTable(final StreamConfig stream, final String finalSuffix) {
+    return updateTable(stream, finalSuffix, true);
+  }
+  private String updateTable(final StreamConfig stream, final String finalSuffix, boolean verifyPrimaryKeys) {
+    String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
     final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
@@ -345,6 +350,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
+        "pk_var_declaration", pkVarDeclaration,
         "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
@@ -352,7 +358,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
-            DECLARE missing_pk_count INT64;
+            ${pk_var_declaration}
 
             BEGIN TRANSACTION;
 
@@ -563,10 +569,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
-    return overwriteFinalTableStatement(streamId, finalSuffix);
-  }
-
-  private String overwriteFinalTableStatement(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
             "final_table_id", streamId.finalTableId(QUOTE),
             "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),

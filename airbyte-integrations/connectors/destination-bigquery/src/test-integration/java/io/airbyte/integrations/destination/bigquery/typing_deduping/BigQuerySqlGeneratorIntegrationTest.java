@@ -754,10 +754,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final List<String> sqls = GENERATOR.softReset(incrementalDedupStreamConfig());
-    for (String sql : sqls) {
-      destinationHandler.execute(sql);
-    }
+    final String sql = GENERATOR.softReset(incrementalDedupStreamConfig());
+    destinationHandler.execute(sql);
 
     TableDefinition finalTableDefinition = bq.getTable(TableId.of(testDataset, "users_final")).getDefinition();
     assertTrue(

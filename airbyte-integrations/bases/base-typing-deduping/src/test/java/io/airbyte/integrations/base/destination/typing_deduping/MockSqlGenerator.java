@@ -32,8 +32,8 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public List<String> softReset(StreamConfig stream) {
-    return List.of("SOFT RESET " + stream.id().finalTableId(""));
+  public String softReset(StreamConfig stream) {
+    return "SOFT RESET " + stream.id().finalTableId("");
   }
 
   @Override
