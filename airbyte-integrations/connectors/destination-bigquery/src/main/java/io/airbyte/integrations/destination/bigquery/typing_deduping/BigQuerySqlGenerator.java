@@ -30,10 +30,10 @@ import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -192,7 +192,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${column_declarations}
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY ${cluster_config}
+            CLUSTER BY ${cluster_config};
             """);
   }
 
@@ -222,7 +222,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                            final TableDefinition existingTable) throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
     if (!alterTableReport.isDestinationV2Format()) {
-      throw new TableNotMigratedException(String.format("Stream {} has not been migrated to the Destinations V2 format", stream.id().finalName()));
+      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
     boolean tableClusteringMatches = false;
     boolean tablePartitioningMatches = false;
@@ -230,11 +230,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       tableClusteringMatches = clusteringMatches(stream, standardExistingTable);
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
-    LOGGER.info("Alter Table Report {} {} {} {}; Clustering {}; Partitioning {}",
+    LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
             alterTableReport.columnsToAdd(),
             alterTableReport.columnsToRemove(),
             alterTableReport.columnsToChangeType(),
-            alterTableReport.isDestinationV2Format(),
             tableClusteringMatches,
             tablePartitioningMatches);
 
@@ -243,17 +242,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @VisibleForTesting
   public boolean clusteringMatches(final StreamConfig stream, final StandardTableDefinition existingTable) {
-    return existingTable.getClustering() == null ? false : containsAllIgnoreCase(
-            existingTable.getClustering().getFields().stream().collect(Collectors.toSet()),
+    return existingTable.getClustering() != null
+        && containsAllIgnoreCase(
+            new HashSet<>(existingTable.getClustering().getFields()),
             clusteringColumns(stream));
   }
 
   @VisibleForTesting
   public boolean partitioningMatches(final StandardTableDefinition existingTable) {
-    return existingTable.getTimePartitioning() == null ? false : existingTable.getTimePartitioning()
+    return existingTable.getTimePartitioning() != null
+        && existingTable.getTimePartitioning()
             .getField()
-            .equalsIgnoreCase("_airbyte_extracted_at") &&
-            TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
+            .equalsIgnoreCase("_airbyte_extracted_at")
+        && TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
   }
 
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
@@ -310,12 +311,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public List<String> softReset(final StreamConfig stream) {
+  public String softReset(final StreamConfig stream) {
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(SOFT_RESET_SUFFIX, stream);
-    final String overwriteFinalTable = overwriteFinalTableStatement(stream, SOFT_RESET_SUFFIX);
-    return List.of(createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
+    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
   private String clearLoadedAt(final StreamId streamId) {
@@ -326,9 +327,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final String finalSuffix, final StreamConfig stream) {
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
+    return updateTable(stream, finalSuffix, true);
+  }
+  private String updateTable(final StreamConfig stream, final String finalSuffix, boolean verifyPrimaryKeys) {
+    String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
     final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
@@ -344,6 +350,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
+        "pk_var_declaration", pkVarDeclaration,
         "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
@@ -351,7 +358,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
-            DECLARE missing_pk_count INT64;
+            ${pk_var_declaration}
 
             BEGIN TRANSACTION;
 
@@ -561,19 +568,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamConfig stream) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
-      return Optional.of(overwriteFinalTableStatement(stream, finalSuffix));
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  private String overwriteFinalTableStatement(final StreamConfig stream, final String finalSuffix) {
+  public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
-            "final_table_id", stream.id().finalTableId(QUOTE),
-            "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
-            "real_final_table", stream.id().finalName(QUOTE))).replace(
+            "final_table_id", streamId.finalTableId(QUOTE),
+            "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),
+            "real_final_table", streamId.finalName(QUOTE))).replace(
             """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};

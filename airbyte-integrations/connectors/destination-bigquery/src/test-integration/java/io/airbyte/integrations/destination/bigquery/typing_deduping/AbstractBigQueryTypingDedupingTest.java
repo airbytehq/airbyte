@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
@@ -40,7 +41,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + streamNamespace + "_ab__ab_" + streamName));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM airbyte." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
@@ -60,7 +61,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     }
     // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
     // so we don't need to do any existence checks here.
-    bq.delete(TableId.of("airbyte", streamNamespace + "_" + streamName));
+    bq.delete(TableId.of("airbyte", streamNamespace + "_ab__ab_" + streamName));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 }
