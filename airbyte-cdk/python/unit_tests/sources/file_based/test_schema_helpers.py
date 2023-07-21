@@ -2,11 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 import pytest
-from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
-from airbyte_cdk.sources.file_based.schema_helpers import ComparableType, conforms_to_schema, merge_schemas
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.schema_helpers import (
+    ComparableType,
+    SchemaType,
+    conforms_to_schema,
+    merge_schemas,
+    type_mapping_to_jsonschema,
+)
 
 COMPLETE_CONFORMING_RECORD = {
     "null_field": None,
@@ -203,11 +209,11 @@ def test_conforms_to_schema(
     record: Mapping[str, Any],
     schema: Mapping[str, Any],
     expected_result: bool
-):
+) -> None:
     assert conforms_to_schema(record, schema) == expected_result
 
 
-def test_comparable_types():
+def test_comparable_types() -> None:
     assert ComparableType.OBJECT > ComparableType.STRING
     assert ComparableType.STRING > ComparableType.NUMBER
     assert ComparableType.NUMBER > ComparableType.INTEGER
@@ -237,9 +243,109 @@ def test_comparable_types():
         pytest.param({"a": {"type": "invalid_type"}}, {"b": {"type": "integer"}}, None, id="invalid-type"),
     ]
 )
-def test_merge_schemas(schema1, schema2, expected_result):
+def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result: Optional[SchemaType]) -> None:
     if expected_result is not None:
         assert merge_schemas(schema1, schema2) == expected_result
     else:
         with pytest.raises(SchemaInferenceError):
             merge_schemas(schema1, schema2)
+
+
+@pytest.mark.parametrize(
+    "type_mapping,expected_schema,expected_exc_msg",
+    [
+        pytest.param(
+            '{"col1": "null", "col2": "array", "col3": "boolean", "col4": "float", "col5": "integer", "col6": "number", "col7": "object", "col8": "string"}',
+            {
+                "type": "object",
+                "properties": {
+                    "col1": {
+                        "type": "null"
+                    },
+                    "col2": {
+                        "type": "array"
+                    },
+                    "col3": {
+                        "type": "boolean"
+                    },
+                    "col4": {
+                        "type": "number"
+                    },
+                    "col5": {
+                        "type": "integer"
+                    },
+                    "col6": {
+                        "type": "number"
+                    },
+                    "col7": {
+                        "type": "object"
+                    },
+                    "col8": {
+                        "type": "string"
+                    }
+                }
+            },
+            None,
+            id="valid_all_types"
+        ),
+        pytest.param(
+            '{"col1 ": " string", "col2":  " integer"}',
+            {
+                "type": "object",
+                "properties": {
+                    "col1": {
+                        "type": "string"
+                    },
+                    "col2": {
+                        "type": "integer"
+                    }
+                }
+            },
+            None,
+            id="valid_extra_spaces",
+        ),
+        pytest.param(
+            "",
+            None,
+            None,
+            id="valid_empty_string",
+        ),
+        pytest.param(
+            '{"col1": "x", "col2": "integer"}',
+            None,
+            "Invalid type 'x' for property 'col1'",
+            id="invalid_type",
+        ),
+        pytest.param(
+            '{"col1": "", "col2": "integer"}',
+            None,
+            "Invalid input schema",
+            id="invalid_missing_type",
+        ),
+        pytest.param(
+            '{"": "string", "col2": "integer"}',
+            None,
+            "Invalid input schema",
+            id="invalid_missing_name",
+        ),
+        pytest.param(
+            '{"type": "object", "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}}}',
+            None,
+            "Invalid input schema; nested schemas are not supported.",
+            id="invalid_nested_input_string",
+        ),
+        pytest.param(
+            '{"type": "object", "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}}}',
+            None,
+            "Invalid input schema; nested schemas are not supported.",
+            id="invalid_nested_input_json",
+        ),
+    ],
+)
+def test_type_mapping_to_jsonschema(type_mapping: Mapping[str, Any], expected_schema:  Optional[Mapping[str, Any]], expected_exc_msg:  Optional[str]) -> None:
+    if expected_exc_msg:
+        with pytest.raises(ConfigValidationError) as exc:
+            type_mapping_to_jsonschema(type_mapping)
+        assert expected_exc_msg in exc.value.args[0]
+    else:
+        assert type_mapping_to_jsonschema(type_mapping) == expected_schema

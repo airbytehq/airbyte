@@ -1,5 +1,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
@@ -38,8 +40,8 @@ public class PostgresCdcCtidUtils {
           return;
         }
 
-        if (streamState.has("state_type")) {
-          if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
+        if (streamState.has(STATE_TYPE_KEY)) {
+          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("ctid")) {
             final CtidStatus ctidStatus = Jsons.object(streamState, CtidStatus.class);
             final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
                 streamDescriptor.getNamespace());
