@@ -9,7 +9,8 @@
       "host",
       "port",
       "stream_name",
-      "start_date"
+      "start_date",
+      "file_type"
     ],
     "additionalProperties": true,
     "properties": {
@@ -17,30 +18,16 @@
         "title": "Username",
         "description": "The username to use when logging in to the remote server.",
         "type": "string",
-        "order": 0
-      },
-      "password": {
-        "title": "Password",
-        "description": "The password used for authentication when logging in to the remote server.",
-        "type": "string",
-        "airbyte_secret": true,
-        "always_show": true,
-        "order": 1
-      },
-      "private_key": {
-        "title": "Private Key",
-        "description": "SSH private key used for authentication when logging in to the remote server.",
-        "type": "string",
-        "multiline": true,
-        "always_show": true,
-        "order": 2
+        "order": 0,
+        "group": "connection_params"
       },
       "host": {
         "title": "Host Address",
         "description": "The remote server's host address.",
         "type": "string",
         "examples": ["www.host.com", "192.0.2.1"],
-        "order": 3
+        "order": 1,
+        "group": "connection_params"
       },
       "port": {
         "title": "Port",
@@ -48,7 +35,26 @@
         "type": "integer",
         "default": 22,
         "examples": ["22"],
-        "order": 4
+        "order": 2,
+        "group": "connection_params"
+      },
+      "password": {
+        "title": "Password",
+        "description": "The password used for authentication when logging in to the remote server.",
+        "type": "string",
+        "airbyte_secret": true,
+        "always_show": true,
+        "order": 3,
+        "group": "auth"
+      },
+      "private_key": {
+        "title": "Private Key",
+        "description": "SSH private key used for authentication when logging in to the remote server.",
+        "type": "string",
+        "multiline": true,
+        "always_show": true,
+        "order": 4,
+        "group": "auth"
       },
       "stream_name": {
         "title": "Stream Name",
@@ -63,42 +69,8 @@
         "type": "string",
         "default": "csv",
         "enum": ["csv", "json"],
-        "order": 6,
         "examples": ["csv", "json"],
-        "always_show": true
-      },
-      "separator": {
-        "title": "CSV Separator",
-        "description": "The separator used in the CSV files. Leave this field blank if you want to use the Sniffer functionality.",
-        "type": "string",
-        "default": ",",
-        "examples": [","],
-        "order": 7
-      },
-      "folder_path": {
-        "title": "Folder Path",
-        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide' target='_blank'>setup guide</a> for more information.",
-        "type": "string",
-        "default": "",
-        "examples": ["/logs/2022"],
-        "order": 8
-      },
-      "file_pattern": {
-        "title": "File Pattern",
-        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide` target='_blank'>setup guide</a> for more information.",
-        "type": "string",
-        "default": "",
-        "examples": [
-          "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
-        ],
-        "order": 9
-      },
-      "file_most_recent": {
-        "title": "Most recent file",
-        "description": "Toggle on to sync only the most recently modified file that matches the folder path and file pattern.",
-        "type": "boolean",
-        "default": false,
-        "order": 10
+        "order": 6
       },
       "start_date": {
         "type": "string",
@@ -107,8 +79,51 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
         "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "order": 7
+      },
+      "separator": {
+        "title": "CSV Separator",
+        "description": "The separator used in the CSV files. Leave this field blank if you want to use the Sniffer functionality.",
+        "type": "string",
+        "default": ",",
+        "examples": [",", "\\t"],
+        "order": 8
+      },
+      "folder_path": {
+        "title": "Folder Path",
+        "description": "The optional directory on the remote server to sync files from. See the <a href='https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide' target='_blank'>setup guide</a> for more information.",
+        "type": "string",
+        "default": "",
+        "examples": ["/logs/2022"],
+        "order": 9
+      },
+      "file_pattern": {
+        "title": "File Pattern",
+        "description": "The optional regular expression to specify files for sync. See the <a href=`https://docs.airbyte.com/integrations/sources/sftp-bulk#setup-guide` target='_blank'>setup guide</a> for more information.",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter for files matching the naming convention log-YYYYMMDD"
+        ],
+        "order": 10
+      },
+      "file_most_recent": {
+        "title": "Most Recent File",
+        "description": "Toggle on to sync only the most recently modified file that matches the folder path and file pattern.",
+        "type": "boolean",
+        "default": false,
         "order": 11
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "connection_params",
+        "title": "Connection Parameters"
+      },
+      {
+        "id": "auth",
+        "title": "Authentication (Select One)"
+      }
+    ]
   }
 }
