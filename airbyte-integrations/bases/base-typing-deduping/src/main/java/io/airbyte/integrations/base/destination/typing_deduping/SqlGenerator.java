@@ -39,8 +39,9 @@ public interface SqlGenerator<DialectTableDefinition> {
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
   /**
-   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data downtime.
-   * Typically this will resemble "create tmp_table; update raw_table set loaded_at=null; (t+d into tmp table); (overwrite final table from tmp table);"
+   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data
+   * downtime. Typically this will resemble "create tmp_table; update raw_table set loaded_at=null;
+   * (t+d into tmp table); (overwrite final table from tmp table);"
    *
    * @param stream the stream to rebuild
    */
