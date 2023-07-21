@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
 ## 0.46.0
 Remove pyarrow from main dependency and add it to extras
 
