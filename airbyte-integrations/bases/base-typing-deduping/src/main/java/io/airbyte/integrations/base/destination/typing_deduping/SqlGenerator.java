@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public interface SqlGenerator<DialectTableDefinition> {
@@ -40,19 +38,17 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable) throws TableNotMigratedException;
 
-  // TODO: Make softReset a single SQL statement rather than a list
   /**
-   * SQL Statements which will rebuild the final table using the raw table data
+   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data
+   * downtime. Typically this will resemble "create tmp_table; update raw_table set loaded_at=null;
+   * (t+d into tmp table); (overwrite final table from tmp table);"
    *
    * @param stream the stream to rebuild
-   * @return an ordered sequence of SQL statements to execute to rebuild the final table.
    */
-  List<String> softReset(final StreamConfig stream);
+  String softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
-   * <p>
-   * Supports both incremental and one-shot loading. (maybe.)
    * <p>
    * Responsible for:
    * <ul>
@@ -70,11 +66,14 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
    */
-  String updateTable(String finalSuffix, final StreamConfig stream);
+  String updateTable(final StreamConfig stream, String finalSuffix);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
+   * <p>
+   * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
+   * non-empty. Callers are responsible for verifying those are true.
    */
-  Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
+  String overwriteFinalTable(StreamId stream, String finalSuffix);
 
 }
