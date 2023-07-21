@@ -8,7 +8,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_amazon_ads.schemas import AttributionReportModel
+from source_amazon_ads.schemas import Report
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 BRAND_REFERRAL_BONUS = "brb_bonus_amount"
@@ -54,7 +54,7 @@ class AttributionReport(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
     """
 
-    model = AttributionReportModel
+    model = Report
     primary_key = None
     data_field = "reports"
     page_size = 300

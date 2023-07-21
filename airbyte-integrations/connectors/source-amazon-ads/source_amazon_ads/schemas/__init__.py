@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from .attribution_report import AttributionReportModel
+from .attribution_report import AttributionReportModel, Report
 from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords, Portfolio
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
@@ -36,4 +36,5 @@ __all__ = [
     "ProductTargeting",
     "Profile",
     "AttributionReportModel",
+    "Report"
 ]
