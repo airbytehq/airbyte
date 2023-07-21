@@ -8,39 +8,95 @@ This connector allows you to:
 
 ## Prerequisites
 
-* The Server with FTP connection type support
-* The Server host
-* The Server port
-* Username-Password/Public Key Access Rights
+* Access to a remote server that supports SFTP
+* Host address
+* Valid username and password associated with the host server
 
 ## Setup guide
-### Step 1: Set up SFTP
-1. Use your username/password credential to connect the server.
-2. Alternatively generate Public Key Access
+### Step 1: Set up SFTP authentication
 
-The following simple steps are required to set up public key authentication:
+To set up the SFTP connector, you will need to select at least _one_ of the following authentication methods:
 
-Key pair is created (typically by the user). This is typically done with ssh-keygen.
-Private key stays with the user (and only there), while the public key is sent to the server. Typically with the ssh-copy-id utility.
-Server stores the public key (and "marks" it as authorized).
-Server will now allow access to anyone who can prove they have the corresponding private key.
+- Your username and password credentials associated with the server.
+- A private/public key pair.
+
+To set up key pair authentication, you may use the following steps as a guide:
+
+1. Open your terminal or command prompt and use the `ssh-keygen` command to generate a new key pair.
+:::note
+If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair instead.
+:::
+
+2. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
+
+3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
+
+```
+ssh-copy-id <username>@<server_ip_address>
+```
+
+Be sure to replace your specific values for your username and the server's IP address.
+:::note
+Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
+:::
+
+4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
+
+```
+ssh <username>@<server_ip_address>
+```
+
+For more information on SSH key pair authentication, please refer to the 
+[official documentation](https://www.ssh.com/academy/ssh/keygen).
 
 ### Step 2: Set up the SFTP connector in Airbyte
 
-1. In the left navigation bar, click **`Sources`**. In the top-right corner, click **+new source**.
-2. On the Set up the source page, enter the name for the FTP connector and select **SFTP Bulk** from the Source type dropdown.
-3. Enter your `User Name`, `Host Address`, `Port`
-4. Enter authentication details for the FTP server (`Password` and/or `Private Key`)
-5. Choose a `File type`
-6. Enter `Folder Path` (Optional) to specify server folder for sync
-7. Enter `File Pattern` (Optional). e.g. ` log-([0-9]{4})([0-9]{2})([0-9]{2})`. Write your own [regex](https://docs.python.org/3/howto/regex.html)
-8. Check `Most recent file` (Optional) if you only want to sync the most recent file matching a folder path and optional file pattern
-9. Provide a `Start Date` for incremental syncs to only sync files modified/added after this date
-10. Click on `Check Connection` to finish configuring the FTP source.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **SFTP** from the list of available sources. 
+<!-- env:cloud -->
+**For Airbyte Cloud users**: If you do not see the **SFTP Bulk** source listed, please make sure the **Alpha** checkbox at the top of the page is checked.
+<!-- /env:cloud -->
+4. Enter a **Source name** of your choosing.
+5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
+6. Enter a **Stream Name**. This will be the name of the stream that will be outputted to your destination.
+7. Provide a **Start Date** using the provided datepicker, or by programmatically entering the date in the format `YYYY-MM-DDT00:00:00Z`. Incremental syncs will only sync files modified/added after this date.
+8. Enter your authentication credentials for the FTP server (**Password** and/or **Private Key**).
+7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
+
+## Optional fields
+
+The **Optional fields** can be used to further configure the SFTP source connector. If you do not wish to set additional configurations, these fields can be left at their default settings.
+
+1. **File Type**: Use the dropdown menu to select the file type you wish to sync. Currently, only CSV and JSON formats are supported. The default value is `csv`.
+2. **CSV Separator**: If you selected `csv` as the file type, you can use this field to specify a custom separator. The default value is `,`.
+2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
+
+```
+Root
+| - logs
+|   | - 2021
+|   | - 2022
+|
+| - files
+|   | - 2021
+|   | - 2022
+```
+
+An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
+
+3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
+
+```
+log-([0-9]{4})([0-9]{2})([0-9]{2})
+```
+
+This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+4. Check `Most recent file` (Optional) if you only want to sync the most recent file matching a folder path and optional file pattern
 
 ## Supported sync modes
 
-The FTP source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The FTP source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Support  | Notes                                                                                 |
 |:------------------------------|:--------:|:--------------------------------------------------------------------------------------|
@@ -51,9 +107,9 @@ The FTP source connector supports the following[ sync modes](https://docs.airbyt
 | Namespaces                    |    ❌    |                                                                                      |
 
 
-## Supported Streams
+## Supported streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type file: `.csv` and `.json`
+This source provides a single stream per file with a dynamic schema. The current supported type files are CSV and JSON.
 More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
