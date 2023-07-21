@@ -172,6 +172,10 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
             map.remove("group");
             map.remove("groups");
 
+            // pattern_descriptor keyword appeared in the airbyte postgres capture
+            // connector, and is probably in some others, too.
+            map.remove("pattern_descriptor");
+
             // a mapping from a jsonschema type to an internal airbyte type
             map.remove("airbyte_type");
 
