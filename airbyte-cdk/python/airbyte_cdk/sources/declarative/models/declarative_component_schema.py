@@ -1100,7 +1100,7 @@ class SessionTokenAuthenticator(BaseModel):
     request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
         ...,
         description="Authentication method to use for requests sent to the API, specifying how to inject the session token.",
-        title="Data request authentication",
+        title="Data Request Authentication",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
