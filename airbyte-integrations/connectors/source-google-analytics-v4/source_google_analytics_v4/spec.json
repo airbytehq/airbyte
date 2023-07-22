@@ -81,7 +81,9 @@
         "type": "string",
         "title": "Replication Start Date",
         "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
-        "examples": ["2020-06-01"]
+        "examples": ["2020-06-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$|[\\s\\S]+$",
+        "format": "date"
       },
       "view_id": {
         "order": 2,

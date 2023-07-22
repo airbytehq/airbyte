@@ -15,6 +15,7 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from ci_connector_ops.pipelines import hacks
 from ci_connector_ops.pipelines.actions import secrets
 from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
@@ -213,6 +214,8 @@ class PipelineContext:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
         self.started_at = datetime.utcnow()
+        self.logger.info("Caching the latest CDK version...")
+        await hacks.cache_latest_cdk(self.dagger_client)
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
@@ -390,10 +393,18 @@ class ConnectorContext(PipelineContext):
         return yaml.safe_load(self.metadata_path.read_text())["data"]
 
     @property
-    def docker_image_from_metadata(self) -> str:
-        return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
+    def docker_repository(self) -> str:
+        return self.metadata["dockerRepository"]
 
-    def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    @property
+    def docker_image_tag(self) -> str:
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def docker_image(self) -> str:
+        return f"{self.docker_repository}:{self.docker_image_tag}"
+
+    async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -403,7 +414,8 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
@@ -526,15 +538,17 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
-    def docker_image_name(self):
+    def docker_image_tag(self):
+        # get the docker image tag from the parent class
+        metadata_tag = super().docker_image_tag
         if self.pre_release:
-            return f"{self.docker_image_from_metadata}-dev.{self.git_revision[:10]}"
+            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
         else:
-            return self.docker_image_from_metadata
+            return metadata_tag
 
     def create_slack_message(self) -> str:
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
-        message = f"*Publish <{docker_hub_url}|{self.docker_image_name}>*\n"
+        message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
             message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"
         else:
