@@ -366,7 +366,7 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
-        if item.get("media_product_type"):
+        if item.get("media_product_type") == "REELS":
             metrics = self.REELS_METRICS
         elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
