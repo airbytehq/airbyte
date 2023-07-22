@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import toml
 import re
 import uuid
 from datetime import datetime
@@ -96,6 +97,32 @@ def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Conta
         .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
     )
 
+
+async def with_installed_pipx_package(
+    context: PipelineContext,
+    python_environment: Container,
+    package_source_code_path: str,
+    exclude: Optional[List] = None,
+) -> Container:
+    
+    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
+    work_dir_path = f"/{package_source_code_path}"
+
+    pipx_python_environment = with_pix(python_environment)
+
+    container = (
+        pipx_python_environment
+        .with_mounted_directory(work_dir_path, package_source_code_directory)
+        .with_workdir(work_dir_path)
+    )
+
+    local_dependencies = await find_local_dependencies_in_pyproject_toml(container, package_source_code_path)
+    for dependency_directory in local_dependencies:
+        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+
+    container = container.with_exec(["pipx", "install", package_source_code_path])
+
+    return container
 
 def with_python_package(
     context: PipelineContext,
@@ -217,6 +244,31 @@ async def find_local_dependencies_in_requirements_txt(python_package: Container,
     return local_requirements_dependency_paths
 
 
+def find_local_dependencies_in_pyproject_toml(pyproject_file_path: str) -> list:
+    """Find local dependencies of a python package in a pyproject.toml file.
+
+    Args:
+        pyproject_file_path (str): The path to the pyproject.toml file.
+
+    Returns:
+        list: Paths to the local dependencies relative to the current directory.
+    """
+    with open(pyproject_file_path, 'r') as file:
+        pyproject_content = toml.load(file)
+
+    local_dependency_paths = []
+    for dep, value in pyproject_content['tool']['poetry']['dependencies'].items():
+        if isinstance(value, dict) and 'path' in value:
+            local_dependency_path = Path(value['path'])
+            pyproject_file_path = Path(pyproject_file_path)
+            local_dependency_path = str((pyproject_file_path.parent / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_dependency_paths.append(local_dependency_path)
+
+    return local_dependency_paths
+    
+
+
+
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -314,7 +366,7 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
         Container: A python environment with the ci_credentials package installed.
     """
     python_base_environment: Container = with_python_base(context)
-    ci_credentials = await with_installed_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+    ci_credentials = await with_installed_pipx_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
     ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
     return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
@@ -370,7 +422,7 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context)
 
-    return await with_installed_python_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
+    return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:
@@ -556,6 +608,19 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
     image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
     return image_sha
+
+def with_pipx(base_python_container: Container) -> Container:
+    """Installs pipx in a python container.
+
+    Args:
+       base_python_container (Container): The container to install pipx on.
+
+    Returns:
+        Container: A python environment with pipx installed.
+    """
+    python_with_pipx = with_pip_packages(base_python_container, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+
+    return python_with_pipx
 
 
 def with_poetry(context: PipelineContext) -> Container:

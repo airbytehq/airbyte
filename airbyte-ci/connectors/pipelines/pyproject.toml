@@ -21,6 +21,7 @@ tabulate = "^0.8.9"
 jinja2 = "^3.0.2"
 requests = "^2.28.2"
 connector-ops = {path = "../connector_ops"}
+toml = "^0.10.2"
 
 [tool.poetry.scripts]
 airbyte-ci = "pipelines.commands.airbyte_ci:airbyte_ci"
