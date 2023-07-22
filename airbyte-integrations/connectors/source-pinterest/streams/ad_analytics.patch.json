@@ -2,6 +2,9 @@
     "properties": {
       "CAMPAIGN_ID": {
         "type": ["null", "string"]
+      },
+      "AD_ID": {
+        "type": "string"
       }
     }
 }

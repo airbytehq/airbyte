@@ -1,10 +1,10 @@
 {
     "properties": {
       "CAMPAIGN_ID": {
-        "type": ["null", "string"]
+        "type": "integer"
       },
       "ADVERTISER_ID": {
-        "type": ["null", "string"]
+        "type": ["null", "integer"]
       }
     }
 }
