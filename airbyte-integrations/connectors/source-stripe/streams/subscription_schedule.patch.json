@@ -1,6 +1,6 @@
 {
   "properties": {
-    "cancelled_at": {
+    "canceled_at": {
       "type": ["string", "null"],
       "format": "date-time"
     },
