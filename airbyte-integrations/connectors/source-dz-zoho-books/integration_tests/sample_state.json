@@ -1,0 +1,20 @@
+{
+  "state": {
+      "stream": {
+          "stream_descriptor": {
+              "name": "salesorders"
+          },
+          "stream_state": {
+              "last_modified_time": "2023-07-20T11:11:45+0530"
+          }
+      },
+      "data": {
+          "salesorders": {
+              "last_modified_time": "2023-07-20T11:11:45+0530"
+          }
+      }
+  },
+  "salesorders": {
+      "last_modified_time": "2023-07-19T14:25:41+0530"
+  }
+}

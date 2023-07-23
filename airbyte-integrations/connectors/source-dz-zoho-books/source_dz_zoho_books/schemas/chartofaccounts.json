@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "account_code": {
+        "type": "string"
+      },
+      "account_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "account_type": {
+        "type": "string"
+      },
+      "can_show_in_ze": {
+        "type": "boolean"
+      },
+      "child_count": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "created_time": {
+        "type": "string"
+      },
+      "depth": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "documents": {
+        "type": "array"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "is_active": {
+        "type": "boolean"
+      },
+      "is_child_present": {
+        "type": "boolean"
+      },
+      "is_standalone_account": {
+        "type": "boolean"
+      },
+      "is_system_account": {
+        "type": "boolean"
+      },
+      "is_user_created": {
+        "type": "boolean"
+      },
+      "last_modified_time": {
+        "type": "string"
+      },
+      "parent_account_id": {
+        "type": "string"
+      },
+      "parent_account_name": {
+        "type": "string"
+      }
+    }
+  }

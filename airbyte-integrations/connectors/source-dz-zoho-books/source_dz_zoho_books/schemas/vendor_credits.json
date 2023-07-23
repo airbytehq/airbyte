@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "vendor_credit_id": {
+        "type": "string"
+      },
+      "vendor_credit_number": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "total": {
+        "type": "number"
+      },
+      "balance": {
+        "type": "number"
+      },
+      "vendor_id": {
+        "type": "string"
+      },
+      "vendor_name": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "exchange_rate": {
+        "type": "number"
+      }
+    }
+  }
+  

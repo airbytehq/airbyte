@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "expense_id": {
+        "type": "integer"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "integer"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "bcy_total": {
+        "type": "number"
+      },
+      "bcy_total_without_tax": {
+        "type": "number"
+      },
+      "total": {
+        "type": "number"
+      },
+      "total_without_tax": {
+        "type": "number"
+      },
+      "is_billable": {
+        "type": "boolean"
+      },
+      "reference_number": {
+        "type": ["string", "null"]
+      },
+      "customer_id": {
+        "type": "integer"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": ["string", "null"],
+        "format": "date-time"
+      },
+      "expense_receipt_name": {
+        "type": ["string", "null"]
+      },
+      "mileage_rate": {
+        "type": ["string", "null"]
+      },
+      "mileage_unit": {
+        "type": ["string", "null"]
+      },
+      "expense_type": {
+        "type": "string"
+      },
+      "start_reading": {
+        "type": ["string", "null"]
+      },
+      "end_reading": {
+        "type": ["string", "null"]
+      }
+    }
+  }
+  

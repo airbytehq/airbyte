@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "currency_code": {
+        "type": "string"
+      },
+      "currency_format": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_name": {
+        "type": "string"
+      },
+      "currency_name_formatted": {
+        "type": "string"
+      },
+      "currency_symbol": {
+        "type": "string"
+      },
+      "effective_date": {
+        "type": "string"
+      },
+      "exchange_rate": {
+        "type": "number"
+      },
+      "is_base_currency": {
+        "type": "boolean"
+      },
+      "price_precision": {
+        "type": "number"
+      }
+    }
+  }

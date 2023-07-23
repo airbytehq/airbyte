@@ -1,0 +1,83 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "transaction_id": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "amount": {
+        "type": "number"
+      },
+      "transaction_type": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "account_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "account_type": {
+        "type": "string"
+      },
+      "price_precision": {
+        "type": "integer"
+      },
+      "customer_id": {
+        "type": "string"
+      },
+      "payee": {
+        "type": "string"
+      },
+      "is_paid_via_print_check": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "currency_symbol": {
+        "type": "string"
+      },
+      "debit_or_credit": {
+        "type": "string"
+      },
+      "offset_account_name": {
+        "type": "string"
+      },
+      "is_offsetaccount_matched": {
+        "type": "boolean"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "imported_transaction_id": {
+        "type": "string"
+      },
+      "is_rule_exist": {
+        "type": "boolean"
+      },
+      "rule_details": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
+  

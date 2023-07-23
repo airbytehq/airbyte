@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "purchaseorder_id": {
+        "type": "string"
+      },
+      "vendor_id": {
+        "type": "string"
+      },
+      "vendor_name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "purchaseorder_number": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "delivery_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "price_precision": {
+        "type": "integer"
+      },
+      "total": {
+        "type": "number"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "custom_fields": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "customfield_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+  

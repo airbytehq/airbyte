@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "account_code": {
+        "type": "string"
+      },
+      "account_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "account_type": {
+        "type": "string"
+      },
+      "balance": {
+        "type": "number"
+      },
+      "bank_balance": {
+        "type": "number"
+      },
+      "bank_name": {
+        "type": "string"
+      },
+      "bcy_balance": {
+        "type": "number"
+      },
+      "clearing_account_type": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "feeds_last_refresh_date": {
+        "type": "string"
+      },
+      "is_active": {
+        "type": "boolean"
+      },
+      "is_direct_paypal": {
+        "type": "boolean"
+      },
+      "total_unprinted_checks": {
+        "type": "number"
+      },
+      "uncategorized_transactions": {
+        "type": "number"
+      }
+    }
+  }

@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "journal_id": {
+        "type": "string"
+      },
+      "journal_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "entry_number": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "journal_type": {
+        "type": "string"
+      },
+      "entity_type": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      },
+      "bcy_total": {
+        "type": "number"
+      },
+      "custom_field": {
+        "type": "string"
+      }
+    }
+  }
+  

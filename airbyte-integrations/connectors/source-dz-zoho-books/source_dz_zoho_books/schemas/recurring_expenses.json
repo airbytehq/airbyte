@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "recurring_expense_id": {
+        "type": "integer"
+      },
+      "recurrence_name": {
+        "type": "string"
+      },
+      "recurrence_frequency": {
+        "type": "string"
+      },
+      "repeat_every": {
+        "type": "integer"
+      },
+      "last_created_date": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "next_expense_date": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "integer"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      },
+      "is_billable": {
+        "type": "boolean"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": ["string", "null"],
+        "format": "date-time"
+      }
+    }
+  }
+  

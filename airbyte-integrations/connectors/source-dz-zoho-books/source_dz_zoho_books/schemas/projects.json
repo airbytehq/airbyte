@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "project_id": {
+        "type": "string"
+      },
+      "project_name": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "string"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "billing_type": {
+        "type": "string"
+      },
+      "rate": {
+        "type": "number"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "total_hours": {
+        "type": "string"
+      },
+      "billable_hours": {
+        "type": "string"
+      }
+    }
+  }
+  

@@ -1,0 +1,90 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "salesorder_id": {
+        "type": "string"
+      },
+      "zcrm_potential_id": {
+        "type": "string"
+      },
+      "zcrm_potential_name": {
+        "type": "string"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "salesorder_number": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "shipment_date": {
+        "type": "string"
+      },
+      "shipment_days": {
+        "type": "integer"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      },
+      "sub_total": {
+        "type": "number"
+      },
+      "bcy_total": {
+        "type": "number"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "is_emailed": {
+        "type": "boolean"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "custom_fields": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "customfield_id": {
+              "type": "string"
+            },
+            "index": {
+              "type": "integer"
+            },
+            "value": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+  
