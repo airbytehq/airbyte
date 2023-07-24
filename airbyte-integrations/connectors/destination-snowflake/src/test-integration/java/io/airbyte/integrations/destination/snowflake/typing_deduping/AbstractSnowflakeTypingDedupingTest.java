@@ -19,9 +19,7 @@ import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
   private JdbcDatabase database;
