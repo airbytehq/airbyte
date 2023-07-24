@@ -18,6 +18,10 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation libs.mongodb.driver
+    implementation 'io.debezium:debezium-connector-mongodb:2.2.0.Final'
+
+    runtimeOnly 'io.debezium:debezium-api:2.2.0.Final'
+    runtimeOnly 'io.debezium:debezium-embedded:2.2.0.Final'
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.connectors.testcontainers.mongodb
