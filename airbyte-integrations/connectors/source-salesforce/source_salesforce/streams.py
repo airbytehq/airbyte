@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+# TODO can we remove csv and ctypes?
 import csv
 import ctypes
 import math
@@ -32,6 +33,7 @@ from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
+# TODO can we remove this? 
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
