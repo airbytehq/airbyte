@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 87c58f70-6f7a-4f70-aba5-bab1a458f5ba
@@ -13,6 +8,14 @@ data:
   icon: wikipediapageviews.svg
   license: MIT
   name: Wikipedia Pageviews
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
+  documentationUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -15,21 +15,15 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import ConnectorReport, Report
+from ci_connector_ops.pipelines import hacks
+from ci_connector_ops.pipelines.actions import secrets
+from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME
+from ci_connector_ops.pipelines.slack import send_message_to_webhook
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
-from dagger import Client, Directory
-
-
-class CIContext(str, Enum):
-    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
-
-    MANUAL = "manual"
-    PULL_REQUEST = "pull_request"
-    NIGHTLY_BUILDS = "nightly_builds"
-    MASTER = "master"
+from dagger import Client, Directory, Secret
+from github import PullRequest
 
 
 class ContextState(Enum):
@@ -45,8 +39,10 @@ class ContextState(Enum):
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
 
+    PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
+
     DEFAULT_EXCLUDED_FILES = (
-        [".git"]
+        [".git", "tools/ci_connector_ops/pipeline_reports/*", "tools/ci_connector_ops/ci_connector_ops/pipelines/*"]
         + glob("**/build", recursive=True)
         + glob("**/.venv", recursive=True)
         + glob("**/secrets", recursive=True)
@@ -57,6 +53,7 @@ class PipelineContext:
         + glob("**/.eggs", recursive=True)
         + glob("**/.mypy_cache", recursive=True)
         + glob("**/.DS_Store", recursive=True)
+        + glob("**/airbyte_ci_logs", recursive=True)
     )
 
     def __init__(
@@ -66,9 +63,17 @@ class PipelineContext:
         git_branch: str,
         git_revision: str,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         is_ci_optional: bool = False,
+        slack_webhook: Optional[str] = None,
+        reporting_slack_channel: Optional[str] = None,
+        pull_request: PullRequest = None,
+        ci_report_bucket: Optional[str] = None,
+        ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -78,23 +83,39 @@ class PipelineContext:
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+            is_ci_optional (bool, optional): Whether the CI is optional. Defaults to False.
+            slack_webhook (Optional[str], optional): Slack webhook to send messages to. Defaults to None.
+            reporting_slack_channel (Optional[str], optional): Slack channel to send messages to. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
         self.git_branch = git_branch
         self.git_revision = git_revision
         self.gha_workflow_run_url = gha_workflow_run_url
+        self.dagger_logs_url = dagger_logs_url
         self.pipeline_start_timestamp = pipeline_start_timestamp
         self.created_at = datetime.utcnow()
         self.ci_context = ci_context
         self.state = ContextState.INITIALIZED
         self.is_ci_optional = is_ci_optional
-
+        self.slack_webhook = slack_webhook
+        self.reporting_slack_channel = reporting_slack_channel
+        self.pull_request = pull_request
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._report = None
+        self.dockerd_service = None
+        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
+        self.ci_report_bucket = ci_report_bucket
+        self.ci_git_user = ci_git_user
+        self.ci_github_access_token = ci_github_access_token
+        self.started_at = None
+        self.stopped_at = None
+        self.secrets_to_mask = []
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -124,7 +145,14 @@ class PipelineContext:
     @report.setter
     def report(self, report: Report):  # noqa D102
         self._report = report
-        self.state = ContextState.SUCCESSFUL if report.success else ContextState.FAILURE
+
+    @property
+    def ci_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+
+    @property
+    def ci_github_access_token_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
 
     @property
     def github_commit_status(self) -> dict:
@@ -140,14 +168,14 @@ class PipelineContext:
             "is_optional": self.is_ci_optional,
         }
 
+    @property
+    def should_send_slack_message(self) -> bool:
+        return self.slack_webhook is not None and self.reporting_slack_channel is not None
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
-        If running in the CI:
-        The directory is extracted from the git branch.
-
-        If running locally:
-        The directory is extracted from your host file system.
+        The directory is extracted from the host file system.
         A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
 
         Args:
@@ -158,18 +186,19 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
-        if self.is_local:
-            if exclude is None:
-                exclude = self.DEFAULT_EXCLUDED_FILES
-            else:
-                exclude += self.DEFAULT_EXCLUDED_FILES
-                exclude = list(set(exclude))
-            if subdir != ".":
-                subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-                exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
-            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        if exclude is None:
+            exclude = self.DEFAULT_EXCLUDED_FILES
         else:
-            return self.repo.branch(self.git_branch).tree().directory(subdir)
+            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude = list(set(exclude))
+        exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
+        if subdir != ".":
+            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
+        return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+
+    def create_slack_message(self) -> str:
+        raise NotImplementedError()
 
     async def __aenter__(self):
         """Perform setup operation for the PipelineContext.
@@ -184,8 +213,33 @@ class PipelineContext:
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
+        self.started_at = datetime.utcnow()
+        self.logger.info("Caching the latest CDK version...")
+        await hacks.cache_latest_cdk(self.dagger_client)
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+        if self.should_send_slack_message:
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
         return self
+
+    @staticmethod
+    def determine_final_state(report: Optional[Report], exception_value: Optional[BaseException]) -> ContextState:
+        """Determine the final state of the context from the report or the exception value.
+
+        Args:
+            report (Optional[Report]): The pipeline report if any.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+        Returns:
+            ContextState: The final state of the context.
+        """
+        if exception_value is not None or report is None:
+            return ContextState.ERROR
+        if report is not None and report.failed_steps:
+            return ContextState.FAILURE
+        if report is not None and report.success:
+            return ContextState.SUCCESSFUL
+        raise Exception(
+            f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}"
+        )
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
@@ -206,20 +260,20 @@ class PipelineContext:
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.state = self.determine_final_state(self.report, exception_value)
+        self.stopped_at = datetime.utcnow()
+
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
-            self.state = ContextState.ERROR
-
         if self.report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
-            self.state = ContextState.ERROR
             self.report = Report(self, steps_results=[])
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
-
+        if self.should_send_slack_message:
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
         # supress the exception if it was handled
         return True
 
@@ -231,15 +285,27 @@ class ConnectorContext(PipelineContext):
 
     def __init__(
         self,
+        pipeline_name: str,
         connector: Connector,
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
+        modified_files: List[str],
+        report_output_prefix: str,
         use_remote_secrets: bool = True,
+        ci_report_bucket: Optional[str] = None,
+        ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
+        slack_webhook: Optional[str] = None,
+        reporting_slack_channel: Optional[str] = None,
+        pull_request: PullRequest = None,
+        should_save_report: bool = True,
     ):
         """Initialize a connector context.
 
@@ -248,20 +314,29 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            modified_files (List[str]): The list of modified files in the current git branch.
+            report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+            slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
+            reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
-        pipeline_name = f"CI test for {connector.technical_name}"
 
+        self.pipeline_name = pipeline_name
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-
+        self.modified_files = modified_files
+        self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
+        self.cdk_version = None
+        self.should_save_report = should_save_report
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -269,10 +344,16 @@ class ConnectorContext(PipelineContext):
             git_branch=git_branch,
             git_revision=git_revision,
             gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
-            # TODO: remove this once stable and our default pipeline
-            is_ci_optional=True,
+            slack_webhook=slack_webhook,
+            reporting_slack_channel=reporting_slack_channel,
+            pull_request=pull_request,
+            ci_report_bucket=ci_report_bucket,
+            ci_gcs_credentials=ci_gcs_credentials,
+            ci_git_user=ci_git_user,
+            ci_github_access_token=ci_github_access_token,
         )
 
     @property
@@ -312,10 +393,18 @@ class ConnectorContext(PipelineContext):
         return yaml.safe_load(self.metadata_path.read_text())["data"]
 
     @property
-    def docker_image_from_metadata(self) -> str:
-        return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
+    def docker_repository(self) -> str:
+        return self.metadata["dockerRepository"]
 
-    def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    @property
+    def docker_image_tag(self) -> str:
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def docker_image(self) -> str:
+        return f"{self.docker_repository}:{self.docker_image_tag}"
+
+    async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -325,7 +414,8 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
@@ -344,38 +434,140 @@ class ConnectorContext(PipelineContext):
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.stopped_at = datetime.utcnow()
+        self.state = self.determine_final_state(self.report, exception_value)
         if exception_value:
             self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
-            self.state = ContextState.ERROR
         if self.report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
-            self.state = ContextState.ERROR
             self.report = ConnectorReport(self, [])
 
         if self.should_save_updated_secrets:
             await secrets.upload(self)
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
-        local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
-        connector_name = self.report.pipeline_context.connector.technical_name
-        connector_version = self.report.pipeline_context.connector.version
-        git_revision = self.report.pipeline_context.git_revision
-        git_branch = self.report.pipeline_context.git_branch.replace("/", "_")
-        suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
-        local_report_path = Path(local_reports_path_root + suffix)
-        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
-        await local_report_path.write_text(self.report.to_json())
-        if self.report.should_be_saved:
-            s3_reports_path_root = "python-poc/tests/history/"
-            s3_key = s3_reports_path_root + suffix
-            report_upload_exit_code = await remote_storage.upload_to_s3(
-                self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
-            )
-            if report_upload_exit_code != 0:
-                self.logger.error("Uploading the report to S3 failed.")
+        if self.should_save_report:
+            await self.report.save()
+
+        if self.report.should_be_commented_on_pr:
+            self.report.post_comment_on_pr()
+
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+
+        if self.should_send_slack_message:
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
 
         # Supress the exception if any
         return True
+
+    def create_slack_message(self) -> str:
+        raise NotImplementedError
+
+
+class PublishConnectorContext(ConnectorContext):
+    def __init__(
+        self,
+        connector: Connector,
+        pre_release: bool,
+        modified_files: List[str],
+        spec_cache_gcs_credentials: str,
+        spec_cache_bucket_name: str,
+        metadata_service_gcs_credentials: str,
+        metadata_bucket_name: str,
+        docker_hub_username: str,
+        docker_hub_password: str,
+        slack_webhook: str,
+        reporting_slack_channel: str,
+        ci_report_bucket: str,
+        report_output_prefix: str,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+        ci_gcs_credentials: str = None,
+        pull_request: PullRequest = None,
+    ):
+        self.pre_release = pre_release
+        self.spec_cache_bucket_name = spec_cache_bucket_name
+        self.metadata_bucket_name = metadata_bucket_name
+        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
+        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
+        self.docker_hub_username = docker_hub_username
+        self.docker_hub_password = docker_hub_password
+
+        pipeline_name = f"Publish {connector.technical_name}"
+        pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
+
+        super().__init__(
+            pipeline_name=pipeline_name,
+            connector=connector,
+            modified_files=modified_files,
+            report_output_prefix=report_output_prefix,
+            ci_report_bucket=ci_report_bucket,
+            is_local=is_local,
+            git_branch=git_branch,
+            git_revision=git_revision,
+            gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
+            pipeline_start_timestamp=pipeline_start_timestamp,
+            ci_context=ci_context,
+            slack_webhook=slack_webhook,
+            reporting_slack_channel=reporting_slack_channel,
+            ci_gcs_credentials=ci_gcs_credentials,
+            should_save_report=True,
+        )
+
+    @property
+    def docker_hub_username_secret(self) -> Secret:
+        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
+
+    @property
+    def docker_hub_password_secret(self) -> Secret:
+        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+
+    @property
+    def metadata_service_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
+
+    @property
+    def spec_cache_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
+
+    @property
+    def docker_image_tag(self):
+        # get the docker image tag from the parent class
+        metadata_tag = super().docker_image_tag
+        if self.pre_release:
+            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
+        else:
+            return metadata_tag
+
+    def create_slack_message(self) -> str:
+        docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
+        message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
+        if self.is_ci:
+            message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"
+        else:
+            message += "🧑‍💻 Local run\n"
+        message += f"*Connector:* {self.connector.technical_name}\n"
+        message += f"*Version:* {self.connector.version}\n"
+        branch_url = f"https://github.com/airbytehq/airbyte/tree/{self.git_branch}"
+        message += f"*Branch:* <{branch_url}|{self.git_branch}>\n"
+        commit_url = f"https://github.com/airbytehq/airbyte/commit/{self.git_revision}"
+        message += f"*Commit:* <{commit_url}|{self.git_revision[:10]}>\n"
+        if self.state in [ContextState.INITIALIZED, ContextState.RUNNING]:
+            message += "🟠"
+        if self.state is ContextState.SUCCESSFUL:
+            message += "🟢"
+        if self.state in [ContextState.FAILURE, ContextState.ERROR]:
+            message += "🔴"
+        message += f" {self.state.value['description']}\n"
+        if self.state is ContextState.SUCCESSFUL:
+            message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
+        if self.state is ContextState.FAILURE:
+            message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
+        return message

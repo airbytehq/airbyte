@@ -79,7 +79,9 @@
       "property_id": {
         "type": "string",
         "title": "Property ID",
-        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
+        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body such as \"123...\". See <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id\">the docs</a> for more details.",
+        "pattern": "^[0-9]*$",
+        "pattern_descriptor": "such as \"123...\"",
         "order": 1
       },
       "date_ranges_start_date": {
@@ -87,6 +89,9 @@
         "title": "Start Date",
         "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report. Not applied to custom Cohort reports.",
         "format": "date",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern_descriptor": "YYYY-MM-DD",
+        "examples": ["2021-01-01"],
         "order": 2
       },
       "custom_reports": {
@@ -107,12 +112,63 @@
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": [
+      "credentials",
+      "auth_type"
+    ],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "access_token"
+            ]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "refresh_token"
+            ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "client_id"
+            ]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "client_secret"
+            ]
+          }
+        }
+      }
     }
   }
 }

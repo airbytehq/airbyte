@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
   "type": "object",
   "properties": {
@@ -16,27 +16,7 @@
           "type": ["null", "string"]
         },
         "support_address": {
-          "type": ["null", "object"],
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "support_email": {
           "type": ["null", "string"]
@@ -132,28 +112,7 @@
       "additionalProperties": true,
       "properties": {
         "address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "address_kana": {
           "type": ["null", "object"],
@@ -338,28 +297,7 @@
           "type": ["null", "string"]
         },
         "address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "address_kana": {
           "type": ["null", "object"],
@@ -549,28 +487,7 @@
           "type": ["null", "string"]
         },
         "registered_address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "relationship": {
           "type": ["null", "object"],

@@ -49,4 +49,12 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
     return new LinkedList<>(Collections.singletonList(Jsons.serialize(formattedData)));
   }
 
+  @Override
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+    return List.of(
+        id,
+        formattedString,
+        Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+  }
+
 }

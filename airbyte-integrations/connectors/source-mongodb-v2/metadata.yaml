@@ -1,4 +1,13 @@
 data:
+  connectorSubtype: database
+  connectorType: source
+  definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-mongodb-v2
+  githubIssueLabel: source-mongodb-v2
+  icon: mongodb.svg
+  license: ELv2
+  name: MongoDb
   registries:
     cloud:
       dockerImageTag: 0.1.7
@@ -6,15 +15,9 @@ data:
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: database
-  connectorType: source
-  definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 0.1.19
-  dockerRepository: airbyte/source-mongodb-v2
-  githubIssueLabel: source-mongodb-v2
-  icon: mongodb.svg
-  license: MIT
-  name: MongoDb
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

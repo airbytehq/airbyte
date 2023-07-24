@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
@@ -12,6 +7,13 @@ data:
   githubIssueLabel: source-opsgenie
   license: MIT
   name: Opsgenie
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/opsgenie
+  documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

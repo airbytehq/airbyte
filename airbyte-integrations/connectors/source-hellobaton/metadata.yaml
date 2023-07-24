@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 492b56d1-937c-462e-8076-21ad2031e784
@@ -13,6 +8,13 @@ data:
   icon: hellobaton.svg
   license: MIT
   name: Hellobaton
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/hellobaton
+  documentationUrl: https://docs.airbyte.com/integrations/sources/baton
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

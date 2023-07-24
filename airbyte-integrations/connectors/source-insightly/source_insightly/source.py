@@ -178,12 +178,15 @@ class IncrementalInsightlyStream(InsightlyStream, ABC):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         start_datetime = pendulum.parse(self.start_date)
-        if stream_state.get(self.cursor_field):
-            start_datetime_raw = stream_state[self.cursor_field]
-            if isinstance(start_datetime_raw, datetime):
-                start_datetime = start_datetime_raw
+        cursor_datetime = stream_state.get(self.cursor_field)
+        if cursor_datetime:
+            if isinstance(cursor_datetime, datetime):
+                start_datetime = cursor_datetime
             else:
-                start_datetime = pendulum.parse(stream_state[self.cursor_field])
+                start_datetime = pendulum.parse(cursor_datetime)
+
+            # subtract 1 second to make the incremental request inclusive
+            start_datetime = start_datetime.subtract(seconds=1)
 
         params.update({"updated_after_utc": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")})
         return params

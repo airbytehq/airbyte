@@ -15,7 +15,7 @@ acceptance_tests:
     - config_path: secrets/service_config.json
       status: succeed
     - config_path: integration_tests/invalid_config.json
-      status: failed
+      status: exception
   discovery:
     tests:
     - config_path: secrets/service_config.json

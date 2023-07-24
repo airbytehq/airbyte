@@ -3,11 +3,6 @@ data:
     hosts:
       - galaxyapi.senseforce.io
       - senseforce.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 39de93cb-1511-473e-a673-5cbedb9436af
@@ -17,6 +12,14 @@ data:
   icon: senseforce.svg
   license: MIT
   name: Senseforce
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

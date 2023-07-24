@@ -18,6 +18,7 @@ import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
@@ -132,6 +133,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def model(self) -> CatalogModel:
         return self._model
 
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -166,9 +171,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    recordId=metric_object.get(self.metrics_type_to_id_map[report_info.record_type], str(uuid.uuid4())),
+                    recordId=self.get_record_id(metric_object, report_info.record_type),
                     metric=metric_object,
                 ).dict()
+
+    def get_record_id(self, metric_object: dict, record_type: str) -> str:
+        return metric_object.get(self.metrics_type_to_id_map[record_type]) or str(uuid.uuid4())
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):

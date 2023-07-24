@@ -21,14 +21,25 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_brands_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_v3_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_brands_video_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+        ignored_fields:
+          sponsored_product_campaigns:
+            - name: dailyBudget
+              bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
+          sponsored_product_ad_group_suggested_keywords:
+            - name: suggestedKeywords
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
+          sponsored_product_ad_group_bid_recommendations:
+            - name: suggestedBid
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl
-        fail_on_extra_columns: false
   connection:
     tests:
       - config_path: secrets/config.json
@@ -38,6 +49,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: 2.3.1
   full_refresh:
     tests:
       - config_path: secrets/config.json

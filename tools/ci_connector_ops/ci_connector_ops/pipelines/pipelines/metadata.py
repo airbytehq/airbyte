@@ -1,16 +1,17 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import functools
 import uuid
 from pathlib import Path
 from typing import Optional, Set
 
 import dagger
-from ci_connector_ops.pipelines.actions import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently
+from ci_connector_ops.pipelines.helpers.steps import run_steps
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently, get_secret_host_variable
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"
@@ -27,6 +28,10 @@ def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -
     if not metadata_path.exists():
         raise FileNotFoundError(f"{str(metadata_path)} does not exist.")
     return context.get_repo_dir(str(metadata_path.parent), include=[METADATA_FILE_NAME]).file(METADATA_FILE_NAME)
+
+
+def get_metadata_icon_file_from_path(context: PipelineContext, metadata_icon_path: Path) -> dagger.File:
+    return context.get_repo_dir(str(metadata_icon_path.parent), include=[METADATA_ICON_FILE_NAME]).file(METADATA_ICON_FILE_NAME)
 
 
 # STEPS
@@ -58,44 +63,46 @@ class MetadataValidation(PoetryRun):
 
 
 class MetadataUpload(PoetryRun):
-    GCS_CREDENTIALS_CONTAINER_PATH = "gcs_credentials.json"
-
-    def __init__(self, context: PipelineContext, metadata_path: Path, gcs_bucket_name: str, gcs_credentials: str):
+    def __init__(
+        self,
+        context: PipelineContext,
+        metadata_path: Path,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials_secret: dagger.Secret,
+        docker_hub_username_secret: dagger.Secret,
+        docker_hub_password_secret: dagger.Secret,
+        pre_release: bool = False,
+        pre_release_tag: Optional[str] = None,
+    ):
         title = f"Upload {metadata_path}"
-        self.gcs_bucket_name = gcs_bucket_name
+        self.gcs_bucket_name = metadata_bucket_name
+        self.pre_release = pre_release
+        self.pre_release_tag = pre_release_tag
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
 
-        docker_hub_username_secret: dagger.Secret = (
-            self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
-        )
-
-        docker_hub_password_secret: dagger.Secret = (
-            self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
-        )
+        # Ensure the icon file is included in the upload
+        base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
+        metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
+        if metadata_icon_path.exists():
+            base_container = base_container.with_file(
+                METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path)
+            )
 
         self.poetry_run_container = (
-            self.poetry_run_container
-            .with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
-            .with_new_file(
-                self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", "")
-            )
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
+            .with_secret_variable("GCS_CREDENTIALS", metadata_service_gcs_credentials_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         )
 
     async def _run(self) -> StepResult:
-        return await super()._run(
-            [
-                "metadata_service",
-                "upload",
-                METADATA_FILE_NAME,
-                self.gcs_bucket_name,
-                "--service-account-file-path",
-                self.GCS_CREDENTIALS_CONTAINER_PATH,
-            ]
-        )
+        upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
+
+        if self.pre_release:
+            upload_command += ["--prerelease", self.pre_release_tag]
+
+        return await super()._run(upload_command)
 
 
 class DeployOrchestrator(Step):
@@ -119,9 +126,9 @@ class DeployOrchestrator(Step):
     async def _run(self) -> StepResult:
         parent_dir = self.context.get_repo_dir(METADATA_DIR)
         python_base = with_python_base(self.context)
-        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "poetry2setup==1.1.0"])
+        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = (
-            self.context.dagger_client.host().env_variable("DAGSTER_CLOUD_METADATA_API_TOKEN").secret()
+            get_secret_host_variable(self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN")
         )
 
         container_to_run = (
@@ -155,16 +162,18 @@ async def run_metadata_validation_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_validate: Set[Path],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
-        pipeline_name="Metadata Service Validation Pipeline",
+        pipeline_name="Validate metadata.yaml files",
         is_local=is_local,
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -187,6 +196,7 @@ async def run_metadata_lib_test_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -196,6 +206,7 @@ async def run_metadata_lib_test_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -222,6 +233,7 @@ async def run_metadata_orchestrator_test_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -231,6 +243,7 @@ async def run_metadata_orchestrator_test_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -252,11 +265,11 @@ async def run_metadata_upload_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_upload: Set[Path],
     gcs_bucket_name: str,
-    gcs_credentials: str,
 ) -> bool:
     pipeline_context = PipelineContext(
         pipeline_name="Metadata Upload Pipeline",
@@ -264,6 +277,7 @@ async def run_metadata_upload_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
@@ -271,9 +285,17 @@ async def run_metadata_upload_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
         async with pipeline_context:
+            get_secret = functools.partial(get_secret_host_variable, pipeline_context.dagger_client)
             results = await execute_concurrently(
                 [
-                    MetadataUpload(pipeline_context, metadata_path, gcs_bucket_name, gcs_credentials).run
+                    MetadataUpload(
+                        context=pipeline_context,
+                        metadata_service_gcs_credentials_secret=get_secret("GCS_CREDENTIALS"),
+                        docker_hub_username_secret=get_secret("DOCKER_HUB_USERNAME"),
+                        docker_hub_password_secret=get_secret("DOCKER_HUB_PASSWORD"),
+                        metadata_bucket_name=gcs_bucket_name,
+                        metadata_path=metadata_path,
+                    ).run
                     for metadata_path in metadata_to_upload
                 ]
             )
@@ -287,6 +309,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     git_branch: str,
     git_revision: str,
     gha_workflow_run_url: Optional[str],
+    dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
@@ -296,6 +319,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         git_branch=git_branch,
         git_revision=git_revision,
         gha_workflow_run_url=gha_workflow_run_url,
+        dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )

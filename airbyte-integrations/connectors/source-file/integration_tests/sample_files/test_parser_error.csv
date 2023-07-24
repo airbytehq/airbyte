@@ -1,0 +1,5 @@
+date,key,new_confirmed,new_deceased,new_recovered,new_tested,total_confirmed,total_deceased,total_recovered,total_tested
+2020-09-24,AE,1002,1,,93618,88532,407,,9130551
+2020-09-24,AF,0,0,,,39170,1451,,
+2020-09-24,AM,392,2,,,48643,947,,
+2020-09-24,AT,688,6,,18518,41246,783,,1507782

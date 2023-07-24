@@ -39,12 +39,9 @@ class MinMaxDatetime:
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.datetime = InterpolatedString.create(self.datetime, parameters=parameters or {})
-        self.timezone = dt.timezone.utc
         self._parser = DatetimeParser()
         self.min_datetime = InterpolatedString.create(self.min_datetime, parameters=parameters) if self.min_datetime else None
         self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
-
-        self._timezone = dt.timezone.utc
 
     def get_datetime(self, config, **additional_parameters) -> dt.datetime:
         """
@@ -58,17 +55,17 @@ class MinMaxDatetime:
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format, self.timezone)
+        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format)
 
         if self.min_datetime:
             min_time = str(self.min_datetime.eval(config, **additional_parameters))
             if min_time:
-                min_time = self._parser.parse(min_time, datetime_format, self.timezone)
+                min_time = self._parser.parse(min_time, datetime_format)
                 time = max(time, min_time)
         if self.max_datetime:
             max_time = str(self.max_datetime.eval(config, **additional_parameters))
             if max_time:
-                max_time = self._parser.parse(max_time, datetime_format, self.timezone)
+                max_time = self._parser.parse(max_time, datetime_format)
                 time = min(time, max_time)
         return time
 

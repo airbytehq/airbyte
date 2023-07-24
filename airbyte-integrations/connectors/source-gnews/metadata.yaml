@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
@@ -13,6 +8,14 @@ data:
   icon: gnews.svg
   license: MIT
   name: GNews
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gnews
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

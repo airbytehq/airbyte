@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
@@ -13,6 +8,14 @@ data:
   icon: reply-io.svg
   license: MIT
   name: Reply.io
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/reply-io
+  documentationUrl: https://docs.airbyte.com/integrations/sources/reply-io
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cd06e646-31bf-4dc8-af48-cbc6530fcad3
@@ -13,6 +8,13 @@ data:
   icon: kustomer.svg
   license: MIT
   name: Kustomer
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/kustomer
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer-singer
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

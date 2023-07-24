@@ -36,7 +36,7 @@
     },
     "modified": {
       "type": "string",
-      "format": "datetime"
+      "format": "date-time"
     }
   }
 }

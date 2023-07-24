@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
@@ -13,6 +8,13 @@ data:
   icon: surveycto.svg
   license: MIT
   name: SurveyCTO
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/surveycto
+  documentationUrl: https://docs.airbyte.com/integrations/sources/surveycto
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 05c161bf-ca73-4d48-b524-d392be417002
@@ -13,6 +8,13 @@ data:
   icon: apachedoris.svg
   license: MIT
   name: Apache Doris
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/doris
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

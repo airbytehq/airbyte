@@ -9,6 +9,8 @@ Connectors built with the connector builder always make HTTP requests, receive t
 
 ## Record selection
 
+<iframe width="640" height="393" src="https://www.loom.com/embed/06d0fe35d79b40c5b1aea29a7fa7f113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record selector" field of the stream needs to be set to the property of the response object that holds the records.
 
 Very often, the response body contains an array of records along with some suplementary information (for example meta data for pagination).
@@ -148,6 +150,8 @@ The "transformations" feature can be used for these purposes.
 
 ### Removing fields
 
+<iframe width="640" height="538" src="https://www.loom.com/embed/8dca8feaa54f49848667d3fd5b945372" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 To remove a field from a record, add a new transformation in the "Transformations" section of type "remove" and enter the field path. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records also include the html content of the mailing which takes up a lot of space:
 ```
 {
@@ -220,6 +224,8 @@ The `*` character can also be used as a placeholder to filter for all fields tha
 
 
 ### Adding fields
+
+<iframe width="640" height="409" src="https://www.loom.com/embed/ab3b72cafb734112b645607ab6d1ab1f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 Adding fields can be used to apply a hashing function to an existing field to pseudonymize it. To do this, add a new transformation in the "Transformations" section of type "add" and enter the field path and the new value. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records include the name of the sender:
 ```
@@ -296,7 +302,8 @@ This information is used by the Airbyte system for different purposes:
 * **Recreating the data structure with right columns** in destination - this allows a warehouse destination to create a SQL table which the columns matching the fields of records
 * **Detecting schema changes** - if the schema of a stream changes for an existing connection, this situation can be handled gracefully by Airbyte instead of causing errors in the destination
 
-When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. This schema can be copied over as the declared schema of the stream with a single click.
+When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. By default, new streams are configured to automatically import the detected schema into the declared schema on every test read.
+This behavior can be toggled off by disabling the `Automatically import declared schema` switch, in which case the declared schema can be manually edited in the UI and it will no longer be automatically updated when triggering test reads.
 
 For example the following test records:
 ```
@@ -345,7 +352,7 @@ result in the following schema:
 
 More strict is always better, but the detected schema is a good default to rely on. See the documentation about [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) for JSON schema structures that will be picked up by the Airbyte system.
 
-In case the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
+If `Automatically import detected schema` is disabled, and the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
 
 <img src={Diff} width="600" alt="Detected schema with highlighted differences" />
 

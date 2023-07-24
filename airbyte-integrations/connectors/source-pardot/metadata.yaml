@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
@@ -13,6 +8,13 @@ data:
   icon: salesforcepardot.svg
   license: MIT
   name: Pardot
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pardot
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
