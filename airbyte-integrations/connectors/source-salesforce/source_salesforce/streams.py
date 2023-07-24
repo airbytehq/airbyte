@@ -480,7 +480,7 @@ class BulkSalesforceStream(SalesforceStream):
                         yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
-            yield from []
+            raise Exception("Empty data received") from e
         except IOError as ioe:
             raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
         finally:
@@ -540,21 +540,22 @@ class BulkSalesforceStream(SalesforceStream):
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
             if not job_full_url:
-                if job_status == "Failed":
-                    # As rule as BULK logic returns unhandled error. For instance:
-                    # error message: 'Unexpected exception encountered in query processing.
-                    #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
-                    # Thus we can try to switch to GET sync request because its response returns obvious error message
-                    standard_instance = self.get_standard_instance()
-                    self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
-                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
-                    if not stream_is_available:
-                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
-                        return
-                    yield from standard_instance.read_records(
-                        sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                    )
-                    return
+                # if job_status == "Failed":
+                #     # As rule as BULK logic returns unhandled error. For instance:
+                #     # error message: 'Unexpected exception encountered in query processing.
+                #     #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
+                #     # Thus we can try to switch to GET sync request because its response returns obvious error message
+                #     standard_instance = self.get_standard_instance()
+                #     self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                #     stream_is_available, error = standard_instance.check_availability(self.logger, None)
+                #     if not stream_is_available:
+                #         self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
+                #         raise Exception(f"Cannot sync stream {standard_instance.name} because it was unavailable. Error: {error}")
+                #         # return
+                #     yield from standard_instance.read_records(
+                #         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                #     )
+                #     return
                 raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
             salesforce_bulk_api_locator = None
             while True:
@@ -696,6 +697,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
+        self.logger.info(f"{query=}")
         return {"q": query}
 
 
