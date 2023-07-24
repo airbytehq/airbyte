@@ -1,0 +1,93 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "account_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "image_document_id": {
+        "type": "string"
+      },
+      "image_name": {
+        "type": "string"
+      },
+      "image_type": {
+        "type": "string"
+      },
+      "is_linked_with_zohocrm": {
+        "type": "boolean"
+      },
+      "item_id": {
+        "type": "string"
+      },
+      "item_name": {
+        "type": "string"
+      },
+      "item_type": {
+        "type": "string"
+      },
+      "last_modified_time": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "product_type": {
+        "type": "string"
+      },
+      "purchase_account_id": {
+        "type": "string"
+      },
+      "purchase_account_name": {
+        "type": "string"
+      },
+      "purchase_description": {
+        "type": "string"
+      },
+      "purchase_rate": {
+        "type": "number"
+      },
+      "rate": {
+        "type": "number"
+      },
+      "show_in_storefront": {
+        "type": "boolean"
+      },
+      "sku": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "tax_id": {
+        "type": "string"
+      },
+      "tax_name": {
+        "type": "string"
+      },
+      "tax_percentage": {
+        "type": "number"
+      },
+      "unit": {
+        "type": "string"
+      },
+      "zcrm_product_id": {
+        "type": "string"
+      }
+    }
+  }

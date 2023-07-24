@@ -1,0 +1,98 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "payment_id": {
+        "type": "string"
+      },
+      "vendor_id": {
+        "type": "string"
+      },
+      "vendor_name": {
+        "type": "string"
+      },
+      "bill_numbers": {
+        "type": "string"
+      },
+      "payment_mode": {
+        "type": "string"
+      },
+      "payment_number": {
+        "type": "integer"
+      },
+      "description": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "exchange_rate": {
+        "type": "number"
+      },
+      "amount": {
+        "type": "number"
+      },
+      "bcy_amount": {
+        "type": "number"
+      },
+      "paid_through_account_id": {
+        "type": "string"
+      },
+      "paid_through_account_name": {
+        "type": "string"
+      },
+      "balance": {
+        "type": "number"
+      },
+      "bcy_balance": {
+        "type": "number"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string"
+      },
+      "is_paid_via_print_check": {
+        "type": "boolean"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "is_ach_payment": {
+        "type": "boolean"
+      },
+      "ach_payment_status": {
+        "type": "string"
+      },
+      "ach_gw_transaction_id": {
+        "type": "string"
+      },
+      "check_details": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "check_id": {
+              "type": "string"
+            },
+            "check_status": {
+              "type": "string"
+            },
+            "check_number": {
+              "type": "string"
+            },
+            "memo": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+  

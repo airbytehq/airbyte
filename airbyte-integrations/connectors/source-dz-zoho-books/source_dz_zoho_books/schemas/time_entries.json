@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "time_entry_id": {
+        "type": "string"
+      },
+      "project_id": {
+        "type": "string"
+      },
+      "project_name": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "string"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "task_id": {
+        "type": "string"
+      },
+      "task_name": {
+        "type": "string"
+      },
+      "user_id": {
+        "type": "string"
+      },
+      "is_current_user": {
+        "type": "boolean"
+      },
+      "user_name": {
+        "type": "string"
+      },
+      "log_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "begin_time": {
+        "type": "string",
+        "format": "time"
+      },
+      "end_time": {
+        "type": "string",
+        "format": "time"
+      },
+      "log_time": {
+        "type": "string",
+        "format": "time"
+      },
+      "is_billable": {
+        "type": "boolean"
+      },
+      "billed_status": {
+        "type": "string"
+      },
+      "invoice_id": {
+        "type": "string"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "timer_started_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "timer_duration_in_minutes": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "cost_rate": {
+        "type": "number"
+      },
+      "cost_amount": {
+        "type": "number"
+      }
+    }
+  }
+  

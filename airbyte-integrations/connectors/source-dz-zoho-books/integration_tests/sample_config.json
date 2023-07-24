@@ -1,0 +1,8 @@
+{
+  "client_id": "client id",
+  "client_secret": "client secret",
+  "refresh_token": "put refresh token",
+  "organization_id": "organization_id",
+  "dc_region": "Put data center region",
+  "start_date": "start date"
+}

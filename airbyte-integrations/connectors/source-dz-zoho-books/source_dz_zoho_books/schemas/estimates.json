@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "estimate_id": {
+        "type": "integer"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "integer"
+      },
+      "status": {
+        "type": "string"
+      },
+      "estimate_number": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "currency_id": {
+        "type": "integer"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "accepted_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "declined_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "expiry_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "has_attachment": {
+        "type": "boolean"
+      },
+      "is_viewed_by_client": {
+        "type": "boolean"
+      },
+      "client_viewed_time": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  }
+  

@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "contact_id": {
+        "type": "integer"
+      },
+      "contact_name": {
+        "type": "string"
+      },
+      "company_name": {
+        "type": "string"
+      },
+      "contact_type": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "payment_terms": {
+        "type": "integer"
+      },
+      "payment_terms_label": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "integer"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "outstanding_receivable_amount": {
+        "type": "number"
+      },
+      "unused_credits_receivable_amount": {
+        "type": "number"
+      },
+      "first_name": {
+        "type": "string"
+      },
+      "last_name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "phone": {
+        "type": "string"
+      },
+      "mobile": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  }
+  

@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "creditnote_id": {
+        "type": "string"
+      },
+      "creditnote_number": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "reference_number": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "total": {
+        "type": "number"
+      },
+      "balance": {
+        "type": "number"
+      },
+      "customer_id": {
+        "type": "string"
+      },
+      "customer_name": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "is_emailed": {
+        "type": "boolean"
+      }
+    }
+  }
+  

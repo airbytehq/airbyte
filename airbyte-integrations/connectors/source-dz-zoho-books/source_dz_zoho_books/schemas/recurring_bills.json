@@ -1,0 +1,344 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "recurring_bill_id": {
+        "type": "integer"
+      },
+      "vendor_id": {
+        "type": "string"
+      },
+      "vendor_name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "recurrence_name": {
+        "type": "string"
+      },
+      "currency_id": {
+        "type": "string"
+      },
+      "currency_code": {
+        "type": "string"
+      },
+      "currency_symbol": {
+        "type": "string"
+      },
+      "start_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "end_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "source_of_supply": {
+        "type": "string"
+      },
+      "place_of_supply": {
+        "type": "string"
+      },
+      "destination_of_supply": {
+        "type": "string"
+      },
+      "gst_treatment": {
+        "type": "string"
+      },
+      "gst_no": {
+        "type": "string"
+      },
+      "tax_treatment": {
+        "type": "string"
+      },
+      "vat_treatment": {
+        "type": "string"
+      },
+      "vat_reg_no": {
+        "type": "string"
+      },
+      "is_abn_quoted": {
+        "type": "string"
+      },
+      "abn": {
+        "type": "string"
+      },
+      "is_reverse_charge_applied": {
+        "type": "boolean"
+      },
+      "pricebook_id": {
+        "type": "integer"
+      },
+      "pricebook_name": {
+        "type": "string"
+      },
+      "is_inclusive_tax": {
+        "type": "boolean"
+      },
+      "line_items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "line_item_id": {
+              "type": "string"
+            },
+            "item_id": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "account_name": {
+              "type": "string"
+            },
+            "image_document_id": {
+              "type": "integer"
+            },
+            "warehouse_id": {
+              "type": "integer"
+            },
+            "warehouse_name": {
+              "type": "string"
+            },
+            "reverse_charge_tax_id": {
+              "type": "integer"
+            },
+            "reverse_charge_tax_name": {
+              "type": "string"
+            },
+            "reverse_charge_tax_percentage": {
+              "type": "integer"
+            },
+            "reverse_charge_tax_amount": {
+              "type": "integer"
+            },
+            "description": {
+              "type": "string"
+            },
+            "bcy_rate": {
+              "type": "integer"
+            },
+            "rate": {
+              "type": "integer"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tag_id": {
+                    "type": "string"
+                  },
+                  "tag_option_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "quantity": {
+              "type": "integer"
+            },
+            "tax_id": {
+              "type": "string"
+            },
+            "tds_tax_id": {
+              "type": "string"
+            },
+            "tax_treatment_code": {
+              "type": "string"
+            },
+            "tax_exemption_id": {
+              "type": "string"
+            },
+            "tax_exemption_code": {
+              "type": "string"
+            },
+            "tax_name": {
+              "type": "string"
+            },
+            "tax_type": {
+              "type": "string"
+            },
+            "tax_percentage": {
+              "type": "integer"
+            },
+            "item_total": {
+              "type": "integer"
+            },
+            "item_total_inclusive_of_tax": {
+              "type": "integer"
+            },
+            "item_order": {
+              "type": "integer"
+            },
+            "unit": {
+              "type": "string"
+            },
+            "product_type": {
+              "type": "string"
+            },
+            "hsn_or_sac": {
+              "type": "integer"
+            },
+            "acquisition_vat_id": {
+              "type": "string"
+            },
+            "acquisition_vat_name": {
+              "type": "string"
+            },
+            "acquisition_vat_percentage": {
+              "type": "string"
+            },
+            "acquisition_vat_amount": {
+              "type": "string"
+            },
+            "reverse_charge_vat_id": {
+              "type": "string"
+            },
+            "reverse_charge_vat_name": {
+              "type": "string"
+            },
+            "reverse_charge_vat_percentage": {
+              "type": "string"
+            },
+            "reverse_charge_vat_amount": {
+              "type": "string"
+            },
+            "is_billable": {
+              "type": "boolean"
+            },
+            "customer_id": {
+              "type": "string"
+            },
+            "customer_name": {
+              "type": "string"
+            },
+            "project_id": {
+              "type": "string"
+            },
+            "project_name": {
+              "type": "string"
+            },
+            "item_custom_fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "custom_field_id": {
+                    "type": "integer"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "is_tds_applied": {
+        "type": "boolean"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "terms": {
+        "type": "string"
+      },
+      "payment_terms": {
+        "type": "integer"
+      },
+      "payment_terms_label": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "custom_field_id": {
+              "type": "integer"
+            },
+            "index": {
+              "type": "integer"
+            },
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "acquisition_vat_summary": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "tax_name": {
+              "type": "string"
+            },
+            "tax_amount": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "reverse_charge_vat_summary": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "tax_name": {
+              "type": "string"
+            },
+            "tax_amount": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "acquisition_vat_total": {
+        "type": "integer"
+      },
+      "reverse_charge_vat_total": {
+        "type": "integer"
+      },
+      "created_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "created_by_id": {
+        "type": "string"
+      },
+      "last_modified_time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "discount": {
+        "type": "string"
+      },
+      "discount_account_id": {
+        "type": "string"
+      },
+      "is_discount_before_tax": {
+        "type": "boolean"
+      }
+    }
+  }
+  

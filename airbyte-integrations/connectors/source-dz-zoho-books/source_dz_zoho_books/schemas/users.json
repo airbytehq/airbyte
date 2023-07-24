@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string"
+      },
+      "is_current_user": {
+        "type": "boolean"
+      },
+      "is_customer_segmented": {
+        "type": "boolean"
+      },
+      "is_employee": {
+        "type": "boolean"
+      },
+      "is_vendor_segmented": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "photo_url": {
+        "type": "string"
+      },
+      "role_id": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "user_id": {
+        "type": "string"
+      },
+      "user_role": {
+        "type": "string"
+      },
+      "user_type": {
+        "type": "string"
+      }
+    }
+  }
