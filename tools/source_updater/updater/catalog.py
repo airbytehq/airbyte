@@ -57,7 +57,7 @@ class CatalogMerger:
 
         streams_to_remove = catalog_stream_names - manifest_stream_names
         if streams_to_remove:
-            logger.info(f"Removing streams {streams_to_remove}...")
+            logger.info(f"Removing {len(streams_to_remove)} stream(s): {streams_to_remove}...")
             catalog.streams = list(filter(lambda stream: stream.stream.name not in streams_to_remove, catalog.streams))
 
         streams_to_add = manifest_stream_names - catalog_stream_names

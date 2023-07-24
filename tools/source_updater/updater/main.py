@@ -60,12 +60,11 @@ def main(source: str, manifest: str, debug: bool) -> None:
         logging.basicConfig(level=logging.DEBUG, force=True)
 
     logger.info("Starting the update...")
-    repo = SourceRepository()
     config_path = f"airbyte-integrations/connectors/{source_name}/secrets/updated_configurations/"
     main_config, other_configs = _assemble_configs(config_path)
 
     new_manifest_source = YamlDeclarativeSource(manifest_path)
-    handler = SourceUpdaterHandler(repo, CatalogMerger(ConfiguredCatalogAssembler()))
+    handler = SourceUpdaterHandler(SourceRepository(), CatalogMerger(ConfiguredCatalogAssembler()))
     handler.handle(source_name, new_manifest_source, main_config, other_configs)
 
     logger.info(f"Successfully updated source `{source_name}`!")
