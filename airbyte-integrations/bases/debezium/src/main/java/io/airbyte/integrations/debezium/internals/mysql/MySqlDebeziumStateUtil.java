@@ -10,14 +10,17 @@ import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +41,14 @@ public class MySqlDebeziumStateUtil {
     final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties, database.getSourceConfig(), catalog, offsetManager,
-        Optional.of(
-            schemaHistoryStorage))) {
+        Optional.of(schemaHistoryStorage))) {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
           continue;
         }
-        LOGGER.info("Have seen a record, closing the debezium engine since this means initial state is constructed");
+        LOGGER.info("A record is returned, closing the engine since the state is constructed");
         publisher.close();
         break;
       }
@@ -75,30 +77,17 @@ public class MySqlDebeziumStateUtil {
    * and skip snapshot phase
    */
   private JsonNode constructBinlogOffset(final JdbcDatabase database, final String dbName) {
-
-//    final String showMasterStmt = "SHOW MASTER STATUS";
-//    connection.query(showMasterStmt, rs -> {
-//      if (rs.next()) {
-//        final String binlogFilename = rs.getString(1);
-//        final long binlogPosition = rs.getLong(2);
-//        offsetContext.setBinlogStartPoint(binlogFilename, binlogPosition);
-//        if (rs.getMetaData().getColumnCount() > 4) {
-//          // This column exists only in MySQL 5.6.5 or later ...
-//          final String gtidSet = rs.getString(5); // GTID set, may be null, blank, or contain a GTID set
-//          offsetContext.setCompletedGtidSet(gtidSet);
-//          LOGGER.info("\t using binlog '{}' at position '{}' and gtid '{}'", binlogFilename, binlogPosition,
-//              gtidSet);
-//        }
-    //TODO : Add gtid info as well
-    return format(MySqlCdcTargetPosition.targetPosition(database).getTargetPosition(), dbName, Instant.now());
+    return format(getStateAttributesFromDB(database), dbName, Instant.now());
   }
 
   @VisibleForTesting
-  public JsonNode format(final MySqlCdcPosition position, final String dbName, final Instant time) {
+  public JsonNode format(final MysqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
     final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
+    final String gtidSet = attributes.gtidSet().isPresent() ? ",\"gtids\":\"" + attributes.gtidSet().get() + "\"" : "";
     final String value =
-        "{\"transaction_id\":null,\"ts_sec\":" + time.getEpochSecond() + ",\"file\":\"" + position.fileName + "\",\"pos\":" + position.position
-            + "}";
+        "{\"transaction_id\":null,\"ts_sec\":" + time.getEpochSecond() + ",\"file\":\"" + attributes.binlogFilename() + "\",\"pos\":"
+            + attributes.binlogPosition()
+            + gtidSet + "}";
 
     final Map<String, String> result = new HashMap<>();
     result.put(key, value);
@@ -107,6 +96,43 @@ public class MySqlDebeziumStateUtil {
     LOGGER.info("Initial Debezium state constructed: {}", jsonNode);
 
     return jsonNode;
+  }
+
+
+  private MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+    try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
+        connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+        resultSet -> {
+          final String file = resultSet.getString("File");
+          final long position = resultSet.getLong("Position");
+          assert file != null;
+          assert position >= 0;
+          if (resultSet.getMetaData().getColumnCount() > 4) {
+            // This column exists only in MySQL 5.6.5 or later ...
+            final String gtidSet = resultSet.getString(5); // GTID set, may be null, blank, or contain a GTID set
+            return new MysqlDebeziumStateAttributes(file, position, removeNewLineChars(gtidSet));
+          }
+          return new MysqlDebeziumStateAttributes(file, position, Optional.empty());
+        })) {
+      final List<MysqlDebeziumStateAttributes> stateAttributes = stream.toList();
+      assert stateAttributes.size() == 1;
+      return stateAttributes.get(0);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Optional<String> removeNewLineChars(final String gtidSet) {
+    if (gtidSet != null && !gtidSet.trim().isEmpty()) {
+      // Remove all the newline chars that exist in the GTID set string ...
+      return Optional.of(gtidSet.replace("\n", "").replace("\r", ""));
+    }
+
+    return Optional.empty();
+  }
+
+  public record MysqlDebeziumStateAttributes(String binlogFilename, long binlogPosition, Optional<String> gtidSet) {
+
   }
 
 }
