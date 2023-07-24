@@ -1,7 +1,7 @@
 {
     "properties": {
       "CAMPAIGN_ID": {
-        "type": ["null", "string"]
+        "type": ["null", "integer"]
       },
       "AD_ID": {
         "type": "string"
