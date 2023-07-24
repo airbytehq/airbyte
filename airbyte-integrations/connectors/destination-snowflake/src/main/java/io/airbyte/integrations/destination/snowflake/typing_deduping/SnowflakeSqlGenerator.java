@@ -5,17 +5,18 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
-import java.util.Optional;
 
 public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
-    return null;
+    // TODO
+    return new StreamId(namespace, name, rawNamespaceOverride, StreamId.concatenateRawTableName(namespace, name), namespace, name);
   }
 
   @Override
   public ColumnId buildColumnId(String name) {
-    return null;
+    // TODO
+    return new ColumnId(name, name, name);
   }
 
   @Override

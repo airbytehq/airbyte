@@ -13,6 +13,9 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
@@ -65,8 +68,9 @@ public class StagingConsumerFactory {
                                        final BufferCreateFunction onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog,
-                                       final boolean purgeStagingData) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+                                       final boolean purgeStagingData,
+                                       final ParsedCatalog parsedCatalog) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
@@ -86,8 +90,9 @@ public class StagingConsumerFactory {
                                                       final BufferCreateFunction onCreateBuffer,
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean purgeStagingData) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+                                                      final boolean purgeStagingData,
+                                                      final ParsedCatalog parsedCatalog) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
     return new AsyncStreamConsumer(
@@ -141,21 +146,30 @@ public class StagingConsumerFactory {
    */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
                                                       final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog) {
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final ParsedCatalog parsedCatalog) {
 
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, parsedCatalog)).collect(toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config) {
+                                                                              final JsonNode config,
+                                                                              ParsedCatalog parsedCatalog) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
-
-      final String outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
-
       final String streamName = abStream.getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
+      final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
+
+      final String outputSchema;
+      final String tableName;
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        outputSchema = streamId.rawNamespace();
+        tableName = streamId.rawName();
+      } else {
+        outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
+        tableName = namingResolver.getRawTableName(streamName);
+      }
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
