@@ -5,6 +5,7 @@
 import logging
 from types import MappingProxyType
 from typing import Any, Mapping, Tuple
+
 import requests
 
 from .auth import ZohoBooksAuthenticator
@@ -19,7 +20,7 @@ class ZohoBooksAPI:
             "AU": "https://accounts.zoho.com.au",
             "EU": "https://accounts.zoho.eu",
             "IN": "https://accounts.zoho.in",
-            "JP": "https://accounts.zoho.jp"
+            "JP": "https://accounts.zoho.jp",
         }
     )
     _DC_REGION_TO_API_URL = MappingProxyType(
@@ -28,7 +29,7 @@ class ZohoBooksAPI:
             "AU": "https://www.zohoapis.com.au/books/",
             "EU": "https://www.zohoapis.eu/books/",
             "IN": "https://www.zohoapis.in/books/",
-            "JP": "https://www.zohoapis.jp/books/"
+            "JP": "https://www.zohoapis.jp/books/",
         }
     )
 
@@ -40,10 +41,10 @@ class ZohoBooksAPI:
     def authenticator(self) -> ZohoBooksAuthenticator:
         if self._authenticator is None:
             authenticator = ZohoBooksAuthenticator(
-                token_refresh_endpoint=f"{self._access_url}/oauth/v2/token", 
-                client_id=self.config["client_id"], 
-                client_secret=self.config["client_secret"], 
-                refresh_token=self.config["refresh_token"]
+                token_refresh_endpoint=f"{self._access_url}/oauth/v2/token",
+                client_id=self.config["client_id"],
+                client_secret=self.config["client_secret"],
+                refresh_token=self.config["refresh_token"],
             )
             self._authenticator = authenticator
         return self._authenticator
@@ -54,12 +55,12 @@ class ZohoBooksAPI:
 
     @property
     def api_url(self) -> str:
-        url = self._DC_REGION_TO_API_URL[self.config['dc_region'].upper()]
+        url = self._DC_REGION_TO_API_URL[self.config["dc_region"].upper()]
         return url
 
     def check_connection(self) -> Tuple[bool, Any]:
         path = "v3/items"
-        print("authenticator :m " , self.authenticator.get_auth_header())
+        print("authenticator :m ", self.authenticator.get_auth_header())
         response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
         try:
             response.raise_for_status()

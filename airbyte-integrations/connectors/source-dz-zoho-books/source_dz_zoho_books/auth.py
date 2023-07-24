@@ -1,11 +1,15 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import logging
+from typing import Any, Dict, Mapping, Tuple
+
 import requests
-from deprecated import deprecated
-from typing import Any, Mapping, Tuple, Dict
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 logger = logging.getLogger("airbyte")
 
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 class ZohoBooksAuthenticator(Oauth2Authenticator):
     def _prepare_refresh_token_params(self) -> Dict[str, str]:

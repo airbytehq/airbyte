@@ -4,16 +4,18 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from types import MappingProxyType
 from datetime import datetime
-from airbyte_cdk.sources.streams import IncrementalMixin
+from types import MappingProxyType
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_dz_zoho_books.auth import ZohoBooksAuthenticator
+
 from .api import ZohoBooksAPI
+
 
 # Basic full refresh stream
 class DzZohoBooksStream(HttpStream, ABC):
@@ -30,9 +32,9 @@ class DzZohoBooksStream(HttpStream, ABC):
         next_page = response.json().get("page_context")
         if not next_page:
             return None
-        elif next_page["has_more_page"] == False:
+        elif not next_page["has_more_page"]:
             return None
-        return {"page": next_page["page"]+1, "per_page": next_page["per_page"]}
+        return {"page": next_page["page"] + 1, "per_page": next_page["per_page"]}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -40,10 +42,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         if next_page_token is None:
             return {}
         else:
-            return {
-                "per_page": next_page_token["per_page"],
-                **(next_page_token["page"] or {})
-            }
+            return {"per_page": next_page_token["per_page"], **(next_page_token["page"] or {})}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -59,29 +58,31 @@ class DzZohoBooksStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
+
 class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
     cursor_field = "last_modified_time"
+
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(start_date, **kwargs)
         self.start_date = start_date
-        self._cursor_value :datetime = None
+        self._cursor_value: datetime = None
 
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return  {self.cursor_field: self._cursor_value}
-        else :
-            time = self.start_date.strftime('%Y-%m-%dT%H:%M:%S%z')
-            return  {self.cursor_field: datetime.strptime(time, '%Y-%m-%dT%H:%M:%S%z')}
+            return {self.cursor_field: self._cursor_value}
+        else:
+            time = self.start_date.strftime("%Y-%m-%dT%H:%M:%S%z")
+            return {self.cursor_field: datetime.strptime(time, "%Y-%m-%dT%H:%M:%S%z")}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(str(value[self.cursor_field]),'%Y-%m-%dT%H:%M:%S%z')
+        self._cursor_value = datetime.strptime(str(value[self.cursor_field]), "%Y-%m-%dT%H:%M:%S%z")
 
     def find_index(self, records, last_modified_time) -> int:
-        low=0
-        high = len(records)-1
-        
+        low = 0
+        high = len(records) - 1
+
         required_index = -1
         while low <= high:
             mid = (low + high) // 2
@@ -89,7 +90,7 @@ class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
             time = records[mid][self.cursor_field]
 
             if time == last_modified_time:
-                required_index = mid+1
+                required_index = mid + 1
                 break
             elif time > last_modified_time:
                 required_index = mid
@@ -103,23 +104,26 @@ class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
         records = list(super().read_records(*args, **kwargs))
         if not self._cursor_value:
             for record in records:
-                current_cursor_value = self._cursor_value if self._cursor_value else datetime.strptime(record[self.cursor_field], '%Y-%m-%dT%H:%M:%S%z')
-                latest_cursor_value = datetime.strptime(record[self.cursor_field], '%Y-%m-%dT%H:%M:%S%z')
+                current_cursor_value = (
+                    self._cursor_value if self._cursor_value else datetime.strptime(record[self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
+                )
+                latest_cursor_value = datetime.strptime(record[self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
                 self._cursor_value = max(current_cursor_value, latest_cursor_value)
                 yield record
         else:
-            target_time = self._cursor_value.strftime('%Y-%m-%dT%H:%M:%S%z')
+            target_time = self._cursor_value.strftime("%Y-%m-%dT%H:%M:%S%z")
             index = self.find_index(records, target_time)
-            
+
             if index == -1:
                 return None
-            
+
             while index < len(records):
                 current_cursor_value = self._cursor_value
-                latest_cursor_value = datetime.strptime(records[index][self.cursor_field], '%Y-%m-%dT%H:%M:%S%z')
+                latest_cursor_value = datetime.strptime(records[index][self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
                 self._cursor_value = max(current_cursor_value, latest_cursor_value)
                 yield records[index]
                 index = index + 1
+
 
 class Contacts(IncrementalDzZohoBooksStream):
     primary_key = "contact_id"
@@ -129,6 +133,7 @@ class Contacts(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/contacts?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Estimates(IncrementalDzZohoBooksStream):
     primary_key = "estimate_id"
 
@@ -136,6 +141,7 @@ class Estimates(IncrementalDzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"v3/estimates?sort_column={self.cursor_field}&sort_order=A"
+
 
 class Salesorders(IncrementalDzZohoBooksStream):
     primary_key = "salesorder_id"
@@ -145,6 +151,7 @@ class Salesorders(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/salesorders?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Invoices(IncrementalDzZohoBooksStream):
     primary_key = "invoice_id"
 
@@ -152,6 +159,7 @@ class Invoices(IncrementalDzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"v3/invoices?sort_column={self.cursor_field}&sort_order=A"
+
 
 class RecurringInvoices(IncrementalDzZohoBooksStream):
     primary_key = "recurring_invoice_id"
@@ -161,6 +169,7 @@ class RecurringInvoices(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/recurringinvoices?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Creditnotes(IncrementalDzZohoBooksStream):
     primary_key = "creditnote_id"
 
@@ -168,6 +177,7 @@ class Creditnotes(IncrementalDzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"v3/creditnotes?sort_column={self.cursor_field}&sort_order=A"
+
 
 class Customerpayments(IncrementalDzZohoBooksStream):
     primary_key = "payment_id"
@@ -177,6 +187,7 @@ class Customerpayments(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/customerpayments?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Expenses(DzZohoBooksStream):
     primary_key = "expense_id"
 
@@ -184,14 +195,16 @@ class Expenses(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/expenses"
-    
+
+
 class RecurringExpenses(DzZohoBooksStream):
     primary_key = "recurring_expense_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/recurringexpenses"
+        return "v3/recurringexpenses"
+
 
 class Purchaseorders(IncrementalDzZohoBooksStream):
     primary_key = "purchaseorder_id"
@@ -201,6 +214,7 @@ class Purchaseorders(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/purchaseorders?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Bills(IncrementalDzZohoBooksStream):
     primary_key = "bill_id"
 
@@ -209,13 +223,15 @@ class Bills(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/bills?sort_column={self.cursor_field}&sort_order=A"
 
+
 class RecurringBills(DzZohoBooksStream):
     primary_key = "recurring_bill_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/recurringbills"
+        return "v3/recurringbills"
+
 
 class VendorCredits(IncrementalDzZohoBooksStream):
     primary_key = "vendor_credit_id"
@@ -225,6 +241,7 @@ class VendorCredits(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/vendorcredits?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Vendorpayments(IncrementalDzZohoBooksStream):
     primary_key = "payment_id"
 
@@ -232,6 +249,7 @@ class Vendorpayments(IncrementalDzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"v3/vendorpayments?sort_column={self.cursor_field}&sort_order=A"
+
 
 class Bankaccounts(DzZohoBooksStream):
     primary_key = "account_id"
@@ -241,21 +259,24 @@ class Bankaccounts(DzZohoBooksStream):
     ) -> str:
         return "v3/bankaccounts"
 
+
 class Banktransactions(DzZohoBooksStream):
     primary_key = "transaction_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/banktransactions"
+        return "v3/banktransactions"
 
-class Chartofaccounts(DzZohoBooksStream): 
+
+class Chartofaccounts(DzZohoBooksStream):
     primary_key = "account_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/chartofaccounts"
+        return "v3/chartofaccounts"
+
 
 class Journals(DzZohoBooksStream):
     primary_key = "journal_id"
@@ -263,7 +284,8 @@ class Journals(DzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/journals"
+        return "v3/journals"
+
 
 class Projects(IncrementalDzZohoBooksStream):
     primary_key = "Project_id"
@@ -273,13 +295,15 @@ class Projects(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/projects?sort_column={self.cursor_field}&sort_order=A"
 
+
 class TimeEntries(DzZohoBooksStream):
     primary_key = "time_entry_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/projects/timeentries"
+        return "v3/projects/timeentries"
+
 
 class Items(IncrementalDzZohoBooksStream):
     primary_key = "item_id"
@@ -289,6 +313,7 @@ class Items(IncrementalDzZohoBooksStream):
     ) -> str:
         return f"v3/items?sort_column={self.cursor_field}&sort_order=A"
 
+
 class Users(DzZohoBooksStream):
     primary_key = "user_id"
 
@@ -297,6 +322,7 @@ class Users(DzZohoBooksStream):
     ) -> str:
         return "v3/users"
 
+
 class Currencies(DzZohoBooksStream):
     primary_key = "currency_id"
 
@@ -304,6 +330,7 @@ class Currencies(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/settings/currencies"
+
 
 # Source
 class SourceDzZohoBooks(AbstractSource):
@@ -324,24 +351,20 @@ class SourceDzZohoBooks(AbstractSource):
             token_refresh_endpoint="https://accounts.zoho.in/oauth/v2/token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"]
+            refresh_token=config["refresh_token"],
         )
 
-        start_date = datetime.strptime(config["start_date"], '%Y-%m-%dT%H:%M:%S%z')    
+        start_date = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S%z")
         _DC_REGION_TO_API_URL = MappingProxyType(
             {
                 "US": "https://www.zohoapis.com/books/",
                 "AU": "https://www.zohoapis.com.au/books/",
                 "EU": "https://www.zohoapis.eu/books/",
                 "IN": "https://www.zohoapis.in/books/",
-                "JP": "https://www.zohoapis.jp/books/"
+                "JP": "https://www.zohoapis.jp/books/",
             }
         )
-        init_params = {
-            "authenticator": auth,
-            "start_date": start_date,
-            "base_url": _DC_REGION_TO_API_URL[config['dc_region'].upper()]
-        }
+        init_params = {"authenticator": auth, "start_date": start_date, "base_url": _DC_REGION_TO_API_URL[config["dc_region"].upper()]}
 
         return [
             Contacts(**init_params),
@@ -351,21 +374,20 @@ class SourceDzZohoBooks(AbstractSource):
             RecurringInvoices(**init_params),
             Creditnotes(**init_params),
             Customerpayments(**init_params),
-            Expenses(**init_params), 
-            RecurringExpenses(**init_params),  
+            Expenses(**init_params),
+            RecurringExpenses(**init_params),
             Purchaseorders(**init_params),
             Bills(**init_params),
-            RecurringBills(**init_params),  
+            RecurringBills(**init_params),
             VendorCredits(**init_params),
             Vendorpayments(**init_params),
-            Bankaccounts(**init_params),  
-            Banktransactions(**init_params),  
-            Chartofaccounts(**init_params),  
-            Journals(**init_params),  
+            Bankaccounts(**init_params),
+            Banktransactions(**init_params),
+            Chartofaccounts(**init_params),
+            Journals(**init_params),
             Projects(**init_params),
-            TimeEntries(**init_params),  
+            TimeEntries(**init_params),
             Items(**init_params),
-            Users(**init_params),  
-            Currencies(**init_params)  
+            Users(**init_params),
+            Currencies(**init_params),
         ]
-
