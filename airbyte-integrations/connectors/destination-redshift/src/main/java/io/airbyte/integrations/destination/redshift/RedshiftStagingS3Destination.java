@@ -22,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -134,11 +135,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+            config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
@@ -151,15 +150,15 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().create(
-        outputRecordCollector,
-        getDatabase(getDataSource(config)),
-        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
-        getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
-        config,
-        catalog,
-        isPurgeStagingData(s3Options));
+    return new StagingConsumerFactory().createAsync(
+            outputRecordCollector,
+            getDatabase(getDataSource(config)),
+            new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
+            getNamingResolver(),
+            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
+            config,
+            catalog,
+            isPurgeStagingData(s3Options));
   }
 
   /**
