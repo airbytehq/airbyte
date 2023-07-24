@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.identifyNewlyAddedStreams;
 import static io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler.shouldPerformFullSync;
 
@@ -53,11 +54,11 @@ public class XminCtidUtils {
           return;
         }
 
-        if (streamState.has("state_type")) {
-          if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
+        if (streamState.has(STATE_TYPE_KEY)) {
+          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("ctid")) {
             statesFromCtidSync.add(stateMessage);
             streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
-          } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {
+          } else if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("xmin")) {
             if (shouldPerformFullSync(currentXminStatus, streamState)) {
               final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
                   streamDescriptor.getNamespace());
@@ -67,7 +68,7 @@ public class XminCtidUtils {
               statesFromXminSync.add(stateMessage);
             }
           } else {
-            throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
+            throw new RuntimeException("Unknown state type: " + streamState.get(STATE_TYPE_KEY).asText());
           }
         } else {
           throw new RuntimeException("State type not present");

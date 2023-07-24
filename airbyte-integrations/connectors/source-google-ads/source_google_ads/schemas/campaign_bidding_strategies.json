@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.aligned_campaign_budget_id": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.campaign_count": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.currency_code": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.effective_currency_code": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.enhanced_cpc": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.id": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.maximize_conversion_value.target_roas": {
+      "type": ["null", "number"]
+    },
+    "bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.maximize_conversions.cpc_bid_floor_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.maximize_conversions.target_cpa_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.name": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.non_removed_campaign_count": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.resource_name": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.status": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.target_cpa.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_cpa.cpc_bid_floor_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_cpa.target_cpa_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_impression_share.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_impression_share.location": {
+      "type": ["null", "string"]
+    },
+    "bidding_strategy.target_impression_share.location_fraction_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_roas.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_roas.cpc_bid_floor_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_roas.target_roas": {
+      "type": ["null", "number"]
+    },
+    "bidding_strategy.target_spend.cpc_bid_ceiling_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.target_spend.target_spend_micros": {
+      "type": ["null", "integer"]
+    },
+    "bidding_strategy.type": {
+      "type": ["null", "string"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
+    }
+  }
+}
