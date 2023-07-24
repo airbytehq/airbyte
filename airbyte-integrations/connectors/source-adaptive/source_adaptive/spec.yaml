@@ -34,6 +34,14 @@ connectionSpecification:
             order: 0
       - required:
         - method
+        title: export Accounts
+        properties:
+          method:
+            type: string
+            const: "exportAccounts"
+            order: 0
+      - required:
+        - method
         - version
         - date_start
         - date_end
