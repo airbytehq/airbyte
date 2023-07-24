@@ -34,6 +34,9 @@ class Creatives(HttpSubStream, ApplovinStream):
         )
 
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 120
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
         return f"creative_sets/{campaign_id}"
