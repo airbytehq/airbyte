@@ -266,6 +266,12 @@ class HttpStream(Stream, ABC):
         return False
 
     def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+        """
+        Remove query parameters from params mapping if they are already encoded in the URL.
+        :param url: URL with
+        :param params:
+        :return:
+        """
         if params is None:
             params = {}
         query_string = urllib.parse.urlparse(url).query
