@@ -124,6 +124,12 @@ streams:
             - items
       paginator:
         type: NoPagination
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - timestamp
+            value: '{{ record["year"] }}/{{ record["month"] }}/{{ record["day"] }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timestamp
