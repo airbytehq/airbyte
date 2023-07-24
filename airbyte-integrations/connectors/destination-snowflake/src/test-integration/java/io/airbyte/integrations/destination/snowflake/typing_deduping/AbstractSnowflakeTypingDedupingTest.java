@@ -55,7 +55,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             assertEquals("TABLE", tableInfo.getString("kind"));
             connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
-                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT));
           }
         },
         new SnowflakeTestSourceOperations()::rowToJson);
@@ -68,7 +68,14 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
   @Override
   protected void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception {
-
+//    database.execute(
+//        String.format(
+//          """
+//              DROP TABLE IF EXISTS airbyte.%s;
+//              DROP SCHEMA IF EXISTS %s CASCADE
+//              """,
+//            StreamId.concatenateRawTableName(streamNamespace, streamName),
+//            streamNamespace));
   }
 
   @Override
