@@ -83,7 +83,7 @@ class ChromaLocalIndexingModel(BaseModel):
     )
 
     class Config:
-        title = "Chroma (In-memory with persistance)"
+        title = "Chroma (local persistance)"
         schema_extra = {
             "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync."
         }
