@@ -181,7 +181,7 @@ public class PostgresXminHandler {
       if (prevRunXminStatus != null) {
         preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
       } else {
-        // In cases ctid sync is not possible we will do the initial load using "WHERE xmin >= 0"
+        // In case ctid sync is not possible we will do the initial load using "WHERE xmin >= 0"
         preparedStatement.setLong(1, 0L);
       }
 
@@ -192,7 +192,7 @@ public class PostgresXminHandler {
   @VisibleForTesting
   static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
     // Detect whether the source Postgres DB has undergone a single wraparound event.
-    return prevprevRunXminStatus != null && currentXcurrentXminStatus != null
+    return prevRunXminStatus != null && currentXminStatus != null
       && currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
   }
 
