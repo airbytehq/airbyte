@@ -7,26 +7,31 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import re
 import uuid
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from datetime import datetime
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, List, Optional
 
+import yaml
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
-    DEFAULT_PYTHON_EXCLUDE,
+    LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from ci_connector_ops.pipelines.utils import get_file_contents
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
 
 
-def with_python_base(context: PipelineContext, python_image_name: str = "python:3.9-slim") -> Container:
+def with_python_base(context: PipelineContext) -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:
@@ -39,16 +44,16 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     Returns:
         Container: The python base environment container.
     """
-    if not python_image_name.startswith("python:3"):
-        raise ValueError("You have to use a python image to build the python base environment")
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
     base_container = (
         context.dagger_client.container()
-        .from_(python_image_name)
+        .from_("python:3.9-slim")
+        .with_exec(["apt-get", "update"])
+        .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
-        .with_exec(["pip", "install", "--upgrade", "pip"])
+        .with_exec(["pip", "install", "pip==23.1.2"])
     )
 
     return base_container
@@ -65,8 +70,30 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     """
     python_environment: Container = with_python_base(context)
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
+    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
+
+    return (
+        python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
+        .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
+        .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
+    )
+
+
+def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Container:
+    return (
+        dagger_client.container()
+        .from_("alpine:latest")
+        .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
+        .with_exec(["apk", "update"])
+        .with_exec(["apk", "add", "git", "tar", "wget"])
+        .with_workdir("/ghcli")
+        .with_exec(["wget", "https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz", "-O", "ghcli.tar.gz"])
+        .with_exec(["tar", "--strip-components=1", "-xf", "ghcli.tar.gz"])
+        .with_exec(["rm", "ghcli.tar.gz"])
+        .with_exec(["cp", "bin/gh", "/usr/local/bin/gh"])
+        .with_exec(["git", "config", "--global", "user.email", f"{ci_git_user}@users.noreply.github.com"])
+        .with_exec(["git", "config", "--global", "user.name", ci_git_user])
+        .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
     )
 
 
@@ -88,15 +115,106 @@ def with_python_package(
     Returns:
         Container: A python environment container with the python package source code.
     """
-    if exclude:
-        exclude = DEFAULT_PYTHON_EXCLUDE + exclude
-    else:
-        exclude = DEFAULT_PYTHON_EXCLUDE
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
     container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
         "/" + package_source_code_path
     )
     return container
+
+
+async def find_local_python_dependencies(
+    context: PipelineContext,
+    package_source_code_path: str,
+    search_dependencies_in_setup_py: bool = True,
+    search_dependencies_in_requirements_txt: bool = True,
+) -> List[str]:
+    """Find local python dependencies of a python package. The dependencies are found in the setup.py and requirements.txt files.
+
+    Args:
+        context (PipelineContext): The current pipeline context, providing a dagger client and a repository directory.
+        package_source_code_path (str): The local path to the python package source code.
+        search_dependencies_in_setup_py (bool, optional): Whether to search for local dependencies in the setup.py file. Defaults to True.
+        search_dependencies_in_requirements_txt (bool, optional): Whether to search for local dependencies in the requirements.txt file. Defaults to True.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    python_environment = with_python_base(context)
+    container = with_python_package(context, python_environment, package_source_code_path)
+
+    local_dependency_paths = []
+    if search_dependencies_in_setup_py:
+        local_dependency_paths += await find_local_dependencies_in_setup_py(container)
+    if search_dependencies_in_requirements_txt:
+        local_dependency_paths += await find_local_dependencies_in_requirements_txt(container, package_source_code_path)
+
+    transitive_dependency_paths = []
+    for local_dependency_path in local_dependency_paths:
+        # Transitive local dependencies installation is achieved by calling their setup.py file, not their requirements.txt file.
+        transitive_dependency_paths += await find_local_python_dependencies(context, local_dependency_path, True, False)
+
+    all_dependency_paths = local_dependency_paths + transitive_dependency_paths
+    if all_dependency_paths:
+        context.logger.debug(f"Found local dependencies for {package_source_code_path}: {all_dependency_paths}")
+    return all_dependency_paths
+
+
+async def find_local_dependencies_in_setup_py(python_package: Container) -> List[str]:
+    """Find local dependencies of a python package in its setup.py file.
+
+    Args:
+        python_package (Container): A python package container.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    setup_file_content = await get_file_contents(python_package, "setup.py")
+    if not setup_file_content:
+        return []
+
+    local_setup_dependency_paths = []
+    with_egg_info = python_package.with_exec(["python", "setup.py", "egg_info"])
+    egg_info_output = await with_egg_info.stdout()
+    dependency_in_requires_txt = []
+    for line in egg_info_output.split("\n"):
+        if line.startswith("writing requirements to"):
+            # Find the path to the requirements.txt file that was generated by calling egg_info
+            requires_txt_path = line.replace("writing requirements to", "").strip()
+            requirements_txt_content = await with_egg_info.file(requires_txt_path).contents()
+            dependency_in_requires_txt = requirements_txt_content.split("\n")
+
+    for dependency_line in dependency_in_requires_txt:
+        if "file://" in dependency_line:
+            match = re.search(r"file:///(.+)", dependency_line)
+            if match:
+                local_setup_dependency_paths.append([match.group(1)][0])
+    return local_setup_dependency_paths
+
+
+async def find_local_dependencies_in_requirements_txt(python_package: Container, package_source_code_path: str) -> List[str]:
+    """Find local dependencies of a python package in a requirements.txt file.
+
+    Args:
+        python_package (Container): A python environment container with the python package source code.
+        package_source_code_path (str): The local path to the python package source code.
+
+    Returns:
+        List[str]: Paths to the local dependencies relative to the airbyte repo.
+    """
+    requirements_txt_content = await get_file_contents(python_package, "requirements.txt")
+    if not requirements_txt_content:
+        return []
+
+    local_requirements_dependency_paths = []
+    for line in requirements_txt_content.split("\n"):
+        # Some package declare themselves as a requirement in requirements.txt,
+        # #Without line != "-e ." the package will be considered a dependency of itself which can cause an infinite loop
+        if line.startswith("-e .") and line != "-e .":
+            local_dependency_path = Path(line[3:])
+            package_source_code_path = Path(package_source_code_path)
+            local_dependency_path = str((package_source_code_path / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_requirements_dependency_paths.append(local_dependency_path)
+    return local_requirements_dependency_paths
 
 
 async def with_installed_python_package(
@@ -118,20 +236,20 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    install_local_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
     install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
 
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
-    if requirements_txt := await get_file_contents(container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e ."):
-                local_dependency_path = package_source_code_path + "/" + line[3:]
-                container = container.with_mounted_directory(
-                    "/" + local_dependency_path, context.get_repo_dir(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
-                )
-        container = container.with_exec(install_local_requirements_cmd)
 
-    container = container.with_exec(install_connector_package_cmd)
+    local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
+
+    for dependency_directory in local_dependencies:
+        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+
+    if await get_file_contents(container, "setup.py"):
+        container = container.with_exec(install_connector_package_cmd)
+    if await get_file_contents(container, "requirements.txt"):
+        container = container.with_exec(install_requirements_cmd)
 
     if additional_dependency_groups:
         container = container.with_exec(
@@ -141,7 +259,7 @@ async def with_installed_python_package(
     return container
 
 
-def with_python_connector_installed(context: ConnectorContext) -> Container:
+def with_python_connector_source(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
@@ -151,10 +269,11 @@ def with_python_connector_installed(context: ConnectorContext) -> Container:
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
-    return with_python_package(context, testing_environment, connector_source_path, exclude=["secrets"])
+
+    return with_python_package(context, testing_environment, connector_source_path)
 
 
-async def with_installed_airbyte_connector(context: ConnectorContext) -> Container:
+async def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
     Args:
@@ -164,8 +283,23 @@ async def with_installed_airbyte_connector(context: ConnectorContext) -> Contain
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
+    exclude = [
+        f"{context.connector.code_directory}/{item}"
+        for item in [
+            "secrets",
+            "metadata.yaml",
+            "bootstrap.md",
+            "icon.svg",
+            "README.md",
+            "Dockerfile",
+            "acceptance-test-docker.sh",
+            "build.gradle",
+            ".hypothesis",
+            ".dockerignore",
+        ]
+    ]
     return await with_installed_python_package(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=["secrets"]
+        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
 
 
@@ -181,8 +315,8 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
     """
     python_base_environment: Container = with_python_base(context)
     ci_credentials = await with_installed_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
-
-    return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
+    ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
+    return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
 def with_alpine_packages(base_container: Container, packages_to_install: List[str]) -> Container:
@@ -234,85 +368,70 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment container with ci_connector_ops installed.
     """
-    python_base_environment: Container = with_python_base(context, "python:3-alpine")
-    python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+    python_base_environment: Container = with_python_base(context)
+
+    return await with_installed_python_package(context, python_base_environment, CI_CONNECTOR_OPS_SOURCE_PATH)
 
 
-def with_dockerd_service(
-    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
-) -> Container:
-    """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
-
+def with_global_dockerd_service(dagger_client: Client) -> Container:
+    """Create a container with a docker daemon running.
+    We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
-        context (ConnectorContext): The current connector context.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
-
+        dagger_client (Client): The dagger client used to create the container.
     Returns:
-        Container: The container running dockerd as a service.
+        Container: The container running dockerd as a service
     """
-    docker_lib_volume_name = f"{slugify(context.connector.technical_name)}-docker-lib"
-    if docker_service_name:
-        docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
-    dind = (
-        context.dagger_client.container()
+    return (
+        dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
-            "/var/lib/docker",
-            context.dagger_client.cache_volume(docker_lib_volume_name),
-            sharing=CacheSharingMode.SHARED,
+            "/tmp",
+            dagger_client.cache_volume("shared-tmp"),
         )
-    )
-    if shared_volume is not None:
-        dind = dind.with_mounted_cache(*shared_volume)
-    return dind.with_exposed_port(2375).with_exec(
-        ["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True
+        .with_exposed_port(2375)
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
 def with_bound_docker_host(
     context: ConnectorContext,
     container: Container,
-    shared_volume: Optional(Tuple[str, CacheVolume]) = None,
-    docker_service_name: Optional[str] = None,
 ) -> Container:
     """Bind a container to a docker host. It will use the dockerd service as a docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
         container (Container): The container to bind to the docker host.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
-
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = with_dockerd_service(context, shared_volume, docker_service_name)
-    docker_hostname = f"dockerhost-{slugify(context.connector.technical_name)}"
-    if docker_service_name:
-        docker_hostname = f"{docker_hostname}-{slugify(docker_service_name)}"
-    bound = container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375").with_service_binding(docker_hostname, dockerd)
-    if shared_volume:
-        bound = bound.with_mounted_cache(*shared_volume)
-    return bound
+    dockerd = context.dockerd_service
+    docker_hostname = "global-docker-host"
+    return (
+        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
+        .with_service_binding(docker_hostname, dockerd)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+    )
 
 
-def with_docker_cli(
-    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
-) -> Container:
+def bound_docker_host(context: ConnectorContext) -> Container:
+    def bound_docker_host_inner(container: Container) -> Container:
+        return with_bound_docker_host(context, container)
+
+    return bound_docker_host_inner
+
+
+def with_docker_cli(context: ConnectorContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: A docker cli container bound to a docker host.
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
-    return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
+    return with_bound_docker_host(context, docker_cli)
 
 
 async def with_connector_acceptance_test(context: ConnectorContext, connector_under_test_image_tar: File) -> Container:
@@ -324,24 +443,29 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
     Returns:
         Container: A container with connector acceptance tests installed.
     """
-    connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, docker_service_name="cat")
+    test_input = await context.get_connector_dir()
+    cat_config = yaml.safe_load(await test_input.file("acceptance-test-config.yml").contents())
+
+    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, cat_config["connector_image"])
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
-    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
 
     return (
-        with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
+        with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
-        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
-        .with_directory("/test_input/secrets", context.secrets_dir)
+        .with_mounted_directory("/test_input", test_input)
+        .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
+        # This bursts the CAT cached results everyday.
+        # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
+        # We keep the guarantee that a CAT runs everyday.
+        .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
         .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
+        .with_(mounted_connector_secrets(context, "/test_input/secrets"))
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
 
@@ -350,7 +474,6 @@ def with_gradle(
     context: ConnectorContext,
     sources_to_include: List[str] = None,
     bind_to_docker_host: bool = True,
-    docker_service_name: Optional[str] = "gradle",
 ) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
 
@@ -358,7 +481,6 @@ def with_gradle(
         context (ConnectorContext): The current connector context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
         bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
 
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
@@ -381,21 +503,21 @@ def with_gradle(
         "buildSrc",
         "tools/bin/build_image.sh",
         "tools/lib/lib.sh",
+        "tools/gradle/codestyle",
+        "pyproject.toml",
     ]
 
     if sources_to_include:
         include += sources_to_include
-
-    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
-
-    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
+    # TODO re-enable once we have fixed the over caching issue
+    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
         .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_env_variable("GRADLE_HOME", "/root/.gradle")
@@ -403,43 +525,37 @@ def with_gradle(
         .with_workdir("/airbyte")
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
+        # TODO (ben)
+        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
+        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
         .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
 
     if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
+        return with_bound_docker_host(context, openjdk_with_docker)
     else:
         return openjdk_with_docker
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
     """Load a docker image tar archive to the docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
-        docker_service_name (str): Name of the docker service, useful for context isolation.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
-    # Remove a previously existing image with the same tag if any.
-    docker_image_rm_exit_code = await with_exit_code(
-        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
-    )
-    if docker_image_rm_exit_code == 0:
-        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
-    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
-        context.logger.info(docker_tag_output)
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
+    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+    return image_sha
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -450,7 +566,7 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    python_base_environment: Container = with_python_base(context, "python:3.9")
+    python_base_environment: Container = with_python_base(context)
     python_with_git = with_debian_packages(python_base_environment, ["git"])
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
@@ -475,6 +591,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
     )
 
 
@@ -517,61 +634,81 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
+        "normalization_image": "airbyte/normalization:0.4.3",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
+        "normalization_image": "airbyte/normalization-clickhouse:0.4.3",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
+        "normalization_image": "airbyte/normalization-duckdb:0.4.3",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
-        "supports_in_connector_normalization": False,
+        "normalization_image": "airbyte/normalization-mssql:0.4.3",
+        "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
+        "normalization_image": "airbyte/normalization-mysql:0.4.3",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
+        "normalization_image": "airbyte/normalization-oracle:0.4.3",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
+        "normalization_image": "airbyte/normalization:0.4.3",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
+        "normalization_image": "airbyte/normalization-redshift:0.4.3",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False,
+        "normalization_image": "airbyte/normalization-snowflake:0.4.3",
+        "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
-        "supports_in_connector_normalization": False,
+        "normalization_image": "airbyte/normalization-tidb:0.4.3",
+        "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
 }
 
@@ -581,15 +718,10 @@ DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
 }
 
 
-def with_normalization(context: ConnectorContext) -> Container:
-    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
-    sshtunneling_file = context.get_repo_dir(
-        "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
-    ).file("sshtunneling.sh")
-    normalization_directory_with_build = normalization_directory.with_new_directory("build")
-    normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
-    normalization_dockerfile_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dockerfile"]
-    return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
+def with_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
+    return context.dagger_client.container(platform=build_platform).from_(
+        DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
+    )
 
 
 def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
@@ -601,6 +733,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "git",
     ]
 
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    yum_packages_to_install += additional_yum_packages
+
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
 
@@ -609,17 +744,21 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     return (
         with_integration_base_java(context, build_platform)
         .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        .with_exec(["yum", "clean", "all"])
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])
+        # Workaround for https://github.com/yaml/pyyaml/issues/601
+        .with_exec(["pip3", "install", "Cython<3.0", "pyyaml~=5.4", "--no-build-isolation"])
         .with_exec(["pip3", "install", dbt_adapter_package])
-        .with_directory("airbyte_normalization", with_normalization(context).directory("/airbyte"))
+        .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
         .with_exec(["sh", "-c", "mv * .."])
         .with_workdir("/airbyte")
         .with_exec(["rm", "-rf", "airbyte_normalization"])
-        .with_workdir("/airbyte/base_python_structs")
-        .with_exec(["pip3", "install", "."])
+        # We don't install the airbyte-protocol legacy package as its not used anymore and not compatible with Cython 3.x
+        # .with_workdir("/airbyte/base_python_structs")
+        # .with_exec(["pip3", "install", "--force-reinstall", "Cython<3.0", ".",])
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
@@ -673,7 +812,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
-
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
     pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
     for package_name, package_version in pip_dependencies:
@@ -683,25 +821,31 @@ async def get_cdk_version_from_python_connector(python_connector: Container) -> 
 
 
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
+    if context.connector.technical_name == "source-file-secure":
+        return await with_airbyte_python_connector_full_dagger(context, build_platform)
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     connector_container = (
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .build(context.get_connector_dir())
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .build(await context.get_connector_dir())
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
     cdk_version = await get_cdk_version_from_python_connector(connector_container)
     if cdk_version:
         connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
         context.cdk_version = cdk_version
+    if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
+        raise DaggerError(
+            "Abusive caching might be happening. The connector container should have been built with the correct version as defined in metadata.yaml"
+        )
     return await finalize_build(context, connector_container)
 
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
     connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
-    connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
+    connector_dir_with_finalize_script = await context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
     if not finalize_scripts:
         return connector_container
@@ -738,40 +882,79 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
     return connector_container.with_entrypoint(original_entrypoint)
 
 
-# This function is not used at the moment as we decided to use Python connectors dockerfile instead of building it with dagger.
-# Some python connectors use alpine base image, other use debian... We should unify this.
-def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
+async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
+    setup_dependencies_to_mount = await find_local_python_dependencies(
+        context, str(context.connector.code_directory), search_dependencies_in_setup_py=True, search_dependencies_in_requirements_txt=False
+    )
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
+    base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")
     snake_case_name = context.connector.technical_name.replace("-", "_")
     entrypoint = ["python", "/airbyte/integration_code/main.py"]
     builder = (
         base.with_workdir("/airbyte/integration_code")
-        .with_exec(["apk", "--no-cache", "upgrade"])
+        .with_env_variable("DAGGER_BUILD", "True")
+        .with_exec(["apt-get", "update"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "--upgrade", "pip"])
-        .with_exec(["apk", "--no-cache", "add", "tzdata", "build-base"])
-        .with_file("setup.py", context.get_connector_dir(include="setup.py").file("setup.py"))
-        .with_exec(["pip", "install", "--prefix=/install", "."])
+        .with_exec(["apt-get", "install", "-y", "tzdata"])
+        .with_file("setup.py", await context.get_connector_dir(include="setup.py").file("setup.py"))
     )
-    return (
+
+    for dependency_path in setup_dependencies_to_mount:
+        in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
+        builder = builder.with_mounted_directory(in_container_dependency_path, context.get_repo_dir(dependency_path))
+
+    builder = builder.with_exec(["pip", "install", "--prefix=/install", "."])
+
+    connector_container = (
         base.with_workdir("/airbyte/integration_code")
         .with_directory("/usr/local", builder.directory("/install"))
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", "Etc/UTC")
-        .with_exec(["apk", "--no-cache", "add", "bash"])
-        .with_file("main.py", context.get_connector_dir(include="main.py").file("main.py"))
-        .with_directory(snake_case_name, context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_exec(["apt-get", "install", "-y", "bash"])
+        .with_file("main.py", await context.get_connector_dir(include="main.py").file("main.py"))
+        .with_directory(snake_case_name, await context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
         .with_entrypoint(entrypoint)
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_crane(context: PipelineContext) -> Container:
+def with_crane(
+    context: PipelineContext,
+) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+
+    # We use the debug image as it contains a shell which we need to properly use environment variables
+    # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
+    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+
+    if context.docker_hub_username_secret and context.docker_hub_password_secret:
+        base_container = (
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
+                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
+            )
+            # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
+            # We use sh -c to be able to use environment variables in the command
+            # This is a workaround as the default crane entrypoint doesn't support environment variables
+            .with_exec(
+                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+            )
+        )
+
+    return base_container
+
+
+def mounted_connector_secrets(context: PipelineContext, secret_directory_path="secrets") -> Callable:
+    def mounted_connector_secrets_inner(container: Container):
+        for secret_file_name, secret in context.connector_secrets.items():
+            container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+        return container
+
+    return mounted_connector_secrets_inner

@@ -10,9 +10,10 @@ import anyio
 import asyncer
 from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
 from ci_connector_ops.pipelines.contexts import ConnectorContext
+from ci_connector_ops.pipelines.pipelines.metadata import MetadataValidation
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
 from ci_connector_ops.pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
-from ci_connector_ops.utils import ConnectorLanguage
+from ci_connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {
@@ -28,6 +29,17 @@ LANGUAGE_MAPPING = {
 }
 
 
+async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]:
+    """Run the metadata validation on a connector.
+    Args:
+        context (ConnectorContext): The current connector context.
+
+    Returns:
+        List[StepResult]: The results of the metadata validation steps.
+    """
+    return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
+
+
 async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
     """Run the version checks on a connector.
 
@@ -37,7 +49,6 @@ async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of the version checks steps.
     """
-    context.logger.info("Run version checks.")
     return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
 
 
@@ -50,7 +61,6 @@ async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of the QA checks steps.
     """
-    context.logger.info("Run QA checks.")
     return [await QaChecks(context).run()]
 
 
@@ -64,7 +74,6 @@ async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
         List[StepResult]: The results of the code format checks steps.
     """
     if _run_code_format_checks := LANGUAGE_MAPPING["run_code_format_checks"].get(context.connector.language):
-        context.logger.info("Run code format checks.")
         return await _run_code_format_checks(context)
     else:
         context.logger.warning(f"No code format checks defined for connector language {context.connector.language}!")
@@ -102,6 +111,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
         async with context:
             async with asyncer.create_task_group() as task_group:
                 tasks = [
+                    task_group.soonify(run_metadata_validation)(context),
                     task_group.soonify(run_version_checks)(context),
                     task_group.soonify(run_qa_checks)(context),
                     task_group.soonify(run_code_format_checks)(context),

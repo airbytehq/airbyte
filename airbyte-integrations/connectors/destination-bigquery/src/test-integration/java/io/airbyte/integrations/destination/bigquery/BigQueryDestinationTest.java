@@ -30,6 +30,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -171,30 +172,33 @@ class BigQueryDestinationTest {
     }
 
     datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
+    String stagingPath = Strings.addRandomSuffix("test_path", "_", 8);
     // Set up config objects for test scenarios
     // config - basic config for standard inserts that should succeed check and write tests
     // this config is also used for housekeeping (checking records, and cleaning up)
-    config = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, datasetId);
+    config = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, datasetId, stagingPath);
+
+    DestinationConfig.initialize(config);
 
     // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     // configWithProjectId - config that uses project:dataset notation for datasetId
     final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
-    configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId);
+    configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId, stagingPath);
 
     // configWithBadProjectId - config that uses "fake" project ID and should fail
     final String dataSetWithBadProjectId = String.format("%s:%s", "fake", datasetId);
-    configWithBadProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId);
+    configWithBadProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId, stagingPath);
 
     // config that has insufficient privileges
-    insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_DATASET_CREATION_PATH, datasetId);
+    insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_DATASET_CREATION_PATH, datasetId, stagingPath);
     // config that tries to write to a project with disabled billing (free tier)
-    nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
+    nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling", stagingPath);
     // config that has no privileges to edit anything in Public schema
-    noEditPublicSchemaRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, "public");
+    noEditPublicSchemaRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, "public", stagingPath);
     // config with GCS staging
-    gcsStagingConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_GCS_STAGING_PATH, datasetId);
+    gcsStagingConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_GCS_STAGING_PATH, datasetId, stagingPath);
 
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);

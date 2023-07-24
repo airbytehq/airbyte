@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

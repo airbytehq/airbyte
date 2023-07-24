@@ -4,17 +4,17 @@
 
 package io.airbyte.integrations.destination_async;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Optional;
@@ -33,46 +33,56 @@ import org.slf4j.LoggerFactory;
  * {@link FlushWorkers}. See the other linked class for more detail.
  */
 @Slf4j
-public class AsyncStreamConsumer implements AirbyteMessageConsumer {
+public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
-  private static final String NON_STREAM_STATE_IDENTIFIER = "GLOBAL";
-  private final Consumer<AirbyteMessage> outputRecordCollector;
   private final OnStartFunction onStart;
   private final OnCloseFunction onClose;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
-
   private final BufferManager bufferManager;
   private final BufferEnqueue bufferEnqueue;
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
-  private final IgnoredRecordsTracker ignoredRecordsTracker;
+  private final FlushFailure flushFailure;
 
   private boolean hasStarted;
   private boolean hasClosed;
+  // This is to account for the references when deserialization to a PartialAirbyteMessage. The
+  // calculation is as follows:
+  // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
+  // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we assumed
+  // a 64 bit JVM.
+  final int PARTIAL_DESERIALIZE_REF_BYTES = 10 * 8;
 
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
                              final OnCloseFunction onClose,
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
-                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure());
+  }
+
+  @VisibleForTesting
+  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                             final OnStartFunction onStart,
+                             final OnCloseFunction onClose,
+                             final DestinationFlushFunction flusher,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final BufferManager bufferManager,
+                             final FlushFailure flushFailure) {
     hasStarted = false;
     hasClosed = false;
 
-    this.outputRecordCollector = outputRecordCollector;
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
-    this.bufferEnqueue = bufferManager.getBufferEnqueue();
-    this.flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher);
-    this.streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
-    this.ignoredRecordsTracker = new IgnoredRecordsTracker();
+    bufferEnqueue = bufferManager.getBufferEnqueue();
+    this.flushFailure = flushFailure;
+    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
+    streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
   }
 
   @Override
@@ -87,15 +97,53 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   }
 
   @Override
-  public void accept(final AirbyteMessage message) throws Exception {
+  public void accept(final String messageString, final Integer sizeInBytes) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
+    propagateFlushWorkerExceptionIfPresent();
     /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
-     * to try to use a threadpool to partial deserialize to get record type and stream name, we can do
-     * it without touching buffer manager.
+     * to try to use a thread pool to partially deserialize to get record type and stream name, we can
+     * do it without touching buffer manager.
      */
-    extractStream(message)
-        .ifPresent(streamDescriptor -> bufferEnqueue.addRecord(streamDescriptor, message));
+    deserializeAirbyteMessage(messageString)
+        .ifPresent(message -> {
+          if (Type.RECORD.equals(message.getType())) {
+            validateRecord(message);
+          }
+          bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
+        });
+  }
+
+  /**
+   * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State
+   * Message
+   *
+   * PartialAirbyteMessage holds either:
+   * <li>entire serialized message string when message is a valid State Message
+   * <li>serialized AirbyteRecordMessage when message is a valid Record Message</li>
+   *
+   * @param messageString the string to deserialize
+   * @return PartialAirbyteMessage if the message is valid, empty otherwise
+   */
+  @VisibleForTesting
+  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
+    // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
+    final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
+        .map(partial -> {
+          if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
+            return partial.withSerialized(partial.getRecord().getData().toString());
+          } else if (Type.STATE.equals(partial.getType())) {
+            return partial.withSerialized(messageString);
+          } else {
+            return null;
+          }
+        });
+
+    if (messageOptional.isPresent()) {
+      return messageOptional;
+    }
+    throw new RuntimeException(String.format("Invalid serialized message: %s", messageString));
   }
 
   @Override
@@ -108,64 +156,32 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // we need to close the workers before closing the bufferManagers (and underlying buffers)
     // or we risk in-memory data.
     flushWorkers.close();
+
     bufferManager.close();
-    ignoredRecordsTracker.report();
     onClose.call();
-    LOGGER.info("{} closed.", AsyncStreamConsumer.class);
+
+    // as this throws an exception, we need to be after all other close functions.
+    propagateFlushWorkerExceptionIfPresent();
+    LOGGER.info("{} closed", AsyncStreamConsumer.class);
   }
 
-  // todo (cgardens) - handle global state.
-  /**
-   * Extract the stream from the message, if the message is a record or state. Otherwise, we don't
-   * care.
-   *
-   * @param message message to extract stream from
-   * @return stream descriptor if the message is a record or state, otherwise empty. In the case of
-   *         global state messages the stream descriptor is hardcoded
-   */
-  private Optional<StreamDescriptor> extractStream(final AirbyteMessage message) {
-    if (message.getType() == Type.RECORD) {
-      final StreamDescriptor streamDescriptor = new StreamDescriptor()
-          .withNamespace(message.getRecord().getNamespace())
-          .withName(message.getRecord().getStream());
-
-      validateRecord(message, streamDescriptor);
-
-      return Optional.of(streamDescriptor);
-    } else if (message.getType() == Type.STATE) {
-      if (message.getState().getType() == AirbyteStateType.STREAM) {
-        return Optional.of(message.getState().getStream().getStreamDescriptor());
-      } else {
-        return Optional.of(new StreamDescriptor().withNamespace(NON_STREAM_STATE_IDENTIFIER).withNamespace(NON_STREAM_STATE_IDENTIFIER));
-      }
-    } else {
-      return Optional.empty();
+  private void propagateFlushWorkerExceptionIfPresent() throws Exception {
+    if (flushFailure.isFailed()) {
+      throw flushFailure.getException();
     }
   }
 
-  private void validateRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
+  private void validateRecord(final PartialAirbyteMessage message) {
+    final StreamDescriptor streamDescriptor = new StreamDescriptor()
+        .withNamespace(message.getRecord().getNamespace())
+        .withName(message.getRecord().getStream());
     // if stream is not part of list of streams to sync to then throw invalid stream exception
     if (!streamNames.contains(streamDescriptor)) {
       throwUnrecognizedStream(catalog, message);
     }
-
-    trackerIsValidRecord(message, streamDescriptor);
   }
 
-  private void trackerIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
-    // todo (cgardens) - is valid should also move inside the tracker, but don't want to blow up more
-    // constructors right now.
-    try {
-
-      if (!isValidRecord.apply(message.getRecord().getData())) {
-        ignoredRecordsTracker.addRecord(streamDescriptor, message);
-      }
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final PartialAirbyteMessage message) {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));

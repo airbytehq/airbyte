@@ -428,6 +428,12 @@
     },
     "delivery_mode": {
       "type": ["null", "string"]
+    },
+    "category_exclusion_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

@@ -220,7 +220,37 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
         res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
-        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
+        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": "false"}]
+
+
+def test_read_with_chunks_should_return_only_object_data_type(stream_config, stream_api):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age"\n"false",24\n')
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        assert res == [{"IsDeleted": "false", "Age": "24"}]
+
+
+def test_read_with_chunks_should_return_a_string_when_a_string_with_only_digits_is_provided(stream_config, stream_api):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", content=b'"ZipCode"\n"01234"\n')
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        assert res == [{"ZipCode": "01234"}]
+
+
+def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stream_config, stream_api):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age","Name"\n"false",,"Airbyte"\n')
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        assert res == [{"IsDeleted": "false", "Age": None, "Name": "Airbyte"}]
 
 
 @pytest.mark.parametrize(
@@ -447,9 +477,9 @@ def test_csv_reader_dialect_unix():
     url = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
-        {"Id": 1, "Name": '"first_name" "last_name"'},
-        {"Id": 2, "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": 3, "Name": "first_name last_name"},
+        {"Id": "1", "Name": '"first_name" "last_name"'},
+        {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+        {"Id": "3", "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:

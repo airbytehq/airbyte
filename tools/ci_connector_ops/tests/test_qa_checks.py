@@ -181,3 +181,64 @@ def test_check_connector_https_url_only_all_connectors():
 def test_is_comment(tmp_path, file_name, line, expect_is_comment):
     file_path = tmp_path / file_name
     assert qa_checks.is_comment(line, file_path) is expect_is_comment
+
+
+def test_check_missing_migration_guide(mocker, tmp_path, capsys):
+    connector = qa_checks.Connector("source-foobar")
+    mock_documentation_directory_path = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
+
+    mock_metadata_dict = {"documentationUrl": tmp_path, "releases": {"breakingChanges": {"2.0.0": {
+        "upgradeDeadline": "2021-01-01",
+        "message": "This is a breaking change",
+    }}}}
+    mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
+
+    assert qa_checks.check_migration_guide(connector) == False
+    stdout, _ = capsys.readouterr()
+    assert "Migration guide file is missing for foobar. Please create a foobar-migrations.md file in the docs folder" in stdout
+
+
+@pytest.mark.parametrize(
+    "test_file, expected_stdout", [
+        ("bad-header.md", "has incorrect version headings"),
+        ("out-of-order.md", "has incorrect version headings"),
+        ("missing-entry.md", "has incorrect version headings"),
+        ("bad-title.md", "does not start with the correct header"),
+        ("extra-header.md", "has incorrect version headings"),
+    ]
+)
+def test_check_invalid_migration_guides(
+        mocker,
+        tmp_path,
+        capsys,
+        test_file,
+        expected_stdout
+):
+    connector = qa_checks.Connector("source-foobar")
+    mock_documentation_directory_path = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
+    mock_migration_file = mock_documentation_directory_path / f"{connector.name}-migrations.md"
+
+    mock_breaking_change_value = {
+        "upgradeDeadline": "2021-01-01",
+        "message": "This is a breaking change",
+    }
+
+    # transform metadata_breaking_changes into a dictionary
+    mock_breaking_change_dict = {version: mock_breaking_change_value for version in ["2.0.0", "1.0.0"]}
+
+    mock_metadata_dict = {"name": "Foobar", "documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
+
+    test_file = Path("tools/ci_connector_ops/tests/test_migration_files") / test_file
+    with open(test_file, "r") as f:
+        contents = f.read()
+
+    with open(mock_migration_file, "w") as f:
+        f.write(contents)
+
+    mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
+
+    assert qa_checks.check_migration_guide(connector) == False
+    stdout, _ = capsys.readouterr()
+    assert expected_stdout in stdout

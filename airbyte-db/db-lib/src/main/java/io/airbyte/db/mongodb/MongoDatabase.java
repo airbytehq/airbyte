@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.RawBsonDocument;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,8 +107,8 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
 
   public Stream<JsonNode> read(final String collectionName, final List<String> columnNames, final Optional<Bson> filter) {
     try {
-      final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final MongoCursor<Document> cursor = collection
+      final MongoCollection<RawBsonDocument> collection = database.getCollection(collectionName, RawBsonDocument.class);
+      final MongoCursor<RawBsonDocument> cursor = collection
           .find(filter.orElse(new BsonDocument()))
           .batchSize(BATCH_SIZE)
           .cursor();
@@ -127,13 +128,13 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     }
   }
 
-  private Stream<JsonNode> getStream(final MongoCursor<Document> cursor, final CheckedFunction<Document, JsonNode, Exception> mapper) {
+  private Stream<JsonNode> getStream(final MongoCursor<RawBsonDocument> cursor, final CheckedFunction<RawBsonDocument, JsonNode, Exception> mapper) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
       public boolean tryAdvance(final Consumer<? super JsonNode> action) {
         try {
-          final Document document = cursor.tryNext();
+          final RawBsonDocument document = cursor.tryNext();
           if (document == null) {
             return false;
           }
