@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class to generate human-readable diffs between expected and actual records. Assumes 1s1t
@@ -88,19 +90,31 @@ public class RecordDiffer {
     }
   }
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RecordDiffer.class);
   /**
    * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
    */
   private static JsonNode copyWithLiftedData(final JsonNode record) {
     final ObjectNode copy = record.deepCopy();
-    copy.remove("_airbyte_data");
-    Streams.stream(record.get("_airbyte_data").fields()).forEach(field -> {
-      if (!copy.has(field.getKey())) {
-        copy.set(field.getKey(), field.getValue());
-      } else {
-        // This would only happen if the record has one of the metadata columns (e.g. _airbyte_raw_id)
-        // We don't support that in production, so we don't support it here either.
-        throw new RuntimeException("Cannot lift field " + field.getKey() + " because it already exists in the record.");
+    // Snowflake upcases all column names, so we need to handle that here.
+    // Iterate over every field in the copy and check if it's the _airbyte_data field.
+    copy.fieldNames().forEachRemaining(field -> {
+      if ("_airbyte_data".equalsIgnoreCase(field)) {
+        copy.remove(field);
+      }
+    });
+    record.fieldNames().forEachRemaining(recordField -> {
+      // Similarly, we need to iterate over every field in the original record.
+      if ("_airbyte_data".equalsIgnoreCase(recordField)) {
+        Streams.stream(record.get(recordField).fields()).forEach(field -> {
+          if (!copy.has(field.getKey())) {
+            copy.set(field.getKey(), field.getValue());
+          } else {
+            // This would only happen if the record has one of the metadata columns (e.g. _airbyte_raw_id)
+            // We don't support that in production, so we don't support it here either.
+            throw new RuntimeException("Cannot lift field " + field.getKey() + " because it already exists in the record.");
+          }
+        });
       }
     });
     return copy;

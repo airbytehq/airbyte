@@ -55,7 +55,16 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             assertEquals("TABLE", tableInfo.getString("kind"));
             connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
-                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT));
+                .executeQuery(String.format(
+                    "SELECT %s,%s,%s,%s FROM %s.%s ORDER BY %s ASC;",
+                    // Explicitly quote column names to prevent snowflake from upcasing them
+                    '"' + JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toLowerCase() + '"',
+                    '"' + JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toLowerCase() + '"',
+                    '"' + JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT.toLowerCase() + '"',
+                    '"' + JavaBaseConstants.COLUMN_NAME_DATA.toLowerCase() + '"',
+                    schema,
+                    tableName,
+                    '"' + JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toLowerCase() + '"'));
           }
         },
         new SnowflakeTestSourceOperations()::rowToJson);
