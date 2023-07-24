@@ -96,6 +96,11 @@ public class DebeziumEngineTest {
             ChangeStreamIterable<BsonDocument> stream = client.watch(BsonDocument.class);
             LOGGER.info("Retrieving cursor...");
             MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> changeStreamCursor = stream.cursor();
+
+            /*
+             * Must call tryNext before attempting to get the resume token from the cursor directly.
+             * Otherwise, both will return null!
+             */
             final ChangeStreamDocument<BsonDocument> cursorDocument = changeStreamCursor.tryNext();
             if(cursorDocument != null) {
                 LOGGER.info("Resume token from cursor document: {}", cursorDocument.getResumeToken());
@@ -263,7 +268,7 @@ public class DebeziumEngineTest {
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
             final Object obj = ois.readObject();
             final Map<byte[], byte[]> raw = (Map<byte[], byte[]>) obj;
-            raw.entrySet().forEach(e -> LOGGER.info("\t{}:{}",
+            raw.entrySet().forEach(e -> LOGGER.info("{}:{}",
                     new String(ByteBuffer.wrap(e.getKey()).array(), StandardCharsets.UTF_8),
                     new String(ByteBuffer.wrap(e.getValue()).array(), StandardCharsets.UTF_8)));
         } catch (IOException | ClassNotFoundException e) {
