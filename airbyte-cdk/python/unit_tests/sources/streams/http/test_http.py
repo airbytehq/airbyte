@@ -539,6 +539,8 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         pytest.param(True, "v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
         pytest.param(True, "v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
         pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
+        pytest.param(True, "v1/endpoint?param1=1", {"param1": 1}, "https://test_base_url.com/v1/endpoint?param1=1", id="test_duplicate_params_same_value_not_string"),
+        pytest.param(True, "v1/endpoint?param1=value1&param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value_in_path"),
         pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
         pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_same_params_different_value_no_deduplication"),
         pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value1", id="test_same_params_same_value_no_deduplication"),
