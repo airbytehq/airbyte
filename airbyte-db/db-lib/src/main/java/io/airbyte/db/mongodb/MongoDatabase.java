@@ -20,6 +20,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.RawBsonDocument;
 import org.bson.conversions.Bson;
@@ -36,6 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
+
+  public static final String COLLECTION_COUNT_KEY = "collectionCount";
+  public static final String COLLECTION_STORAGE_SIZE_KEY = "collectionStorageSize";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
@@ -126,6 +131,20 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.getMessage());
       throw new RuntimeException(e);
     }
+  }
+
+  public Map<String, Object> getCollectionStats(final String collectionName) {
+    final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
+    return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
+        COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+  }
+
+  public String getServerType() {
+    return mongoClient.getClusterDescription().getType().name();
+  }
+
+  public String getServerVersion() {
+    return getDatabase().runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version").toString();
   }
 
   private Stream<JsonNode> getStream(final MongoCursor<RawBsonDocument> cursor, final CheckedFunction<RawBsonDocument, JsonNode, Exception> mapper) {
