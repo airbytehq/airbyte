@@ -12,8 +12,7 @@ import mock
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from requests import HTTPError
-from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, InvalidStartDateConfigError
+from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream

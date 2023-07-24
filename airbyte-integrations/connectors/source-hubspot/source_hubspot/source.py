@@ -58,7 +58,7 @@ class SourceHubspot(AbstractSource):
         try:
             contacts = Contacts(**common_params)
             _ = contacts.properties
-        except HubspotInvalidAuth as e:
+        except HubspotInvalidAuth:
             alive = False
             error_msg = "Authentication failed: Please check if provided credentials are valid and try again.)"
         except HTTPError as error:
