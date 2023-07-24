@@ -11,12 +11,20 @@ from pydantic import ValidationError
 
 
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
-    if metadata_upload_info.version_uploaded:   
-        click.secho(f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.version_blob_id}.", color="green")
+    if metadata_upload_info.version_uploaded:
+        click.secho(
+            f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.version_blob_id}.",
+            color="green",
+        )
     if metadata_upload_info.latest_uploaded:
-        click.secho(f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.latest_blob_id}.", color="green")
+        click.secho(
+            f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.latest_blob_id}.",
+            color="green",
+        )
     if metadata_upload_info.icon_uploaded:
-        click.secho(f"The icon file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.", color="green")
+        click.secho(
+            f"The icon file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.", color="green"
+        )
 
 
 @click.group(help="Airbyte Metadata Service top-level command group.")

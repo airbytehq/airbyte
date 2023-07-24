@@ -21,6 +21,7 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class MetadataUploadInfo:
     uploaded: bool
@@ -31,6 +32,7 @@ class MetadataUploadInfo:
     icon_uploaded: bool
     icon_blob_id: Optional[str]
     metadata_file_path: str
+
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
@@ -170,14 +172,13 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 
-    icon_uploaded, icon_blob_id =  _icon_upload(metadata, bucket, metadata_file_path)
+    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
     if not prerelease:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
     else:
         latest_uploaded, latest_blob_id = False, None
-
 
     return MetadataUploadInfo(
         uploaded=version_uploaded or latest_uploaded,
@@ -187,5 +188,5 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
         latest_blob_id=latest_blob_id,
         icon_blob_id=icon_blob_id,
         icon_uploaded=icon_uploaded,
-        metadata_file_path=str(metadata_file_path)
+        metadata_file_path=str(metadata_file_path),
     )

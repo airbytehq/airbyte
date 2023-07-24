@@ -35,7 +35,10 @@ def test_file_not_found_fails():
     result = runner.invoke(commands.validate, ["non_existent_file.yaml"])
     assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
 
-def mock_metadata_upload_info(latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str) -> MetadataUploadInfo:
+
+def mock_metadata_upload_info(
+    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str
+) -> MetadataUploadInfo:
     return MetadataUploadInfo(
         uploaded=(latest_uploaded or version_uploaded),
         latest_uploaded=latest_uploaded,
@@ -60,7 +63,7 @@ def mock_metadata_upload_info(latest_uploaded: bool, version_uploaded: bool, ico
         (True, False, True),
         (False, True, True),
         (True, True, True),
-    ]
+    ],
 )
 def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uploaded, icon_uploaded):
     runner = CliRunner()
@@ -74,15 +77,21 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     if latest_uploaded:
-        commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")])
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+        )
         assert result.exit_code == 0
 
     if version_uploaded:
-        commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")])
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+        )
         assert result.exit_code == 0
 
     if icon_uploaded:
-        commands.click.secho.assert_has_calls([mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")])
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+        )
 
     if not (latest_uploaded or version_uploaded):
         commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")])
