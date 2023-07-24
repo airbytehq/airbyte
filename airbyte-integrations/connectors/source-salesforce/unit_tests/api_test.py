@@ -10,6 +10,8 @@ import re
 from datetime import datetime
 from unittest.mock import Mock
 
+import freezegun
+import pendulum
 import pytest
 import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
@@ -670,7 +672,7 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
         (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
         (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
-        (400, [{"errorCode": "API_ERROR", "message": "Implementation restriction: Account only allows security evaluation for non-admin users when LIMIT is specified and at most 1000"}], f"Unable to sync 'Account'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."),
+        (400, [{"errorCode": "API_ERROR", "message": "Implementation restriction: Account only allows security evaluation for non-admin users when LIMIT is specified and at most 1000"}], "Unable to sync 'Account'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."),
         (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
     ]
 )
@@ -712,3 +714,19 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
     with pytest.raises(AirbyteTracedException) as e:
         stream.wait_for_job(url=url)
     assert e.value.message == error_message
+
+
+@freezegun.freeze_time("2023-01-01")
+def test_bulk_stream_slices(stream_config_date_format, stream_api):
+    stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    expected_slices = []
+    today = pendulum.today(tz="UTC")
+    start_date = pendulum.parse(stream.start_date, tz="UTC")
+    while start_date < today:
+        expected_slices.append({
+            'start_date': start_date.isoformat(timespec="milliseconds"),
+            'end_date': min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds")
+        })
+        start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
+    assert expected_slices == stream_slices
