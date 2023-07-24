@@ -46,23 +46,13 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
     }
 
     @Override
-    public boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(TableDefinition existingV2AirbyteRawTable) throws Exception {
-        return schemasMatchExpectations(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V2_COLUMNS);
-    }
-
-    @Override
     public Optional<TableDefinition> getV1RawTableIfExists(NameAndNamespacePair v1RawTableNamespacePair) {
         Table v1RawTable = bq.getTable(TableId.of(v1RawTableNamespacePair.namespace(), v1RawTableNamespacePair.tableName()));
         return v1RawTable.exists() ? Optional.of(v1RawTable.getDefinition()) : Optional.empty();
     }
 
     @Override
-    public boolean doesV1RawTableMatchExpectedSchema(TableDefinition existingV2AirbyteRawTable) {
-        return schemasMatchExpectations(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V1_COLUMNS);
-    }
-
-    private boolean schemasMatchExpectations(TableDefinition existingTable, Collection<String> expectedColumnNames) {
-        // TODO maybe make this an interface method and the two that call it can have defaults?
+    public boolean schemaMatchesExpectation(TableDefinition existingTable, Collection<String> expectedColumnNames) {
         Set<String> existingSchemaColumns = Optional.ofNullable(existingTable.getSchema())
                 .map(schema -> schema.getFields().stream()
                         .map(Field::getName)

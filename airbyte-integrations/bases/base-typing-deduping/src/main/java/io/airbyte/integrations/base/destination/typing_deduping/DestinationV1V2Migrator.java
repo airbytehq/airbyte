@@ -3,7 +3,11 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import io.airbyte.protocol.models.v1.DestinationSyncMode;
 import io.airbyte.protocol.models.v1.SyncMode;
 
+import java.util.Collection;
 import java.util.Optional;
+
+import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V1_COLUMNS;
+import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V2_COLUMNS;
 
 public interface DestinationV1V2Migrator<DialectTableDefinition> {
     MigrationResult migrate(final SqlGenerator<DialectTableDefinition> sqlGenerator,
@@ -14,12 +18,23 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
 
     Optional<DialectTableDefinition> getRawTableFromAirbyteSchemaIfExists(final StreamConfig streamConfig);
 
-    boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable)
-            throws Exception;
 
     Optional<DialectTableDefinition> getV1RawTableIfExists(NameAndNamespacePair v1RawTableNamespacePair);
 
-    boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable);
+
+    boolean schemaMatchesExpectation(DialectTableDefinition existingTable, Collection<String> column);
+
+    default boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable) {
+        return schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V1_COLUMNS);
+    }
+    default boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable)
+            throws Exception {
+        if (!schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V2_COLUMNS)) {
+            throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
+        } else {
+            return true;
+        }
+    }
 
     default boolean isMigrationRequiredForSyncMode(final SyncMode syncMode, final DestinationSyncMode destinationSyncMode) {
         return !(SyncMode.FULL_REFRESH.equals(syncMode) && DestinationSyncMode.OVERWRITE.equals(destinationSyncMode));
