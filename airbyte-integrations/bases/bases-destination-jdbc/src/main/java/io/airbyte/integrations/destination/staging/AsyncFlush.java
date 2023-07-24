@@ -103,8 +103,8 @@ class AsyncFlush implements DestinationFlushFunction {
           writeConfig.getNamespace(),
           writeConfig.getStreamName(),
           typerDeduperValve,
-          typerDeduper,
-          parsedCatalog);
+          typerDeduper
+      );
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

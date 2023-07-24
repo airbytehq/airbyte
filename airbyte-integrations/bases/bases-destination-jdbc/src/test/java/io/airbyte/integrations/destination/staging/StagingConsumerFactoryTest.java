@@ -25,8 +25,8 @@ class StagingConsumerFactoryTest {
                 new WriteConfig("example_stream", "source_schema", "destination_default_schema", null, null, null)),
             null,
             null,
-            null,
-            null));
+            null
+        ));
 
     assertEquals(
         "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: source_schema.example_stream, source_schema.example_stream",

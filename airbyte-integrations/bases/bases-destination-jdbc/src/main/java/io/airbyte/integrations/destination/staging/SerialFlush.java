@@ -10,7 +10,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
@@ -52,8 +51,7 @@ public class SerialFlush {
       final List<WriteConfig> writeConfigs,
       final ConfiguredAirbyteCatalog catalog,
       TypeAndDedupeOperationValve typerDeduperValve,
-      TyperDeduper typerDeduper,
-      ParsedCatalog parsedCatalog) {
+      TyperDeduper typerDeduper) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
@@ -96,8 +94,8 @@ public class SerialFlush {
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
             typerDeduperValve,
-            typerDeduper,
-            parsedCatalog);
+            typerDeduper
+        );
       } catch (final Exception e) {
         log.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

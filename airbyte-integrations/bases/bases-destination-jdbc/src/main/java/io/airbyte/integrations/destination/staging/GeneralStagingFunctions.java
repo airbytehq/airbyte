@@ -77,14 +77,13 @@ public class GeneralStagingFunctions {
                                             final String streamNamespace,
                                             final String streamName,
                                             final TypeAndDedupeOperationValve typerDeduperValve,
-                                            final TyperDeduper typerDeduper,
-                                            final ParsedCatalog parsedCatalog)
+                                            final TyperDeduper typerDeduper)
       throws Exception {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
 
-      AirbyteStreamNameNamespacePair streamId = parsedCatalog.getStream(streamNamespace, streamName).id().asPair();
+      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamNamespace, streamName);
       if (!typerDeduperValve.containsKey(streamId)) {
         typerDeduperValve.addStream(streamId);
       } else if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {

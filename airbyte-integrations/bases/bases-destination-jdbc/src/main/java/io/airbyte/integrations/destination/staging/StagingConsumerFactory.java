@@ -81,7 +81,7 @@ public class StagingConsumerFactory {
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper, parsedCatalog)),
+            SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper)),
         GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper),
         catalog,
         stagingOperations::isValidData);
@@ -160,16 +160,16 @@ public class StagingConsumerFactory {
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final NamingConventionTransformer namingResolver,
                                                                               final JsonNode config,
-                                                                              ParsedCatalog parsedCatalog) {
+                                                                              final ParsedCatalog parsedCatalog) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
       final String streamName = abStream.getName();
-      final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
 
       final String outputSchema;
       final String tableName;
       if (TypingAndDedupingFlag.isDestinationV2()) {
+        final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
         outputSchema = streamId.rawNamespace();
         tableName = streamId.rawName();
       } else {
