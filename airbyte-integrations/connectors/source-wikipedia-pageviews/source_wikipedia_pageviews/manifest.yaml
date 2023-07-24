@@ -1,84 +1,188 @@
-version: "0.29.0"
-
-definitions:
-  selector:
-    extractor:
-      field_path: ["items"]
-  requester:
-    url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
-    http_method: "GET"
-    request_headers:
-      "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-  top_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime:
-      datetime: "{{config.start}}"
-      datetime_format: "%Y%m%d"
-    end_datetime:
-      datetime: "{{config.start}}"
-      datetime_format: "%Y%m%d"
-    step: "P1D"
-    cursor_field: "timestamp"
-    datetime_format: "%Y/%m/%d"
-    cursor_granularity: "P1D"
-  per_article_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime: "{{config.start}}"
-    end_datetime: "{{config.end}}"
-    step: "P1D"
-    cursor_field: "timestamp"
-    datetime_format: "%Y%m%d"
-    cursor_granularity: "P1D"
-
-  per_article_requester:
-    $parameters:
-      $ref: "#/definitions/requester"
-    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}"
-  top_requester:
-    $parameters:
-      $ref: "#/definitions/requester"
-    path: "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}"
-  per_article_retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/per_article_requester"
-
-  top_retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/top_requester"
-  per_article_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
-    incremental_sync:
-      $ref: "#/definitions/per_article_incremental_sync"
-    retriever:
-      $ref: "#/definitions/per_article_retriever"
-    $parameters:
-      name: "per-article"
-  top_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
-    incremental_sync:
-      $ref: "#/definitions/top_incremental_sync"
-    retriever:
-      $ref: "#/definitions/top_retriever"
-    $parameters:
-      name: "top"
-
-streams:
-  - "#/definitions/per_article_stream"
-  - "#/definitions/top_stream"
-
+version: 0.44.4
+type: DeclarativeSource
 check:
+  type: CheckStream
   stream_names:
-    - "per-article"
-    - "top"
+    - per-article
+    - top
+streams:
+  - type: DeclarativeStream
+    name: per-article
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          project:
+            type: string
+          access:
+            type: string
+          article:
+            type: string
+          agent:
+            type: string
+          granularity:
+            type: string
+          timestamp:
+            type: string
+          views:
+            type: integer
+            format: int64
+        $schema: http://json-schema.org/schema#
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://wikimedia.org/api/rest_v1/metrics/pageviews
+        path: >-
+          /per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          User-Agent: >-
+            AirbyteWikipediaPageviewsConnector/1.0
+            (https://github.com/airbytehq/airbyte)
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: '%Y%m%d%H'
+      name: per-article
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{config.start}}'
+        datetime_format: '%Y%m%d'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{config.end}}'
+        datetime_format: '%Y%m%d'
+      step: P1D
+      cursor_granularity: P1D
+  - type: DeclarativeStream
+    name: top
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          project:
+            type: string
+          access:
+            type: string
+          article:
+            type: string
+          agent:
+            type: string
+          granularity:
+            type: string
+          timestamp:
+            type: string
+          views:
+            type: integer
+            format: int64
+        $schema: http://json-schema.org/schema#
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://wikimedia.org/api/rest_v1/metrics/pageviews
+        path: /top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          User-Agent: >-
+            AirbyteWikipediaPageviewsConnector/1.0
+            (https://github.com/airbytehq/airbyte)
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: '%Y/%m/%d'
+      name: top
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{config.start}}'
+        datetime_format: '%Y%m%d'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{config.end}}'
+        datetime_format: '%Y%m%d'
+      step: P1D
+      cursor_granularity: P1D
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - access
+      - agent
+      - article
+      - country
+      - end
+      - project
+      - start
+    properties:
+      access:
+        title: Access
+        default: all-access
+        type: string
+        order: 0
+      agent:
+        title: Agent
+        default: all-agents
+        type: string
+        order: 1
+      article:
+        title: Article
+        default: Are_You_the_One%3F
+        type: string
+        order: 2
+      country:
+        title: Country
+        default: EN
+        type: string
+        order: 3
+      end:
+        title: end
+        default: '20200201'
+        type: string
+        order: 4
+      project:
+        title: Project
+        default: en.wikipedia.org
+        type: string
+        order: 5
+      start:
+        title: start
+        default: '20200101'
+        type: string
+        order: 6
+    additionalProperties: true
+  documentation_url: https://example.org
+  type: Spec
+metadata:
+  autoImportSchema:
+    per-article: false
+    top: false
