@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,8 +35,8 @@ public class MySqlDebeziumStateUtil {
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
 
   public JsonNode constructInitialDebeziumState(final Properties properties,
-      final ConfiguredAirbyteCatalog catalog,
-      final JdbcDatabase database) {
+                                                final ConfiguredAirbyteCatalog catalog,
+                                                final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
     properties.setProperty("snapshot.mode", "schema_only_recovery");
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
@@ -73,8 +77,8 @@ public class MySqlDebeziumStateUtil {
   }
 
   /**
-   * Method to construct initial Debezium state which can be passed onto Debezium engine to make it process binlogs from a specific file and position
-   * and skip snapshot phase
+   * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
+   * process binlogs from a specific file and position and skip snapshot phase
    */
   private JsonNode constructBinlogOffset(final JdbcDatabase database, final String dbName) {
     return format(getStateAttributesFromDB(database), dbName, Instant.now());
@@ -97,7 +101,6 @@ public class MySqlDebeziumStateUtil {
 
     return jsonNode;
   }
-
 
   private MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(

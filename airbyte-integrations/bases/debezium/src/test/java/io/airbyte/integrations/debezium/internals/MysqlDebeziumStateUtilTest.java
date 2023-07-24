@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,10 +43,10 @@ public class MysqlDebeziumStateUtilTest {
   private static final String TABLE_CREATE_QUERY = "CREATE TABLE " + DB_NAME + "." + TABLE_NAME + " (id INTEGER, name VARCHAR(200), PRIMARY KEY(id))";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-              TABLE_NAME,
-              DB_NAME,
-              Field.of("id", JsonSchemaType.INTEGER),
-              Field.of("string", JsonSchemaType.STRING))
+          TABLE_NAME,
+          DB_NAME,
+          Field.of("id", JsonSchemaType.INTEGER),
+          Field.of("string", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
