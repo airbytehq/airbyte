@@ -145,7 +145,6 @@ spec:
     type: object
     required:
       - access
-      - age
       - agent
       - article
       - country
@@ -158,41 +157,36 @@ spec:
         default: all-access
         type: string
         order: 0
-      age:
-        title: age
-        default: all-agents
-        type: string
-        order: 1
       agent:
         title: Agent
         default: all-agents
         type: string
-        order: 2
+        order: 1
       article:
         title: Article
         default: Are_You_the_One%3F
         type: string
-        order: 3
+        order: 2
       country:
         title: Country
         default: EN
         type: string
-        order: 4
+        order: 3
       end:
         title: end
         default: '20200201'
         type: string
-        order: 5
+        order: 4
       project:
         title: Project
         default: en.wikipedia.org
         type: string
-        order: 6
+        order: 5
       start:
         title: start
         default: '20200101'
         type: string
-        order: 7
+        order: 6
     additionalProperties: true
   documentation_url: https://example.org
   type: Spec
