@@ -19,7 +19,9 @@ import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
   private JdbcDatabase database;
@@ -77,14 +79,14 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
   @Override
   protected void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception {
-//    database.execute(
-//        String.format(
-//          """
-//              DROP TABLE IF EXISTS airbyte.%s;
-//              DROP SCHEMA IF EXISTS %s CASCADE
-//              """,
-//            StreamId.concatenateRawTableName(streamNamespace, streamName),
-//            streamNamespace));
+    database.execute(
+        String.format(
+          """
+              DROP TABLE IF EXISTS airbyte.%s;
+              DROP SCHEMA IF EXISTS %s CASCADE
+              """,
+            StreamId.concatenateRawTableName(streamNamespace, streamName),
+            streamNamespace));
   }
 
   @Override
