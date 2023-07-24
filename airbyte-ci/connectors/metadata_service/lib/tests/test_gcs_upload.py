@@ -100,7 +100,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
         # Call function under tests
 
-        uploaded, blob_id = gcs_upload.upload_metadata_to_gcs(
+        upload_info = gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
         )
@@ -113,23 +113,23 @@ def test_upload_metadata_to_gcs_valid_metadata(
         gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
         mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
         mocks["mock_bucket"].blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
-        assert blob_id == mocks["mock_version_blob"].id
+        assert upload_info.version_blob_id == mocks["mock_version_blob"].id
 
         if not version_blob_exists:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if not latest_blob_exists:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if version_blob_md5_hash != local_file_md5_hash:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if latest_blob_md5_hash != local_file_md5_hash:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         # clear the call count
         gcs_upload._latest_upload.reset_mock()

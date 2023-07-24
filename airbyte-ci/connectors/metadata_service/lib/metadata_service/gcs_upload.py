@@ -19,6 +19,18 @@ from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATOR
 from metadata_service.utils import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class MetadataUploadInfo:
+    uploaded: bool
+    latest_uploaded: bool
+    latest_blob_id: Optional[str]
+    version_uploaded: bool
+    version_blob_id: Optional[str]
+    icon_uploaded: bool
+    icon_blob_id: Optional[str]
+    metadata_file_path: str
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
@@ -131,7 +143,7 @@ def create_prerelease_metadata_file(metadata_file_path: Path, prerelease_tag: st
     return tmp_metadata_file_path
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: Optional[str] = None) -> Tuple[bool, str]:
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prerelease: Optional[str] = None) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -145,9 +157,6 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-    version_uploaded = False
-    latest_uploaded = False
-
     if prerelease:
         metadata_file_path = create_prerelease_metadata_file(metadata_file_path, prerelease)
 
@@ -161,10 +170,22 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 
-    _icon_upload(metadata, bucket, metadata_file_path)
+    icon_uploaded, icon_blob_id =  _icon_upload(metadata, bucket, metadata_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
     if not prerelease:
-        latest_uploaded, _latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
+        latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
+    else:
+        latest_uploaded, latest_blob_id = False, None
 
-    return version_uploaded or latest_uploaded, version_blob_id
+
+    return MetadataUploadInfo(
+        uploaded=version_uploaded or latest_uploaded,
+        latest_uploaded=latest_uploaded,
+        version_uploaded=version_uploaded,
+        version_blob_id=version_blob_id,
+        latest_blob_id=latest_blob_id,
+        icon_blob_id=icon_blob_id,
+        icon_uploaded=icon_uploaded,
+        metadata_file_path=str(metadata_file_path)
+    )
