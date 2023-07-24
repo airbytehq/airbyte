@@ -46,7 +46,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
               CREATE TABLE IF NOT EXISTS %s.%s (
                 "%s" VARCHAR PRIMARY KEY,
                 "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
-                "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+                "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
                 "%s" VARIANT
               ) data_retention_time_in_days = 0;""",
           schemaName,
