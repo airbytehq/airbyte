@@ -5,6 +5,7 @@ data:
   dockerImageTag: latest
   dockerRepository: airbyte/destination-starrocks
   githubIssueLabel: destination-starrocks
+  icon: starrocks.svg
   license: Apache
   name: StarRocks
   tags:
