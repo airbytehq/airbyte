@@ -59,18 +59,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    if (use1s1t) {
-      return List.of(
-          id,
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())),
-          "",
-          Jsons.serialize(recordMessage.getData()));
-    } else {
-      return List.of(
-          id,
-          Jsons.serialize(recordMessage.getData()),
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
-    }
+    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt());
   }
 
   @Override
