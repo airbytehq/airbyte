@@ -52,7 +52,7 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
 
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container = new PostgreSQLContainer<>(getDockerImageName());
     container.start();
     final String username = container.getUsername();
     final String password = container.getPassword();
@@ -199,5 +199,9 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+  }
+
+  protected String getDockerImageName() {
+    return "postgres:13-alpine";
   }
 }
