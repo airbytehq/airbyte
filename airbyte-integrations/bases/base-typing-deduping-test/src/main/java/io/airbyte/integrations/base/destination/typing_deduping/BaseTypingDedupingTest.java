@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -362,11 +363,46 @@ public abstract class BaseTypingDedupingTest {
         .build());
   }
 
+  /**
+   * Run a sync, then remove the {@code name} column from the schema and run a second sync. Verify
+   * that the final table doesn't contain the `name` column after the second sync.
+   */
   @Test
-  @Disabled("Not yet implemented")
   public void testIncrementalSyncDropOneColumn() throws Exception {
-    // TODO in incremental dedup mode: run a sync, remove a column from the schema, run another sync
-    // verify that the column is dropped from the destination table
+    AirbyteStream stream = new AirbyteStream()
+        .withNamespace(streamNamespace)
+        .withName(streamName)
+        .withJsonSchema(SCHEMA);
+    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(stream)));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
+    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    JsonNode trimmedSchema = SCHEMA.deepCopy();
+    ((ObjectNode) trimmedSchema.get("properties")).remove("name");
+    stream.setJsonSchema(trimmedSchema);
+
+    runSync(catalog, messages2);
+
+    // The raw data is unaffected by the schema, but the final table should not have a `name` column.
+    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
+        .peek(record -> ((ObjectNode) record).remove("name"))
+        .toList();
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test
