@@ -101,7 +101,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| 0.2.1   | 2023-07-21 | [28527](https://github.com/airbytehq/airbyte/pull/28527) | Log server information                                                                                    |
 | 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                      |
 | 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614) | Increased discover performance                                                                            |
 | 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590) | Add ability to enforce SSL in MongoDB connector and check logic                                           |
