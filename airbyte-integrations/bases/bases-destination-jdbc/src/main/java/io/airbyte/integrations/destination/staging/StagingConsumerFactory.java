@@ -16,6 +16,8 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
@@ -69,16 +71,18 @@ public class StagingConsumerFactory {
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog,
                                        final boolean purgeStagingData,
+                                       final TypeAndDedupeOperationValve typerDeduperValve,
+                                       final TyperDeduper typerDeduper,
                                        final ParsedCatalog parsedCatalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            SerialFlush.function(database, stagingOperations, writeConfigs, catalog)),
-        GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
+            SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper, parsedCatalog)),
+        GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper),
         catalog,
         stagingOperations::isValidData);
   }
@@ -91,15 +95,17 @@ public class StagingConsumerFactory {
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final boolean purgeStagingData,
+                                                      TypeAndDedupeOperationValve typerDeduperValve,
+                                                      final TyperDeduper typerDeduper,
                                                       final ParsedCatalog parsedCatalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, parsedCatalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         // todo (cgardens) - wrapping the old close function to avoid more code churn.
-        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
+        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
         new BufferManager());

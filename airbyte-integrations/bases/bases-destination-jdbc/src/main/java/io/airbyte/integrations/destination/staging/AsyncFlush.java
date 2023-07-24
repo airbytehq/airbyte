@@ -6,6 +6,9 @@ package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
@@ -30,15 +33,24 @@ class AsyncFlush implements DestinationFlushFunction {
   private final StagingOperations stagingOperations;
   private final JdbcDatabase database;
   private final ConfiguredAirbyteCatalog catalog;
+  private final TypeAndDedupeOperationValve typerDeduperValve;
+  private final TyperDeduper typerDeduper;
+  private final ParsedCatalog parsedCatalog;
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                     final StagingOperations stagingOperations,
                     final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog) {
+                    final ConfiguredAirbyteCatalog catalog,
+                    final TypeAndDedupeOperationValve typerDeduperValve,
+                    final TyperDeduper typerDeduper,
+                    final ParsedCatalog parsedCatalog) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.database = database;
     this.catalog = catalog;
+    this.typerDeduperValve = typerDeduperValve;
+    this.typerDeduper = typerDeduper;
+    this.parsedCatalog = parsedCatalog;
   }
 
   @Override
@@ -80,9 +92,19 @@ class AsyncFlush implements DestinationFlushFunction {
             writeConfig.getWriteDatetime());
     try {
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-      GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
+      GeneralStagingFunctions.copyIntoTableFromStage(
+          database,
+          stageName,
+          stagingPath,
+          List.of(stagedFile),
+          writeConfig.getOutputTableName(),
           schemaName,
-          stagingOperations);
+          stagingOperations,
+          writeConfig.getNamespace(),
+          writeConfig.getStreamName(),
+          typerDeduperValve,
+          typerDeduper,
+          parsedCatalog);
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
