@@ -35,7 +35,7 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-dz-zoho-books:build
+./gradlew :airbyte-integrations:connectors:source-zoho-books:build
 ```
 
 #### Create credentials
@@ -60,7 +60,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-dz-zoho-books:dev
+docker build . -t airbyte/source-zoho-books:dev
 ```
 
 If you want to build the Docker image with the CDK on your local machine (rather than the most recent package published to pypi), from the airbyte base directory run:
@@ -71,7 +71,7 @@ CONNECTOR_TAG=<TAG_NAME> CONNECTOR_NAME=<CONNECTOR_NAME> sh airbyte-integrations
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-dz-zoho-books:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-zoho-books:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -79,10 +79,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-dz-zoho-books:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dz-zoho-books:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dz-zoho-books:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-dz-zoho-books:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-zoho-books:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zoho-books:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zoho-books:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-zoho-books:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -116,11 +116,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-dz-zoho-books:unitTest
+./gradlew :airbyte-integrations:connectors:source-zoho-books:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-dz-zoho-books:integrationTest
+./gradlew :airbyte-integrations:connectors:source-zoho-books:integrationTest
 ```
 
 ## Dependency Management

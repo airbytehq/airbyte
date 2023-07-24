@@ -9,8 +9,8 @@ data:
   connectorType: source
   definitionId: c276b8b6-1376-496a-a017-477af40c81e8
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-dz-zoho-books
-  githubIssueLabel: source-dz-zoho-books
+  dockerRepository: airbyte/source-zoho-books
+  githubIssueLabel: source-zoho-books
   icon: dz-zoho-books.svg
   license: MIT
   name: Dz Zoho Books
