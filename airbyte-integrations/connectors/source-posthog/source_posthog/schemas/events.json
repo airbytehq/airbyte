@@ -11,7 +11,7 @@
       "type": "object"
     },
     "event": {
-      "type": ["string", "object"]
+      "type": "string"
     },
     "timestamp": {
       "type": "string",
