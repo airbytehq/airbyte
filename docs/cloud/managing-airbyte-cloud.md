@@ -103,6 +103,7 @@ For individual connections, you can choose a data residency that is different fr
 :::note 
 
 While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+All your account information such as the name and email addresses of the Airbyte users are stored in the US as well.
 
 :::
 

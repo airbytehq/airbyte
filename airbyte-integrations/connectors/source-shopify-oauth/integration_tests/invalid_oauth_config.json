@@ -1,0 +1,10 @@
+{
+  "shop": "SHOP_NAME",
+  "start_date": "2020-11-01",
+  "credentials": {
+    "auth_method": "oauth2.0",
+    "client_id": "SOME_CLIENT_ID",
+    "client_secret": "SOME_CLIENT_SECRET",
+    "access_token": "SOME_ACCESS_TOKEN"
+  }
+}
