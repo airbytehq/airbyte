@@ -1,11 +1,7 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -75,8 +71,8 @@ public interface StarRocksConstants {
         String COLUMN_DELIMITER = "\\x01";
         byte[] COLUMN_DELIMITER_BYTE = StarRocksDelimiterParser.parse(COLUMN_DELIMITER).getBytes(StandardCharsets.UTF_8);
 
-        String LINE_PATTERN = "%s" + StarRocksDelimiterParser.parse(COLUMN_DELIMITER)
-            + "%d" + StarRocksDelimiterParser.parse(COLUMN_DELIMITER)
+        String LINE_PATTERN = "%d" + StarRocksDelimiterParser.parse(COLUMN_DELIMITER)
+            + "%s" + StarRocksDelimiterParser.parse(COLUMN_DELIMITER)
             + "%s" + StarRocksDelimiterParser.parse(LINE_DELIMITER);
     }
 

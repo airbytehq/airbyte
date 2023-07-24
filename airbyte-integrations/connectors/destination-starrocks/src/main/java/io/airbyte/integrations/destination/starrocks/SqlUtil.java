@@ -1,11 +1,7 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -78,11 +74,11 @@ public class SqlUtil {
 
     public static void createTableIfNotExist(Connection conn, String tableName) throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ( \n"
-                + "`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "` varchar(40),\n"
                 + "`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "` BIGINT,\n"
+                + "`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "` varchar(40),\n"
                 + "`" + JavaBaseConstants.COLUMN_NAME_DATA + "` String)\n"
-                + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`"
-                + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
+                + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`,`"
+                + JavaBaseConstants.COLUMN_NAME_AB_ID + "`) \n"
                 + "DISTRIBUTED BY HASH(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`) BUCKETS 16 \n"
                 + "PROPERTIES ( \n"
                 + "\"replication_num\" = \"1\" \n"

@@ -1,11 +1,7 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -139,9 +135,9 @@ public class StreamLoadStream extends InputStream {
         if (recordIter.hasNext()) {
             AirbyteRecordMessage record = recordIter.next();
             return String.format(CsvFormat.LINE_PATTERN,
-                    UUID.randomUUID(),
                     record.getEmittedAt(),
-                Jsons.serialize(record.getData())).getBytes(StandardCharsets.UTF_8);
+                    UUID.randomUUID(),
+                    Jsons.serialize(record.getData())).getBytes(StandardCharsets.UTF_8);
         } else {
             endStream = true;
             return CsvFormat.LINE_DELIMITER_BYTE;
