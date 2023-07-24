@@ -628,6 +628,7 @@ class TicketMetricEvents(CursorPaginationZendeskSupportStream):
             params.update(next_page_token)
         return params
 
+
 class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
