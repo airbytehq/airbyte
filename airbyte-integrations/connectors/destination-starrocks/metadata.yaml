@@ -1,0 +1,19 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 5c4d966a-19ff-45d8-9687-876ad0f5d0d9
+  dockerImageTag: latest
+  dockerRepository: airbyte/destination-starrocks
+  githubIssueLabel: destination-starrocks
+  license: Apache
+  name: StarRocks
+  tags:
+    - language:java
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/starrocks
+metadataSpecVersion: "1.0"
