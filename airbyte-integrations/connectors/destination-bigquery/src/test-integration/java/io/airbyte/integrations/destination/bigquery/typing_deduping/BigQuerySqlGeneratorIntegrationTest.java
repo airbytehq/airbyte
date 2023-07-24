@@ -5,12 +5,18 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
@@ -20,16 +26,18 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.RecordDiffer;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -57,7 +65,7 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
-  private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator("US");
   public static final ColumnId ID_COLUMN = GENERATOR.buildColumnId("id");
   public static final List<ColumnId> PRIMARY_KEY = List.of(ID_COLUMN);
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
@@ -72,6 +80,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private static final LinkedHashMap<ColumnId, AirbyteType> CDC_COLUMNS;
 
   private static BigQuery bq;
+  private static BigQueryDestinationHandler destinationHandler;
 
   private String testDataset;
   private StreamId streamId;
@@ -113,10 +122,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @BeforeAll
   public static void setup() throws Exception {
-    String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
-    JsonNode config = Jsons.deserialize(rawConfig);
+    final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
+    final JsonNode config = Jsons.deserialize(rawConfig);
 
     bq = BigQueryDestination.getBigQuery(config);
+    destinationHandler = new BigQueryDestinationHandler(bq, "US");
   }
 
   @BeforeEach
@@ -143,9 +153,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
-    StreamConfig stream = incrementalDedupStreamConfig();
+    final StreamConfig stream = incrementalDedupStreamConfig();
 
-    logAndExecute(GENERATOR.createTable(stream, ""));
+    destinationHandler.execute(GENERATOR.createTable(stream, ""));
 
     final Table table = bq.getTable(testDataset, "users_final");
     // The table should exist
@@ -178,6 +188,30 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   @Test
+  public void testCreateTableInOtherRegion() throws InterruptedException {
+    final StreamConfig stream = incrementalDedupStreamConfig();
+    BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
+    // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
+    bq.getDataset(testDataset).delete();
+
+    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(stream, ""));
+
+    // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
+    // Give ourselves 2 minutes just in case.
+    for (int i = 0; i < 120; i++) {
+      final Dataset dataset = bq.getDataset(DatasetId.of(bq.getOptions().getProjectId(), testDataset));
+      if (dataset == null) {
+        LOGGER.info("Sleeping and trying again... ({})", i);
+        Thread.sleep(1000);
+      } else {
+        assertEquals("asia-east1", dataset.getLocation());
+        return;
+      }
+    }
+    fail("Dataset does not exist");
+  }
+
+  @Test
   public void testVerifyPrimaryKeysIncremental() throws InterruptedException {
     createRawTable();
     bq.query(QueryJobConfiguration.newBuilder(
@@ -194,7 +228,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), COLUMNS);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
-        () -> logAndExecute(sql));
+        () -> destinationHandler.execute(sql));
 
     assertTrue(e.getError().getMessage().startsWith("Raw table has 1 rows missing a primary key at"),
         "Message was actually: " + e.getError().getMessage());
@@ -215,8 +249,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS, DestinationSyncMode.OVERWRITE);
-    logAndExecute(sql);
+    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
+    destinationHandler.execute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
     DIFFER.diffFinalTableRecords(
@@ -280,7 +314,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
 
     final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR);
-    logAndExecute(sql);
+    destinationHandler.execute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
     DIFFER.diffFinalTableRecords(
@@ -330,7 +364,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
 
     final String sql = GENERATOR.dedupRawTable(streamId, "");
-    logAndExecute(sql);
+    destinationHandler.execute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build());
     DIFFER.diffRawTableRecords(
@@ -370,7 +404,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
 
     final String sql = GENERATOR.commitRawTable(streamId);
-    logAndExecute(sql);
+    destinationHandler.execute(sql);
 
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
@@ -393,8 +427,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(incrementalDedupStreamConfig(), "_foo");
+    destinationHandler.execute(sql);
 
     final TableResult finalTable = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build());
     DIFFER.diffFinalTableRecords(
@@ -487,8 +521,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", incrementalDedupStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(incrementalDedupStreamConfig(), "");
+    destinationHandler.execute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -515,8 +549,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", incrementalAppendStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(incrementalAppendStreamConfig(), "_foo");
+    destinationHandler.execute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
@@ -549,8 +583,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", fullRefreshAppendStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(fullRefreshAppendStreamConfig(), "_foo");
+    destinationHandler.execute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
@@ -566,8 +600,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public void testRenameFinalTable() throws InterruptedException {
     createFinalTable("_tmp");
 
-    final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig()).get();
-    logAndExecute(sql);
+    final String sql = GENERATOR.overwriteFinalTable(fullRefreshOverwriteStreamConfig().id(), "_tmp");
+    destinationHandler.execute(sql);
 
     final Table table = bq.getTable(testDataset, "users_final");
     // TODO this should assert table schema + partitioning/clustering configs
@@ -587,8 +621,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
+    destinationHandler.execute(sql);
 
     // TODO better asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
@@ -631,8 +665,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
+    destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(5, finalRows);
@@ -675,8 +709,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
+    destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(0, finalRows);
@@ -722,13 +756,45 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
     // Run the second round of typing and deduping. This should do nothing to the final table, because
     // the delete is outdated.
-    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    logAndExecute(sql);
+    final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
+    destinationHandler.execute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(1, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(1, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
+  @Test
+  public void softReset() throws InterruptedException {
+    createRawTable();
+    createFinalTableCdc();
+    bq.query(QueryJobConfiguration.newBuilder(
+            new StringSubstitutor(Map.of(
+                "dataset", testDataset)).replace(
+                """
+                    ALTER TABLE ${dataset}.users_final ADD COLUMN `weird_new_column` INT64;
+                    
+                    INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+                      (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                      (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                    """))
+        .build());
+
+    final String sql = GENERATOR.softReset(incrementalDedupStreamConfig());
+    destinationHandler.execute(sql);
+
+    TableDefinition finalTableDefinition = bq.getTable(TableId.of(testDataset, "users_final")).getDefinition();
+    assertTrue(
+        finalTableDefinition.getSchema().getFields().stream().noneMatch(f -> f.getName().equals("weird_new_column")),
+        "weird_new_column was expected to no longer exist after soft reset");
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    assertEquals(2, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(2, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
@@ -809,7 +875,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createFinalTable("");
   }
 
-  private void createFinalTable(String suffix) throws InterruptedException {
+  private void createFinalTable(final String suffix) throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
                 "dataset", testDataset,
@@ -871,16 +937,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
   }
 
-  private static void logAndExecute(final String sql) throws InterruptedException {
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
-  }
-
   /**
    * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
    * That's annoying for us since we're working with small test data, so just pull everything into a list.
    */
-  public static List<JsonNode> toJsonRecords(TableResult result) {
+  public static List<JsonNode> toJsonRecords(final TableResult result) {
     return result.streamAll().map(row -> toJson(result.getSchema(), row)).toList();
   }
 
@@ -889,12 +950,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * This method does that conversion, using the schema to determine which type is most appropriate. Then we just dump
    * everything into a jsonnode for interop with RecordDiffer.
    */
-  private static JsonNode toJson(Schema schema, FieldValueList row) {
+  private static JsonNode toJson(final Schema schema, final FieldValueList row) {
     final ObjectNode json = (ObjectNode) Jsons.emptyObject();
     for (int i = 0; i < schema.getFields().size(); i++) {
       final Field field = schema.getFields().get(i);
       final FieldValue value = row.get(i);
-      JsonNode typedValue;
+      final JsonNode typedValue;
       if (!value.isNull()) {
         typedValue = switch (field.getType().getStandardType()) {
           case BOOL -> Jsons.jsonNode(value.getBooleanValue());

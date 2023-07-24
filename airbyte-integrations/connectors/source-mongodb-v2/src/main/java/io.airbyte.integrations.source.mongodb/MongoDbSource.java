@@ -84,9 +84,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new ConnectionErrorException("Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("Unable to execute 'check' operation: user not authorized to access collection.");
       } else {
-        LOGGER.info("The source passed the basic operation test!");
+        LOGGER.debug("User authorized to access collection for 'check' operation.");
       }
     });
     return checkList;
@@ -180,7 +180,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String tableName,
                                                                final SyncMode syncMode,
                                                                final Optional<String> cursorField) {
-    return queryTable(database, columnNames, tableName, null);
+    return queryTable(database, columnNames, tableName, Optional.empty());
   }
 
   @Override
@@ -190,8 +190,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final BsonType cursorFieldType) {
-    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
-    return queryTable(database, columnNames, tableName, greaterComparison);
+    final Optional<Bson> filter = generateFilter(cursorInfo, cursorFieldType);
+    return queryTable(database, columnNames, tableName, filter);
   }
 
   @Override
@@ -206,11 +206,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
                                                      final List<String> columnNames,
                                                      final String tableName,
-                                                     final Bson filter) {
+                                                     final Optional<Bson> filter) {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
+        final Stream<JsonNode> stream = database.read(tableName, columnNames, filter);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -249,6 +249,14 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
     return connectionStrBuilder.toString();
+  }
+
+  private Optional<Bson> generateFilter(final CursorInfo cursorInfo, final BsonType cursorFieldType) {
+    if (cursorInfo != null) {
+      return Optional.of(gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor())));
+    } else {
+      return Optional.empty();
+    }
   }
 
   @Override
