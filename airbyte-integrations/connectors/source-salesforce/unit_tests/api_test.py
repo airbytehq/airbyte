@@ -82,31 +82,26 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     stream = generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
 
-
-@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 3000])
-def test_bulk_sync_pagination(item_number, stream_config, stream_api):
+def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    test_ids = [i for i in range(1, item_number)]
-    pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
-    if not pages:
-        pages = [[]]
-    with requests_mock.Mocker() as m:
-        creation_responses = []
+    job_id = f"fake_job"
+    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
+    result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
+                               [{'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "somelocator_1"}},
+    {'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "somelocator_2"}},
+    {'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "null"}}
+    ])
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
-        for page in range(len(pages)):
-            job_id = f"fake_job_{page}"
-            creation_responses.append({"json": {"id": job_id}})
-            m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
-            resp = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in pages[page]]
-            m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join(resp))
-            m.register_uri("DELETE", stream.path() + f"/{job_id}")
-        m.register_uri("POST", stream.path(), creation_responses)
-
-        stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-        loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
-        assert not set(test_ids).symmetric_difference(set(loaded_ids))
-        post_request_count = len([r for r in m.request_history if r.method == "POST"])
-        assert post_request_count == len(pages)
+    stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
+    loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
+    assert loaded_ids == [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+    assert result_uri.call_count == 3
+    assert result_uri.request_history[1].query == "locator=somelocator_1"
+    assert result_uri.request_history[2].query == "locator=somelocator_2"
+    print(2)
 
 
 def _prepare_mock(m, stream):
@@ -213,46 +208,51 @@ def test_stream_start_datetime_format_should_not_changed(stream_config, stream_a
 
 
 def test_download_data_filter_null_bytes(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b"\x00")
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == []
 
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": "false"}]
 
 
 def test_read_with_chunks_should_return_only_object_data_type(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age"\n"false",24\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"IsDeleted","Age"\n"false",24\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"IsDeleted": "false", "Age": "24"}]
 
 
 def test_read_with_chunks_should_return_a_string_when_a_string_with_only_digits_is_provided(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"ZipCode"\n"01234"\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"ZipCode"\n"01234"\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"ZipCode": "01234"}]
 
 
 def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age","Name"\n"false",,"Airbyte"\n')
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
+        m.register_uri("GET", job_full_url_results, content=b'"IsDeleted","Age","Name"\n"false",,"Airbyte"\n')
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == [{"IsDeleted": "false", "Age": None, "Name": "Airbyte"}]
 
 
@@ -262,12 +262,13 @@ def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stre
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
 def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
-        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url, chunk_size=chunk_size)))
+        m.register_uri("GET", job_full_url_results, headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
+        res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == expected_result
 
 
@@ -477,7 +478,7 @@ def test_pagination_rest(stream_config, stream_api):
 
 def test_csv_reader_dialect_unix():
     stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, sf_api=None, pk=None)
-    url = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
+    url_results = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
 
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
@@ -493,8 +494,9 @@ def test_csv_reader_dialect_unix():
         text = csvfile.getvalue()
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", url + "/results", text=text)
-        result = [i for i in stream.read_with_chunks(*stream.download_data(url))]
+        m.register_uri("GET", url_results, text=text)
+        tmp_file, response_encoding, _ = stream.download_data(url=url_results)
+        result = [i for i in stream.read_with_chunks(tmp_file, response_encoding)]
         assert result == data
 
 
@@ -672,7 +674,6 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
         (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
         (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
-        (400, [{"errorCode": "API_ERROR", "message": "Implementation restriction: Account only allows security evaluation for non-admin users when LIMIT is specified and at most 1000"}], "Unable to sync 'Account'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."),
         (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
     ]
 )
