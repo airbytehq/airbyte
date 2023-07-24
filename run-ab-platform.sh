@@ -53,7 +53,8 @@ Download()
 {
   ########## Check if we already have the assets we are looking for ##########
   for file in $all_files; do
-    # Assume file_path contains the path of the file
+    # Account for the case where the file is in a subdirectory.
+    # Make sure the directory exists to keep curl happy.
     dir_path=$(dirname "${file}")
     mkdir -p "${dir_path}"
     if test -f $file; then
