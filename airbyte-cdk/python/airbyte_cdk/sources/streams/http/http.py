@@ -290,10 +290,10 @@ class HttpStream(Stream, ABC):
     ) -> requests.PreparedRequest:
         url = self._join_url(self.url_base, path)
         if self.must_deduplicate_query_params():
-            query_args = self.deduplicate_query_params(url, params)
+            query_params = self.deduplicate_query_params(url, params)
         else:
-            query_args = params or {}
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_args}
+            query_params = params or {}
+        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -303,9 +303,7 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        prepared_request = self._session.prepare_request(requests.Request(**args))
-
-        return prepared_request
+        return self._session.prepare_request(requests.Request(**args))
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
