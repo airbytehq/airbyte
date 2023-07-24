@@ -53,6 +53,10 @@ Download()
 {
   ########## Check if we already have the assets we are looking for ##########
   for file in $all_files; do
+    # Account for the case where the file is in a subdirectory.
+    # Make sure the directory exists to keep curl happy.
+    dir_path=$(dirname "${file}")
+    mkdir -p "${dir_path}"
     if test -f $file; then
       # Check if the assets are old.  A possibly sharp corner
       if test $(find $file -type f -mtime +60 > /dev/null); then
