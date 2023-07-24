@@ -94,7 +94,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
-            + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+            + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF=('') ) "
             + "files = (" + generateFilesList(files) + " );",
         schemaName,
         tmpTableName,

@@ -22,6 +22,10 @@ import java.util.UUID;
  * <p>
  * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a
  * different order (ABID, JSON, timestamp) vs (ABID, timestamp, JSON)
+ * <p>
+ * In 1s1t mode, the column ordering is also different (raw_id, extracted_at, loaded_at, data). Note that the loaded_at
+ * column is rendered as an empty string; callers are expected to configure their destination to parse this as NULL.
+ * For example, Snowflake's COPY into command accepts a NULL_IF parameter, and Redshift accepts an EMPTYASNULL option.
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
@@ -36,10 +40,12 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
       JavaBaseConstants.COLUMN_NAME_DATA,
       JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
 
+  private final boolean use1s1t;
   private final List<String> header;
 
   public StagingDatabaseCsvSheetGenerator() {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
+    use1s1t = TypingAndDedupingFlag.isDestinationV2();
+    if (use1s1t) {
       this.header = V2_COLUMN_NAMES;
     } else {
       this.header = LEGACY_COLUMN_NAMES;
@@ -53,10 +59,18 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    return List.of(
-        id,
-        Jsons.serialize(recordMessage.getData()),
-        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    if (use1s1t) {
+      return List.of(
+          id,
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())),
+          "",
+          Jsons.serialize(recordMessage.getData()));
+    } else {
+      return List.of(
+          id,
+          Jsons.serialize(recordMessage.getData()),
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    }
   }
 
   @Override
@@ -66,10 +80,18 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
-    return List.of(
-        id,
-        formattedString,
-        Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+    if (use1s1t) {
+      return List.of(
+          id,
+          Timestamp.from(Instant.ofEpochMilli(emittedAt)),
+          "",
+          formattedString);
+    } else {
+      return List.of(
+          id,
+          formattedString,
+          Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+    }
   }
 
 }
