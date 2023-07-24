@@ -21,6 +21,7 @@ STRIPE_ERROR_CODES: List = [
     # account_id doesn't have the access to the stream
     "account_invalid",
 ]
+STRIPE_API_VERSION = "2022-11-15"
 
 
 class StripeStream(HttpStream, ABC):
@@ -56,9 +57,10 @@ class StripeStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        headers = {"Stripe-Version": STRIPE_API_VERSION}
         if self.account_id:
-            return {"Stripe-Account": self.account_id}
-        return {}
+            headers["Stripe-Account"] = self.account_id
+        return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -229,6 +231,16 @@ class Charges(IncrementalStripeStream):
 
     def path(self, **kwargs) -> str:
         return "charges"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["expand[]"] = ["data.refunds"]
+        return params
 
 
 class CustomerBalanceTransactions(BasePaginationStripeStream):

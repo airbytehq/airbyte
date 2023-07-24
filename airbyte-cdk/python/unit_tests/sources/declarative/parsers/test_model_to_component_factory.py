@@ -9,7 +9,13 @@ import datetime
 import pytest
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    LegacySessionTokenAuthenticator,
+)
+from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -236,13 +242,13 @@ spec:
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
     assert stream.retriever.requester.name == stream.name
-    assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
-    assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.requester.request_options_provider, InterpolatedRequestOptionsProvider)
     assert stream.retriever.requester.request_options_provider.request_parameters.get("unit") == "day"
@@ -790,10 +796,10 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert selector._method == HttpMethod.GET
+    assert selector._http_method == HttpMethod.GET
     assert selector.name == "name"
-    assert selector.path.string == "/v3/marketing/lists"
-    assert selector.url_base.string == "https://api.sendgrid.com"
+    assert selector._path.string == "/v3/marketing/lists"
+    assert selector._url_base.string == "https://api.sendgrid.com"
 
     assert isinstance(selector.error_handler, DefaultErrorHandler)
     assert len(selector.error_handler.backoff_strategies) == 1
@@ -808,7 +814,7 @@ requester:
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
 
 
-def test_create_request_with_session_authenticator():
+def test_create_request_with_leacy_session_authenticator():
     content = """
 requester:
   type: HttpRequester
@@ -817,7 +823,7 @@ requester:
     name: 'lists'
   url_base: "https://api.sendgrid.com"
   authenticator:
-    type: "SessionTokenAuthenticator"
+    type: "LegacySessionTokenAuthenticator"
     username: "{{ parameters.name}}"
     password: "{{ config.apikey }}"
     login_url: "login"
@@ -839,10 +845,60 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert isinstance(selector.authenticator, SessionTokenAuthenticator)
+    assert isinstance(selector.authenticator, LegacySessionTokenAuthenticator)
     assert selector.authenticator._username.eval(input_config) == "lists"
     assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
     assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"
+
+
+def test_create_request_with_session_authenticator():
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  authenticator:
+    type: SessionTokenAuthenticator
+    expiration_duration: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(selector.authenticator, ApiKeyAuthenticator)
+    assert isinstance(selector.authenticator.token_provider, SessionTokenProvider)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert selector.authenticator.token_provider.login_requester._url_base.eval(input_config) == "https://api.sendgrid.com"
+    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {"username": "lists", "password": "verysecrettoken"}
 
 
 def test_create_composite_error_handler():
@@ -939,10 +995,10 @@ def test_config_with_defaults():
     assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
