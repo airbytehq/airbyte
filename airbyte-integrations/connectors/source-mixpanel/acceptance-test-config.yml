@@ -23,6 +23,7 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config_incremental.json"
+      timeout_seconds: 900
   basic_read:
     tests:
     - config_path: "secrets/config.json"
