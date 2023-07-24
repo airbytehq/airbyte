@@ -66,7 +66,7 @@ acceptance_tests:
             - name: properties/hs_time_in_opportunity
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_was_imported
-              bypass_reason: Hubspot time depend on current time
+              bypass_reason: attribute is not stable
             - name: updatedAt
               bypass_reason: Hubspot time depend on current time
           deals:
