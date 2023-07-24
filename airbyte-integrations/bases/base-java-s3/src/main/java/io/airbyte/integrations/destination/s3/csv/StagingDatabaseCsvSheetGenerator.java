@@ -33,12 +33,11 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
       JavaBaseConstants.COLUMN_NAME_AB_ID,
       JavaBaseConstants.COLUMN_NAME_DATA,
       JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-  // TODO does this need to have loaded_at explicitly?
-  // TODO does this need to be in a different order? (raw_id, extracted_at, loaded_at, data)
   private static final List<String> V2_COLUMN_NAMES = List.of(
       JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-      JavaBaseConstants.COLUMN_NAME_DATA,
-      JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+      JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+      JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+      JavaBaseConstants.COLUMN_NAME_DATA);
 
   private final boolean use1s1t;
   private final List<String> header;
@@ -52,6 +51,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
     }
   }
 
+  // TODO is this even used anywhere?
   @Override
   public List<String> getHeaderRow() {
     return header;
