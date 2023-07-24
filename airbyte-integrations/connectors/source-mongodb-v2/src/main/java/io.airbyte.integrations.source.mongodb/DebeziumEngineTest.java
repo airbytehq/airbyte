@@ -9,11 +9,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.debezium.connector.mongodb.MongoDbConnector;
+import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy;
 import org.bson.BsonDocument;
+import org.bson.BsonTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +110,8 @@ public class DebeziumEngineTest {
                 LOGGER.info("Cursor document is null.");
             }
             LOGGER.info("Resume token = {}", changeStreamCursor.getResumeToken());
+            final BsonTimestamp timestamp = ResumeTokens.getTimestamp(changeStreamCursor.getResumeToken());
+            LOGGER.info("sec {}, ord {}", timestamp.getTime(), timestamp.getInc());
         }
     }
 
