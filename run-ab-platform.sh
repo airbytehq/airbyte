@@ -40,8 +40,9 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
                   dot_env=".env"
               dot_env_dev=".env.dev"
                      flags="flags.yml"
+             temporal_yaml="temporal/dynamicconfig/development.yaml"
 # any string is an array to POSIX shell. Space seperates values
-all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags"
+all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
 
