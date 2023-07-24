@@ -9,6 +9,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.entrypoint import logger
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
@@ -156,8 +157,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self._get_stream_kwargs(config)
-
-        return [
+        available_streams = []
+        all_streams = [
             FbaCustomerReturnsReports(**stream_kwargs),
             FbaAfnInventoryReports(**stream_kwargs),
             FbaAfnInventoryByCountryReports(**stream_kwargs),
@@ -212,3 +213,12 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport(**stream_kwargs),
             FbaReimbursementsReports(**stream_kwargs),
         ]
+
+        for stream in all_streams:
+            try:
+                stream._create_report(SyncMode.full_refresh)
+            except:
+                logger.warn(f"Account doesn't have permission to retrieve data for stream: {stream}")
+            available_streams.append(stream)
+        
+        return available_streams

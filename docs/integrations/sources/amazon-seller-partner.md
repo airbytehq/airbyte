@@ -62,6 +62,7 @@ This source is capable of syncing the following tables and their data:
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
 - [Restock Inventory Reports](https://sellercentral.amazon.com/help/hub/reference/202105670)
+- [Flat File Actionable Order Data Shipping](https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping)
 - [Flat File Open Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports By Last Update](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
@@ -102,6 +103,7 @@ This source is capable of syncing the following tables and their data:
 - [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
+- [Order Data Shipping Report](https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping)
 
 ## Report options
 
