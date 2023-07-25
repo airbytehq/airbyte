@@ -113,15 +113,16 @@ class SourceSurveycto(AbstractSource):
     
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         
-        form_id = config["form_id"][0]
+        form_ids = config["form_id"]
         
         try:
-            schema = Helpers.call_survey_cto(config, form_id)
-            filter_data = Helpers.get_filter_data(schema)
-            schema_res = Helpers.get_json_schema(filter_data)
-            stream = SurveyctoStream(config=config, form_id=form_id, schema=schema_res)
-            stream_gen = stream.read_records(sync_mode=SyncMode.full_refresh)
-            
+            for form_id in form_ids:
+                schema = Helpers.call_survey_cto(config, form_id)
+                filter_data = Helpers.get_filter_data(schema)
+                schema_res = Helpers.get_json_schema(filter_data)
+                stream = SurveyctoStream(config=config, form_id=form_id, schema=schema_res)
+                stream_gen = stream.read_records(sync_mode=SyncMode.full_refresh)
+                
             return True, None
         
         except Exception as error:
@@ -129,7 +130,7 @@ class SourceSurveycto(AbstractSource):
                 # Error Provided is not self explanatory
                 return False, f"Unable to connect - Please Check for Server Name"
             if "line 20" in str(error):
-                return False, f"Unable to connect - Please Check for form id's"
+                return False, f"Unable to connect - Please check for form IDs"
             return False, f"Unable to connect - {(error)}"
         
         
