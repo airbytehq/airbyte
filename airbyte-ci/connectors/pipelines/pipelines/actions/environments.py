@@ -104,7 +104,17 @@ async def with_installed_pipx_package(
     package_source_code_path: str,
     exclude: Optional[List] = None,
 ) -> Container:
+    """Install a python package in a python environment container using pipx.
 
+    Args:
+        context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
+        python_environment (Container): An existing python environment in which the package will be installed.
+        package_source_code_path (str): The local path to the package source code.
+        exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
+
+    Returns:
+        Container: A python environment container with the python package installed.
+    """
     pipx_python_environment = with_pipx(python_environment)
     container = with_python_package(context, pipx_python_environment, package_source_code_path, exclude=exclude)
 
