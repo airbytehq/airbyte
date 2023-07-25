@@ -14,9 +14,6 @@ data:
   license: ELv2
   name: Zendesk Support
   registries:
-    cloud:
-      dockerImageTag: 0.10.0  # Fixing P0 https://github.com/airbytehq/oncall/issues/2530
-      enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
