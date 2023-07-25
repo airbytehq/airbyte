@@ -29,6 +29,7 @@ import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitial
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
+import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
@@ -76,6 +77,7 @@ import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
+import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils;
 import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.CursorBasedStreams;
 import io.airbyte.integrations.source.postgres.cursor_based.PostgresCursorBasedStateManager;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
@@ -494,12 +496,25 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
           getQuoteString());
-      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+
+      // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
+      // are reclassified as xmin since we cannot guarantee that ctid will be possible.
+      reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
+
+      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
       final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
           PostgresQueryUtils.fileNodeForStreams(database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
+
+      // In case we failed to query for fileNode, streams will get reclassified as xmin
+      if (!fileNodes.failed().isEmpty()) {
+        reclassifyCategorisedCtidStreams(streamsCategorised, fileNodes.failed());
+        finalListOfStreamsToBeSyncedViaCtid =
+            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
+      }
+
       final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes.result());
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
           PostgresQueryUtils.getTableBlockSizeForStreams(

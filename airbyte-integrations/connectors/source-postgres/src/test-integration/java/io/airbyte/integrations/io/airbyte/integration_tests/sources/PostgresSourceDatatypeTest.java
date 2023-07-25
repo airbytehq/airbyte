@@ -16,7 +16,6 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -30,13 +29,9 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
   @SystemStub
   private EnvironmentVariables environmentVariables;
 
-  @BeforeEach
-  void setup() {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-  }
-
   @Override
   protected Database setupDatabase() throws SQLException {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
