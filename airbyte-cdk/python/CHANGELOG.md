@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.47.1
+Fix RemoveFields transformation issue
+
 ## 0.47.0
 Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
 
