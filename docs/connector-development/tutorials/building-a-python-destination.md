@@ -1,6 +1,6 @@
 # Building a Python Destination
 
-:::warn
+:::warning
 Airbyte has a simple Python Destination CDK but currently the project is not accepting new Python Destination in the official catalog.
 You can still build the connector and use for your projects locally or import in Airbyte Cloud.
 :::
