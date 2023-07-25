@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
+from airbyte_cdk.models import SyncMode
 from .helpers import Helpers
 
 
@@ -113,20 +113,33 @@ class SourceSurveycto(AbstractSource):
     def _base64_encode(self, string: str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")
     
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
 
-        server_name=config['server_name']
-        form_id=config['form_id'][0]
-        url=f"https://{server_name}.surveycto.com/" + f"api/v2/forms/data/wide/json/{form_id}?date=Jan 09, 2100 00:00:00 AM"
-        user_name_password = f"{config['username']}:{config['password']}"
-        auth_token = self._base64_encode(user_name_password)
-        headers = {"Authorization": "Basic " + auth_token}
-        response = requests.get(url, headers=headers)
-
-        if response.status_code==200:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
+        
+        server_name = config['server_name']
+        form_id = config["form_id"][0]
+        username = config['username']
+        password = config['password']
+        
+        if not all([server_name, form_id, username, password]):
+            return False, "Incomplete configuration. Please provide 'server_name', 'form_id', 'username', and 'password'."
+        
+        try:
+            schema = Helpers.call_survey_cto(config, form_id)
+            filter_data = Helpers.get_filter_data(schema)
+            schema_res = Helpers.get_json_schema(filter_data)
+            stream = SurveyctoStream(config=config, form_id=form_id, schema=schema_res)
+            stream_gen = stream.read_records(sync_mode=SyncMode.full_refresh)
+            
             return True, None
-        else:
-            return False, "Connection failed check for valid Username ,password, servername or form id"
+        
+        except Exception as error:
+            if "line 1" in str(error):
+                # Error Provided is not self explanatory
+                return False, f"Unable to connect - Please Check for Server Name"
+            if "line 20" in str(error):
+                return False, f"Unable to connect - Please Check for form id's"
+            return False, f"Unable to connect - {(error)}"
         
         
     def generate_streams(self, config: str) -> List[Stream]:
