@@ -43,6 +43,7 @@ appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0"
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version = "3.12.0" }
 connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
 connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
 connectors-source-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-source-testcontainers-clickhouse" }

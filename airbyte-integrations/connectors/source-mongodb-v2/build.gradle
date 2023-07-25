@@ -20,10 +20,19 @@ dependencies {
     implementation libs.mongodb.driver
 
     testImplementation project(':airbyte-test-utils')
-    testImplementation libs.connectors.testcontainers.mongodb
+    testImplementation libs.connectors.testcontainers
     testImplementation libs.docker.java.api
+    testImplementation libs.commons.lang3
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
+
+//test {
+//    // Disable parallel unit test execution.  The tests utilize Docker containers managed by
+//    // Testcontainers.  As such, running tests in parallel may result in port conflicts when two tests
+//    // run at the same time.  Disabling parallel execution avoids this issue, though does slow down overall
+//    // test execution time by running the tests serially.
+//    maxParallelForks = 1
+//}
