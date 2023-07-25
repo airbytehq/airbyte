@@ -50,7 +50,7 @@ def with_python_base(context: PipelineContext) -> Container:
 
     base_container = (
         context.dagger_client.container()
-        .from_("python:3.9-slim")
+        .from_("python:3.10-slim")
         .with_exec(["apt-get", "update"])
         .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
@@ -104,23 +104,15 @@ async def with_installed_pipx_package(
     package_source_code_path: str,
     exclude: Optional[List] = None,
 ) -> Container:
-    
-    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
-    work_dir_path = f"/{package_source_code_path}"
 
-    pipx_python_environment = with_pix(python_environment)
+    pipx_python_environment = with_pipx(python_environment)
+    container = with_python_package(context, pipx_python_environment, package_source_code_path, exclude=exclude)
 
-    container = (
-        pipx_python_environment
-        .with_mounted_directory(work_dir_path, package_source_code_directory)
-        .with_workdir(work_dir_path)
-    )
-
-    local_dependencies = await find_local_dependencies_in_pyproject_toml(container, package_source_code_path)
+    local_dependencies = await find_local_dependencies_in_pyproject_toml(context, container, package_source_code_path, exclude=exclude)
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    container = container.with_exec(["pipx", "install", package_source_code_path])
+    container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"])
 
     return container
 
@@ -143,8 +135,11 @@ def with_python_package(
         Container: A python environment container with the python package source code.
     """
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
-    container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
-        "/" + package_source_code_path
+    work_dir_path = f"/{package_source_code_path}"
+    container = (
+        python_environment
+        .with_mounted_directory(work_dir_path, package_source_code_directory)
+        .with_workdir(work_dir_path)
     )
     return container
 
@@ -244,28 +239,41 @@ async def find_local_dependencies_in_requirements_txt(python_package: Container,
     return local_requirements_dependency_paths
 
 
-def find_local_dependencies_in_pyproject_toml(pyproject_file_path: str) -> list:
+async def find_local_dependencies_in_pyproject_toml(
+    context: PipelineContext,
+    base_container: Container,
+    pyproject_file_path: str,
+    exclude: Optional[List] = None,
+) -> list:
     """Find local dependencies of a python package in a pyproject.toml file.
 
     Args:
+        python_package (Container): A python environment container with the python package source code.
         pyproject_file_path (str): The path to the pyproject.toml file.
 
     Returns:
         list: Paths to the local dependencies relative to the current directory.
     """
-    with open(pyproject_file_path, 'r') as file:
-        pyproject_content = toml.load(file)
+    python_package = with_python_package(context, base_container, pyproject_file_path)
+    pyproject_content_raw = await get_file_contents(python_package, "pyproject.toml")
+    if not pyproject_content_raw:
+        return []
 
+    pyproject_content = toml.loads(pyproject_content_raw)
     local_dependency_paths = []
     for dep, value in pyproject_content['tool']['poetry']['dependencies'].items():
         if isinstance(value, dict) and 'path' in value:
             local_dependency_path = Path(value['path'])
             pyproject_file_path = Path(pyproject_file_path)
-            local_dependency_path = str((pyproject_file_path.parent / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_dependency_path = str((pyproject_file_path / local_dependency_path).resolve().relative_to(Path.cwd()))
             local_dependency_paths.append(local_dependency_path)
 
+            # Ensure we parse the child dependencies
+            # TODO handle more than pyproject.toml
+            child_local_dependencies = await find_local_dependencies_in_pyproject_toml(context, base_container, local_dependency_path, exclude=exclude)
+            local_dependency_paths += child_local_dependencies
+
     return local_dependency_paths
-    
 
 
 

@@ -39,6 +39,12 @@ This command installs `airbyte-ci` and makes it globally available in your termi
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
+### Installation for development
+If you are developing on pipelines, we recommend installing airbyte-ci in editable mode:
+
+```bash
+pipx install airbyte-ci/connectors/pipelines/ --force --editable
+```
 
 ## Commands reference
 - [`airbyte-ci` command group](#airbyte-ci)
