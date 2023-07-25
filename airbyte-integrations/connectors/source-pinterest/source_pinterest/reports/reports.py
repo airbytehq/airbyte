@@ -27,7 +27,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     @property
     def window_in_days(self):
-        return 186  # Set window_in_days to 186 days date range
+        return 185  # Set window_in_days to 186 days date range
 
     @property
     @abstractmethod
