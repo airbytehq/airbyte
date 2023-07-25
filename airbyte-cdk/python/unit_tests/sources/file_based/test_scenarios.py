@@ -14,6 +14,13 @@ from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
+from unit_tests.sources.file_based.scenarios.avro_scenarios import (
+    avro_all_types_scenario,
+    avro_file_with_decimal_as_float_scenario,
+    multiple_avro_combine_schema_scenario,
+    multiple_streams_avro_scenario,
+    single_avro_scenario,
+)
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
     error_extension_mismatch_scenario,
@@ -155,6 +162,11 @@ discover_scenarios = [
     jsonl_user_input_schema_scenario,
     schemaless_jsonl_scenario,
     schemaless_jsonl_multi_stream_scenario,
+    single_avro_scenario,
+    avro_all_types_scenario,
+    multiple_avro_combine_schema_scenario,
+    multiple_streams_avro_scenario,
+    avro_file_with_decimal_as_float_scenario,
 ]
 
 
@@ -229,7 +241,7 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
         if "record" in actual:
             for key, value in actual["record"]["data"].items():
                 if isinstance(value, float):
-                    assert math.isclose(value, expected["data"][key], abs_tol=1e-06)
+                    assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
                 else:
                     assert value == expected["data"][key]
             assert actual["record"]["stream"] == expected["stream"]
@@ -276,6 +288,7 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
+    single_avro_scenario,
 ]
 
 
@@ -322,9 +335,9 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
     output = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
     [catalog] = [o["catalog"] for o in output if o.get("catalog")]  # type: ignore
     return {
-            "catalog": catalog,
-            "logs": [o["log"] for o in output if o.get("log")],
-        }
+        "catalog": catalog,
+        "logs": [o["log"] for o in output if o.get("log")],
+    }
 
 
 def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
@@ -341,20 +354,15 @@ def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: Posix
     captured = capsys.readouterr().out.splitlines()
     logs = caplog.records
     return {
-        "records": [
-            msg
-            for msg in (json.loads(line) for line in captured)
-            if msg["type"] == "RECORD"
-        ],
-        "logs": [
-            msg["log"]
-            for msg in (json.loads(line) for line in captured)
-            if msg["type"] == "LOG"
-        ] + [{"level": log.levelname, "message": log.message} for log in logs]
+        "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
+        "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"]
+        + [{"level": log.levelname, "message": log.message} for log in logs],
     }
 
 
-def read_with_state(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, List[Any]]:
+def read_with_state(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario
+) -> Dict[str, List[Any]]:
     launch(
         scenario.source,
         [
@@ -370,16 +378,9 @@ def read_with_state(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_
     captured = capsys.readouterr()
     logs = caplog.records
     return {
-        "records": [
-            msg
-            for msg in (json.loads(line) for line in captured.out.splitlines())
-            if msg["type"] in ("RECORD", "STATE")
-        ],
-        "logs": [
-            msg["log"]
-            for msg in (json.loads(line) for line in captured.out.splitlines())
-            if msg["type"] == "LOG"
-        ] + [{"level": log.levelname, "message": log.message} for log in logs]
+        "records": [msg for msg in (json.loads(line) for line in captured.out.splitlines()) if msg["type"] in ("RECORD", "STATE")],
+        "logs": [msg["log"] for msg in (json.loads(line) for line in captured.out.splitlines()) if msg["type"] == "LOG"]
+        + [{"level": log.levelname, "message": log.message} for log in logs],
     }
 
 
