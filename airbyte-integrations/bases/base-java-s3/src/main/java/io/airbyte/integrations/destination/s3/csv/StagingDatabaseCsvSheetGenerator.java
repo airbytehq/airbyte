@@ -23,9 +23,10 @@ import java.util.UUID;
  * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a
  * different order (ABID, JSON, timestamp) vs (ABID, timestamp, JSON)
  * <p>
- * In 1s1t mode, the column ordering is also different (raw_id, extracted_at, loaded_at, data). Note that the loaded_at
- * column is rendered as an empty string; callers are expected to configure their destination to parse this as NULL.
- * For example, Snowflake's COPY into command accepts a NULL_IF parameter, and Redshift accepts an EMPTYASNULL option.
+ * In 1s1t mode, the column ordering is also different (raw_id, extracted_at, loaded_at, data). Note
+ * that the loaded_at column is rendered as an empty string; callers are expected to configure their
+ * destination to parse this as NULL. For example, Snowflake's COPY into command accepts a NULL_IF
+ * parameter, and Redshift accepts an EMPTYASNULL option.
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 

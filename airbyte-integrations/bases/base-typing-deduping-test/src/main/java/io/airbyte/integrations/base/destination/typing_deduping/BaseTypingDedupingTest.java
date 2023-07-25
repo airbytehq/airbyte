@@ -34,7 +34,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -138,8 +137,9 @@ public abstract class BaseTypingDedupingTest {
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * Destinations which need to clean up resources after an entire test finishes should override this method. For example,
-   * if you want to gracefully close a database connection, you should do that here.
+   * Destinations which need to clean up resources after an entire test finishes should override this
+   * method. For example, if you want to gracefully close a database connection, you should do that
+   * here.
    */
   protected void globalTeardown() throws Exception {}
 

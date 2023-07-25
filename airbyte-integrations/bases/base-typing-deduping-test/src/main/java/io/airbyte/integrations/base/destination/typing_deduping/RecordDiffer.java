@@ -91,6 +91,7 @@ public class RecordDiffer {
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RecordDiffer.class);
+
   /**
    * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
    */

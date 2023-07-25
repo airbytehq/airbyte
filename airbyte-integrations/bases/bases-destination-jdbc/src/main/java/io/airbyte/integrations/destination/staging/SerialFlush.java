@@ -38,20 +38,20 @@ public class SerialFlush {
   /**
    * Logic handling how destinations with staging areas (aka bucket storages) will flush their buffer
    *
-   * @param database          database used for syncing
+   * @param database database used for syncing
    * @param stagingOperations collection of SQL queries necessary for writing data into a staging area
-   * @param writeConfigs      configuration settings for all destination connectors needed to write
-   * @param catalog           collection of configured streams (e.g. API endpoints or database tables)
+   * @param writeConfigs configuration settings for all destination connectors needed to write
+   * @param catalog collection of configured streams (e.g. API endpoints or database tables)
    * @return
    */
   @VisibleForTesting
   public static FlushBufferFunction function(
-      final JdbcDatabase database,
-      final StagingOperations stagingOperations,
-      final List<WriteConfig> writeConfigs,
-      final ConfiguredAirbyteCatalog catalog,
-      TypeAndDedupeOperationValve typerDeduperValve,
-      TyperDeduper typerDeduper) {
+                                             final JdbcDatabase database,
+                                             final StagingOperations stagingOperations,
+                                             final List<WriteConfig> writeConfigs,
+                                             final ConfiguredAirbyteCatalog catalog,
+                                             TypeAndDedupeOperationValve typerDeduperValve,
+                                             TyperDeduper typerDeduper) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
@@ -94,8 +94,7 @@ public class SerialFlush {
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
             typerDeduperValve,
-            typerDeduper
-        );
+            typerDeduper);
       } catch (final Exception e) {
         log.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

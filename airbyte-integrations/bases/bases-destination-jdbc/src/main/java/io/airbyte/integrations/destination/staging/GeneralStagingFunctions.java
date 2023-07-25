@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
