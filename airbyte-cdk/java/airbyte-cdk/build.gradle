@@ -9,19 +9,13 @@ group 'io.airbyte'
 def props = new Properties()
 file("src/main/resources/version.properties").withInputStream { props.load(it) }
 version = props.getProperty('version')
-description = "Airbyte Java CDK."
+description = "Airbyte Connector Development Kit (CDK) for Java."
 
 repositories {
     mavenLocal()
     mavenCentral()
-    // maven {
-    //     url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-    //     credentials {
-    //         name 'cloudrepo'
-    //         username System.getenv('CLOUDREPO_USER')
-    //         password System.getenv('CLOUDREPO_PASSWORD')
-    //     }
-    // }
+    // Should not be needed:
+    // maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars' }
 }
 
 dependencies {
@@ -33,6 +27,15 @@ publishing {
         maven(MavenPublication) {
             groupId = 'io.airbyte'
             artifactId = 'airbyte-cdk'
+        }
+    }
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            credentials {
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
         }
     }
 }
