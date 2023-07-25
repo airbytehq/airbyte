@@ -23,7 +23,7 @@ Go to [My account](https://serpstat.com/users/profile/) page and click **Copy** 
 3. On the **Set up the source** page, select **Serpstat** from the **Source type** dropdown.
 4. Enter a name for your connector.
 5. Enter the API key.
-6. Expand **Optional fields** and fill them in.
+6. Expand **Optional fields** and fill them in. Each API response consumes API credits available to your Serpstat subscription plan. To limit the number of consumed API rows, decrease **Page size** and **Pages to fetch** options.
 7. Click **Set up source**.
 
 ## Supported sync modes
