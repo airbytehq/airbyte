@@ -148,7 +148,7 @@ public class SftpSource extends BaseConnector implements Source {
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()));
   }
 
 }
