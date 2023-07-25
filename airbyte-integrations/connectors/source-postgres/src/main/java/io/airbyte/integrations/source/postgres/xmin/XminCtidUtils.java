@@ -19,10 +19,14 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,19 +81,20 @@ public class XminCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForCtidSync::add);
 
-    streamsForCtidSync.addAll(newlyAddedStreams);
+    streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     final List<ConfiguredAirbyteStream> streamsForXminSync = fullCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !streamsForCtidSync.contains(stream))
         .map(Jsons::clone)
-        .toList();
+        .collect(Collectors.toList());
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
   }
@@ -99,4 +104,33 @@ public class XminCtidUtils {
 
   }
 
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+    final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
+        .ctidStreams()
+        .streamsForCtidSync().stream().filter(c -> Objects.equals(
+            streamPair,
+            new AirbyteStreamNameNamespacePair(c.getStream().getName(), c.getStream().getNamespace())))
+        .findFirst();
+    foundStream.ifPresent(c -> {
+      categorisedStreams.remainingStreams().streamsForXminSync().add(c);
+      categorisedStreams.ctidStreams().streamsForCtidSync().remove(c);
+      LOGGER.info("Reclassified {}.{} as xmin stream", c.getStream().getNamespace(), c.getStream().getName());
+    });
+
+    // Should there ever be a matching ctid state when ctid is not possible?
+    final Optional<AirbyteStateMessage> foundStateMessage = categorisedStreams
+        .ctidStreams()
+        .statesFromCtidSync().stream().filter(m -> Objects.equals(streamPair,
+            new AirbyteStreamNameNamespacePair(
+                m.getStream().getStreamDescriptor().getName(),
+                m.getStream().getStreamDescriptor().getNamespace())))
+        .findFirst();
+    foundStateMessage.ifPresent(m -> {
+      categorisedStreams.remainingStreams().statesFromXminSync().add(m);
+      categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
+    });
+  }
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+    streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
+  }
 }

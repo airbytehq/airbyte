@@ -527,3 +527,34 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     assert sent_request.url == expected_full_url
+
+
+@pytest.mark.parametrize(
+    "path, params, expected_url", [
+        pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param("v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
+        pytest.param("v1/endpoint?param1=1", {"param1": 1}, "https://test_base_url.com/v1/endpoint?param1=1", id="test_duplicate_params_same_value_not_string"),
+        pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
+    ]
+)
+def test_duplicate_request_params_are_deduped(path, params, expected_url):
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path=path,
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+    )
+
+    if expected_url is None:
+        with pytest.raises(ValueError):
+            requester._create_prepared_request(path=path, params=params)
+    else:
+        prepared_request = requester._create_prepared_request(path=path, params=params)
+        assert prepared_request.url == expected_url
