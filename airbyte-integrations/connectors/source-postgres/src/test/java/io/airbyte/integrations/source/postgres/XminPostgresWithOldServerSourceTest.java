@@ -52,7 +52,8 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     final AirbyteStateMessage firstSyncStateMessage = stateAfterFirstBatch.get(0);
     final String stateTypeFromFirstStateMessage = firstSyncStateMessage.getStream().getStreamState().get("state_type").asText();
 
-    // Since the third state message would be the final, it should be of xmin type
+    // Since the flow reclassified the stream to do initial load using xmin
+    // It should only contain a single final state of xmin type.
     assertEquals("xmin", stateTypeFromFirstStateMessage);
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("ctid"));
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("incremental_state"));
