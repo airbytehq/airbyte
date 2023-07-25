@@ -43,6 +43,7 @@ runs:
         pip install pipx
         pipx install airbyte-ci/connectors/ci_credentials
         pipx install airbyte-ci/connectors/connector_ops
+        pipx install airbyte-ci/connectors/ci_code_validator
 
     - name: Auth with gcloud CLI
       uses: google-github-actions/setup-gcloud@v0
