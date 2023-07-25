@@ -230,7 +230,7 @@ def test_check_invalid_migration_guides(
 
     mock_metadata_dict = {"name": "Foobar", "documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
 
-    test_file = Path("tools/ci_connector_ops/tests/test_migration_files") / test_file
+    test_file = Path("airbyte-ci/connectors/connector_ops/tests/test_migration_files") / test_file
     with open(test_file, "r") as f:
         contents = f.read()
 
