@@ -490,11 +490,11 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Change the cursor column in the second sync to a column that doesn't exist in the first sync. Verify that we overwrite
-   * everything correctly.
+   * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
+   * Verify that we overwrite everything correctly.
    * <p>
-   * This essentially verifies that the destination connector correctly recognizes NULL cursors as older than non-NULL
-   * cursors.
+   * This essentially verifies that the destination connector correctly recognizes NULL cursors as
+   * older than non-NULL cursors.
    */
   @Test
   public void incrementalDedupChangeCursor() throws Exception {
@@ -504,8 +504,8 @@ public abstract class BaseTypingDedupingTest {
         "old_cursor",
         Jsons.deserialize(
             """
-                {"type": "integer"}
-                """));
+            {"type": "integer"}
+            """));
     ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withSyncMode(SyncMode.INCREMENTAL)
         .withCursorField(List.of("old_cursor"))
