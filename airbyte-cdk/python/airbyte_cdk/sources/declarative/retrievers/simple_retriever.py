@@ -4,7 +4,7 @@
 
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, Level, SyncMode
@@ -27,7 +27,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 @dataclass
-class SimpleRetriever(Retriever, HttpStream):
+class SimpleRetriever(Retriever):
     """
     Retrieves records by synchronously sending requests to fetch records.
 
@@ -50,8 +50,6 @@ class SimpleRetriever(Retriever, HttpStream):
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    _DEFAULT_MAX_RETRY = 5
-
     requester: Requester
     record_selector: HttpSelector
     config: Config
@@ -63,14 +61,12 @@ class SimpleRetriever(Retriever, HttpStream):
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
     cursor: Optional[Cursor] = None
-    disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
         self._last_response: Optional[requests.Response] = None
         self._records_from_last_response: List[Record] = []
-        HttpStream.__init__(self, self.requester.get_authenticator())
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 
@@ -86,151 +82,105 @@ class SimpleRetriever(Retriever, HttpStream):
         if not isinstance(value, property):
             self._name = value
 
-    @property
-    def url_base(self) -> str:
-        return self.requester.get_url_base()
-
-    @property
-    def http_method(self) -> str:
-        return str(self.requester.get_method().value)
-
-    @property
-    def raise_on_http_errors(self) -> bool:
-        # never raise on http_errors because this overrides the error handler logic...
-        return False
-
-    @property
-    def max_retries(self) -> Union[int, None]:
-        if self.disable_retries:
-            return 0
-        # this will be removed once simple_retriever is decoupled from http_stream
-        if hasattr(self.requester.error_handler, "max_retries"):  # type: ignore
-            return self.requester.error_handler.max_retries  # type: ignore
-        return self._DEFAULT_MAX_RETRY
-
-    def should_retry(self, response: requests.Response) -> bool:
+    def _get_mapping(
+        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any
+    ) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
         """
-        Specifies conditions for backoff based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+        Get mapping from the provided method, and get the keys of the mapping.
+        If the method returns a string, it will return the string and an empty set.
+        If the method returns a dict, it will return the dict and its keys.
         """
-        return bool(self.requester.interpret_response_status(response).action == ResponseAction.RETRY)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Specifies backoff time.
-
-         This method is called only if should_backoff() returns True for the input request.
-
-         :param response:
-         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-         to the default backoff behavior (e.g using an exponential algorithm).
-        """
-        should_retry = self.requester.interpret_response_status(response)
-        if should_retry.action != ResponseAction.RETRY:
-            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
-        assert should_retry.action == ResponseAction.RETRY
-        return should_retry.retry_in
-
-    def error_message(self, response: requests.Response) -> str:
-        """
-        Constructs an error message which can incorporate the HTTP response received from the partner API.
-
-        :param response: The incoming HTTP response from the partner API
-        :return The error message string to be emitted
-        """
-        return self.requester.interpret_response_status(response).error_message
+        mapping = method(**kwargs) or {}
+        keys = set(mapping.keys()) if not isinstance(mapping, str) else set()
+        return mapping, keys
 
     def _get_request_options(
         self,
+        stream_state: Optional[StreamData],
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
-        requester_method: Callable[..., Mapping[str, Any]],
-        paginator_method: Callable[..., Mapping[str, Any]],
-        stream_slicer_method: Callable[..., Mapping[str, Any]],
-        auth_options_method: Callable[..., Mapping[str, Any]],
-    ) -> MutableMapping[str, Any]:
+        paginator_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
+        stream_slicer_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
+    ) -> Union[Mapping[str, Any], str]:
         """
-        Get the request_option from the requester and from the paginator
+        Get the request_option from the requester, the authenticator and extra_options passed in.
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
-        :param stream_slice:
-        :param next_page_token:
-        :param requester_method:
-        :param paginator_method:
-        :return:
         """
+        paginator_mapping, paginator_keys = self._get_mapping(paginator_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        stream_slicer_mapping, stream_slicer_keys = self._get_mapping(stream_slicer_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
-        requester_mapping_keys = set(requester_mapping.keys())
-        paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
-        paginator_mapping_keys = set(paginator_mapping.keys())
-        stream_slicer_mapping = stream_slicer_method(stream_slice=stream_slice)
-        stream_slicer_mapping_keys = set(stream_slicer_mapping.keys())
-        auth_options_mapping = auth_options_method()
-        auth_options_mapping_keys = set(auth_options_mapping.keys())
+        all_mappings = [paginator_mapping, stream_slicer_mapping]
+        all_keys = [paginator_keys, stream_slicer_keys]
 
-        intersection = (
-            (requester_mapping_keys & paginator_mapping_keys)
-            | (requester_mapping_keys & stream_slicer_mapping_keys)
-            | (paginator_mapping_keys & stream_slicer_mapping_keys)
-            | (requester_mapping_keys & auth_options_mapping_keys)
-            | (paginator_mapping_keys & auth_options_mapping_keys)
-            | (stream_slicer_mapping_keys & auth_options_mapping_keys)
-        )
-        if intersection:
+        string_options = sum(isinstance(mapping, str) for mapping in all_mappings)
+        # If more than one mapping is a string, raise a ValueError
+        if string_options > 1:
+            raise ValueError("Cannot combine multiple options if one is a string")
+        
+        if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
+            raise ValueError("Cannot combine multiple options if one is a string")
+
+        # If any mapping is a string, return it
+        for mapping in all_mappings:
+            if isinstance(mapping, str):
+                return mapping
+
+        # If there are duplicate keys across mappings, raise a ValueError
+        intersection = set().union(*all_keys)
+        if len(intersection) < sum(len(keys) for keys in all_keys):
             raise ValueError(f"Duplicate keys found: {intersection}")
-        return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping, **auth_options_mapping}
 
-    def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        # Return the combined mappings
+        # ignore type because mypy doesn't follow all mappings being dicts
+        return {**paginator_mapping, **stream_slicer_mapping}  # type: ignore
+
+    def _request_headers(
+        self, stream_state: Optional[StreamData] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         headers = self._get_request_options(
+            stream_state,
             stream_slice,
             next_page_token,
-            self.requester.get_request_headers,
             self._paginator.get_request_headers,
             self.stream_slicer.get_request_headers,
-            # auth headers are handled separately by passing the authenticator to the HttpStream constructor
-            lambda: {},
         )
+        if isinstance(headers, str):
+            raise ValueError("Request headers cannot be a string")
         return {str(k): str(v) for k, v in headers.items()}
 
-    def request_params(
+    def _request_params(
         self,
-        stream_state: StreamSlice,
+        stream_state: Optional[StreamData] = None, 
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        return self._get_request_options(
+        params = self._get_request_options(
+            stream_state,
             stream_slice,
             next_page_token,
-            self.requester.get_request_params,
             self._paginator.get_request_params,
             self.stream_slicer.get_request_params,
-            self.requester.get_authenticator().get_request_params,
         )
+        if isinstance(params, str):
+            raise ValueError("Request params cannot be a string")
+        return params
 
-    def request_body_data(
+    def _request_body_data(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamData] = None, 
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping[str, Any], str]]:
+    ) -> Union[Mapping[str, Any], str]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -240,31 +190,17 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        base_body_data = self.requester.get_request_body_data(
-            stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-        if isinstance(base_body_data, str):
-            paginator_body_data = self._paginator.get_request_body_data()
-            if paginator_body_data:
-                raise ValueError(
-                    f"Cannot combine requester's body data= {base_body_data} with paginator's body_data: {paginator_body_data}"
-                )
-            else:
-                return base_body_data
         return self._get_request_options(
+            stream_state,
             stream_slice,
             next_page_token,
-            # body data can be a string as well, this will be fixed in the rewrite using http requester instead of http stream
-            self.requester.get_request_body_data,  # type: ignore
-            self._paginator.get_request_body_data,  # type: ignore
-            self.stream_slicer.get_request_body_data,  # type: ignore
-            self.requester.get_authenticator().get_request_body_data,  # type: ignore
+            self._paginator.get_request_body_data,
+            self.stream_slicer.get_request_body_data,
         )
 
-    def request_body_json(
+    def _request_body_json(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamData] = None, 
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -273,93 +209,44 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(
+        body_json = self._get_request_options(
+            stream_state,
             stream_slice,
             next_page_token,
-            # body json can be None as well, this will be fixed in the rewrite using http requester instead of http stream
-            self.requester.get_request_body_json,  # type: ignore
-            self._paginator.get_request_body_json,  # type: ignore
-            self.stream_slicer.get_request_body_json,  # type: ignore
-            self.requester.get_authenticator().get_request_body_json,  # type: ignore
+            self._paginator.get_request_body_json,
+            self.stream_slicer.get_request_body_json,
         )
+        if isinstance(body_json, str):
+            raise ValueError("Request body json cannot be a string")
+        return body_json
 
-    def request_kwargs(
+    def _path(
         self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
+    ) -> Optional[str]:
         """
-        Specifies how to configure a mapping of keyword arguments to be used when creating the HTTP request.
-        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
-        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
-        """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        return self.requester.request_kwargs(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-    def path(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        """
-        Return the path the submit the next request to.
-        If the paginator points to a path, follow it, else return the requester's path
+        If the paginator points to a path, follow it, else return nothing so the requester is used.
         :param stream_state:
         :param stream_slice:
         :param next_page_token:
         :return:
         """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        paginator_path = self._paginator.path()
-        if paginator_path:
-            return paginator_path
-        else:
-            return self.requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+        return self._paginator.path()
 
-    @property
-    def cache_filename(self) -> str:
-        """
-        TODO remove once simple retriever doesn't rely on HttpStream
-        """
-        return f"{self.name}.yml"
-
-    @property
-    def use_cache(self) -> bool:
-        """
-        TODO remove once simple retriever doesn't rely on HttpStream
-        """
-        return False
-
-    def parse_response(
+    def _parse_response(
         self,
-        response: requests.Response,
-        *,
+        response: Optional[requests.Response],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
-        # if fail -> raise exception
-        # if ignore -> ignore response and return no records
-        # else -> delegate to record selector
-        response_status = self.requester.interpret_response_status(response)
-        if response_status.action == ResponseAction.FAIL:
-            error_message = (
-                response_status.error_message
-                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpStream.parse_response_error_message(response)}"
-            )
-            raise ReadException(error_message)
-        elif response_status.action == ResponseAction.IGNORE:
-            self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
+        if not response:
+            self._last_response = None
+            self._records_from_last_response = []
             return []
 
-        # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
         records = self.record_selector.select_records(
-            response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
         self._records_from_last_response = records
         return records
@@ -374,7 +261,7 @@ class SimpleRetriever(Retriever, HttpStream):
         if not isinstance(value, property):
             self._primary_key = value
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def _next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Specifies a pagination strategy.
 
@@ -384,14 +271,52 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         return self._paginator.next_page_token(response, self._records_from_last_response)
 
+    def _fetch_next_page(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Optional[requests.Response]:
+        response = self.requester.send_request(
+            path=self._path(),
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_body_data=self._request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_body_json=self._request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+
+        return response
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [Optional[requests.Response], Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+        ],
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            response = self._fetch_next_page(stream_state, stream_slice, next_page_token)
+            yield from records_generator_fn(response, stream_state, stream_slice)
+
+            if not response:
+                pagination_complete = True
+            else:
+                next_page_token = self._next_page_token(response)
+                if not next_page_token:
+                    pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+
     def read_records(
         self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
-        # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         # Fixing paginator types has a long tail of dependencies
         self._paginator.reset()  # type: ignore
@@ -414,7 +339,7 @@ class SimpleRetriever(Retriever, HttpStream):
             slice_state = {}
 
         most_recent_record_from_slice = None
-        for stream_data in self._read_pages(self.parse_records, stream_slice, slice_state):
+        for stream_data in self._read_pages(self._parse_records, slice_state, stream_slice):
             most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
             yield stream_data
 
@@ -458,7 +383,6 @@ class SimpleRetriever(Retriever, HttpStream):
         :param stream_state:
         :return:
         """
-        # Warning: use self.state instead of the stream_state passed as argument!
         return self.stream_slicer.stream_slices()
 
     @property
@@ -471,14 +395,13 @@ class SimpleRetriever(Retriever, HttpStream):
         if self.cursor:
             self.cursor.set_initial_state(value)
 
-    def parse_records(
+    def _parse_records(
         self,
-        request: requests.PreparedRequest,
-        response: requests.Response,
+        response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self._parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
 @dataclass
@@ -501,20 +424,21 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
-    def parse_records(
+    def _parse_records(
         self,
-        request: requests.PreparedRequest,
-        response: requests.Response,
+        response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        self.message_repository.log_message(
-            Level.DEBUG,
-            lambda: format_http_message(
-                response,
-                f"Stream '{self.name}' request",
-                f"Request performed in order to extract records for stream '{self.name}'",
-                self.name,
-            ),
-        )
-        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+        if response is not None:
+            current_response = response
+            self.message_repository.log_message(
+                Level.DEBUG,
+                lambda: format_http_message(
+                    current_response,
+                    f"Stream '{self.name}' request",
+                    f"Request performed in order to extract records for stream '{self.name}'",
+                    self.name,
+                ),
+            )
+        yield from self._parse_response(response, stream_slice=stream_slice, stream_state=stream_state)

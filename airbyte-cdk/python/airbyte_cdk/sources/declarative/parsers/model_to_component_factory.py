@@ -695,6 +695,7 @@ class ModelToComponentFactory:
             http_method=model_http_method,
             request_options_provider=request_options_provider,
             config=config,
+            disable_retries=self._disable_retries,
             parameters=model.parameters or {},
         )
 
@@ -912,7 +913,6 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
                 parameters=model.parameters or {},
-                disable_retries=self._disable_retries,
                 message_repository=self._message_repository,
             )
         return SimpleRetriever(
@@ -925,7 +925,6 @@ class ModelToComponentFactory:
             cursor=cursor,
             config=config,
             parameters=model.parameters or {},
-            disable_retries=self._disable_retries,
             message_repository=self._message_repository,
         )
 

@@ -73,7 +73,6 @@ def test_http_requester():
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.interpret_response_status(requests.Response()) == response_status
-    assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)
 
 
 @pytest.mark.parametrize(
@@ -212,6 +211,10 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         ("field=value", None, "field=value", ValueError, None),
         (None, "field=value", "field=value", ValueError, None),
         ("field=value", "field=value", "field=value", ValueError, None),
+        # assert body string and mapping from different source fails
+        ("field=value", {"abc": "def"}, None, ValueError, None),
+        ({"abc": "def"}, "field=value", None, ValueError, None),
+        ("field=value", None, {"abc": "def"}, ValueError, None),
     ]
 )
 def test_send_request_string_data(provider_data, param_data, authenticator_data, expected_exception, expected_body):
