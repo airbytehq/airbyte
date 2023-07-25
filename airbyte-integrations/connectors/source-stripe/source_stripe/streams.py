@@ -528,6 +528,17 @@ class Products(IncrementalStripeStream):
         return "products"
 
 
+class ShippingRates(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/shipping_rates/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "shipping_rates"
+
+
 class Reviews(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/radar/reviews/list
