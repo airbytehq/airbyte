@@ -518,12 +518,12 @@ public abstract class BaseTypingDedupingTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream));
 
     // First sync
-    final List<AirbyteMessage> messages1 = readMessages("sync1_oldcursor_messages.jsonl");
+    final List<AirbyteMessage> messages1 = readMessages("sync1_cursorchange_messages.jsonl");
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("sync1_oldcursor_expectedrecords_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords1 = readRecords("sync1_oldcursor_expectedrecords_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("sync1_cursorchange_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("sync1_cursorchange_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
@@ -533,8 +533,8 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("sync2_cursorchange_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("sync2_cursorchange_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
