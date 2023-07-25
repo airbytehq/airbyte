@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.NameAndNamespacePair;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -581,12 +582,38 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
-            "final_table_id", streamId.finalTableId(QUOTE),
-            "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),
-            "real_final_table", streamId.finalName(QUOTE))).replace(
-            """
+        "final_table_id", streamId.finalTableId(QUOTE),
+        "tmp_final_table", streamId.finalTableId(finalSuffix, QUOTE),
+        "real_final_table", streamId.finalName(QUOTE))).replace(
+        """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+            """);
+  }
+
+  @Override
+  public String migrateFromV1toV2(StreamConfig stream, NameAndNamespacePair v1RawTableNameAndNamespace) {
+    return new StringSubstitutor(Map.of(
+        "v2_raw_table", stream.id().finalTableId(QUOTE),
+        "v1_raw_table", v1RawTableNameAndNamespace.combinedAndQuoted(QUOTE))
+    ).replace(
+        """
+            CREATE OR REPLACE TABLE ${v2_raw_table} (
+              _airbyte_raw_id STRING,
+              _airbyte_data JSON,
+              _airbyte_extracted_at TIMESTAMP,
+              _airbyte_loaded_at TIMESTAMP
+            )
+            PARTITION BY DATE(_airbyte_extracted_at)
+            CLUSTER BY _airbyte_extracted_at
+            AS (
+                SELECT
+                    _airbyte_ab_id AS _airbyte_raw_id,
+                    PARSE_JSON(_airbyte_data) AS _airbyte_data,
+                    _airbyte_emitted_at AS _airbyte_extracted_at,
+                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+                FROM ${v1_raw_table}
+            );
             """);
   }
 

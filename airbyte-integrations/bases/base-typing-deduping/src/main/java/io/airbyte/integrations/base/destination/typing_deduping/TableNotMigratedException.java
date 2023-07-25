@@ -14,4 +14,8 @@ public class TableNotMigratedException extends RuntimeException {
     super(message);
   }
 
+  public TableNotMigratedException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
 }
