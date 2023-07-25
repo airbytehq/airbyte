@@ -140,20 +140,28 @@ def test_check(response, start_date, check_passed):
 
 
 @pytest.mark.parametrize(
-    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 27, []),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 27, [], None),
         (
-                {"error": "Not sufficient permissions"},
+                '{"error": "Not sufficient permissions"}',
                 403,
                 24,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
+                None
+        ),
+        (
+                '',
+                404,
+                24,
+                ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
+                'Not Found'
         ),
     ],
-    ids=["forms_accessible", "forms_inaccessible"],
+    ids=["forms_accessible", "forms_inaccessible", "forms_not_exists"],
 )
-def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
-    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
     logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])

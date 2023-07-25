@@ -119,11 +119,13 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                     yield record
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 403:
+        status_code = response.status_code
+        if status_code == 403 or status_code == 404:
             try:
                 error = response.json().get("error")
             except requests.exceptions.JSONDecodeError:
-                error = {"title": "Forbidden", "message": "Received empty JSON response"}
+                reason = response.reason
+                error = {"title": f"{reason}", "message": "Received empty JSON response"}
             self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -227,7 +229,7 @@ class FullRefreshZendeskSupportStream(BaseZendeskSupportStream):
         if self._ignore_pagination:
             return None
 
-        meta = response.json().get("meta", {})
+        meta = response.json().get("meta", {}) if response.content else {}
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
     def request_params(
