@@ -91,7 +91,6 @@ public class StagingConsumerFactory {
                                                       final JdbcDatabase database,
                                                       final StagingOperations stagingOperations,
                                                       final NamingConventionTransformer namingResolver,
-                                                      final BufferCreateFunction onCreateBuffer,
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final boolean purgeStagingData,
@@ -100,7 +99,7 @@ public class StagingConsumerFactory {
                                                       final ParsedCatalog parsedCatalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, parsedCatalog);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
