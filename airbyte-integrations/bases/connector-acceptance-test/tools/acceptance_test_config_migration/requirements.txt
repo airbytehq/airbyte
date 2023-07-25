@@ -3,7 +3,7 @@ appdirs==1.4.4
 attrs==22.1.0
 backoff==2.2.1
 cattrs==22.2.0
-certifi==2022.9.24
+certifi==2023.7.22
 charset-normalizer==2.1.1
 coverage==6.5.0
 dataclasses-jsonschema==2.15.1
