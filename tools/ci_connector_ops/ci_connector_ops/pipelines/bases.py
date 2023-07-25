@@ -267,8 +267,8 @@ class PytestStep(Step, ABC):
         """
         test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
         if await check_path_in_workdir(connector_under_test, test_directory):
-            docker_daemon = self.context.dagger_client.host().unix_socket("/var/run/docker.sock")
-            tester = connector_under_test.with_unix_socket("/var/run/docker/sock", docker_daemon).with_exec(
+            print("GOOOBERSSSSSS")
+            tester = connector_under_test.with_exec(
                 [
                     "python",
                     "-m",
