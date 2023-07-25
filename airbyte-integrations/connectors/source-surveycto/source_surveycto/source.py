@@ -113,13 +113,7 @@ class SourceSurveycto(AbstractSource):
     
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         
-        server_name = config['server_name']
         form_id = config["form_id"][0]
-        username = config['username']
-        password = config['password']
-        
-        if not all([server_name, form_id, username, password]):
-            return False, "Incomplete configuration. Please provide 'server_name', 'form_id', 'username', and 'password'."
         
         try:
             schema = Helpers.call_survey_cto(config, form_id)
