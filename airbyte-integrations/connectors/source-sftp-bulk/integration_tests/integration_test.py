@@ -55,26 +55,29 @@ def config_fixture(docker_client):
         "stream_name": "overwrite_stream",
     }
 
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['password']}",
-        name="mysftp",
-        ports={22: config["port"]},
-        volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-        },
-        detach=True,
-    )
+    try:
 
-    time.sleep(20)
-    yield config
+        container = docker_client.containers.run(
+            "atmoz/sftp",
+            f"{config['username']}:{config['password']}",
+            name="mysftp",
+            ports={22: config["port"]},
+            volumes={
+                f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
+            },
+            detach=True,
+        )
 
-    container.kill()
-    container.remove()
+        time.sleep(20)
+        yield config
+    finally:
+        container.kill()
+        container.remove()
 
 
 @pytest.fixture(name="config_pk", scope="session")
 def config_fixture_pk(docker_client):
+
     with socket() as s:
         s.bind(("", 0))
         available_port = s.getsockname()[1]
@@ -105,24 +108,25 @@ def config_fixture_pk(docker_client):
         "stream_name": "overwrite_stream",
     }
 
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['password']}:1001",
-        name="mysftpssh",
-        ports={22: config["port"]},
-        volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-            f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
-        },
-        detach=True,
-    )
+    try:
+        container = docker_client.containers.run(
+            "atmoz/sftp",
+            f"{config['username']}:{config['password']}:1001",
+            name="mysftpssh",
+            ports={22: config["port"]},
+            volumes={
+                f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
+                f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
+            },
+            detach=True,
+        )
 
-    time.sleep(20)
-    yield config
-
-    shutil.rmtree(ssh_path)
-    container.kill()
-    container.remove()
+        time.sleep(20)
+        yield config
+    finally:
+        shutil.rmtree(ssh_path)
+        container.kill()
+        container.remove()
 
 
 @pytest.fixture(name="configured_catalog")
@@ -142,6 +146,8 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
+def _read_records(source, config, catalog, state=None): 
+    return [m for m in list(source.read(logger, config, catalog, state)) if m.type == Type.RECORD]
 
 def test_check_valid_config_pk(config_pk: Mapping):
     outcome = SourceFtp().check(logger, config_pk)
@@ -167,7 +173,7 @@ def test_check_valid_config(config: Mapping):
 
 def test_get_files_no_pattern_json(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(logger, config, configured_catalog, None)
+    result_iter = _read_records(source, config, configured_catalog, None)
     result = list(result_iter)
     assert len(result) == 2
     for res in result:
@@ -178,7 +184,7 @@ def test_get_files_no_pattern_json(config: Mapping, configured_catalog: Configur
 
 def test_get_files_pattern_json(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(logger, {**config, "file_pattern": "test_1.+"}, configured_catalog, None)
+    result_iter = _read_records(source, {**config, "file_pattern": "test_1.+"}, configured_catalog, None)
     result = list(result_iter)
     assert len(result) == 1
     for res in result:
@@ -189,7 +195,7 @@ def test_get_files_pattern_json(config: Mapping, configured_catalog: ConfiguredA
 
 def test_get_files_pattern_json_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(logger, {**config, "file_pattern": "test_2.+"}, configured_catalog, None)
+    result_iter = _read_records(source, {**config, "file_pattern": "test_2.+"}, configured_catalog, None)
     result = list(result_iter)
     assert len(result) == 1
     for res in result:
@@ -200,13 +206,13 @@ def test_get_files_pattern_json_new_separator(config: Mapping, configured_catalo
 
 def test_get_files_pattern_no_match_json(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result = source.read(logger, {**config, "file_pattern": "bad_pattern.+"}, configured_catalog, None)
+    result = _read_records(source, {**config, "file_pattern": "bad_pattern.+"}, configured_catalog, None)
     assert len(list(result)) == 0
 
 
 def test_get_files_no_pattern_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(logger, {**config, "file_type": "csv", "folder_path": "files/csv"}, configured_catalog, None)
+    result_iter = _read_records(source, {**config, "file_type": "csv", "folder_path": "files/csv"}, configured_catalog, None)
     result = list(result_iter)
     assert len(result) == 4
     for res in result:
@@ -217,9 +223,11 @@ def test_get_files_no_pattern_csv(config: Mapping, configured_catalog: Configure
 
 def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
+    result_iter = _read_records(
+        source, 
+        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
     )
+    
     result = list(result_iter)
     assert len(result) == 2
     for res in result:
@@ -230,8 +238,8 @@ def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAi
 
 def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
+    result_iter = _read_records(source,
+        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
     )
     result = list(result_iter)
     assert len(result) == 2
@@ -243,8 +251,8 @@ def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog
 
 def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
+    result_iter = _read_records(source,
+        {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
         configured_catalog, None
     )
     result = list(result_iter)
@@ -257,22 +265,21 @@ def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, config
 
 def test_get_files_pattern_no_match_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "badpattern.+"}, configured_catalog, None
+    result = _read_records(
+        source, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "badpattern.+"}, configured_catalog, None
     )
     assert len(list(result)) == 0
 
 
 def test_get_files_empty_files(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result = source.read(logger, {**config, "folder_path": "files/empty"}, configured_catalog, None)
+    result = _read_records(source, {**config, "folder_path": "files/empty"}, configured_catalog, None)
     assert len(list(result)) == 0
 
 
 def test_get_files_handle_null_values(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = source.read(logger, {**config, "folder_path": "files/null_values", "file_type": "csv"}, configured_catalog, None)
-    result = list(result_iter)
+    result = _read_records(source, {**config, "folder_path": "files/null_values", "file_type": "csv"}, configured_catalog, None)
     assert len(result) == 5
 
     res = result[2]
