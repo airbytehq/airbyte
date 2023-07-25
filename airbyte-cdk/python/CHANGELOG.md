@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
 ## 0.46.1
 Connector builder: warn if the max number of records was reached
 
