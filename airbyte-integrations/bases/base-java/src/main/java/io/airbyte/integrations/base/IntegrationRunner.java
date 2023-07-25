@@ -398,7 +398,7 @@ public class IntegrationRunner {
     }
   }
 
-  private static JsonNode parseConfig(final Path path) {
+  public static JsonNode parseConfig(final Path path) {
     return Jsons.deserialize(IOs.readFile(path));
   }
 
