@@ -163,6 +163,7 @@ discover_scenarios = [
     multiple_streams_avro_scenario,
     avro_file_with_decimal_as_float_scenario,
     csv_skip_before_header_scenario,
+    csv_skip_after_header_scenario,
 ]
 
 

@@ -92,7 +92,7 @@ class CsvParser(FileTypeParser):
                 self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
                 reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
 
-                yield from self._read_and_cast_types(reader, schema, null_values, config_format.skip_rows_before_header, logger)
+                yield from self._read_and_cast_types(reader, schema, null_values, config_format.skip_rows_after_header, logger)
         else:
             with stream_reader.open_file(file) as fp:
                 reader = csv.DictReader(fp)  # type: ignore
@@ -100,7 +100,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], null_values: List[str], skip_rows_before_header: int, logger: logging.Logger  # type: ignore
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], null_values: List[str], skip_rows_after_header: int, logger: logging.Logger  # type: ignore
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -110,7 +110,9 @@ class CsvParser(FileTypeParser):
         record should be emitted.
         """
         if not schema:
-            for row in reader:
+            for i, row in enumerate(reader):
+                if i < skip_rows_after_header:
+                    continue
                 yield CsvParser._to_nullable(row, null_values)
 
         else:
