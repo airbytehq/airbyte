@@ -13,6 +13,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           ad_keywords:
             type: number
