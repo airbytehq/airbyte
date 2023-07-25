@@ -71,7 +71,6 @@ import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataI
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcProperties;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcStateHandler;
-import io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
@@ -413,7 +412,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final CtidFeatureFlags ctidFeatureFlags = new CtidFeatureFlags(sourceConfig);
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("Using ctid + CDC");
       return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
