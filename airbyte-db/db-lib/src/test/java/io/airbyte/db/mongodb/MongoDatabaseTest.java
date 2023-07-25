@@ -192,7 +192,7 @@ class MongoDatabaseTest {
     final com.mongodb.client.MongoDatabase clientMongoDatabase = mock(com.mongodb.client.MongoDatabase.class);
     final BsonDocument response = new BsonDocument("test", new BsonString("error"));
     final MongoCommandException error = new MongoCommandException(response, mock(ServerAddress.class));
-    when(clientMongoDatabase.runCommand(any())).thenThrow(new MongoCommandException(response, mock(ServerAddress.class)));
+    when(clientMongoDatabase.runCommand(any())).thenThrow(error);
     when(mongoDatabase1.getDatabase()).thenReturn(clientMongoDatabase);
 
     assertNull(mongoDatabase1.getServerVersion());
