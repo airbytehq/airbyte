@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Iterable, Mapping, Optional, Any, List
 
 import requests
@@ -26,6 +27,7 @@ class Campaigns(ApplovinStream):
 
 class Creatives(HttpSubStream, ApplovinStream):
     primary_key = "id"
+    backoff = 120
 
     def __init__(self, authenticator: TokenAuthenticator, **kwargs):
         super().__init__(
@@ -35,7 +37,9 @@ class Creatives(HttpSubStream, ApplovinStream):
 
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return 120
+        sleep(self.backoff)
+        self.backoff *= 2
+        return super().backoff_time(response)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
