@@ -3,9 +3,9 @@ This page contains the setup guide and reference information for the SFTP Bulk s
 
 This connector provides the following features not found in the standard SFTP source connector:
 
-- **Bulk Ingestion of Files**: Efficiently ingest multiple files from an SFTP server. This capability enables you to consolidate and process multiple files as a single data stream in your destination system.
-- **Incremental Loading**: The connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their last modification or creation time. This ensures that only new or updated files are processed during synchronization.
-- **Load Latest File**: Optionally, you can choose to load only the most recent file from the specified folder path, along with an optional pattern. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data. By enabling this option, you can overwrite the data in your destination with the latest information from the SFTP server's most recent file.
+- **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
+- **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their creation or last modification time.
+- **Load most recent file**: You can choose to load only the most recent file from the designated folder path. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data.
 
 ## Prerequisites
 
