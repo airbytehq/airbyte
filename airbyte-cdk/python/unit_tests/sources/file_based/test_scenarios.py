@@ -156,12 +156,13 @@ discover_scenarios = [
     csv_double_quote_is_set_scenario,
     csv_custom_delimiter_with_escape_char_scenario,
     csv_custom_delimiter_in_double_quotes_scenario,
-    csv_simple,
+    csv_simple_scenario,
     single_avro_scenario,
     avro_all_types_scenario,
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     avro_file_with_decimal_as_float_scenario,
+    csv_skip_before_header_scenario,
 ]
 
 
