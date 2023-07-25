@@ -91,6 +91,7 @@ jobs:
           python-version: "3.10"
       - name: Install CI scripts
         run: |
+          pip install pipx
           pipx install airbyte-ci/connectors/ci_credentials
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
