@@ -262,7 +262,6 @@ mod test {
                 collection: None,
                 field_config_json_map: BTreeMap::new(),
             }],
-            network_ports: Vec::new(),
         };
 
         let msg_buf = serde_json::to_string(&msg).unwrap();

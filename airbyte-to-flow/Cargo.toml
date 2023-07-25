@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+doc = { git = "https://github.com/estuary/flow" }
 flow_cli_common = { git = "https://github.com/estuary/flow" }
-proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
-json = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+proto-flow = { git = "https://github.com/estuary/flow" }
+json = { git = "https://github.com/estuary/flow" }
 
 dateparser = "*"
 chrono = "*"
@@ -24,8 +24,8 @@ clap = { version = "^3", features = ["derive"] }
 futures = "*"
 futures-core = "*"
 futures-util = "*"
-prost = "*"
-schemars = "*"
+prost = "0.11"
+schemars = "0.8"
 serde = { version = "*", features = ["derive"]}
 serde_json = { version = "*", features = ["raw_value"]}
 structopt = "*"

@@ -192,9 +192,10 @@ impl AirbyteSourceInterceptor {
 
             let mut resp = response::Discovered::default();
             for stream in catalog.streams {
+                let mut disable = false;
                 if let Some(ref selected_streams) = selected_streams_option {
                     if !selected_streams.contains(&stream.name) {
-                        continue;
+                        disable = true;
                     }
                 }
 
@@ -300,6 +301,7 @@ impl AirbyteSourceInterceptor {
                     resource_config_json: serde_json::to_string(&resource_spec)?,
                     key: key.clone(),
                     document_schema_json: fix_document_schema_keys(doc_schema, key)?.to_string(),
+                    disable,
                 })
             }
 
