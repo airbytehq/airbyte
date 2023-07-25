@@ -614,6 +614,20 @@ class TicketMetricEvents(CursorPaginationZendeskSupportStream):
     def path(self, **kwargs):
         return "incremental/ticket_metric_events"
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:  # need keep start_time for this stream
+            params.update(next_page_token)
+        return params
+
 
 class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
