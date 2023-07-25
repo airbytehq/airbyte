@@ -50,6 +50,7 @@ setup(
     install_requires=[
         "airbyte-protocol-models==0.3.6",
         "backoff",
+        "click",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
@@ -74,6 +75,7 @@ setup(
             "pytest",
             "pytest-cov",
             "pytest-mock",
+            "pyfakefs",
             "requests-mock",
             "pytest-httpserver",
             "pandas==2.0.3",
