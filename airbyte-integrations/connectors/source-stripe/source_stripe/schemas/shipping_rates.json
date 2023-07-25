@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shipping Rates Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "delivery_estimate": {
+      "type": ["null", "string"]
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "fixed_amount": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "integer"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "integer"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tax_behavior": {
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}
