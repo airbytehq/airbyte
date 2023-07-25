@@ -1,0 +1,87 @@
+{
+  "title": "Flat File All Orders Data Reports (by last update)",
+  "description": "Flat File All Orders Data by Last Update Date General Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "order-id": {
+      "type": "string"
+    },
+    "order-item-id": {
+      "type": ["null", "string"]
+    },
+    "purchase-date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payments-date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reporting-date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "promise-date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "days-past-promise": {
+      "type": ["null", "string"]
+    },
+    "buyer-email": {
+      "type": ["null", "string"]
+    },
+    "buyer-phone-number": {
+      "type": ["null", "string"]
+    },
+    "is-business-order": {
+      "type": ["null", "string"]
+    },
+    "quantity-purchased": {
+      "type": ["null", "string"]
+    },
+    "quantity-shipped": {
+      "type": ["null", "string"]
+    },
+    "quantity-to-ship": {
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "type": ["null", "string"]
+    },
+    "purchase-order-number": {
+      "type": ["null", "string"]
+    },
+    "recipient-name": {
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "type": ["null", "string"]
+    },
+    "ship-service-level": {
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    }
+  }
+}
