@@ -4,13 +4,14 @@
 
 import json
 import os
+from copy import deepcopy
+from typing import Any, Dict
+
 import pytest
 import yaml
-
-from copy import deepcopy
-
 from airbyte_cdk.connector_builder.migrator.source import SourceRepository
 from pyfakefs.fake_filesystem_unittest import TestCase
+from pytest_mock.plugin import MockerFixture
 
 SOURCE_NAME = "source-toto"
 A_NO_CODE_MANIFEST = {
@@ -52,7 +53,7 @@ A_NO_CODE_MANIFEST = {
         }
     ],
 }
-A_MANIFEST_WITH_CUSTOM_COMPONENT = deepcopy(A_NO_CODE_MANIFEST)
+A_MANIFEST_WITH_CUSTOM_COMPONENT: Dict[str, Any] = deepcopy(A_NO_CODE_MANIFEST)
 A_MANIFEST_WITH_CUSTOM_COMPONENT["streams"][0]["retriever"] = {
     "type": "CustomRetriever",
     "class_name": "a_custom_package.SampleCustomComponent",
@@ -90,7 +91,7 @@ class SourceRepositoryTestCase(TestCase):
         self._repo = SourceRepository(".")
 
     @pytest.fixture(autouse=True)
-    def __inject_fixtures(self, mocker) -> None:
+    def __inject_fixtures(self, mocker: MockerFixture) -> None:
         self.mocker = mocker
 
     def test_given_spec_is_json_when_merge_spec_inside_manifest_then_save_spec_as_part_of_manifest(self) -> None:

@@ -14,14 +14,14 @@ import yaml.emitter
 import yaml.representer
 import yaml.resolver
 import yaml.serializer
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow, AuthFlowType, Spec
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow, Spec
 
 logger = logging.getLogger("migrator.source")
 
 
 class SourceRepository:
 
-    def __init__(self, base_path):
+    def __init__(self, base_path: str) -> None:
         self._base_path = base_path
 
     def merge_spec_inside_manifest(self, source_name: str) -> None:
@@ -107,12 +107,9 @@ class SourceRepository:
 
 
 class _IndentingEmitter(yaml.emitter.Emitter):
-    def increase_indent(self, flow=False, indentless=False):
+    def increase_indent(self, flow: bool = False, indentless: bool = False) -> None:
         """Ensure that lists items are always indented."""
-        return super().increase_indent(
-            flow=False,
-            indentless=False,
-        )
+        super().increase_indent(flow=False, indentless=False)  # type: ignore
 
 
 class _ManifestDumper(
@@ -121,7 +118,7 @@ class _ManifestDumper(
     yaml.representer.Representer,
     yaml.resolver.Resolver,
 ):
-    def __init__(
+    def __init__(  # type: ignore
         self,
         stream,
         default_style=None,
@@ -137,7 +134,7 @@ class _ManifestDumper(
         version=None,
         tags=None,
         sort_keys=True,
-    ):
+    ) -> None:
         _IndentingEmitter.__init__(
             self,
             stream,
@@ -163,7 +160,7 @@ class _ManifestDumper(
         )
         yaml.resolver.Resolver.__init__(self)
 
-    def represent_data(self, data):
+    def represent_data(self, data: Any) -> yaml.Node:
         if isinstance(data, Enum):
             return self.represent_data(data.value)
         return super().represent_data(data)
