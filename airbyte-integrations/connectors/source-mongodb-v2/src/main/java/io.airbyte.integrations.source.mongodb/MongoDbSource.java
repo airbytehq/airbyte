@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -210,6 +211,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
+        recordStatistics(database, tableName);
         final Stream<JsonNode> stream = database.read(tableName, columnNames, filter);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
@@ -260,6 +262,14 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public void close() throws Exception {}
+  public void close() {}
+
+  private void recordStatistics(final MongoDatabase database, final String collectionName) {
+    final Map<String, Object> data = new HashMap<>();
+    data.putAll(database.getCollectionStats(collectionName));
+    data.put("version", database.getServerVersion());
+    data.put("type", database.getServerType());
+    LOGGER.info(Jsons.serialize(data));
+  }
 
 }
