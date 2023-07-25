@@ -20,8 +20,6 @@ pytest_plugins = ("connector_acceptance_test.plugin",)
 
 logger = logging.getLogger("airbyte")
 
-TMP_FOLDER = "/tmp/test_sftp_source"
-
 
 def generate_ssh_keys():
     key = paramiko.RSAKey.generate(2048)
@@ -36,16 +34,46 @@ def docker_client():
     return docker.from_env()
 
 
+@pytest.fixture(scope="session")
+def path_to_mount_to_sftp(tmp_path_factory):
+    """
+    Copy the integration_test/files folder to a tmp dir which is shared with the docker host.
+    """
+    path = tmp_path_factory.mktemp("sftp_files")
+    shutil.copytree(f"{os.getcwd()}/integration_tests/files", path, dirs_exist_ok=True)
+    return path
+
+
+@pytest.fixture(scope="session")
+def key_pair():
+    return generate_ssh_keys()
+
+
+@pytest.fixture(scope="session")
+def public_key(key_pair):
+    return key_pair[1]
+
+
+@pytest.fixture(scope="session")
+def private_key(key_pair):
+    return key_pair[0]
+
+
+@pytest.fixture(scope="session")
+def public_key_path(tmp_path_factory, public_key):
+    public_key_path = tmp_path_factory.mktemp("ssh") / "id_rsa.pub"
+    public_key_path.write_text(public_key)
+    return public_key_path
+
+
 @pytest.fixture(name="config", scope="session")
-def config_fixture(docker_client):
+def config_fixture(docker_client, docker_ip, path_to_mount_to_sftp):
     with socket() as s:
         s.bind(("", 0))
         available_port = s.getsockname()[1]
 
-    dir_path = os.getcwd() + "/integration_tests"
-
     config = {
-        "host": "localhost",
+        "host": docker_ip,
         "port": available_port,
         "username": "foo",
         "password": "pass",
@@ -63,7 +91,7 @@ def config_fixture(docker_client):
             name="mysftp",
             ports={22: config["port"]},
             volumes={
-                f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
+                path_to_mount_to_sftp: {"bind": "/home/foo/files", "mode": "rw"},
             },
             detach=True,
         )
@@ -76,33 +104,19 @@ def config_fixture(docker_client):
 
 
 @pytest.fixture(name="config_pk", scope="session")
-def config_fixture_pk(docker_client):
+def config_fixture_pk(docker_client, docker_ip, public_key_path, private_key, path_to_mount_to_sftp):
 
     with socket() as s:
         s.bind(("", 0))
         available_port = s.getsockname()[1]
 
-    ssh_path = TMP_FOLDER + "/ssh"
-    dir_path = os.getcwd() + "/integration_tests"
-
-    if os.path.exists(ssh_path):
-        shutil.rmtree(ssh_path)
-
-    os.makedirs(ssh_path)
-
-    pk, pubk = generate_ssh_keys()
-
-    pub_key_path = ssh_path + "/id_rsa.pub"
-    with open(pub_key_path, "w") as f:
-        f.write(pubk)
-
     config = {
-        "host": "localhost",
+        "host": docker_ip,
         "port": available_port,
         "username": "foo",
         "password": "pass",
         "file_type": "json",
-        "private_key": pk,
+        "private_key": private_key,
         "start_date": "2021-01-01T00:00:00Z",
         "folder_path": "/files",
         "stream_name": "overwrite_stream",
@@ -115,8 +129,8 @@ def config_fixture_pk(docker_client):
             name="mysftpssh",
             ports={22: config["port"]},
             volumes={
-                f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-                f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
+                path_to_mount_to_sftp: {"bind": "/home/foo/files", "mode": "rw"},
+                public_key_path: {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
             },
             detach=True,
         )
@@ -124,7 +138,6 @@ def config_fixture_pk(docker_client):
         time.sleep(20)
         yield config
     finally:
-        shutil.rmtree(ssh_path)
         container.kill()
         container.remove()
 
@@ -146,8 +159,10 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
-def _read_records(source, config, catalog, state=None): 
+
+def _read_records(source, config, catalog, state=None):
     return [m for m in list(source.read(logger, config, catalog, state)) if m.type == Type.RECORD]
+
 
 def test_check_valid_config_pk(config_pk: Mapping):
     outcome = SourceFtp().check(logger, config_pk)
@@ -224,10 +239,9 @@ def test_get_files_no_pattern_csv(config: Mapping, configured_catalog: Configure
 def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result_iter = _read_records(
-        source, 
-        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
+        source, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
     )
-    
+
     result = list(result_iter)
     assert len(result) == 2
     for res in result:
@@ -238,8 +252,8 @@ def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAi
 
 def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = _read_records(source,
-        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
+    result_iter = _read_records(
+        source, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
     )
     result = list(result_iter)
     assert len(result) == 2
@@ -251,9 +265,11 @@ def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog
 
 def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
-    result_iter = _read_records(source,
+    result_iter = _read_records(
+        source,
         {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
-        configured_catalog, None
+        configured_catalog,
+        None,
     )
     result = list(result_iter)
     assert len(result) == 2
