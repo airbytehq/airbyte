@@ -4,16 +4,14 @@
 
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 import requests
-from airbyte_cdk.models import AirbyteMessage, Level, SyncMode
-from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.models import AirbyteMessage, Level
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -23,7 +21,6 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
 
 
 @dataclass
@@ -107,8 +104,12 @@ class SimpleRetriever(Retriever):
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
-        paginator_mapping, paginator_keys = self._get_mapping(paginator_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        stream_slicer_mapping, stream_slicer_keys = self._get_mapping(stream_slicer_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        paginator_mapping, paginator_keys = self._get_mapping(
+            paginator_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+        stream_slicer_mapping, stream_slicer_keys = self._get_mapping(
+            stream_slicer_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
 
         all_mappings = [paginator_mapping, stream_slicer_mapping]
         all_keys = [paginator_keys, stream_slicer_keys]
@@ -117,7 +118,7 @@ class SimpleRetriever(Retriever):
         # If more than one mapping is a string, raise a ValueError
         if string_options > 1:
             raise ValueError("Cannot combine multiple options if one is a string")
-        
+
         if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
             raise ValueError("Cannot combine multiple options if one is a string")
 
@@ -136,7 +137,10 @@ class SimpleRetriever(Retriever):
         return {**paginator_mapping, **stream_slicer_mapping}  # type: ignore
 
     def _request_headers(
-        self, stream_state: Optional[StreamData] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        stream_state: Optional[StreamData] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
@@ -155,7 +159,7 @@ class SimpleRetriever(Retriever):
 
     def _request_params(
         self,
-        stream_state: Optional[StreamData] = None, 
+        stream_state: Optional[StreamData] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
@@ -177,7 +181,7 @@ class SimpleRetriever(Retriever):
 
     def _request_body_data(
         self,
-        stream_state: Optional[StreamData] = None, 
+        stream_state: Optional[StreamData] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
@@ -200,7 +204,7 @@ class SimpleRetriever(Retriever):
 
     def _request_body_json(
         self,
-        stream_state: Optional[StreamData] = None, 
+        stream_state: Optional[StreamData] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -281,17 +285,19 @@ class SimpleRetriever(Retriever):
             next_page_token=next_page_token,
             request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            request_body_data=self._request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            request_body_json=self._request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_body_data=self._request_body_data(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            ),
+            request_body_json=self._request_body_json(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            ),
         )
 
         return response
 
     def _read_pages(
         self,
-        records_generator_fn: Callable[
-            [Optional[requests.Response], Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
-        ],
+        records_generator_fn: Callable[[Optional[requests.Response], Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]],
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
@@ -311,7 +317,6 @@ class SimpleRetriever(Retriever):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
-
 
     def read_records(
         self,

@@ -236,7 +236,9 @@ class HttpRequester(Requester):
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
-        requester_mapping, requester_keys = self._get_mapping(requester_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        requester_mapping, requester_keys = self._get_mapping(
+            requester_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
         auth_options_mapping, auth_options_keys = self._get_mapping(auth_options_method)
         extra_options = extra_options or {}
         extra_mapping, extra_keys = self._get_mapping(lambda: extra_options)
@@ -248,7 +250,7 @@ class HttpRequester(Requester):
         # If more than one mapping is a string, raise a ValueError
         if string_options > 1:
             raise ValueError("Cannot combine multiple options if one is a string")
-        
+
         if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
             raise ValueError("Cannot combine multiple options if one is a string")
 
@@ -326,7 +328,12 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         return self._get_request_options(
-            stream_state, stream_slice, next_page_token, self.get_request_body_data, self.get_authenticator().get_request_body_data, extra_body_data
+            stream_state,
+            stream_slice,
+            next_page_token,
+            self.get_request_body_data,
+            self.get_authenticator().get_request_body_data,
+            extra_body_data,
         )
 
     def _request_body_json(
@@ -343,7 +350,12 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         options = self._get_request_options(
-            stream_state, stream_slice, next_page_token, self.get_request_body_json, self.get_authenticator().get_request_body_json, extra_body_json
+            stream_state,
+            stream_slice,
+            next_page_token,
+            self.get_request_body_json,
+            self.get_authenticator().get_request_body_json,
+            extra_body_json,
         )
         if isinstance(options, str):
             raise ValueError("Request body json cannot be a string")
@@ -383,7 +395,9 @@ class HttpRequester(Requester):
         request_body_json: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         request = self._create_prepared_request(
-            path=path if path is not None else self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            path=path
+            if path is not None
+            else self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
             params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),

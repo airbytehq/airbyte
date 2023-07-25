@@ -1238,7 +1238,7 @@ def _create_page(response_body):
              _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {}}),
      ),
      [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
-     [call({}, {"partition": "0"}, None), call( {}, {"partition": "0"},{"next_page_token": "next"}), call( {}, {"partition": "1"},None),]
+     [call({}, {"partition": "0"}, None), call({}, {"partition": "0"},{"next_page_token": "next"}), call({}, {"partition": "1"},None),]
      )
 ])
 def test_read_manifest_declarative_source(test_name, manifest, pages, expected_records, expected_calls):

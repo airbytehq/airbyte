@@ -4,21 +4,17 @@
 
 from unittest.mock import MagicMock, Mock, patch
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.incremental import Cursor, DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.streams.http.http import HttpStream
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}
@@ -313,7 +309,7 @@ def test_request_body_data(test_name, slicer_body_data, paginator_body_data, exp
         assert expected_body_data == actual_body_data
     else:
         try:
-            assert False == retriever._request_body_data(None, None, None)
+            retriever._request_body_data(None, None, None)
             assert False
         except ValueError:
             pass
