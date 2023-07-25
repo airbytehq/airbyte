@@ -4,11 +4,10 @@ This page will walk through the process of developing with the Java CDK.
 
 ## Building the CDK
 
-To build the CDK, navigate to the `airbyte-cdk` directory and run the build command using Gradle:
+To build the CDK, navigate to the repo root and run the build command using Gradle:
 
 ```console
-cd airbyte-cdk/java/airbyte-cdk
-./gradlew build
+./gradlew :airbyte-cdk:java:airbyte-cdk:build
 ```
 
 This command compiles the code, runs the tests, and creates a JAR file in the `build/libs` directory.
@@ -17,16 +16,12 @@ This command compiles the code, runs the tests, and creates a JAR file in the `b
 
 If you're working on the CDK and need your changes to be accessible by a connector project on the same machine, you can publish the CDK to your local Maven repository:
 
-Navigate to the `airbyte-cdk` directory:
-
-```console
-cd airbyte-cdk/java/airbyte-cdk
-```
+From the repo root:
 
 Run the publish command:
 
 ```console
-./gradlew publishToMavenLocal
+./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
 ```
 
 ## Referencing the CDK from Java connectors
