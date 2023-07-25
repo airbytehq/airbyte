@@ -60,17 +60,18 @@ For more information on SSH key pair authentication, please refer to the
 <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
-6. Enter a **Stream Name**. This will be the name of the stream that will be outputted to your destination.
-7. Provide a **Start Date** using the provided datepicker, or by programmatically entering the date in the format `YYYY-MM-DDT00:00:00Z`. Incremental syncs will only sync files modified/added after this date.
-8. Enter your authentication credentials for the SFTP server (**Password** and/or **Private Key**).
-7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
+6. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
+7. Enter a **Stream Name**. This will be the name of the stream that will be outputted to your destination.
+8. Use the dropdown menu to select the **File Type** you wish to sync. Currently, only CSV and JSON formats are supported.
+9. Provide a **Start Date** using the provided datepicker, or by programmatically entering the date in the format `YYYY-MM-DDT00:00:00Z`. Incremental syncs will only sync files modified/added after this date.
+10. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
 ## Optional fields
 
 The **Optional fields** can be used to further configure the SFTP source connector. If you do not wish to set additional configurations, these fields can be left at their default settings.
 
-1. **File Type**: Use the dropdown menu to select the file type you wish to sync. Currently, only CSV and JSON formats are supported. The default value is `csv`.
-2. **CSV Separator**: If you selected `csv` as the file type, you can use this field to specify a custom separator. The default value is `,`.
+1. **CSV Separator**: If you selected `csv` as the file type, you can use this field to specify a custom separator. The default value is `,`.
+
 2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
 
 ```
