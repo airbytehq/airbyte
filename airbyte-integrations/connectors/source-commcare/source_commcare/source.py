@@ -273,17 +273,15 @@ class SourceCommcare(AbstractSource):
     
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         
-        project_space=config['project_space']
-        url = f"https://www.commcarehq.org/a/{project_space}/api/v0.5/form"
-        api_key= config['api_key']
-        headers = {
-                "Authorization": f"ApiKey {api_key}"
-        }
-        response= requests.get(url, headers=headers)
-        if response.status_code==200:
+        try:
+            auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
+            args = {
+                "authenticator": auth,
+            }
+            stream = Application(**{**args, "app_id": config["app_id"], "project_space": config["project_space"]}).check_availability(logger=logger)
             return True, None
-        else:
-            return False, "Invalid Api key or project space"
+        except Exception as error:
+             return False, " Invalid apikey, project_space or app_id : "+str(error)
 
     def base_schema(self):
         return {

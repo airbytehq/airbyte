@@ -7,6 +7,7 @@ connectionSpecification:
     - api_key
     - app_id
     - start_date
+    - project_space
   properties:
     api_key:
       type: string
