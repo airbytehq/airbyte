@@ -25,19 +25,19 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   @Override
   public Optional<SnowflakeTableDefinition> findExistingTable(StreamId id) throws SQLException {
     // TODO these names are case-sensitive, make a decision about this https://github.com/airbytehq/airbyte/issues/28638
-    List<SnowflakeColumn> columns = database.queryJsons(String.format(
+    List<SnowflakeColumn> columns = database.queryJsons(
         """
             SELECT column_name, data_type
             FROM information_schema.columns
-            WHERE table_catalog = '%s'
-              AND table_schema = '%s'
-              AND table_name = '%s'
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
             ORDER BY ordinal_position;
             """,
         databaseName,
         id.finalNamespace(),
         id.finalName()
-        )).stream()
+        ).stream()
         .map(column -> new SnowflakeColumn(
             column.get("COLUMN_NAME").asText(),
             column.get("DATA_TYPE").asText()))
