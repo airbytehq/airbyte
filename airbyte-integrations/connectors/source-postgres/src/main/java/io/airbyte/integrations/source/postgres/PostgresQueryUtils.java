@@ -245,7 +245,7 @@ public class PostgresQueryUtils {
         }
       } catch (final Exception e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
-        LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
+        LOGGER.warn("Failed to fetch vacuum for table {} info", fullTableName, e);
         failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });

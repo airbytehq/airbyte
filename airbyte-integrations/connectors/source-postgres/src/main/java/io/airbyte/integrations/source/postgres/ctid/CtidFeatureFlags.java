@@ -10,15 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 // One for each type: CDC and standard cursor based
 public class CtidFeatureFlags {
 
-  public static final String CURSOR_VIA_CTID = "cursor_via_ctid";
   private final JsonNode sourceConfig;
 
   public CtidFeatureFlags(final JsonNode sourceConfig) {
     this.sourceConfig = sourceConfig;
-  }
-
-  public boolean isCursorSyncEnabled() {
-    return getFlagValue(CURSOR_VIA_CTID);
   }
 
   private boolean getFlagValue(final String flag) {
