@@ -11,7 +11,8 @@ from orchestrator.templates.render import (
 )
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.utils.object_helpers import to_json_sanitized_dict
+
+from metadata_service.utils import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 GROUP_NAME = "registry_reports"
