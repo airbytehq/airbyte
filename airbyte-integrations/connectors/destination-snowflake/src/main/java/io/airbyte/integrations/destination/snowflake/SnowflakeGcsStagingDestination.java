@@ -18,6 +18,7 @@ import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
@@ -34,7 +35,6 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeTableDefinition;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -123,7 +123,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
@@ -152,15 +152,18 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
     ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
     TyperDeduper typerDeduper;
+    JdbcDatabase database = getDatabase(getDataSource(config));
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
+      String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+      SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
     } else {
       typerDeduper = new NoopTyperDeduper();
     }
 
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        getDatabase(getDataSource(config)),
+        database,
         new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
