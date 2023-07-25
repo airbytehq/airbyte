@@ -109,11 +109,8 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
 # Source
 class SourceSurveycto(AbstractSource):
-    
-    def _base64_encode(self, string: str) -> str:
-        return base64.b64encode(string.encode("ascii")).decode("ascii")
-    
 
+    
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         
         server_name = config['server_name']
