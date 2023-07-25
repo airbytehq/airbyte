@@ -10,6 +10,8 @@ from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional
 
+import avro.io as ai
+import avro.schema as avro_schema
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -22,22 +24,23 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
+from avro import datafile
 from pydantic import AnyUrl, Field
 
 
 class InMemoryFilesSource(FileBasedSource):
     def __init__(
-            self,
-            files: Mapping[str, Any] ,
-            file_type: str,
-            availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
-            discovery_policy: Optional[AbstractDiscoveryPolicy],
-            validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
-            parsers: Mapping[str, FileTypeParser],
-            stream_reader: Optional[AbstractFileBasedStreamReader],
-            catalog: Optional[Mapping[str, Any]],
-            file_write_options: Mapping[str, Any],
-            max_history_size: int,
+        self,
+        files: Mapping[str, Any],
+        file_type: str,
+        availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
+        discovery_policy: Optional[AbstractDiscoveryPolicy],
+        validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
+        parsers: Mapping[str, FileTypeParser],
+        stream_reader: Optional[AbstractFileBasedStreamReader],
+        catalog: Optional[Mapping[str, Any]],
+        file_write_options: Mapping[str, Any],
+        max_history_size: int,
     ):
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
         availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)  # type: ignore[assignment]
@@ -49,7 +52,7 @@ class InMemoryFilesSource(FileBasedSource):
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
-            max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE
+            max_history_size=max_history_size or DEFAULT_MAX_HISTORY_SIZE,
         )
 
         # Attributes required for test purposes
@@ -63,13 +66,16 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     file_write_options: Optional[Mapping[str, Any]]
 
     def get_matching_files(
-            self,
-            globs: List[str],
+        self,
+        globs: List[str],
     ) -> Iterable[RemoteFile]:
-        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
-            RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), file_type=self.file_type)
-            for f, data in self.files.items()
-        ], globs)
+        yield from AbstractFileBasedStreamReader.filter_files_by_globs(
+            [
+                RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), file_type=self.file_type)
+                for f, data in self.files.items()
+            ],
+            globs,
+        )
 
     def open_file(self, file: RemoteFile) -> IOBase:
         if file.file_type == "csv":
@@ -97,10 +103,10 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
 
         for line in self.files[file_name]["contents"]:
             try:
-                fh.write((json.dumps(line) + '\n').encode("utf-8"))
+                fh.write((json.dumps(line) + "\n").encode("utf-8"))
             except TypeError:
                 # Intentionally trigger json validation error
-                fh.write((str(line) + '\n').encode("utf-8"))
+                fh.write((str(line) + "\n").encode("utf-8"))
         fh.seek(0)
         return fh
 
@@ -137,5 +143,29 @@ class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
             table = pa.Table.from_pandas(df, schema)
             pq.write_table(table, fp)
 
+            fp.seek(0)
+            return fp.read()
+
+
+class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
+    """
+    A file reader that writes RemoteFiles to a temporary file and then reads them back.
+    """
+
+    def open_file(self, file: RemoteFile) -> IOBase:
+        return io.BytesIO(self._make_file_contents(file.uri))
+
+    def _make_file_contents(self, file_name: str) -> bytes:
+        contents = self.files[file_name]["contents"]
+        schema = self.files[file_name]["schema"]
+        stream_schema = avro_schema.make_avsc_object(schema)
+
+        rec_writer = ai.DatumWriter(stream_schema)
+        with tempfile.TemporaryFile() as fp:
+            file_writer = datafile.DataFileWriter(fp, rec_writer, stream_schema)
+            for content in contents:
+                data = {col["name"]: content[i] for i, col in enumerate(schema["fields"])}
+                file_writer.append(data)
+            file_writer.flush()
             fp.seek(0)
             return fp.read()
