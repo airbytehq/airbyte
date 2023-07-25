@@ -33,8 +33,33 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
     success_multi_stream_scenario,
     success_user_provided_schema_scenario,
 )
-from unit_tests.sources.file_based.scenarios.csv_scenarios import *
-
+from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_custom_delimiter_in_double_quotes_scenario,
+    csv_custom_delimiter_with_escape_char_scenario,
+    csv_custom_format_scenario,
+    csv_double_quote_is_set_scenario,
+    csv_escape_char_is_set_scenario,
+    csv_legacy_format_scenario,
+    csv_multi_stream_scenario,
+    csv_newline_in_values_quoted_value_scenario,
+    csv_simple_scenario,
+    csv_single_stream_scenario,
+    csv_skip_after_header_scenario,
+    csv_skip_before_header_scenario,
+    csv_string_can_be_null_with_input_schemas_scenario,
+    csv_string_not_null_if_no_null_values_scenario,
+    csv_strings_can_be_null_not_quoted_scenario,
+    empty_schema_inference_scenario,
+    invalid_csv_scenario,
+    multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_stream_custom_format,
+    schemaless_csv_multi_stream_scenario,
+    schemaless_csv_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
+    schemaless_with_user_input_schema_fails_connection_check_scenario,
+    single_csv_scenario,
+)
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
@@ -244,7 +269,6 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
             assert actual["record"]["stream"] == expected["stream"]
         elif "state" in actual:
             assert actual["state"]["data"] == expected
-
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")

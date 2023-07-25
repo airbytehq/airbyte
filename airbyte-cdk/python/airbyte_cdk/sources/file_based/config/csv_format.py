@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 from typing_extensions import Literal
@@ -49,7 +49,7 @@ class CsvFormat(BaseModel):
     null_values: List[str] = Field(
         title="Null Values",
         default=[],
-        description="A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field."
+        description="A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
     )
     skip_rows_before_header: int = Field(
         title="Skip Rows Before Header",
@@ -57,9 +57,7 @@ class CsvFormat(BaseModel):
         description="The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
     )
     skip_rows_after_header: int = Field(
-        title="Skip Rows After Header",
-        default=0,
-        description="The number of rows to skip after the header row."
+        title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row."
     )
 
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not

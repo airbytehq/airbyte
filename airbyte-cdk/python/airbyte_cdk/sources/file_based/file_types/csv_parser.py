@@ -7,11 +7,11 @@ import json
 import logging
 from distutils.util import strtobool
 from io import IOBase
-from typing import Any, Dict, Iterable, Mapping, Optional, Set, List, IO
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -25,7 +25,6 @@ config_to_quoting: Mapping[QuotingBehavior, int] = {
     QuotingBehavior.QUOTE_NONNUMERIC: csv.QUOTE_NONNUMERIC,
     QuotingBehavior.QUOTE_NONE: csv.QUOTE_NONE,
 }
-
 
 
 class CsvParser(FileTypeParser):
@@ -131,6 +130,7 @@ class CsvParser(FileTypeParser):
     def _skip_rows_before_header(fp: IOBase, rows_to_skip: int) -> None:
         for _ in range(rows_to_skip):
             fp.readline()
+
 
 def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
     """
