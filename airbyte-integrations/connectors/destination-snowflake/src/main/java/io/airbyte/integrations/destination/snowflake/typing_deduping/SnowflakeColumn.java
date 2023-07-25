@@ -1,6 +1,8 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import net.snowflake.client.jdbc.SnowflakeType;
-
-public record SnowflakeColumn(String name, SnowflakeType type) {
+/**
+ * type is notably _not_ a {@link net.snowflake.client.jdbc.SnowflakeType}. That
+ * enum doesn't contain all the types that snowflake supports (specifically NUMBER).
+ */
+public record SnowflakeColumn(String name, String type) {
 }

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import net.snowflake.client.jdbc.SnowflakeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         )).stream()
         .map(column -> new SnowflakeColumn(
             column.get("COLUMN_NAME").asText(),
-            SnowflakeType.valueOf(column.get("DATA_TYPE").asText())))
+            column.get("DATA_TYPE").asText()))
         .toList();
     // TODO query for indexes/partitioning/etc
 
