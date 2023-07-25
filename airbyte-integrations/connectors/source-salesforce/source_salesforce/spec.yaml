@@ -53,9 +53,14 @@ connectionSpecification:
         - "2021-07-25T00:00:00Z"
       format: date-time
       order: 5
+    force_use_bulk_api:
+      type: boolean
+      description: Toggle to Bulk API (this might cause empty fields for some streams)
+      default: false
+      order: 6
     streams_criteria:
       type: array
-      order: 6
+      order: 7
       items:
         type: object
         required:

@@ -21,6 +21,8 @@ from requests import codes, exceptions  # type: ignore[import]
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
 
+logger = logging.getLogger("airbyte")
+
 
 class AirbyteStopSync(AirbyteTracedException):
     pass
@@ -59,13 +61,22 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def _get_api_type(cls, stream_name, properties):
+    def _get_api_type(cls, stream_name: str, properties: dict, force_use_bulk_api: bool) -> str:
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
-        rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        if rest_required:
+        rest_only = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+        logger.info(f"{stream_name=}, object-like and binary properties {properties_not_supported_by_bulk=}")
+        if rest_only:
+            logger.warning(f"BULK API is not supported for stream: {stream_name}")
+            return "rest"
+        if force_use_bulk_api and properties_not_supported_by_bulk:
+            logger.warning(
+                f"Following properties will be excluded from stream: {stream_name} due to BULK API limitations: {list(properties_not_supported_by_bulk)}"
+            )
+            return "bulk"
+        if properties_not_supported_by_bulk:
             return "rest"
         return "bulk"
 
@@ -77,7 +88,6 @@ class SourceSalesforce(AbstractSource):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
-        logger = logging.getLogger()
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -85,7 +95,8 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
-            api_type = cls._get_api_type(stream_name, selected_properties)
+            api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", True))
+            logger.info(f"{stream_name=} is of {api_type=}")
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
@@ -150,5 +161,5 @@ class SourceSalesforce(AbstractSource):
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
-                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
+                raise Exception(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")  # if got 403 rate limit response, finish the sync with success.
             raise error
