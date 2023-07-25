@@ -24,6 +24,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
 
   @Override
   public Optional<SnowflakeTableDefinition> findExistingTable(StreamId id) throws SQLException {
+    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates VARIANT as VARCHAR
     // TODO these names are case-sensitive, make a decision about this https://github.com/airbytehq/airbyte/issues/28638
     List<SnowflakeColumn> columns = database.queryJsons(
         """
