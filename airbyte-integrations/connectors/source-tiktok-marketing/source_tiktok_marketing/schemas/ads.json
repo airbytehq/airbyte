@@ -132,7 +132,7 @@
       "type": ["null", "boolean"]
     },
     "page_id": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "creative_authorized": {
       "type": ["null", "boolean"]
