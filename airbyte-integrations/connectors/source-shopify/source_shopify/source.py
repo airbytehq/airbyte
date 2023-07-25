@@ -20,7 +20,7 @@ from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
-from .utils import EagerlyCachedStreamState as stream_state_cache  # additional mappings/enums; decorators; errors
+from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyNonRetryableErrors
 from .utils import ShopifyRateLimiter as limiter
 from .utils import ShopifyWrongShopNameError
