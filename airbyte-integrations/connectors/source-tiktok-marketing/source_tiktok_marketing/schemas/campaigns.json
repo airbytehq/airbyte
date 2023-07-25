@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "app_id": {
+      "type": "string"
+    },
     "campaign_id": {
       "type": "integer"
     },
@@ -31,6 +34,12 @@
     "objective_type": {
       "type": ["null", "string"]
     },
+    "app_promotion_type": {
+      "type": ["null", "string"]
+    },
+    "campaign_product_source": {
+      "type": ["null", "string"]
+    },
     "budget_optimize_on": {
       "type": ["null", "boolean"]
     },
@@ -48,6 +57,18 @@
     },
     "is_new_structure": {
       "type": "boolean"
+    },
+    "campaign_app_profile_page_state": {
+      "type": ["null", "string"]
+    },
+    "special_industries": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "rf_campaign_type": {
+      "type": ["null", "string"]
     },
     "create_time": {
       "type": "string",
