@@ -5,6 +5,7 @@
 """This module groups util function used in pipelines."""
 from __future__ import annotations
 
+import contextlib
 import datetime
 import json
 import os
@@ -22,7 +23,7 @@ import git
 from ci_connector_ops.pipelines import consts, main_logger
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
-from dagger import Config, Connection, Client, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
@@ -58,6 +59,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     else:
         return False
 
+
 def secret_host_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container.
 
@@ -73,11 +75,10 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     Returns:
         Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
     """
+
     def _secret_host_variable(container: Container):
-        return container.with_secret_variable(
-            name,
-            get_secret_host_variable(client, name, default)
-        )
+        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+
     return _secret_host_variable
 
 
@@ -115,6 +116,17 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     return None
 
 
+@contextlib.contextmanager
+def catch_exec_error_group():
+    try:
+        yield
+    except anyio.ExceptionGroup as eg:
+        for e in eg.exceptions:
+            if isinstance(e, ExecError):
+                raise e
+        raise
+
+
 async def get_container_output(container: Container) -> Tuple[str, str]:
     """Retrieve both stdout and stderr of a container, concurrently.
 
@@ -123,13 +135,11 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
 
     Returns:
         Tuple[str, str]: The stdout and stderr of the container, respectively.
-
-    Raises:
-        ExecError: If the container exit code is not 0.
     """
-    async with asyncer.create_task_group() as task_group:
-        soon_stdout = task_group.soonify(container.stdout)()
-        soon_stderr = task_group.soonify(container.stderr)()
+    with catch_exec_error_group():
+        async with asyncer.create_task_group() as task_group:
+            soon_stdout = task_group.soonify(container.stdout)()
+            soon_stderr = task_group.soonify(container.stderr)()
     return soon_stdout.value, soon_stderr.value
 
 
