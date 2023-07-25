@@ -77,6 +77,7 @@ The Stripe source connector supports the following streams:
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
+- [ShippingRates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
@@ -102,6 +103,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.14.0  | 2023-07-09 | [27217](https://github.com/airbytehq/airbyte/pull/27217) | Add `ShippingRates` stream                                                                                                                           |
 | 3.13.0  | 2023-07-18 | [28466](https://github.com/airbytehq/airbyte/pull/28466) | Pin source API version                                                                                                                               |
 | 3.12.0  | 2023-05-20 | [26208](https://github.com/airbytehq/airbyte/pull/26208) | Add new stream `Persons`                                                                                                                             |
 | 3.11.0  | 2023-06-26 | [27734](https://github.com/airbytehq/airbyte/pull/27734) | License Update: Elv2 stream                                                                                                                          |

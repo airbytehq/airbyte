@@ -580,9 +580,10 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 3.4.0   | 2023-07-13 | [27910](https://github.com/airbytehq/airbyte/pull/27910) | Added `include_deleted` config param - include deleted `ad_groups`, `ad`, `campaigns` to reports |
 | 3.3.1   | 2023-07-06 | [25423](https://github.com/airbytehq/airbyte/pull/25423) | add new fields to ad reports streams                                                          |
-| 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema.                                     |
+| 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema. |
 | 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                              |
 | 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation               |
 | 3.1.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Updated the `Ads` stream schema                                                               |
