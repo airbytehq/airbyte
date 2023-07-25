@@ -31,11 +31,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -168,7 +166,7 @@ class MongoDatabaseTest {
   @Test
   void testGetCollectionStatisticsCommandError() {
     final MongoDatabase mongoDatabase1 = mock(MongoDatabase.class);
-    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock( com.mongodb.client.MongoDatabase.class);
+    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock(com.mongodb.client.MongoDatabase.class);
     final BsonDocument response = new BsonDocument("test", new BsonString("error"));
     when(clientMongoDatabase.runCommand(any())).thenThrow(new MongoCommandException(response, mock(ServerAddress.class)));
     when(mongoDatabase1.getDatabase()).thenReturn(clientMongoDatabase);
@@ -190,7 +188,7 @@ class MongoDatabaseTest {
   @Test
   void testGetServerVersionCommandError() {
     final MongoDatabase mongoDatabase1 = mock(MongoDatabase.class);
-    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock( com.mongodb.client.MongoDatabase.class);
+    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock(com.mongodb.client.MongoDatabase.class);
     final BsonDocument response = new BsonDocument("test", new BsonString("error"));
     when(clientMongoDatabase.runCommand(any())).thenThrow(new MongoCommandException(response, mock(ServerAddress.class)));
     when(mongoDatabase1.getDatabase()).thenReturn(clientMongoDatabase);

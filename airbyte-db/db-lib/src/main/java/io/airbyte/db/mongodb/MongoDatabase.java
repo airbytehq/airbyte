@@ -84,12 +84,12 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       return Collections.EMPTY_SET;
     }
     return MoreIterators.toSet(database.listCollectionNames().iterator()).stream()
-            .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());
+        .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());
   }
 
   public MongoCollection<Document> getCollection(final String collectionName) {
     return database.getCollection(collectionName)
-            .withReadConcern(ReadConcern.MAJORITY);
+        .withReadConcern(ReadConcern.MAJORITY);
   }
 
   public MongoCollection<Document> getOrCreateNewCollection(final String collectionName) {
@@ -115,18 +115,18 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     try {
       final MongoCollection<RawBsonDocument> collection = database.getCollection(collectionName, RawBsonDocument.class);
       final MongoCursor<RawBsonDocument> cursor = collection
-              .find(filter.orElse(new BsonDocument()))
-              .batchSize(BATCH_SIZE)
-              .cursor();
+          .find(filter.orElse(new BsonDocument()))
+          .batchSize(BATCH_SIZE)
+          .cursor();
 
       return getStream(cursor, (document) -> MongoUtils.toJsonNode(document, columnNames))
-              .onClose(() -> {
-                try {
-                  cursor.close();
-                } catch (final Exception e) {
-                  throw new RuntimeException(e.getMessage(), e);
-                }
-              });
+          .onClose(() -> {
+            try {
+              cursor.close();
+            } catch (final Exception e) {
+              throw new RuntimeException(e.getMessage(), e);
+            }
+          });
 
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.getMessage());
@@ -138,7 +138,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     try {
       final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
       return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
-              COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+          COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
     } catch (final MongoCommandException e) {
       LOGGER.warn("Unable to retrieve collection statistics", e);
       return Map.of();
