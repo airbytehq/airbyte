@@ -1,0 +1,49 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'io.airbyte'
+
+// Version is dynamically loaded from version.properties file.
+def props = new Properties()
+file("src/main/resources/version.properties").withInputStream { props.load(it) }
+version = props.getProperty('version')
+description = "Airbyte Java CDK."
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    // maven {
+    //     url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+    //     credentials {
+    //         name 'cloudrepo'
+    //         username System.getenv('CLOUDREPO_USER')
+    //         password System.getenv('CLOUDREPO_PASSWORD')
+    //     }
+    // }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.airbyte'
+            artifactId = 'airbyte-cdk'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        showExceptions = true
+        showCauses = true
+        showStackTraces = false
+        events = ['passed', 'skipped', 'failed']
+    }
+}
