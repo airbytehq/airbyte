@@ -622,7 +622,7 @@ class RequestOption(BaseModel):
     )
     inject_into: InjectInto = Field(
         ...,
-        description="Configures where the descriptor should be set on the HTTP requests.",
+        description="Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.",
         examples=["request_parameter", "header", "body_data", "body_json"],
         title="Inject Into",
     )
@@ -1100,7 +1100,7 @@ class SessionTokenAuthenticator(BaseModel):
     request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
         ...,
         description="Authentication method to use for requests sent to the API, specifying how to inject the session token.",
-        title="Data request authentication",
+        title="Data Request Authentication",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
