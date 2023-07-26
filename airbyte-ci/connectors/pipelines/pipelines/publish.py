@@ -307,8 +307,6 @@ def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishCon
     Non strict-encrypt variant reference the strict-encrypt variant in their metadata file for cloud.
     So if we publish the non strict-encrypt variant first, the metadata upload will fail if the strict-encrypt variant is not published yet.
     As strict-encrypt variant are often modified in the same PR as the non strict-encrypt variant, we want to publish them first.
-    This is an hacky approach: as connector names with -strict-encrypt/secure prefix are longer,
-    they will be sorted first with our reverse sort below.
     """
 
-    return sorted(contexts, key=lambda context: context.connector.technical_name, reverse=True)
+    return sorted(contexts, key=lambda context: ("strict-encrypt" in context.connector.technical_name, context.connector.technical_name), reverse=True)
