@@ -165,7 +165,15 @@ class ChromaLocalIndexer(Indexer):
     def index(self, document_chunks, delete_ids):
         for delete_in in delete_ids:
             self.vectorstore._collection.delete(where={METADATA_RECORD_ID_FIELD: {"$eq": delete_in}})
+        for chunk in document_chunks:
+            self._normalize_metadata(chunk)
         self.vectorstore.add_documents(document_chunks)
+
+    def _normalize_metadata(self, document: Document):
+        for key, value in document.metadata.items():
+            # check bool separately because isinstance(True, int) == True
+            if not isinstance(value, (str, float, int)) or isinstance(value, bool):
+                document.metadata[key] = str(value)
 
     def check(self) -> Optional[str]:
         try:

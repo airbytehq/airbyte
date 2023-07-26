@@ -42,6 +42,20 @@ def test_chroma_local_index_upsert_and_delete():
     indexer.vectorstore.add_documents.assert_called_with(docs)
 
 
+def test_chroma_local_normalize_metadata():
+    indexer = create_chroma_local_indexer()
+    docs = [
+        Document(page_content="test", metadata={"_airbyte_stream": "abc", "a_boolean_value": True}),
+    ]
+    indexer.index(
+        docs,
+        [],
+    )
+    indexer.vectorstore.add_documents.assert_called_with([
+        Document(page_content="test", metadata={"_airbyte_stream": "abc", "a_boolean_value": "True"}),
+    ])
+
+
 def test_chroma_local_index_empty_batch():
     indexer = create_chroma_local_indexer()
     indexer.index(
