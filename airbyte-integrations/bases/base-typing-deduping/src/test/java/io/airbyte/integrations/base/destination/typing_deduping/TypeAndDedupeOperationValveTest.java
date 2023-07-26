@@ -67,33 +67,35 @@ public class TypeAndDedupeOperationValveTest {
   public void testIncrementInterval() {
     final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
     valve.addStream(STREAM_A);
-    IntStream.rangeClosed(1, 10).forEach(i -> {
+    IntStream.rangeClosed(1, 4).forEach(i -> {
       final var index = valve.incrementInterval(STREAM_A);
       Assertions.assertEquals(i, index);
     });
-    Assertions.assertEquals(5, valve.incrementInterval(STREAM_A));
+    Assertions.assertEquals(4, valve.incrementInterval(STREAM_A));
     // Twice to be sure
-    Assertions.assertEquals(5, valve.incrementInterval(STREAM_A));
+    Assertions.assertEquals(4, valve.incrementInterval(STREAM_A));
   }
 
   @Test
   public void testUpdateTimeAndIncreaseInterval() {
     final var valve = new TypeAndDedupeOperationValve(minuteUpdates);
     valve.addStream(STREAM_A);
-    // 2 minutes
-    IntStream.range(0, 2).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
-    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
-    valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 5).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
-    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
-    valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 10).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 1).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
     IntStream.range(0, 15).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 15).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 60).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
+    valve.updateTimeAndIncreaseInterval(STREAM_A);
+    IntStream.range(0, 120).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
+    valve.updateTimeAndIncreaseInterval(STREAM_A);
+    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
+    valve.updateTimeAndIncreaseInterval(STREAM_A);
+    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
 
