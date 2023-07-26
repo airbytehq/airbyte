@@ -7,6 +7,7 @@ package io.airbyte.db.mongodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoConfigurationException;
 import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
@@ -20,6 +21,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.RawBsonDocument;
 import org.bson.conversions.Bson;
@@ -36,6 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
+
+  public static final String COLLECTION_COUNT_KEY = "collectionCount";
+  public static final String COLLECTION_STORAGE_SIZE_KEY = "collectionStorageSize";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
@@ -125,6 +131,30 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.getMessage());
       throw new RuntimeException(e);
+    }
+  }
+
+  public Map<String, Object> getCollectionStats(final String collectionName) {
+    try {
+      final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
+      return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
+          COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+    } catch (final MongoCommandException e) {
+      LOGGER.warn("Unable to retrieve collection statistics", e);
+      return Map.of();
+    }
+  }
+
+  public String getServerType() {
+    return mongoClient.getClusterDescription().getType().name();
+  }
+
+  public String getServerVersion() {
+    try {
+      return getDatabase().runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version").toString();
+    } catch (final MongoCommandException e) {
+      LOGGER.warn("Unable to retrieve server version", e);
+      return null;
     }
   }
 
