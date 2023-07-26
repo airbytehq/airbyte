@@ -8,11 +8,17 @@ import static io.airbyte.db.mongodb.MongoDatabase.COLLECTION_COUNT_KEY;
 import static io.airbyte.db.mongodb.MongoDatabase.COLLECTION_STORAGE_SIZE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.ReadConcern;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -25,6 +31,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
@@ -156,6 +164,19 @@ class MongoDatabaseTest {
   }
 
   @Test
+  void testGetCollectionStatisticsCommandError() {
+    final MongoDatabase mongoDatabase1 = mock(MongoDatabase.class);
+    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock(com.mongodb.client.MongoDatabase.class);
+    final BsonDocument response = new BsonDocument("test", new BsonString("error"));
+    final MongoCommandException error = new MongoCommandException(response, mock(ServerAddress.class));
+    when(clientMongoDatabase.runCommand(any())).thenThrow(error);
+    when(mongoDatabase1.getDatabase()).thenReturn(clientMongoDatabase);
+
+    final Map<String, Object> statistics = mongoDatabase1.getCollectionStats(COLLECTION_NAME);
+    assertTrue(statistics.isEmpty());
+  }
+
+  @Test
   void testGetServerType() {
     assertEquals(ClusterType.UNKNOWN.name(), mongoDatabase.getServerType());
   }
@@ -163,6 +184,18 @@ class MongoDatabaseTest {
   @Test
   void testGetServerVersion() {
     assertEquals(MONGO_DB_VERSION, mongoDatabase.getServerVersion());
+  }
+
+  @Test
+  void testGetServerVersionCommandError() {
+    final MongoDatabase mongoDatabase1 = mock(MongoDatabase.class);
+    final com.mongodb.client.MongoDatabase clientMongoDatabase = mock(com.mongodb.client.MongoDatabase.class);
+    final BsonDocument response = new BsonDocument("test", new BsonString("error"));
+    final MongoCommandException error = new MongoCommandException(response, mock(ServerAddress.class));
+    when(clientMongoDatabase.runCommand(any())).thenThrow(error);
+    when(mongoDatabase1.getDatabase()).thenReturn(clientMongoDatabase);
+
+    assertNull(mongoDatabase1.getServerVersion());
   }
 
 }
