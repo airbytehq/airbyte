@@ -109,4 +109,9 @@ public abstract class AbstractMongoDbStandaloneSourceTest extends AbstractMongoD
         LOGGER.info("Created connection string: {}.", connectionString);
         return connectionString;
     }
+
+    @Override
+    protected List<String> getFieldNames() {
+        return List.of("_id", "title", getCursorField(), "timestamp");
+    }
 }

@@ -13,6 +13,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import org.bson.BsonType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class AbstractMongoDbSourceTest {
 
@@ -129,6 +132,29 @@ public abstract class AbstractMongoDbSourceTest {
         assertEquals(getDataSetSize() - (currentCursorValue + 1), results.size());
     }
 
+    @Test
+    void testDiscover() throws Exception {
+        final AirbyteCatalog catalog = getSource().discover(getConfiguration());
+        assertNotNull(catalog);
+
+        // Validate that a stream exists for the collection
+        final Optional<AirbyteStream> stream = catalog.getStreams().stream()
+                .filter(s -> getCollectionName().equalsIgnoreCase(s.getName()))
+                .findFirst();
+        assertTrue(stream.isPresent());
+
+        // Validate that the stream contains a catalog
+        final JsonNode schema = stream.get().getJsonSchema();
+        assertEquals("object", schema.get("type").asText());
+
+        // Validate that the catalog contains an entry for each field in the collection
+        final JsonNode properties = schema.get("properties");
+        assertNotNull(properties);
+        getFieldNames().forEach(f -> {
+            assertNotNull(properties.get(f));
+        });
+    }
+
     protected abstract void doSetup() throws Exception;
 
     protected abstract void doCleanup() throws Exception;
@@ -140,6 +166,8 @@ public abstract class AbstractMongoDbSourceTest {
     protected abstract String getDatabaseName();
 
     protected abstract Integer getDataSetSize();
+
+    protected abstract List<String> getFieldNames();
 
     protected abstract Integer getFirstMappedPort();
 

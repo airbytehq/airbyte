@@ -2,9 +2,12 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -15,6 +18,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.net.InetAddress;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -40,6 +44,12 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
     private Network network;
     private String networkAlias;
     private String replicaSetId;
+
+    private final RetryPolicy retryPolicy = RetryPolicy.builder()
+            .handle(MongoException.class)
+            .withDelay(Duration.ofSeconds(10))
+            .withMaxRetries(3)
+            .build();
 
     @Override
     protected void doSetup() throws Exception {
@@ -115,9 +125,6 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
                         mongoDbListenPort,
                         "\"printjson(rs.isMaster())\"")).getStderr());
 
-        // Allow time for the replica set to become available
-        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-
         LOGGER.info("Seeding collection '{}.{}' with data...", getDatabaseName(), getCollectionName());
         try (final MongoClient client = createMongoClient(getDatabaseName())) {
             generateDataSet(client);
@@ -141,7 +148,12 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
                         .append("title", "Movie #" + i)
                         .append(getCursorField(), i))
                 .collect(Collectors.toList());
-        collection.insertMany(documents);
+
+        /*
+         * Use a retry policy to avoid a race condition between the execution of this insert
+         * and the setup and configuration of the replica set and network.
+         */
+        Failsafe.with(retryPolicy).run(() -> collection.insertMany(documents));
     }
 
     @Override
@@ -177,5 +189,10 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
                 "?retryWrites=false&replicaSet=" + replicaSetId;
         LOGGER.info("Created replica set URL: {}.", connectionUrl);
         return connectionUrl;
+    }
+
+    @Override
+    protected List<String> getFieldNames() {
+        return List.of("_id", "title", getCursorField());
     }
 }

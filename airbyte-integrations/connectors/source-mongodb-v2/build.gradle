@@ -23,6 +23,7 @@ dependencies {
     testImplementation libs.connectors.testcontainers
     testImplementation libs.docker.java.api
     testImplementation libs.commons.lang3
+    testImplementation libs.failsafe
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
