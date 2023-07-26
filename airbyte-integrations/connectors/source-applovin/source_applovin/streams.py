@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 from typing import Iterable, Mapping, Optional, Any, List
 
@@ -28,6 +29,7 @@ class Campaigns(ApplovinStream):
 class Creatives(HttpSubStream, ApplovinStream):
     primary_key = "id"
     backoff = 120
+    count = 0
 
     def __init__(self, authenticator: TokenAuthenticator, **kwargs):
         super().__init__(
@@ -43,6 +45,8 @@ class Creatives(HttpSubStream, ApplovinStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
+        logging.info("COUNT: " + str(self.count))
+        self.count += 1
         return f"creative_sets/{campaign_id}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
