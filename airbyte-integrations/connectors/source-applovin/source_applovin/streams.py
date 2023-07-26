@@ -41,8 +41,11 @@ class Creatives(HttpSubStream, ApplovinStream):
         return True
 
     def should_retry(self, response: requests.Response) -> bool:
-        logging.warning("Received error: " + str(response.status_code) + " " + response.text)
-        return response.status_code == 429 or 501 <= response.status_code < 600
+        if response.status_code == 429 or 501 <= response.status_code < 600:
+            logging.warning("Received error: " + str(response.status_code) + " " + response.text)
+            return True
+        else:
+            return False
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         sleep(self.backoff)
