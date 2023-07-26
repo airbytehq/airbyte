@@ -52,4 +52,4 @@ The Salesforce connector retrieves deleted records from Salesforce. For the stre
 
 The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream to pull in all the updated values of the field. 
 
-For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Salesforce](https://docs.airbyte.com/integrations/sources/google-analytics-v4).
+For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Salesforce](https://docs.airbyte.com/integrations/sources/salesforce).
