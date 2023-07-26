@@ -404,9 +404,12 @@ class SimpleRetriever(Retriever):
         self,
         response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]],
     ) -> Iterable[StreamData]:
         yield from self._parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+
+    def must_deduplicate_query_params(self) -> bool:
+        return True
 
 
 @dataclass
@@ -433,7 +436,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         self,
         response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]],
     ) -> Iterable[StreamData]:
         if response is not None:
             current_response = response

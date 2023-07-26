@@ -21,6 +21,7 @@ from airbyte_cdk.connector_builder.models import (
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -35,8 +36,6 @@ from airbyte_protocol.models.airbyte_protocol import (
     TraceType,
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
-
-JsonType = Optional[Union[str, int, float, bool, Dict[str, "JsonType"], List["JsonType"]]]
 
 
 class MessageGrouper:
