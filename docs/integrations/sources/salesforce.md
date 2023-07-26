@@ -79,7 +79,7 @@ The Salesforce source connector supports the following sync modes:
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-### Incremental deletes sync
+### Incremental Deletes sync
 
 The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the `isDeleted=true` value in the respective field.
 

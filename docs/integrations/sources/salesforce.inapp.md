@@ -76,7 +76,7 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 
 * If the object has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with.
 
-### Incremental deletes
+### Incremental Deletes
 
 The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the `isDeleted=true` value in the respective field.
 
