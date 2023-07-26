@@ -208,6 +208,44 @@ single_csv_scenario = (
                                                                 "description": "The number of rows to skip after the header row.",
                                                                 "default": 0,
                                                                 "type": "integer"
+                                                            },
+                                                            "autogenerate_column_names": {
+                                                                "title": "Autogenerate Column Names",
+                                                                "description": "Whether to autogenerate column names if column_names is empty. If true, column names will be of the form \u201cf0\u201d, \u201cf1\u201d\u2026 If false, column names will be read from the first CSV row after skip_rows_before_header.",
+                                                                "default": False,
+                                                                "type": "boolean"
+                                                            },
+                                                            "true_values": {
+                                                                "title": "True Values",
+                                                                "description": "A set of strings that should be interpreted as true values.",
+                                                                "default": [
+                                                                    "y",
+                                                                    "yes",
+                                                                    "t",
+                                                                    "true",
+                                                                    "on",
+                                                                    "1"
+                                                                ],
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "false_values": {
+                                                                "title": "False Values",
+                                                                "description": "A set of strings that should be interpreted as false values.",
+                                                                "default": [
+                                                                    "n",
+                                                                    "no",
+                                                                    "f",
+                                                                    "false",
+                                                                    "off",
+                                                                    "0"
+                                                                ],
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
                                                             }
                                                         }
                                                     },
