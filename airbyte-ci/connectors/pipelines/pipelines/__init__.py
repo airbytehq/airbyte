@@ -5,6 +5,7 @@
 """The pipelines package."""
 import logging
 import os
+import sentry_sdk
 
 from rich.logging import RichHandler
 
@@ -19,3 +20,12 @@ if "CI" in os.environ:
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=logging_handlers)
 
 main_logger = logging.getLogger(__name__)
+
+sentry_sdk.init(
+    dsn="https://f2e9aeb6b24b4024b09679201c7f563e@o1009025.ingest.sentry.io/4505596642983936",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+)
