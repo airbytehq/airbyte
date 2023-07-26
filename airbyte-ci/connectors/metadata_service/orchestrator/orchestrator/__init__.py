@@ -17,10 +17,16 @@ from orchestrator.assets import (
     metadata,
 )
 
-from orchestrator.jobs.registry import generate_registry_reports, generate_oss_registry, generate_cloud_registry, generate_registry_entry
+from orchestrator.jobs.registry import (
+    generate_registry_reports,
+    generate_oss_registry,
+    generate_cloud_registry,
+    generate_registry_entry,
+    add_new_metadata_partitions,
+)
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
-from orchestrator.sensors.gcs import new_gcs_blobs_sensor, new_gcs_blobs_partition_sensor
+from orchestrator.sensors.gcs import new_gcs_blobs_sensor
 
 from orchestrator.config import (
     REPORT_FOLDER,
@@ -148,25 +154,21 @@ SENSORS = [
         gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
         interval=(1 * 60 * 60),
     ),
-    new_gcs_blobs_partition_sensor(
-        job=generate_registry_entry,
-        resources_def=METADATA_RESOURCE_TREE,
-        partitions_def=registry_entry.metadata_partitions_def,
-        gcs_blobs_resource_key="all_metadata_file_blobs",
-        interval=(10 * 60),
-    ),
-    new_gcs_blobs_partition_sensor(
-        job=generate_registry_entry,
-        resources_def=METADATA_RESOURCE_TREE,
-        partitions_def=registry_entry.metadata_partitions_def,
-        gcs_blobs_resource_key="latest_metadata_file_blobs",
-        interval=60,
-    ),
 ]
 
-SCHEDULES = [ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly")]
+SCHEDULES = [
+    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="* * * * *"),
+    ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
+]
 
-JOBS = [generate_registry_reports, generate_oss_registry, generate_cloud_registry, generate_registry_entry, generate_nightly_reports]
+JOBS = [
+    generate_registry_reports,
+    generate_oss_registry,
+    generate_cloud_registry,
+    generate_registry_entry,
+    generate_nightly_reports,
+    add_new_metadata_partitions,
+]
 
 """
 START HERE
