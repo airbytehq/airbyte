@@ -5,7 +5,6 @@
 import csv
 import json
 import logging
-from distutils.util import strtobool
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
