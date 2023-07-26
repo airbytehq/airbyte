@@ -41,6 +41,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+  public static final String CDC_OP = "_ab_cdc_op";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
@@ -358,6 +359,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     ((ObjectNode) clone.getData()).remove(CDC_LOG_POS);
     ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
     ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
+    ((ObjectNode) clone.getData()).remove(CDC_OP);
     ((ObjectNode) clone.getData()).remove(CDC_EVENT_SERIAL_NO);
     return clone;
   }

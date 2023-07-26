@@ -85,6 +85,7 @@ public final class PostgresCatalogHelper {
     properties.set(DebeziumEventUtils.CDC_LSN, numberType);
     properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
     properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
+    properties.set(DebeziumEventUtils.CDC_OP, stringType);
 
     return stream;
   }

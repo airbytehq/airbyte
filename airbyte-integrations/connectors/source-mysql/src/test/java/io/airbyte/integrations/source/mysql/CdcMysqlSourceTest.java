@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_OP;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
@@ -155,6 +156,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_LOG_POS));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
+    assertNull(data.get(CDC_OP));
   }
 
   @Override
@@ -162,6 +164,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertNotNull(data.get(CDC_LOG_FILE));
     assertNotNull(data.get(CDC_LOG_POS));
     assertNotNull(data.get(CDC_UPDATED_AT));
+    assertNotNull(data.get(CDC_OP));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
     } else {
@@ -175,6 +178,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     data.remove(CDC_LOG_POS);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
+    data.remove(CDC_OP);
   }
 
   @Override
@@ -189,6 +193,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_OP, stringType);
   }
 
   @Override

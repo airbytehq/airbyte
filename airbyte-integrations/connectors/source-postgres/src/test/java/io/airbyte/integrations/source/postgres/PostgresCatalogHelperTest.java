@@ -85,7 +85,8 @@ class PostgresCatalogHelperTest {
     final JsonNode properties = Jsons.jsonNode(Map.of(
         "_ab_cdc_lsn", Jsons.jsonNode(Map.of("type", "number")),
         "_ab_cdc_updated_at", Jsons.jsonNode(Map.of("type", "string")),
-        "_ab_cdc_deleted_at", Jsons.jsonNode(Map.of("type", "string"))));
+        "_ab_cdc_deleted_at", Jsons.jsonNode(Map.of("type", "string")),
+        "_ab_cdc_op", Jsons.jsonNode(Map.of("type", "string"))));
     final AirbyteStream after = new AirbyteStream()
         .withJsonSchema(Jsons.jsonNode(Map.of("properties", properties)));
 

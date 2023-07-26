@@ -594,6 +594,7 @@ public abstract class CdcSourceTest {
 
     final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
+    System.out.println("here 1 " + stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());
     assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInStateAfterFirstSyncCompletion = stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getStreamStates()
         .stream()
@@ -601,6 +602,7 @@ public abstract class CdcSourceTest {
         .collect(Collectors.toSet());
     assertEquals(1, streamsInStateAfterFirstSyncCompletion.size());
     assertTrue(streamsInStateAfterFirstSyncCompletion.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    System.out.println("Here 2 " + stateMessageEmittedAfterFirstSyncCompletion.getData());
     assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());
 
     assertEquals((MODEL_RECORDS.size()), recordsFromFirstBatch.size());

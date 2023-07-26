@@ -37,7 +37,8 @@ public class DbSourceDiscoverUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(DbSourceDiscoverUtil.class);
   private static final List<String> AIRBYTE_METADATA = Arrays.asList("_ab_cdc_lsn",
       "_ab_cdc_updated_at",
-      "_ab_cdc_deleted_at");
+      "_ab_cdc_deleted_at",
+      "_ab_cdc_op");
 
   /*
    * This method logs schema drift between source table and the catalog. This can happen if (i)
