@@ -7,7 +7,7 @@ import json
 import logging
 from functools import partial
 from io import IOBase
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -104,7 +104,9 @@ class CsvParser(FileTypeParser):
         """
         if schema:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            cast_fn = partial(cast_types, property_types=property_types, config_format=config_format, logger=logger)
+            cast_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] = partial(
+                cast_types, property_types=property_types, config_format=config_format, logger=logger
+            )
         else:
             # If no schema is provided, yield the rows as they are
             cast_fn = _no_cast
@@ -225,6 +227,7 @@ def _value_to_bool(value: str, true_values: List[str], false_values: List[str]) 
 
 def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
     return f"{key}: value={value},expected_type={expected_type}"
+
 
 def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
     return row
