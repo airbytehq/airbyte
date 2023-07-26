@@ -110,6 +110,7 @@ runs:
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        SENTRY_DSN: "https://f2e9aeb6b24b4024b09679201c7f563e@o1009025.ingest.sentry.io/4505596642983936"
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}

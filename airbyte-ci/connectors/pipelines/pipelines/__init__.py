@@ -21,11 +21,5 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 
 main_logger = logging.getLogger(__name__)
 
-sentry_sdk.init(
-    dsn="https://f2e9aeb6b24b4024b09679201c7f563e@o1009025.ingest.sentry.io/4505596642983936",
-
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0,
-)
+if os.environ.get("SENTRY_DSN", None):
+    sentry_sdk.init(dsn=os.environ["SENTRY_DSN"])
