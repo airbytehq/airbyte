@@ -45,3 +45,12 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-gcs')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
+
+
+
+
+
+
+
+
+
