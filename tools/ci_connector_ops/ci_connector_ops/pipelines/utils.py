@@ -5,8 +5,10 @@
 """This module groups util function used in pipelines."""
 from __future__ import annotations
 
+import contextlib
 import datetime
 import json
+import os
 import re
 import sys
 import unicodedata
@@ -21,7 +23,7 @@ import git
 from ci_connector_ops.pipelines import consts, main_logger
 from ci_connector_ops.pipelines.consts import GCS_PUBLIC_DOMAIN
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
-from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
+from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
@@ -58,6 +60,42 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return False
 
 
+def secret_host_variable(client: Client, name: str, default: str = ""):
+    """Add a host environment variable as a secret in a container.
+
+    Example:
+        >>> container.with_(secret_host_variable(client, "MY_SECRET"))
+
+    Args:
+        client (Client): The dagger client.
+        name (str): The name of the environment variable. The same name will be
+            used in the container, for the secret name and for the host variable.
+        default (str): The default value to use if the host variable is not set. Defaults to "".
+
+    Returns:
+        Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
+    """
+
+    def _secret_host_variable(container: Container):
+        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+
+    return _secret_host_variable
+
+
+def get_secret_host_variable(client: Client, name: str, default: str = "") -> Secret:
+    """Creates a dagger.Secret from a host environment variable.
+
+    Args:
+        client (Client): The dagger client.
+        name (str): The name of the environment variable. The same name will be used for the secret.
+        default (str): The default value to use if the host variable is not set. Defaults to "".
+
+    Returns:
+        Secret: A dagger secret.
+    """
+    return client.set_secret(name, os.environ.get(name, default))
+
+
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
 async def get_file_contents(container: Container, path: str) -> Optional[str]:
     """Retrieve a container file contents.
@@ -73,18 +111,59 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
         return await container.file(path).contents()
     except QueryError as e:
         if "no such file or directory" not in str(e):
-            # this is the hicky bit of the stopgap because
             # this error could come from a network issue
             raise
     return None
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
+@contextlib.contextmanager
+def catch_exec_error_group():
+    try:
+        yield
+    except anyio.ExceptionGroup as eg:
+        for e in eg.exceptions:
+            if isinstance(e, ExecError):
+                raise e
+        raise
+
+
+async def get_container_output(container: Container) -> Tuple[str, str]:
+    """Retrieve both stdout and stderr of a container, concurrently.
+
+    Args:
+        container (Container): The container to execute.
+
+    Returns:
+        Tuple[str, str]: The stdout and stderr of the container, respectively.
+    """
+    with catch_exec_error_group():
+        async with asyncer.create_task_group() as task_group:
+            soon_stdout = task_group.soonify(container.stdout)()
+            soon_stderr = task_group.soonify(container.stderr)()
+    return soon_stdout.value, soon_stderr.value
+
+
+async def get_exec_result(container: Container) -> Tuple[int, str, str]:
+    """Retrieve the exit_code along with stdout and stderr of a container by handling the ExecError.
+
+    Note: It is preferrable to not worry about the exit code value and just capture
+    ExecError to handle errors. This is offered as a convenience when the exit code
+    value is actually needed.
+
+    Args:
+        container (Container): The container to execute.
+
+    Returns:
+        Tuple[int, str, str]: The exit_code, stdout and stderr of the container, respectively.
+    """
+    try:
+        return 0, *(await get_container_output(container))
+    except ExecError as e:
+        return e.exit_code, e.stdout, e.stderr
+
+
 async def with_exit_code(container: Container) -> int:
     """Read the container exit code.
-
-    If the exit code is not 0 a QueryError is raised. We extract the non-zero exit code from the QueryError message.
 
     Args:
         container (Container): The container from which you want to read the exit code.
@@ -93,37 +172,26 @@ async def with_exit_code(container: Container) -> int:
         int: The exit code.
     """
     try:
-        await container.exit_code()
-    except QueryError as e:
-        error_message = str(e)
-        if "exit code: " in error_message:
-            exit_code = re.search(r"exit code: (\d+)", error_message)
-            if exit_code:
-                return int(exit_code.group(1))
-            else:
-                return 1
-        raise
+        await container
+    except ExecError as e:
+        return e.exit_code
     return 0
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
 async def with_stderr(container: Container) -> str:
-    """Retrieve the stderr of a container and handle unexpected errors."""
+    """Retrieve the stderr of a container even on execution error."""
     try:
         return await container.stderr()
-    except QueryError as e:
-        return str(e)
+    except ExecError as e:
+        return e.stderr
 
 
-# This is a stop-gap solution to capture non 0 exit code on Containers
-# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
 async def with_stdout(container: Container) -> str:
-    """Retrieve the stdout of a container and handle unexpected errors."""
+    """Retrieve the stdout of a container even on execution error."""
     try:
         return await container.stdout()
-    except QueryError as e:
-        return str(e)
+    except ExecError as e:
+        return e.stdout
 
 
 def get_current_git_branch() -> str:  # noqa D103
@@ -244,12 +312,14 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     """Check if the provided file has an ignored extension."""
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
+
 def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
     """Check if the file path starts with the connector dependency path."""
     given_file_path_parts = given_file_path.parts
     starts_with_path_parts = starts_with_path.parts
 
-    return given_file_path_parts[:len(starts_with_path_parts)] == starts_with_path_parts
+    return given_file_path_parts[: len(starts_with_path_parts)] == starts_with_path_parts
+
 
 def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
     """Find all connectors whose dependencies were modified."""
@@ -271,6 +341,7 @@ def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) ->
 
     return modified_connectors
 
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -279,10 +350,7 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    all_connector_dependencies = [
-        (connector, connector.get_local_dependency_paths())
-        for connector in get_all_released_connectors()
-    ]
+    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
 
     # Ignore files with certain extensions
     modified_files = [file for file in modified_files if not _is_ignored_file(file)]
