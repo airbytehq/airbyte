@@ -299,6 +299,12 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
             print(f"WARNING: Could not parse metadata definition for {metadata_blob.name}. Error: {e}")
             return None
 
+# LOGGING lifecycle
+
+def notification_log(context: OpExecutionContext, message: str, level: str = "info"):
+    slack_webhook_url = os.getenv("PUBLISH_UPDATE_SLACK_WEBHOOK_URL")
+    if slack_webhook_url:
+        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
 
 # ASSETS
 
