@@ -38,8 +38,8 @@ structlog = "^23.1.0"
 [package.source]
 type = "git"
 url = "https://github.com/airbytehq/aircmd.git"
-reference = "a3fb9a5d37d1456e949e388818ebc3da8872d63c"
-resolved_reference = "a3fb9a5d37d1456e949e388818ebc3da8872d63c"
+reference = "1b804386a51a9c5c20dc7c866708a5a7a28c35aa"
+resolved_reference = "1b804386a51a9c5c20dc7c866708a5a7a28c35aa"
 
 [[package]]
 name = "alembic"
@@ -2653,4 +2653,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5e4f2728fe119aa325ee8e49ad91c875aa814ed01d80256c5ef506e369b9dbb6"
+content-hash = "d296e8e8b0b74ea3b0a119efc1481dae5c9c37a5b1ff324f157996193493b601"
