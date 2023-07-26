@@ -141,14 +141,14 @@ class AdaptiveExportAccounts(Adaptive):
             "isGroup": data_obj.get("@isGroup",""),
             "hasFormula": data_obj.get("@hasFormula",""),
             "attributes": self.parse_attributes(data_obj.get("attributes","")),
-            "parent_id": data_obj.get("id",""),
-            "parent_code": data_obj.get("code",""),
-            "parent_name": data_obj.get("name",""),
+            "parent_id": parent_obj.get("parent_id",""),
+            "parent_code": parent_obj.get("parent_code",""),
+            "parent_name": parent_obj.get("parent_name",""),
         }
         # create a list of airbyte_messages
 
         parent_obj={
-                "id":data["id"],
+                "parent_id":data["id"],
                 "parent_code":data["code"],
                 "parent_name":data["name"],
                 }
@@ -175,4 +175,4 @@ class AdaptiveExportAccounts(Adaptive):
         for response in self.perform_request():
             response_data = self.get_data_from_response(response)
             for row in response_data["accounts"]["account"]:
-                yield from self.parse_account_row(data_obj=row,parent_obj=None)
+                yield from self.parse_account_row(data_obj=row,parent_obj={})
