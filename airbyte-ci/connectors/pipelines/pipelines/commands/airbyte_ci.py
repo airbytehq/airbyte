@@ -7,6 +7,7 @@
 from typing import List
 
 import click
+import sentry_sdk
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -132,6 +133,8 @@ def airbyte_ci(
         main_logger.info(f"Pull Request Number: {pull_request_number}")
         main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
+
+    sentry_sdk.set_context("click", ctx.obj)
 
 
 airbyte_ci.add_command(connectors)
