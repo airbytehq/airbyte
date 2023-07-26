@@ -4,6 +4,7 @@ version = "0.0.1"
 description = ""
 authors = []
 readme = "README.md"
+packages = [{include = "cdk"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
