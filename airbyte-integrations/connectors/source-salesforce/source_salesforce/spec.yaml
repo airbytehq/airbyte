@@ -87,8 +87,7 @@ connectionSpecification:
             title: Search value
             order: 2
       title: Filter Salesforce Objects
-      description: >-
-        Filter streams relevant to you
+      description: Add filters to select only required stream based on `SObject` name. See the docs for more information.
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
