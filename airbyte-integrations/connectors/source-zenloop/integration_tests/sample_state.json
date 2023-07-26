@@ -2,15 +2,43 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "inserted_at": "2021-08-18T08:35:49.540Z" },
-      "stream_descriptor": { "name": "answers" }
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "WlRBek9ESTFNREl0TmpJMk9DMDBOR0V4TFRoaE16UXRZV1UyWW1SbU56WTNPVGRs",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "inserted_at": "2021-08-18T08:35:49.540Z"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "answers"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "inserted_at": "2021-08-18T08:35:49.540Z" },
-      "stream_descriptor": { "name": "answers_survey_group" }
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "TnpKaE1UVmhObUV0WkdFME15MDBZMkUyTFRsalpXRXROamt5TkRVd05EZzVOelEy",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "inserted_at": "2021-08-18T08:35:49.540Z"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "answers_survey_group"
+      }
     }
   }
 ]

@@ -78,7 +78,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
-    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
+    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog), null);
     this.isCdc = dbState.getCdc();
     if (dbState.getCdc() == null) {
       this.isCdc = false;
@@ -101,7 +101,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         .withCdc(isCdc)
         .withCdcState(getCdcStateManager().getCdcState());
 
-    LOGGER.info("Generated legacy state for {} streams", dbState.getStreams().size());
+    LOGGER.debug("Generated legacy state for {} streams", dbState.getStreams().size());
     return new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
   }
 

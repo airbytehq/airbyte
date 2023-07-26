@@ -323,7 +323,9 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
-    context = mocker.MagicMock(pre_release=pre_release, )
+    context = mocker.MagicMock(
+        pre_release=pre_release,
+    )
     semaphore = anyio.Semaphore(1)
     report = await publish.run_connector_publish_pipeline(context, semaphore)
 

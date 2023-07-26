@@ -125,7 +125,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
-        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation).*?project\(['\"](.*?)['\"]\)",
+        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
         dependencies_block,
     )
     if matches:
@@ -198,8 +198,21 @@ class Connector:
         return self._get_type_and_name_from_technical_name()[0]
 
     @property
+    def documentation_directory(self) -> Path:
+        return Path(f"./docs/integrations/{self.connector_type}s")
+
+    @property
     def documentation_file_path(self) -> Path:
-        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}.md")
+        readme_file_name = f"{self.name}.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
+    def migration_guide_file_name(self) -> str:
+        return f"{self.name}-migrations.md"
+
+    @property
+    def migration_guide_file_path(self) -> Path:
+        return self.documentation_directory / self.migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:
@@ -256,6 +269,10 @@ class Connector:
         )
 
     @property
+    def name_from_metadata(self) -> Optional[str]:
+        return self.metadata.get("name") if self.metadata else None
+
+    @property
     def release_stage(self) -> Optional[str]:
         return self.metadata.get("releaseStage") if self.metadata else None
 
@@ -301,13 +318,13 @@ class Connector:
         return self.technical_name
 
     @functools.lru_cache(maxsize=2)
-    def get_local_dependencies_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = [self.code_directory]
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )
-        return set(dependencies_paths)
+        return sorted(list(set(dependencies_paths)))
 
 
 def get_changed_connectors(

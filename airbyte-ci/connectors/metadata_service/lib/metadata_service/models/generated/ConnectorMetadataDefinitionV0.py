@@ -88,7 +88,7 @@ class VersionBreakingChange(BaseModel):
     )
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
-        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}/migration_guide#${version}",
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
 
 
@@ -128,7 +128,7 @@ class ConnectorReleases(BaseModel):
     breakingChanges: ConnectorBreakingChanges
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
-        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}/migration_guide",
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
     )
 
 
@@ -160,6 +160,9 @@ class Registry(BaseModel):
 
 
 class Data(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
     name: str
     icon: Optional[str] = None
     definitionId: UUID
@@ -187,7 +190,7 @@ class Data(BaseModel):
     ]
     releaseStage: Literal["alpha", "beta", "generally_available", "source"]
     tags: Optional[List[str]] = Field(
-        None,
+        [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     registries: Optional[Registry] = None

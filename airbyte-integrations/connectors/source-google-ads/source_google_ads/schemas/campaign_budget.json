@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign_budget.aligned_bidding_strategy_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.amount_micros": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.delivery_method": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "campaign_budget.explicitly_shared": {
+      "type": ["null", "boolean"]
+    },
+    "campaign_budget.has_recommended_budget": {
+      "type": ["null", "boolean"]
+    },
+    "campaign_budget.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.name": {
+      "type": ["null", "string"]
+    },
+    "campaign_budget.period": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "campaign_budget.recommended_budget_amount_micros": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.recommended_budget_estimated_change_weekly_clicks": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.recommended_budget_estimated_change_weekly_cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.recommended_budget_estimated_change_weekly_interactions": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.recommended_budget_estimated_change_weekly_views": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.reference_count": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.resource_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_budget.status": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "campaign_budget.total_amount_micros": {
+      "type": ["null", "integer"]
+    },
+    "campaign_budget.type": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "segments.date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "segments.budget_campaign_association_status.campaign": {
+      "type": ["null", "string"]
+    },
+    "segments.budget_campaign_association_status.status": {
+      "type": ["null", "array"],
+      "items": {
+      "type": ["null", "string"]
+      }
+    },
+    "metrics.all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpe": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpv": {
+      "type": ["null", "number"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cross_device_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagement_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagements": {
+      "type": ["null", "integer"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.interaction_event_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "metrics.interaction_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.value_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_view_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_views": {
+      "type": ["null", "integer"]
+    },
+    "metrics.view_through_conversions": {
+      "type": ["null", "integer"]
+    }
+  }
+}
