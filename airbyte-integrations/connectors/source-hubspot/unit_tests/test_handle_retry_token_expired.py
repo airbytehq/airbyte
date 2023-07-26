@@ -1,10 +1,14 @@
-import backoff
-import requests
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
 import pytest
-from source_hubspot.streams import Stream, API
+import requests
 from source_hubspot.errors import HubspotInvalidAuth
+from source_hubspot.streams import Stream
 
 
 # Define a mock function to be used with backoff.on_exception
