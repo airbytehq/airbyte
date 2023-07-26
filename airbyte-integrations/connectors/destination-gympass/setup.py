@@ -14,8 +14,8 @@ TEST_REQUIREMENTS = ["pytest~=6.2"]
 setup(
     name="destination_gympass",
     description="Destination implementation for Gympass.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Thrive Global DataEng",
+    author_email="data-engineering@thriveglobal.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
