@@ -18,7 +18,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 
 This project requires Python 3.10 and pipx.
 
-## Installation
+## General Installation
 
 The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
@@ -39,12 +39,24 @@ This command installs `airbyte-ci` and makes it globally available in your termi
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
-### Installation for development
+## Installation for development
+
+#### Pre-requisites
+* Poetry >= 1.1.8
+* Python >= 3.10
+
+#### Installation
+
 If you are developing on pipelines, we recommend installing airbyte-ci in editable mode:
 
 ```bash
-pipx install airbyte-ci/connectors/pipelines/ --force --editable
+cd airbyte-ci/connectors/pipelines/
+poetry install
+poetry shell
+cd ../../
 ```
+
+At this point you can run `airbyte-ci` commands from the root of the repository.
 
 ## Commands reference
 - [`airbyte-ci` command group](#airbyte-ci)

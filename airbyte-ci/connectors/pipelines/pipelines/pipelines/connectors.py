@@ -12,6 +12,7 @@ import dagger
 from pipelines.actions import environments
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
+from pipelines.utils import create_and_open_file
 from connector_ops.utils import ConnectorLanguage
 from dagger import Config
 
@@ -80,7 +81,7 @@ async def run_connectors_pipelines(
     """Run a connector pipeline for all the connector contexts."""
 
     default_connectors_semaphore = anyio.Semaphore(concurrency)
-    dagger_logs_output = sys.stderr if not dagger_logs_path else open(dagger_logs_path, "w")
+    dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
         # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
         # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state

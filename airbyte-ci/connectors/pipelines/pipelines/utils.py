@@ -12,9 +12,11 @@ import os
 import re
 import sys
 import unicodedata
+
 from glob import glob
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
+from io import TextIOWrapper
 
 import anyio
 import asyncer
@@ -429,6 +431,20 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
         raise Exception("Could not get the version from the Dockerfile labels.")
 
 
+def create_and_open_file(file_path: Path) -> TextIOWrapper:
+    """Create a file and open it for writing.
+
+    Args:
+        file_path (Path): The path to the file to create.
+
+    Returns:
+        File: The file object.
+    """
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.touch()
+    return file_path.open("w")
+
+
 class DaggerPipelineCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
@@ -449,9 +465,7 @@ class DaggerPipelineCommand(click.Command):
         try:
             if not ctx.obj["show_dagger_logs"]:
                 dagger_log_dir = Path(f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}")
-                dagger_log_dir.mkdir(parents=True, exist_ok=True)
                 dagger_log_path = Path(f"{dagger_log_dir}/dagger.log").resolve()
-                dagger_log_path.touch()
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
                 if ctx.obj["is_ci"]:

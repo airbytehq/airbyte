@@ -42,7 +42,7 @@ class PipelineContext:
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
     DEFAULT_EXCLUDED_FILES = (
-        [".git", "airbyte-ci/connector_ops/pipeline_reports/*", "airbyte-ci/connector_ops/connector_ops/pipelines/*"]
+        [".git", "airbyte-ci/connectors/pipelines/*"]
         + glob("**/build", recursive=True)
         + glob("**/.venv", recursive=True)
         + glob("**/secrets", recursive=True)
