@@ -38,7 +38,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class    MongoDatabase extends AbstractDatabase implements AutoCloseable {
+public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
 
   public static final String COLLECTION_COUNT_KEY = "collectionCount";
   public static final String COLLECTION_STORAGE_SIZE_KEY = "collectionStorageSize";
