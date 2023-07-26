@@ -42,7 +42,7 @@ def test_source_streams():
     with open("sample_files/config.json") as f:
         config = json.load(f)
     streams = SourceStripe().streams(config=config)
-    assert len(streams) == 48
+    assert len(streams) == 45
 
 
 @pytest.fixture(name="config")
@@ -69,3 +69,9 @@ def test_source_check_connection_failure(mocked_client, config, logger_mock):
     mocked_client.Account.retrieve = Mock(side_effect=exception)
     assert SourceStripe().check_connection(
         logger_mock, config=config) == (False, exception)
+
+
+@patch.object(source_stripe.source, "stripe")
+def test_streams_are_unique(mocked_client, config):
+    streams = [s.name for s in SourceStripe().streams(config)]
+    assert sorted(streams) == sorted(set(streams))
