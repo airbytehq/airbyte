@@ -76,7 +76,7 @@ public record StreamId(String finalNamespace,
       longestUnderscoreRun = Math.max(longestUnderscoreRun, underscoreRun);
     }
 
-    return namespace + "_ab" + "_".repeat(longestUnderscoreRun + 1) + "ab_" + name;
+    return namespace + "_raw" + "_".repeat(longestUnderscoreRun + 1) + "stream_" + name;
   }
 
 }

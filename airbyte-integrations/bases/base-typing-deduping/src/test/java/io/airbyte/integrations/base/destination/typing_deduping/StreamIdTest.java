@@ -19,8 +19,9 @@ class StreamIdTest {
     String stream1 = StreamId.concatenateRawTableName("aaa_abab_bbb", "ccc");
     String stream2 = StreamId.concatenateRawTableName("aaa", "bbb_abab_ccc");
 
-    assertEquals("aaa_abab_bbb_ab__ab_ccc", stream1);
-    assertEquals("aaa_ab__ab_bbb_abab_ccc", stream2);
+    assertAll(
+        () -> assertEquals("aaa_abab_bbb_raw__stream_ccc", stream1),
+        () -> assertEquals("aaa_raw__stream_bbb_abab_ccc", stream2));
   }
 
 }
