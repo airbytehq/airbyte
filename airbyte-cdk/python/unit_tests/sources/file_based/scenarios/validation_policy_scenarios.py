@@ -231,8 +231,8 @@ skip_record_scenario_single_stream = (
             },
             {
                 "level": "WARN",
-                "message": "Records in file did not pass validation policy. stream=stream1 file=c.csv n_skipped=1 validation_policy=skip_record"
-            }
+                "message": "Records in file did not pass validation policy. stream=stream1 file=c.csv n_skipped=1 validation_policy=skip_record",
+            },
         ]
     })
 ).build()
