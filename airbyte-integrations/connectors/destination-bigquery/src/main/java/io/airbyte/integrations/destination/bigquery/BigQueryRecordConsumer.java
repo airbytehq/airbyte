@@ -12,9 +12,10 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -46,12 +47,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
+  private final BigQueryV1V2Migrator bigQueryV1V2Migrator;
+
   public BigQueryRecordConsumer(final BigQuery bigquery,
                                 final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String defaultDatasetId,
                                 TyperDeduper typerDeduper,
-                                final ParsedCatalog catalog) {
+                                final ParsedCatalog catalog,
+                                final BigQueryV1V2Migrator bigQueryV1V2Migrator) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
@@ -59,6 +63,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.typerDeduper = typerDeduper;
     this.catalog = catalog;
     this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
+    this.bigQueryV1V2Migrator = bigQueryV1V2Migrator;
 
     LOGGER.info("Got parsed catalog {}", catalog);
     LOGGER.info("Got canonical stream IDs {}", uploaderMap.keySet());
@@ -73,6 +78,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
         StreamConfig stream = catalog.getStream(streamId);
+        bigQueryV1V2Migrator.migrateIfNecessary(stream.syncMode(), stream.destinationSyncMode(), stream, )
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // For streams in overwrite mode, truncate the raw table.
           // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in

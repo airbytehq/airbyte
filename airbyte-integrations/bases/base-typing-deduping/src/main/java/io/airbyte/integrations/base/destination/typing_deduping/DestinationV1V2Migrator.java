@@ -7,6 +7,7 @@ import io.airbyte.protocol.models.v1.DestinationSyncMode;
 import io.airbyte.protocol.models.v1.SyncMode;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,8 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         final SqlGenerator<DialectTableDefinition> sqlGenerator,
         final DestinationHandler<DialectTableDefinition> destinationHandler,
         final StreamConfig streamConfig,
-        NameAndNamespacePair v1RawNameNamespacePair) throws Exception {
+        // TODO replace all of these with AirbyteStreamNameNamespacePair?
+        NameAndNamespacePair v1RawNameNamespacePair) {
         if (shouldMigrate(syncMode, destinationSyncMode, streamConfig, v1RawNameNamespacePair)) {
             LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
             return Optional.of(migrate(sqlGenerator, destinationHandler, streamConfig, v1RawNameNamespacePair));
@@ -55,8 +57,7 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         return schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V1_COLUMNS);
     }
 
-    default boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable)
-        throws Exception {
+    default boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
         if (!schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V2_COLUMNS)) {
             throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
         } else {
@@ -68,7 +69,7 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         return !(SyncMode.FULL_REFRESH.equals(syncMode) && DestinationSyncMode.OVERWRITE.equals(destinationSyncMode));
     }
 
-    default boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) throws Exception {
+    default boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) {
         if (doesAirbyteNamespaceExist(streamConfig)) {
             final var existingV2Table = getTableIfExists(new NameAndNamespacePair(streamConfig.id().rawNamespace(), streamConfig.id().rawName()));
             return existingV2Table.isPresent() && doesAirbyteNamespaceRawTableMatchExpectedV2Schema(existingV2Table.get());
@@ -82,11 +83,17 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
     }
 
     default boolean shouldMigrate(SyncMode syncMode,
-                                  DestinationSyncMode destinationSyncMode,
-                                  final StreamConfig streamConfig,
-                                  NameAndNamespacePair v1RawNameNamespacePair) throws Exception {
+        DestinationSyncMode destinationSyncMode,
+        final StreamConfig streamConfig,
+        NameAndNamespacePair v1RawNameNamespacePair) {
         return isMigrationRequiredForSyncMode(syncMode, destinationSyncMode)
-                && !doesValidV2RawTableAlreadyExist(streamConfig)
-                && doesValidV1RawTableExist(v1RawNameNamespacePair);
+            && !doesValidV2RawTableAlreadyExist(streamConfig)
+            && doesValidV1RawTableExist(v1RawNameNamespacePair);
+    }
+
+    default NameAndNamespacePair convertToV1RawName(StreamConfig streamConfig, Function<String, String> namespaceMangler,
+        Function<String, String> tableNameMangler) {
+        return new NameAndNamespacePair(namespaceMangler.apply(streamConfig.id().originalNamespace()),
+            tableNameMangler.apply(streamConfig.id().originalName()));
     }
 }

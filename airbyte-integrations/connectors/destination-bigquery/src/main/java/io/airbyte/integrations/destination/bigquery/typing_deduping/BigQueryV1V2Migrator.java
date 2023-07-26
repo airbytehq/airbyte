@@ -7,8 +7,11 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationV1V2Migrator;
+import io.airbyte.integrations.base.destination.typing_deduping.MigrationResult;
 import io.airbyte.integrations.base.destination.typing_deduping.NameAndNamespacePair;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.protocol.models.v1.DestinationSyncMode;
+import io.airbyte.protocol.models.v1.SyncMode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -18,9 +21,19 @@ import java.util.stream.Collectors;
 public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefinition> {
 
   private final BigQuery bq;
+  private final BigQuerySqlGenerator bQsqlGenerator;
+  private final BigQueryDestinationHandler bQdestinationHandler;
 
-  public BigQueryV1V2Migrator(final BigQuery bq) {
+  public BigQueryV1V2Migrator(final BigQuery bq, BigQuerySqlGenerator bqSqlGenerator, BigQueryDestinationHandler bQdestinationHandler) {
     this.bq = bq;
+    this.bQsqlGenerator = bqSqlGenerator;
+    this.bQdestinationHandler = bQdestinationHandler;
+  }
+
+  public Optional<MigrationResult> migrateIfNecessary(SyncMode syncMode, DestinationSyncMode destinationSyncMode, StreamConfig streamConfig,
+      NameAndNamespacePair v1RawTableNameAndNamespace) {
+    return migrateIfNecessary(syncMode, destinationSyncMode, this.bQsqlGenerator, this.bQdestinationHandler, streamConfig,
+        v1RawTableNameAndNamespace);
   }
 
   @Override
