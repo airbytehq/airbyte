@@ -188,10 +188,17 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
     mock_documentation_directory_path = Path(tmp_path)
     mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
 
-    mock_metadata_dict = {"documentationUrl": tmp_path, "releases": {"breakingChanges": {"2.0.0": {
-        "upgradeDeadline": "2021-01-01",
-        "message": "This is a breaking change",
-    }}}}
+    mock_metadata_dict = {
+        "documentationUrl": tmp_path,
+        "releases": {
+            "breakingChanges": {
+                "2.0.0": {
+                    "upgradeDeadline": "2021-01-01",
+                    "message": "This is a breaking change",
+                }
+            }
+        },
+    }
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
     assert qa_checks.check_migration_guide(connector) == False
@@ -200,21 +207,16 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
 
 
 @pytest.mark.parametrize(
-    "test_file, expected_stdout", [
+    "test_file, expected_stdout",
+    [
         ("bad-header.md", "has incorrect version headings"),
         ("out-of-order.md", "has incorrect version headings"),
         ("missing-entry.md", "has incorrect version headings"),
         ("bad-title.md", "does not start with the correct header"),
         ("extra-header.md", "has incorrect version headings"),
-    ]
+    ],
 )
-def test_check_invalid_migration_guides(
-        mocker,
-        tmp_path,
-        capsys,
-        test_file,
-        expected_stdout
-):
+def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, expected_stdout):
     connector = qa_checks.Connector("source-foobar")
     mock_documentation_directory_path = Path(tmp_path)
     mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)

@@ -83,10 +83,8 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
 
-    return await (
-        ci_credentials.with_directory(secrets_path, context.updated_secrets_dir).with_exec(
-            ["ci_credentials", context.connector.technical_name, "update-secrets"]
-        )
+    return await ci_credentials.with_directory(secrets_path, context.updated_secrets_dir).with_exec(
+        ["ci_credentials", context.connector.technical_name, "update-secrets"]
     )
 
 

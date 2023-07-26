@@ -126,6 +126,7 @@ async def with_installed_pipx_package(
 
     return container
 
+
 def with_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -146,11 +147,7 @@ def with_python_package(
     """
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
     work_dir_path = f"/{package_source_code_path}"
-    container = (
-        python_environment
-        .with_mounted_directory(work_dir_path, package_source_code_directory)
-        .with_workdir(work_dir_path)
-    )
+    container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory).with_workdir(work_dir_path)
     return container
 
 
@@ -271,20 +268,21 @@ async def find_local_dependencies_in_pyproject_toml(
 
     pyproject_content = toml.loads(pyproject_content_raw)
     local_dependency_paths = []
-    for dep, value in pyproject_content['tool']['poetry']['dependencies'].items():
-        if isinstance(value, dict) and 'path' in value:
-            local_dependency_path = Path(value['path'])
+    for dep, value in pyproject_content["tool"]["poetry"]["dependencies"].items():
+        if isinstance(value, dict) and "path" in value:
+            local_dependency_path = Path(value["path"])
             pyproject_file_path = Path(pyproject_file_path)
             local_dependency_path = str((pyproject_file_path / local_dependency_path).resolve().relative_to(Path.cwd()))
             local_dependency_paths.append(local_dependency_path)
 
             # Ensure we parse the child dependencies
             # TODO handle more than pyproject.toml
-            child_local_dependencies = await find_local_dependencies_in_pyproject_toml(context, base_container, local_dependency_path, exclude=exclude)
+            child_local_dependencies = await find_local_dependencies_in_pyproject_toml(
+                context, base_container, local_dependency_path, exclude=exclude
+            )
             local_dependency_paths += child_local_dependencies
 
     return local_dependency_paths
-
 
 
 async def with_installed_python_package(
@@ -626,6 +624,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
     image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
     return image_sha
+
 
 def with_pipx(base_python_container: Container) -> Container:
     """Installs pipx in a python container.
