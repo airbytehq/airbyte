@@ -37,6 +37,12 @@ class Creatives(HttpSubStream, ApplovinStream):
             parent=Campaigns(authenticator=authenticator),
         )
 
+    def use_cache(self):
+        return True
+
+    def should_retry(self, response: requests.Response) -> bool:
+        logging.warning("Received error: " + str(response.status_code) + " " + response.text)
+        return response.status_code == 429 or 501 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         sleep(self.backoff)
