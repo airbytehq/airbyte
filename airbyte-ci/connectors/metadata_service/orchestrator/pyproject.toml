@@ -30,6 +30,7 @@ pydantic = "^1.10.6"
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.23"
+pdbpp = "^0.10.3"
 
 
 [tool.poetry.group.test.dependencies]
