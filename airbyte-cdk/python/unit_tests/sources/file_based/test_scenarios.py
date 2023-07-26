@@ -61,6 +61,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
+    csv_newline_in_values_not_quoted_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
@@ -193,6 +194,7 @@ discover_scenarios = [
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     avro_file_with_decimal_as_float_scenario,
+    csv_newline_in_values_not_quoted_scenario,
 ]
 
 

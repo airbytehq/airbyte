@@ -1853,7 +1853,6 @@ csv_strings_can_be_null_not_quoted_scenario = (
 csv_newline_in_values_quoted_value_scenario = (
     TestScenarioBuilder()
     .set_name("csv_newline_in_values_quoted_value")
-    # This scenario tests that quotes are properly escaped when double_quotes is True
     .set_config(
         {
             "streams": [
@@ -1921,10 +1920,86 @@ csv_newline_in_values_quoted_value_scenario = (
     )
 ).build()
 
+csv_newline_in_values_not_quoted_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_newline_in_values_not_quoted")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    '''col1,col2''',
+                    '''2,val\n2''',
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "string"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            # Note that the value for col2 is truncated to "val" because the newline is not escaped
+            {"data": {"col1": "2", "col2": 'val', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_logs({"read": [
+        {
+            "level": "ERROR",
+            "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
+        }
+    ]})
+).build()
+
 csv_escape_char_is_set_scenario = (
     TestScenarioBuilder()
     .set_name("csv_escape_char_is_set")
-    # This scenario tests that quotes are properly escaped when double_quotes is True
     .set_config(
         {
             "streams": [

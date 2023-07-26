@@ -113,8 +113,10 @@ class CsvParser(FileTypeParser):
         for i, row in enumerate(reader):
             if i < config_format.skip_rows_after_header:
                 continue
-            # If any of the keys are None, the row is invalid
+            # If any of the keys or values are None, the row is invalid
             if any(key is None for key in row.keys()):
+                yield None
+            elif any(val is None for val in row.values()):
                 yield None
             else:
                 yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
