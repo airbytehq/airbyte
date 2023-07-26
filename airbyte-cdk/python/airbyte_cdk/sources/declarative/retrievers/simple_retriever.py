@@ -188,7 +188,10 @@ class SimpleRetriever(Retriever, HttpStream):
         return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping, **auth_options_mapping}
 
     def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
@@ -207,7 +210,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def request_params(
         self,
-        stream_state: StreamSlice,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
@@ -227,7 +230,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def request_body_data(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping[str, Any], str]]:
@@ -264,7 +267,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def request_body_json(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -286,7 +289,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def request_kwargs(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
@@ -476,9 +479,12 @@ class SimpleRetriever(Retriever, HttpStream):
         request: requests.PreparedRequest,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]],
     ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+
+    def must_deduplicate_query_params(self) -> bool:
+        return True
 
 
 @dataclass
@@ -506,7 +512,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         request: requests.PreparedRequest,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]],
     ) -> Iterable[StreamData]:
         self.message_repository.log_message(
             Level.DEBUG,
