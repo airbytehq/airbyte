@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.source.databricks;
 
+import static io.airbyte.integrations.source.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_JDBC_KEY;
+import static io.airbyte.integrations.source.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_KEY;
+import static io.airbyte.integrations.source.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_JDBC_KEY;
+import static io.airbyte.integrations.source.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -15,6 +20,8 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.databricks.utils.DatabricksConstants;
+import io.airbyte.integrations.source.databricks.utils.DatabricksDatabaseUtil;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
@@ -34,9 +41,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
 
-//  protected static final List<Field> FIELDS = List.of(
-//      Field.of("ID", JsonSchemaType.INTEGER),
-//      Field.of("NAME", JsonSchemaType.STRING));
   private JsonNode config;
   protected JdbcDatabase database;
   protected DataSource dataSource;
@@ -98,8 +102,10 @@ public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    config = buildUsernamePasswordConfig(getStaticConfig());
-    dataSource = createDataSource();
+    JsonNode staticConfig = getStaticConfig();
+    config = staticConfig;
+
+    dataSource = DatabricksSourceTestUtil.createDataSource(staticConfig);
     database = new DefaultJdbcDatabase(dataSource, new DatabricksSourceOperations());
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String
@@ -139,20 +145,4 @@ public class DatabricksSourceAcceptanceTest extends SourceAcceptanceTest {
     }
   }
 
-  private JsonNode buildUsernamePasswordConfig(final JsonNode config) {
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, config.get(JdbcUtils.JDBC_URL_KEY).asText());
-    return Jsons.jsonNode(configBuilder.build());
-  }
-
-  protected DataSource createDataSource() {
-    config = Jsons.clone(getStaticConfig());
-    return DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        null,
-        DatabricksSource.DRIVER_CLASS,
-        config.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        new HashMap<String, String>());
-  }
 }

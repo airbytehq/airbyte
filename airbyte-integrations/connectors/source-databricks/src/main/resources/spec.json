@@ -4,28 +4,65 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "JDBC Source Spec",
     "type": "object",
-    "required": ["username", "jdbc_url"],
+    "required": [
+      "databricks_server_hostname",
+      "databricks_http_path",
+      "databricks_personal_access_token",
+      "database"
+    ],
     "properties": {
-      "username": {
-        "title": "Username",
-        "description": "The username which is used to access the database.",
-        "type": "string"
-      },
-      "password": {
-        "title": "Password",
-        "description": "The password associated with this username.",
+      "databricks_server_hostname": {
+        "title": "Server Hostname",
         "type": "string",
-        "airbyte_secret": true
+        "description": "Databricks Cluster Server Hostname.",
+        "examples": ["abc-12345678-wxyz.cloud.databricks.com"],
+        "order": 1
       },
-      "jdbc_url": {
-        "title": "JDBC URL",
-        "description": "JDBC formatted URL. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
-        "type": "string"
+      "databricks_http_path": {
+        "title": "HTTP Path",
+        "type": "string",
+        "description": "Databricks Cluster HTTP Path.",
+        "examples": ["sql/protocolvx/o/1234567489/0000-1111111-abcd90"],
+        "order": 2
+      },
+      "databricks_port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Databricks Cluster Port.",
+        "default": "443",
+        "examples": ["443"],
+        "order": 3
+      },
+      "databricks_personal_access_token": {
+        "title": "Access Token",
+        "type": "string",
+        "description": "Databricks Personal Access Token for making authenticated requests.",
+        "examples": ["dapi0123456789abcdefghij0123456789AB"],
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "database": {
+        "title": "Databricks catalog",
+        "description": "The name of the catalog. If not specified otherwise, the \"hive_metastore\" will be used.",
+        "type": "string",
+        "examples": ["hive_metastore"],
+        "default": "hive_metastore",
+        "order": 5
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "The default schema tables are written. If not specified otherwise, the \"default\" will be used.",
+        "type": "string",
+        "examples": ["default"],
+        "default": "default",
+        "order": 6
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol ';'. (example: key1=value1;key2=value2;key3=value3).",
         "title": "JDBC URL Params",
-        "type": "string"
+        "type": "string",
+        "examples": ["key1=value1;key2=value2"],
+        "order": 7
       }
     }
   }

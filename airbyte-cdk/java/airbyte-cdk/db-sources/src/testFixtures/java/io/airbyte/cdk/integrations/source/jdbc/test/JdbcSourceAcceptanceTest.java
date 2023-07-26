@@ -124,6 +124,9 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   public static String INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY = "INSERT INTO %s (name, timestamp) VALUES ('%s', '%s')";
 
+  public static Boolean IS_IDENTIFIER_WITH_SPACE_SUPPORTED = true;
+  public static Boolean IS_CONCURRENT_INSERTION_ORDER_MAINTAINED = true;
+
   public JsonNode config;
   public DataSource dataSource;
   public JdbcDatabase database;
@@ -535,8 +538,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testTablesWithQuoting() throws Exception {
     String driverClass = getDriverClass().toLowerCase();
-    // Databricks does not allow table or column names to contain `space` in it.
-    if (driverClass.contains("databricks")) {
+    if (!IS_IDENTIFIER_WITH_SPACE_SUPPORTED) {
       return;
     }
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
@@ -614,9 +616,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testIncrementalStringCheckCursorSpaceInColumnName() throws Exception {
-    String driverClass = getDriverClass().toLowerCase();
-    // Databricks does not allow table or column names to contain `space` in it.
-    if (driverClass.contains("databricks")) {
+    if (!IS_IDENTIFIER_WITH_SPACE_SUPPORTED) {
       return;
     }
     final ConfiguredAirbyteStream streamWithSpaces = createTableWithSpaces();
@@ -896,8 +896,7 @@ public abstract class JdbcSourceAcceptanceTest {
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     // teradata doesn't make insertion order guarantee when equal ordering value
-    // Databricks does not maintain the order of concurrent insertions into a table by default.
-    if (driverName.contains("teradata") || driverName.contains("databricks")) {
+    if (driverName.contains("teradata") || !IS_CONCURRENT_INSERTION_ORDER_MAINTAINED) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
       assertEquals(List.of("a", "b"), firstSyncNames);
@@ -953,8 +952,7 @@ public abstract class JdbcSourceAcceptanceTest {
         .toList();
 
     // teradata doesn't make insertion order guarantee when equal ordering value
-    // Databricks does not maintain the order of concurrent insertions into a table by default.
-    if (driverName.contains("teradata") || driverName.contains("databricks")) {
+    if (driverName.contains("teradata") || !IS_CONCURRENT_INSERTION_ORDER_MAINTAINED) {
       assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
     } else {
       assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);

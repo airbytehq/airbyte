@@ -1,4 +1,8 @@
 {
-  "username": "ameya.bapat+2@getblueshift.com",
-  "jdbc_url": "jdbc:databricks://dbc-64a1ef0b-4c31.cloud.databricks.com:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/sql/1.0/warehouses/2d051bfc43b59ef7;PWD=dapie1c02e3fc14b53a88143d3af547dc49f;ConnCatalog=samples;ConnSchema=tpch"
+  "databricks_server_hostname": "dbc-3a1ddb4a-0599.cloud.databricks.com",
+  "databricks_http_path": "sql/1.0/warehouses/00d897c33c02b234",
+  "databricks_port": "443",
+  "databricks_personal_access_token": "dapi396ce40bb4b73a5763e4a6218e9ffb03",
+  "database": "main",
+  "jdbc_url_params": "EnableArrow=0"
 }

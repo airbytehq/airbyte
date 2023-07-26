@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.databricks.utils.DatabricksConstants;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.Field;
@@ -37,26 +37,22 @@ import org.slf4j.LoggerFactory;
 class DatabricksJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksJdbcSourceAcceptanceTest.class);
-  // TODO declare a test container for DB. EX: org.testcontainers.containers.OracleContainer
-
   @BeforeAll
   static void init() {
     // For JdbcSourceAcceptanceTest.testDiscoverWithNonCursorFields() : Databricks does not have BIT data type hence, using BOOLEAN
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BOOLEAN NOT NULL);";
+    // Databricks does not allow table or column names to contain `space` in it.
+    IS_IDENTIFIER_WITH_SPACE_SUPPORTED = false;
+    // Databricks does not maintain the order of concurrent insertions into a table by default.
+    IS_CONCURRENT_INSERTION_ORDER_MAINTAINED = false;
   }
 
-  private JsonNode buildUsernamePasswordConfig(final JsonNode config) {
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, config.get(JdbcUtils.JDBC_URL_KEY).asText());
-    return Jsons.jsonNode(configBuilder.build());
-  }
   private static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
   @BeforeEach
   public void setup() throws Exception {
-    config = buildUsernamePasswordConfig(getStaticConfig());
+    config = getStaticConfig();
     super.setup();
   }
 
@@ -78,7 +74,7 @@ class DatabricksJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   public boolean supportsSchemas() {
-    // TODO check if your db supports it and update method accordingly
+
     return true;
   }
 
@@ -99,12 +95,11 @@ class DatabricksJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @AfterAll
   static void cleanUp() {
-    // TODO close the container. Ex: "container.close();"
   }
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_KEY, "fake");
+    ((ObjectNode) config).put(DatabricksConstants.DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(Status.FAILED, status.getStatus());
   }
