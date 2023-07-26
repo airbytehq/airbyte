@@ -40,6 +40,9 @@ class Creatives(HttpSubStream, ApplovinStream):
     def use_cache(self):
         return True
 
+    def raise_on_http_errors(self) -> bool:
+        return False
+
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 500:
             logging.warning("Received error: " + str(response.status_code) + " " + response.text)
