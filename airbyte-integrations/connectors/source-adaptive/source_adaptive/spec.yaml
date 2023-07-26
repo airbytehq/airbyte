@@ -34,6 +34,14 @@ connectionSpecification:
             order: 0
       - required:
         - method
+        title: export Attributes
+        properties:
+          method:
+            type: string
+            const: "exportAttributes"
+            order: 0
+      - required:
+        - method
         title: export Accounts
         properties:
           method:

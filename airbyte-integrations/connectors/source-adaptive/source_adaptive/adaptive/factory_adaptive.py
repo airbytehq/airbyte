@@ -1,9 +1,10 @@
 import json
 from source_adaptive.adaptive.base import get_config_as_dict
 
+from source_adaptive.adaptive.exportAccounts import AdaptiveExportAccounts
+from source_adaptive.adaptive.exportAttributes import AdaptiveExportAttributes
 from source_adaptive.adaptive.exportData import AdaptiveExportData
 from source_adaptive.adaptive.exportVersions import AdaptiveExportVersions
-from source_adaptive.adaptive.exportAccounts import AdaptiveExportAccounts
 
 from airbyte_cdk.logger import AirbyteLogger
 
@@ -17,6 +18,7 @@ def generate_adaptive_method(logger: AirbyteLogger, config: json):
     # a dictionary mapper that maps a string method to the respective class that will handle that
     method_class_mapper = {
         "exportAccounts": AdaptiveExportAccounts,
+        "exportAttributes": AdaptiveExportAttributes,
         "exportData": AdaptiveExportData,
         "exportVersions": AdaptiveExportVersions,
     }
