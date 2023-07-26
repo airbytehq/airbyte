@@ -112,7 +112,7 @@ Follow [Configure a storage bucket and IAM role in AWS](https://docs.databricks.
 - `HTTP Path` - can be taken from [4. Databricks SQL Warehouse connection details](#4-databricks-sql-warehouse-connection-details)  or [6. Databricks Cluster connection details](#6-databricks-cluster-connection-details) steps.
 - `Port` - can be taken from [4. Databricks SQL Warehouse connection details](#4-databricks-sql-warehouse-connection-details)  or [6. Databricks Cluster connection details](#6-databricks-cluster-connection-details) steps.
 - `Access Token` - can be taken from [7. Create Databricks Token](#7-create-databricks-token) step.
-
+- `Databricks Catalog` - The name of the catalog
 ## Sync Mode
 
 | Feature | Support | Notes                                                                                |

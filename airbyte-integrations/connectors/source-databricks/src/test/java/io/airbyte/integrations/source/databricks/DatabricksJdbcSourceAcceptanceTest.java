@@ -33,7 +33,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/*
+ * Add jdbc url param "EnableArrow=0". This param exists because of issue with fetching data via SELECT. It
+ * produces next error: Error occured while deserializing arrow data: sun.misc.Unsafe or
+ * java.nio.DirectByteBuffer.<init>(long, int) not available databricks.
+ * https://community.databricks.com/s/question/0D58Y00009AHCDSSA5/jdbc-driver-support-for-openjdk-17.
+ * NOTE: Only for running Tests on local.
+ */
 class DatabricksJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksJdbcSourceAcceptanceTest.class);

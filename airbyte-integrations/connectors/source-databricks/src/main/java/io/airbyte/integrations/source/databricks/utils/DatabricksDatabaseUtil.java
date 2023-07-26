@@ -28,7 +28,6 @@ public abstract class DatabricksDatabaseUtil {
         .put(JdbcUtils.USERNAME_KEY, DatabricksConstants.DATABRICKS_USERNAME)
         .put(JdbcUtils.PASSWORD_KEY, databricksConfig.personalAccessToken())
         .put(JdbcUtils.JDBC_URL_KEY, databricksConfig.getDatabricksConnectionString());
-//        .put(JdbcUtils.JDBC_URL_KEY, "jdbc:databricks://dbc-64a1ef0b-4c31.cloud.databricks.com:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/sql/1.0/warehouses/2d051bfc43b59ef7;PWD=dapie1c02e3fc14b53a88143d3af547dc49f;ConnCatalog=main;ConnSchema=default;EnableArrow=0");
 
     StringBuilder connectionProperties = new StringBuilder();
     connectionProperties.append(buildConnectionProperty(config, DATABRICKS_CATALOG_KEY, DATABRICKS_CATALOG_JDBC_KEY));

@@ -1,8 +1,8 @@
 {
-  "databricks_server_hostname": "dbc-3a1ddb4a-0599.cloud.databricks.com",
-  "databricks_http_path": "sql/1.0/warehouses/00d897c33c02b234",
+  "databricks_server_hostname": "dbc-<unique-id>.cloud.databricks.com",
+  "databricks_http_path": "sql/1.0/warehouses/<id>",
   "databricks_port": "443",
-  "databricks_personal_access_token": "dapi396ce40bb4b73a5763e4a6218e9ffb03",
+  "databricks_personal_access_token": "<access-token>",
   "database": "main",
   "jdbc_url_params": "EnableArrow=0"
 }
