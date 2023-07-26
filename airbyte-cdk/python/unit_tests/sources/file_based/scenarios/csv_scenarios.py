@@ -1864,6 +1864,7 @@ csv_newline_in_values_quoted_value_scenario = (
                     "format": {
                         "csv": {
                             "filetype": "csv",
+                            "quoting_behavior": "Quote All"
                         }
                     }
                 }
@@ -1875,8 +1876,8 @@ csv_newline_in_values_quoted_value_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    ("col1", "col2"),
-                    ("2", 'val\n2'),
+                    '''"col1","col2"''',
+                    '''"2","val\n2"''',
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
