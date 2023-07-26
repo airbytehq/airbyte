@@ -1796,7 +1796,7 @@ class ContactsMergedAudit(Stream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        
+
         slices = []
 
         # we can query a max of 100 contacts at a time
