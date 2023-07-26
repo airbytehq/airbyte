@@ -687,7 +687,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = max((stream_state or {}).get(self.cursor_field, ""), (stream_slice or {}).get("start_date", ""))
+        start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
 
         select_fields = self.get_query_select_fields()
