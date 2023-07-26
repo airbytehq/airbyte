@@ -87,14 +87,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     if record is None:
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1
-                            # yield AirbyteMessage(
-                            #     type=MessageType.LOG,
-                            #     log=AirbyteLogMessage(
-                            #         level=Level.WARN,
-                            #         message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                            #         stack_trace=traceback.format_exc(),
-                            #     )
-                            # )
                             continue
                         else:
                             yield AirbyteMessage(
