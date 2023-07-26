@@ -3,30 +3,23 @@
 #
 
 import logging
-import os
-import tempfile
 
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_langchain.destination import DestinationLangchain
 from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
-from integration_tests.base_integration_test import BaseIntegrationTest
+from integration_tests.base_integration_test import LocalIntegrationTest
 from langchain.embeddings import FakeEmbeddings
 from langchain.vectorstores import DocArrayHnswSearch
 
 
-class LocalIntegrationTest(BaseIntegrationTest):
+class DocArrayIntegrationTest(LocalIntegrationTest):
     def setUp(self):
-        self.temp_dir = tempfile.mkdtemp()
+        super().setUp()
         self.config = {
             "processing": {"text_fields": ["str_col"], "chunk_size": 1000},
             "embedding": {"mode": "fake"},
             "indexing": {"mode": "DocArrayHnswSearch", "destination_path": self.temp_dir},
         }
-
-    def tearDown(self):
-        for file in os.listdir(self.temp_dir):
-            os.remove(os.path.join(self.temp_dir, file))
-        os.removedirs(self.temp_dir)
 
     def test_check_valid_config(self):
         outcome = DestinationLangchain().check(logging.getLogger("airbyte"), self.config)
