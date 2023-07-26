@@ -30,6 +30,10 @@
           "type": ["null", "string"],
           "format": "date-time"
         },
+        "hs_kpi_value_last_calculated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "hs_object_id": {
           "type": ["null", "string"]
         },
