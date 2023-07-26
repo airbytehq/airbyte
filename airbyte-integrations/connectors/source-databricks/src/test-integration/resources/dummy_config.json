@@ -3,6 +3,5 @@
   "databricks_http_path": "sql/1.0/warehouses/<id>",
   "databricks_port": "443",
   "databricks_personal_access_token": "<access-token>",
-  "database": "main",
-  "jdbc_url_params": "EnableArrow=0"
+  "database": "main"
 }
