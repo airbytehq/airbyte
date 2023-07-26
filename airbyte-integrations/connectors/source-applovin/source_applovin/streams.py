@@ -16,8 +16,8 @@ class ApplovinStream(HttpStream):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield from response_json
+        if response.text == "": return '{}'
+        yield from response.json()
 
 class Campaigns(ApplovinStream):
     primary_key = "campaign_id"
@@ -30,18 +30,14 @@ class Creatives(HttpSubStream, ApplovinStream):
     primary_key = "id"
     backoff = 120
     count = 0
+    raise_on_http_errors = False
+    use_cache = True
 
     def __init__(self, authenticator: TokenAuthenticator, **kwargs):
         super().__init__(
             authenticator=authenticator,
             parent=Campaigns(authenticator=authenticator),
         )
-
-    def use_cache(self):
-        return True
-
-    def raise_on_http_errors(self) -> bool:
-        return False
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 500:
@@ -51,11 +47,6 @@ class Creatives(HttpSubStream, ApplovinStream):
             return True
         else:
             return False
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        sleep(self.backoff)
-        self.backoff *= 2
-        return super().backoff_time(response)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
