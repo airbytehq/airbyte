@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonDateTime;
@@ -289,7 +288,8 @@ public class MongoUtils {
                                    final TreeNode<CommonField<BsonType>> parentNode,
                                    final String pathToField) {
     final var nestedKeys = getFieldsName(collection, pathToField);
-    LOGGER.debug("Discovered nested keys '{}' for collection '{}' and path '{}'.", nestedKeys, collection.getNamespace().getCollectionName(), pathToField);
+    LOGGER.debug("Discovered nested keys '{}' for collection '{}' and path '{}'.", nestedKeys, collection.getNamespace().getCollectionName(),
+        pathToField);
     nestedKeys.forEach(key -> {
       final var types = getTypes(collection, pathToField + "." + key);
       final var nestedType = getUniqueType(types);
@@ -341,8 +341,8 @@ public class MongoUtils {
   }
 
   /**
-   * Ensure that the provided field name is compatible with a MongoDB FieldPath by removing
-   * any unsupported characters.
+   * Ensure that the provided field name is compatible with a MongoDB FieldPath by removing any
+   * unsupported characters.
    *
    * @param fieldName The name of a field in a MongoDB collection.
    * @return The cleansed field name suitable for use as a MongoDB FieldPath.
