@@ -81,7 +81,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
         String.format(
           """
               DROP TABLE IF EXISTS airbyte.%s;
-              DROP SCHEMA IF EXISTS %s CASCADE
+              DROP SCHEMA IF EXISTS "%s" CASCADE
               """,
             StreamId.concatenateRawTableName(streamNamespace, streamName),
             streamNamespace));

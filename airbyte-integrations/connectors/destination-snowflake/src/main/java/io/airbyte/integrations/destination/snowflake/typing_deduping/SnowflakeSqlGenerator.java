@@ -84,7 +84,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         CREATE TABLE ${final_table_id} (
           _airbyte_raw_id STRING NOT NULL,
           _airbyte_extracted_at TIMESTAMP NOT NULL,
-          _airbyte_meta JSON NOT NULL,
+          _airbyte_meta VARIANT NOT NULL,
           ${column_declarations}
         );
         """);
@@ -97,16 +97,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String softReset(StreamConfig stream) {
-    return null;
+    return "";
   }
 
   @Override
   public String updateTable(StreamConfig stream, String finalSuffix) {
-    return null;
+    return "";
   }
 
   @Override
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
-    return null;
+    return "";
   }
 }
