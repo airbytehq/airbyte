@@ -313,14 +313,16 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
 def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
+    context.log.info(f"Processing metadata file with etag {etag}")
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
 
     # find the blob with the matching etag
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
-    metadata_file_path = matching_blob.name
-
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
+
+    metadata_file_path = matching_blob.name
+    context.log.info(f"Found metadata file with path {metadata_file_path} for etag {etag}")
 
     # read the matching_blob into a metadata definition
     metadata_def = safe_parse_metadata_definition(matching_blob)
@@ -362,7 +364,9 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=50),
 )
-def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame) -> Output[Optional[dict]]:
+def registry_entry(
+    context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame
+) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """

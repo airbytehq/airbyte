@@ -202,5 +202,3 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         metadata_entries.append(metadata_entry)
 
     return metadata_entries
-
-

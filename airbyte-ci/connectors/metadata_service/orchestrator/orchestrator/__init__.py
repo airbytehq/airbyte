@@ -17,7 +17,13 @@ from orchestrator.assets import (
     metadata,
 )
 
-from orchestrator.jobs.registry import generate_registry_reports, generate_oss_registry, generate_cloud_registry, generate_registry_entry, add_new_metadata_partitions
+from orchestrator.jobs.registry import (
+    generate_registry_reports,
+    generate_oss_registry,
+    generate_cloud_registry,
+    generate_registry_entry,
+    add_new_metadata_partitions,
+)
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor
