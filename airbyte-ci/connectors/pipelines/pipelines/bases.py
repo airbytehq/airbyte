@@ -18,12 +18,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import anyio
 import asyncer
 from anyio import Path
-from pipelines.actions import remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
 from connector_ops.utils import console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
+from pipelines.actions import remote_storage
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -54,26 +54,6 @@ class StepStatus(Enum):
     FAILURE = "Failed"
     SKIPPED = "Skipped"
 
-    def from_exit_code(exit_code: int) -> StepStatus:
-        """Map an exit code to a step status.
-
-        Args:
-            exit_code (int): A process exit code.
-
-        Raises:
-            ValueError: Raised if the exit code is not mapped to a step status.
-
-        Returns:
-            StepStatus: The step status inferred from the exit code.
-        """
-        if exit_code == 0:
-            return StepStatus.SUCCESS
-        # pytest returns a 5 exit code when no test is found.
-        elif exit_code == 5:
-            return StepStatus.SKIPPED
-        else:
-            return StepStatus.FAILURE
-
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
         if self is StepStatus.SUCCESS:
@@ -102,6 +82,9 @@ class Step(ABC):
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
     should_log: ClassVar[bool] = True
+    should_persist_stdout_stderr_logs: ClassVar[bool] = True
+    success_exit_code: ClassVar[int] = 0
+    skipped_exit_code: ClassVar[int] = None
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
@@ -119,18 +102,22 @@ class Step(ABC):
     @property
     def logger(self) -> logging.Logger:
         if self.should_log:
-            return self.context.logger
+            return logging.getLogger(f"{self.context.pipeline_name} - {self.title}")
         else:
             disabled_logger = logging.getLogger()
             disabled_logger.disabled = True
             return disabled_logger
+
+    @property
+    def dagger_client(self) -> Container:
+        return self.context.dagger_client.pipeline(self.title)
 
     async def log_progress(self, completion_event) -> None:
         while not completion_event.is_set():
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
             if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
-                self.logger.info(f"⏳ Still running {self.title}... (duration: {format_duration(duration)})")
+                self.logger.info(f"⏳ Still running... (duration: {format_duration(duration)})")
             await anyio.sleep(1)
 
     async def run_with_completion(self, completion_event, *args, **kwargs) -> StepResult:
@@ -159,7 +146,7 @@ class Step(ABC):
             if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
                 self.retry_count += 1
                 await anyio.sleep(10)
-                self.logger.warn(f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}.")
+                self.logger.warn(f"Retry #{self.retry_count}.")
                 return await self.run(*args, **kwargs)
             self.stopped_at = datetime.utcnow()
             self.log_step_result(result)
@@ -177,11 +164,11 @@ class Step(ABC):
         """
         duration = format_duration(self.run_duration)
         if result.status is StepStatus.FAILURE:
-            self.logger.error(f"{result.status.get_emoji()} {self.title} failed (duration: {duration})")
+            self.logger.error(f"{result.status.get_emoji()} failed (duration: {duration})")
         if result.status is StepStatus.SKIPPED:
-            self.logger.info(f"{result.status.get_emoji()} {self.title} was skipped (duration: {duration})")
+            self.logger.info(f"{result.status.get_emoji()} was skipped (duration: {duration})")
         if result.status is StepStatus.SUCCESS:
-            self.logger.info(f"{result.status.get_emoji()} {self.title} was successful (duration: {duration})")
+            self.logger.info(f"{result.status.get_emoji()} was successful (duration: {duration})")
 
     @abstractmethod
     async def _run(self, *args, **kwargs) -> StepResult:
@@ -203,6 +190,58 @@ class Step(ABC):
         """
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
 
+    async def write_log_files(self, stdout: Optional[str] = None, stderr: Optional[str] = None) -> List[Path]:
+        """Write stdout and stderr logs to a file in the connector code directory.
+
+        Args:
+            stdout (Optional[str], optional): The step final container stdout. Defaults to None.
+            stderr (Optional[str], optional): The step final container stderr. Defaults to None.
+
+        Returns:
+            List[Path]: The list of written log files.
+        """
+        if not stdout and not stderr:
+            return []
+
+        written_log_files = []
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs/{slugify(self.context.pipeline_name)}")
+        await log_directory.mkdir(exist_ok=True, parents=True)
+        if stdout:
+            # TODO alafanechere we could also log the stdout and stderr of the container in the pipeline context.
+            # It could be a nice alternative to the --show-dagger-logs flag.
+            stdout_log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}_stdout.log").resolve()
+            await stdout_log_path.write_text(stdout)
+            self.logger.info(f"stdout logs written to {stdout_log_path}")
+            written_log_files.append(stdout_log_path)
+        if stderr:
+            stderr_log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}_stderr.log").resolve()
+            await stderr_log_path.write_text(stderr)
+            self.logger.info(f"stderr logs written to {stderr_log_path}")
+            written_log_files.append(stderr_log_path)
+        return written_log_files
+
+    def get_step_status_from_exit_code(
+        self,
+        exit_code: int,
+    ) -> StepStatus:
+        """Map an exit code to a step status.
+
+        Args:
+            exit_code (int): A process exit code.
+
+        Raises:
+            ValueError: Raised if the exit code is not mapped to a step status.
+
+        Returns:
+            StepStatus: The step status inferred from the exit code.
+        """
+        if exit_code == self.success_exit_code:
+            return StepStatus.SUCCESS
+        elif self.skipped_exit_code is not None and exit_code == self.skipped_exit_code:
+            return StepStatus.SKIPPED
+        else:
+            return StepStatus.FAILURE
+
     async def get_step_result(self, container: Container) -> StepResult:
         """Concurrent retrieval of exit code, stdout and stdout of a container.
 
@@ -215,9 +254,11 @@ class Step(ABC):
             StepResult: Failure or success with stdout and stderr.
         """
         exit_code, stdout, stderr = await get_exec_result(container)
+        if self.context.is_local and self.should_persist_stdout_stderr_logs:
+            await self.write_log_files(stdout, stderr)
         return StepResult(
             self,
-            StepStatus.from_exit_code(exit_code),
+            self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
             output_artifact=container,
@@ -227,31 +268,7 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
-    async def write_log_file(self, logs) -> str:
-        """Return the path to the pytest log file."""
-        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
-        await log_directory.mkdir(exist_ok=True)
-        log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}.log").resolve()
-        await log_path.write_text(logs)
-        self.logger.info(f"Pytest logs written to {log_path}")
-
-    # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
-    def pytest_logs_to_step_result(self, logs: str) -> StepResult:
-        """Parse pytest log and infer failure, success or skipping.
-
-        Args:
-            logs (str): The pytest logs.
-
-        Returns:
-            StepResult: The inferred step result according to the log.
-        """
-        last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line or "errors" in last_log_line:
-            return StepResult(self, StepStatus.FAILURE, stderr=logs)
-        elif "no tests ran" in last_log_line:
-            return StepResult(self, StepStatus.SKIPPED, stdout=logs)
-        else:
-            return StepResult(self, StepStatus.SUCCESS, stdout=logs)
+    skipped_exit_code = 5
 
     async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
         """Run the pytest tests in the test_directory that was passed.
@@ -272,18 +289,13 @@ class PytestStep(Step, ABC):
                     "python",
                     "-m",
                     "pytest",
-                    "--suppress-tests-failed-exit-code",
-                    "--suppress-no-test-exit-code",
                     "-s",
                     test_directory,
                     "-c",
                     test_config,
                 ]
             )
-            logs = await tester.stdout()
-            if self.context.is_local:
-                await self.write_log_file(logs)
-            return self.pytest_logs_to_step_result(logs)
+            return await self.get_step_result(tester)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
