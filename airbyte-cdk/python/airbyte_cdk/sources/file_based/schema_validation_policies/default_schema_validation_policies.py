@@ -28,8 +28,9 @@ class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):
     validate_schema_before_sync = True
 
     def record_passes_validation_policy(self, record: Optional[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> bool:
+        # Non-parseable records do not pass the policy, but do not trigger a stop sync because they won't be fixed by a re-discover
         if record is None:
-            return True
+            return False
         if schema is None or not conforms_to_schema(record, schema):
             raise StopSyncPerValidationPolicy(FileBasedSourceError.STOP_SYNC_PER_SCHEMA_VALIDATION_POLICY)
         return True
