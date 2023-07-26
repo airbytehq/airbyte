@@ -1050,7 +1050,7 @@ definitions:
           - "PT1H"
           - "P1D"
       request_authentication:
-        title: Data request authentication
+        title: Data Request Authentication
         description: Authentication method to use for requests sent to the API, specifying how to inject the session token.
         anyOf:
           - "$ref": "#/definitions/SessionTokenRequestApiKeyAuthenticator"
