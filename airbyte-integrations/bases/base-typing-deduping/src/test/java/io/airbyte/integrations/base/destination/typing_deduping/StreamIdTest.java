@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,13 @@ class StreamIdTest {
     assertAll(
         () -> assertEquals("aaa_abab_bbb_raw__stream_ccc", stream1),
         () -> assertEquals("aaa_raw__stream_bbb_abab_ccc", stream2));
+  }
+
+  @Test
+  public void noUnderscores() {
+    String stream = StreamId.concatenateRawTableName("a", "b");
+
+    assertEquals("a_raw__stream_b", stream);
   }
 
 }
