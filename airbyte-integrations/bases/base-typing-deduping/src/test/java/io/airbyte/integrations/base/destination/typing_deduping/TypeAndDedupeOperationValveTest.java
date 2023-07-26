@@ -36,7 +36,7 @@ public class TypeAndDedupeOperationValveTest {
   public void testAddStream() {
     final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
     valve.addStream(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 2, valve.getIncrementInterval(STREAM_A));
+    Assertions.assertEquals(1000 * 60 * 1, valve.getIncrementInterval(STREAM_A));
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     Assertions.assertEquals(valve.get(STREAM_A), 0l);
   }
@@ -54,12 +54,12 @@ public class TypeAndDedupeOperationValveTest {
     elapseTime(minuteUpdates, 1);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_B));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 5,
+    Assertions.assertEquals(1000 * 60 * 15,
         valve.getIncrementInterval(STREAM_A));
     // method call increments time
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
-    elapseTime(minuteUpdates, 5);
     // More than enough time has passed now
+    elapseTime(minuteUpdates, 15);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
 
@@ -67,13 +67,13 @@ public class TypeAndDedupeOperationValveTest {
   public void testIncrementInterval() {
     final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
     valve.addStream(STREAM_A);
-    IntStream.rangeClosed(1, 3).forEach(i -> {
+    IntStream.rangeClosed(1, 10).forEach(i -> {
       final var index = valve.incrementInterval(STREAM_A);
       Assertions.assertEquals(i, index);
     });
-    Assertions.assertEquals(3, valve.incrementInterval(STREAM_A));
+    Assertions.assertEquals(5, valve.incrementInterval(STREAM_A));
     // Twice to be sure
-    Assertions.assertEquals(3, valve.incrementInterval(STREAM_A));
+    Assertions.assertEquals(5, valve.incrementInterval(STREAM_A));
   }
 
   @Test
