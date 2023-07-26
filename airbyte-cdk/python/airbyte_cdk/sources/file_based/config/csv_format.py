@@ -59,6 +59,7 @@ class CsvFormat(BaseModel):
     skip_rows_after_header: int = Field(
         title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row."
     )
+    auto_generate_column_names: bool = Field(default=False)
 
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
     # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks

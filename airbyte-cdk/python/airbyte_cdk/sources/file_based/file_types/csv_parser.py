@@ -51,9 +51,14 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
-                self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-                schema = {field.strip(): {"type": "string"} for field in next(reader)}
+                if config_format.auto_generate_column_names:
+                    headers = self._auto_generate_headers(fp, config_format)
+                else:
+                    self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+                    reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                    headers = next(reader)  # type: ignore
+
+                schema = {field.strip(): {"type": "string"} for field in headers}
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
@@ -89,7 +94,8 @@ class CsvParser(FileTypeParser):
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
                 self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                field_names = self._auto_generate_headers(fp, config_format) if config_format.auto_generate_column_names else None
+                reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
 
                 yield from self._read_and_cast_types(reader, schema, null_values, config_format.skip_rows_after_header, logger)
         else:
@@ -130,6 +136,17 @@ class CsvParser(FileTypeParser):
     def _skip_rows_before_header(fp: IOBase, rows_to_skip: int) -> None:
         for _ in range(rows_to_skip):
             fp.readline()
+
+    def _auto_generate_headers(self, fp: IOBase, config_format: CsvFormat) -> List[str]:
+        """
+        Generates field names as [f0, f1, ...] in the same way as pyarrow's csv reader with autogenerate_column_names=True.
+        See https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
+        """
+        next_line = next(fp).strip()
+        number_of_columns = len(next_line.split(config_format.delimiter))  # type: ignore
+        # Reset the file pointer to the beginning of the file so that the first row is not skipped
+        fp.seek(0)
+        return [f"f{i}" for i in range(number_of_columns)]
 
 
 def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
