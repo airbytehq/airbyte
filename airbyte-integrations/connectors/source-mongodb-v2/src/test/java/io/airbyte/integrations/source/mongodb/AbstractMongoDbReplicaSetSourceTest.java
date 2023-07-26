@@ -16,6 +16,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.net.InetAddress;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -24,7 +25,7 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMongoDbReplicaSetSourceTest.class);
 
     private static final String MONGO_CONTAINER_COMMAND = "--bind_ip localhost,%s --replSet %s --port %d";
-    private static final String MONGO_EXEC_COMMAND = "%s --port %d --eval %s";
+    private static final String MONGO_EXEC_COMMAND = "until %s --port %d --eval %s | grep ok | grep 1 > /dev/null 2>&1; do sleep 1;done";
     private static final String REPLICA_SET_CONFIG_FORMAT =
             """
             {_id:\\"%s\\",members:[{_id:0,host:\\"%s:%d\\"},{_id:1,host:\\"%s:%d\\"},{_id:2,host:\\"%s:%d\\"}]}""";
@@ -112,7 +113,10 @@ public abstract class AbstractMongoDbReplicaSetSourceTest extends AbstractMongoD
                 String.format(MONGO_EXEC_COMMAND,
                         getMongoCommand(),
                         mongoDbListenPort,
-                        "\"rs.status()\"")).getStderr());
+                        "\"printjson(rs.isMaster())\"")).getStderr());
+
+        // Allow time for the replica set to become available
+        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
 
         LOGGER.info("Seeding collection '{}.{}' with data...", getDatabaseName(), getCollectionName());
         try (final MongoClient client = createMongoClient(getDatabaseName())) {
