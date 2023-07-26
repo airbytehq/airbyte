@@ -430,12 +430,13 @@ def _generate_slices(number_of_slices):
 
 
 @patch.object(SimpleRetriever, "_read_pages", return_value=iter([]))
-def test_given_state_selector_when_read_records_use_slice_state(http_stream_read_pages):
+def test_given_state_selector_when_read_records_use_stream_state(http_stream_read_pages):
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
     cursor = MagicMock(spec=Cursor)
     cursor.select_state = MagicMock(return_value=A_SLICE_STATE)
+    cursor.get_stream_state = MagicMock(return_value=A_STREAM_STATE)
 
     retriever = SimpleRetriever(
         name="stream_name",
@@ -450,7 +451,7 @@ def test_given_state_selector_when_read_records_use_slice_state(http_stream_read
     )
     list(retriever.read_records(stream_slice=A_STREAM_SLICE))
 
-    http_stream_read_pages.assert_called_once_with(retriever._parse_records, A_SLICE_STATE, A_STREAM_SLICE)
+    http_stream_read_pages.assert_called_once_with(retriever._parse_records, A_STREAM_STATE, A_STREAM_SLICE)
 
 
 def test_emit_log_request_response_messages(mocker):
