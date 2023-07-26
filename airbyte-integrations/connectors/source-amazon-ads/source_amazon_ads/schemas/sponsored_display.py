@@ -51,6 +51,9 @@ class DisplayCreatives(CatalogModel):
     name: str
     adGroupId: Decimal
     creativeId: Decimal
+    creativeType: str
+    properties: List[Dict[str, str]]
+    moderationStatus: str
 
 
 class DisplayBudgetRuleDetailsPerformanceMeasureCondition(CatalogModel):
