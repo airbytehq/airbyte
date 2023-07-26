@@ -43,6 +43,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_escape_char_is_set_scenario,
     csv_legacy_format_scenario,
     csv_multi_stream_scenario,
+    csv_newline_in_values_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
     csv_single_stream_scenario,
     csv_skip_after_header_scenario,
@@ -61,7 +62,6 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
-    csv_newline_in_values_not_quoted_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
