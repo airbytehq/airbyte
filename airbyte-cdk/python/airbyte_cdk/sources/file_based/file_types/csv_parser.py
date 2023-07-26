@@ -121,6 +121,9 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _skip_rows_before_header(fp: IOBase, rows_to_skip: int) -> None:
+        """
+        Skip rows before the header. This has to be done on the file object itself, not the reader
+        """
         for _ in range(rows_to_skip):
             fp.readline()
 
