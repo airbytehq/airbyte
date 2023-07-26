@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -31,13 +32,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 // todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
 // incremental source. As we have more sources support CDC we will find a more reusable way of doing
 // this, but for now this is a solid sanity check.
+@ExtendWith(SystemStubsExtension.class)
 public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
@@ -50,6 +57,13 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   protected PostgreSQLContainer<?> container;
   protected JsonNode config;
 
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
+
+  @BeforeEach
+  void setup() {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+  }
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
