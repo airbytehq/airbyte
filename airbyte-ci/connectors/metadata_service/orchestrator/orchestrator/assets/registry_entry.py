@@ -362,7 +362,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=50),
 )
-def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame) -> Output[dict]:
+def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
