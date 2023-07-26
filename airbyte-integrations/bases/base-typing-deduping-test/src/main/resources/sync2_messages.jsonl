@@ -1,0 +1,5 @@
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "Seattle", "state": "WA"}}}}
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Bob", "address": {"city": "New York", "state": "NY"}}}}
+// Set deleted_at to something non-null. Again, T+D doesn't check the actual _value_ of deleted_at (i.e. the fact that it's in the past is irrelevant).
+// It only cares whether deleted_at is non-null. So this should delete Bob from the final table (in dedup mode).
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01:00:00:00Z"}}}

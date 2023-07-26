@@ -31,7 +31,6 @@ FORMATTING_STEP_TO_CONNECTOR_LANGUAGE_MAPPING = {
 
 
 class ExportChanges(Step):
-
     title = "Export changes to local repository"
 
     async def _run(self, changed_directory: dagger.Directory, changed_directory_path_in_repo: str) -> StepResult:
@@ -83,13 +82,12 @@ async def run_connectors_format_pipelines(
     is_local: bool,
     execute_timeout: Optional[int],
 ) -> List[ConnectorContext]:
-
     async with dagger.Connection(dagger.Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         requires_dind = any(context.connector.language == ConnectorLanguage.JAVA for context in contexts)
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             if requires_dind:
-                tg_main.start_soon(dockerd_service.exit_code)
+                tg_main.start_soon(dockerd_service.sync)
                 await anyio.sleep(10)  # Wait for the docker service to be ready
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"Format - {context.connector.technical_name}")
