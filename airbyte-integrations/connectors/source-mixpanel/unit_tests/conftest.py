@@ -32,3 +32,17 @@ def config_raw(config):
         "start_date": str(config["start_date"]),
         "end_date": str(config["end_date"]),
     }
+
+
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")
+
+
+@pytest.fixture(autouse=True)
+def disable_cache(mocker):
+    mocker.patch(
+        "source_mixpanel.streams.cohorts.Cohorts.use_cache",
+        new_callable=mocker.PropertyMock,
+        return_value=False
+    )
