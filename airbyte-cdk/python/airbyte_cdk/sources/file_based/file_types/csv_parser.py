@@ -5,6 +5,7 @@
 import csv
 import json
 import logging
+from functools import partial
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -101,21 +102,23 @@ class CsvParser(FileTypeParser):
         cast it to a string. Downstream, the user's validation policy will determine whether the
         record should be emitted.
         """
-        if not schema:
-            for i, row in enumerate(reader):
-                if i < config_format.skip_rows_after_header:
-                    continue
-                yield CsvParser._to_nullable(row, config_format.null_values)
-
-        else:
+        if schema:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            for row in reader:
-                yield CsvParser._to_nullable(cast_types(row, property_types, config_format, logger), config_format.null_values)
+            cast_fn = partial(cast_types, property_types=property_types, config_format=config_format, logger=logger)
+        else:
+            # If no schema is provided, yield the rows as they are
+            cast_fn = _no_cast
+        for i, row in enumerate(reader):
+            if i < config_format.skip_rows_after_header:
+                continue
+            # If any of the keys are None, the row is invalid
+            if any(key is None for key in row.keys()):
+                yield None
+            else:
+                yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
 
     @staticmethod
     def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional[Dict[str, Optional[str]]]:
-        if any(key is None for key in row.keys()):
-            return None
         nullable = row | {k: None if v in null_values else v for k, v in row.items()}
         return nullable
 
@@ -222,3 +225,6 @@ def _value_to_bool(value: str, true_values: List[str], false_values: List[str]) 
 
 def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:
     return f"{key}: value={value},expected_type={expected_type}"
+
+def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
+    return row
