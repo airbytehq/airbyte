@@ -90,7 +90,7 @@ def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
     streams = source.streams(config)
-    assert len(streams) == 26
+    assert len(streams) == 28
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
@@ -99,6 +99,8 @@ def test_source_streams(config):
             "sponsored_display_campaigns",
             "sponsored_product_campaigns",
             "sponsored_product_ad_groups",
+            "sponsored_product_ad_group_suggested_keywords",
+            "sponsored_product_ad_group_bid_recommendations",
             "sponsored_product_keywords",
             "sponsored_product_negative_keywords",
             "sponsored_product_campaign_negative_keywords",
