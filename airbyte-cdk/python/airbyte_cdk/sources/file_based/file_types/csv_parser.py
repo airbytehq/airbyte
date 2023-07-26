@@ -126,6 +126,7 @@ class CsvParser(FileTypeParser):
             fp.readline()
 
     def _get_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> List[str]:
+        # Note that this method assumes the dialect has already been registered if we're parsing the headers
         if config_format.autogenerate_column_names:
             return self._auto_generate_headers(fp, config_format)
         else:
