@@ -18,7 +18,7 @@ from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 from orchestrator.utils.object_helpers import deep_copy_params
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES
+from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
 
 from typing import List, Optional, Tuple, Union
 
@@ -308,7 +308,7 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
     output_required=False,
-    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=50),
+    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
@@ -362,7 +362,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     required_resource_keys={"root_metadata_directory_manager"},
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
-    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=50),
+    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 def registry_entry(
     context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame
