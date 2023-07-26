@@ -56,7 +56,7 @@ public class MySqlDebeziumStateUtil {
         publisher.close();
         break;
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
@@ -97,7 +97,7 @@ public class MySqlDebeziumStateUtil {
     result.put(key, value);
 
     final JsonNode jsonNode = Jsons.jsonNode(result);
-    LOGGER.info("Initial Debezium state constructed: {}", jsonNode);
+    LOGGER.info("Initial Debezium state offset constructed: {}", jsonNode);
 
     return jsonNode;
   }

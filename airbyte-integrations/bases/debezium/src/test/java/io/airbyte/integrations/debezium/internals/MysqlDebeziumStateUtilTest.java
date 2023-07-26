@@ -69,7 +69,7 @@ public class MysqlDebeziumStateUtilTest {
       Assertions.assertTrue(debeziumState.has("mysql_db_history"));
       Assertions.assertNotNull(debeziumState.get("mysql_db_history"));
       Assertions.assertTrue(debeziumState.has("mysql_cdc_offset"));
-      Map<String, String> mysqlCdcOffset = Jsons.object(debeziumState.get("mysql_cdc_offset"), Map.class);
+      final Map<String, String> mysqlCdcOffset = Jsons.object(debeziumState.get("mysql_cdc_offset"), Map.class);
       Assertions.assertEquals(1, mysqlCdcOffset.size());
       Assertions.assertTrue(mysqlCdcOffset.containsKey("[\"" + DB_NAME + "\",{\"server\":\"" + DB_NAME + "\"}]"));
       Assertions.assertNotNull(mysqlCdcOffset.get("[\"" + DB_NAME + "\",{\"server\":\"" + DB_NAME + "\"}]"));
@@ -130,7 +130,7 @@ public class MysqlDebeziumStateUtilTest {
   }
 
   private JsonNode getSourceConfig(final MySQLContainer<?> container) {
-    Map<String, Object> config = new HashMap<>();
+    final Map<String, Object> config = new HashMap<>();
     config.put(JdbcUtils.USERNAME_KEY, "root");
     config.put(JdbcUtils.PASSWORD_KEY, "test");
     config.put(JdbcUtils.HOST_KEY, container.getHost());
