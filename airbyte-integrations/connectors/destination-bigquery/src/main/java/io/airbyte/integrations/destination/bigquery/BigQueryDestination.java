@@ -75,6 +75,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
+  private static final String RAW_DATA_DATASET = "raw_data_dataset";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -228,8 +230,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
     final CatalogParser catalogParser;
-    if (TypingAndDedupingFlag.getRawNamespaceOverride().isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride().get());
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
     } else {
       catalogParser = new CatalogParser(sqlGenerator);
     }
