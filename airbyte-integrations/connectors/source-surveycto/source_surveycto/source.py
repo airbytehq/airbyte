@@ -121,16 +121,11 @@ class SourceSurveycto(AbstractSource):
                 filter_data = Helpers.get_filter_data(schema)
                 schema_res = Helpers.get_json_schema(filter_data)
                 stream = SurveyctoStream(config=config, form_id=form_id, schema=schema_res)
-                stream_gen = stream.read_records(sync_mode=SyncMode.full_refresh)
+                next(stream.read_records(sync_mode=SyncMode.full_refresh))
                 
             return True, None
         
         except Exception as error:
-            if "line 1" in str(error):
-                # Error Provided is not self explanatory
-                return False, f"Unable to connect - Please Check for Server Name"
-            if "line 20" in str(error):
-                return False, f"Unable to connect - Please check for form IDs"
             return False, f"Unable to connect - {(error)}"
         
         
