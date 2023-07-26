@@ -20,7 +20,6 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
     event.put(CDC_LSN, lsn);
   }
 
-  @Override
   public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final long lsn) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LSN, lsn);

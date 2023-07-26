@@ -45,6 +45,7 @@ import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -272,6 +273,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      if (sourceConfig.has("cdc_via_pk") && sourceConfig.get("cdc_via_pk").asBoolean()) {
+        LOGGER.info("Using PK + CDC");
+        return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
+      }
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler<MySqlCdcPosition> handler =

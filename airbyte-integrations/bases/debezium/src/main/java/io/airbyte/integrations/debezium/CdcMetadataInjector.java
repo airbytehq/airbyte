@@ -24,10 +24,6 @@ public interface CdcMetadataInjector {
    */
   void addMetaData(ObjectNode event, JsonNode source);
 
-  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final long lsn) {
-    throw new RuntimeException("Not Supported");
-  }
-
   /**
    * As part of Airbyte record we need to add the namespace (schema name)
    *
