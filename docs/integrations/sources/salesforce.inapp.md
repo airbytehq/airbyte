@@ -74,7 +74,7 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 
 * If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
 
-* If the object has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
+* If the object has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with.
 
 ### Incremental deletes
 
