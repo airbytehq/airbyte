@@ -95,7 +95,7 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
-            api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
+            api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", True))
             logger.info(f"{stream_name=} is of {api_type=}")
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
@@ -161,5 +161,5 @@ class SourceSalesforce(AbstractSource):
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
-                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
+                raise Exception(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")  # if got 403 rate limit response, finish the sync with success.
             raise error
