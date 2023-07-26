@@ -9,6 +9,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.integrations.destination.teradata.util.JSONStruct;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +52,8 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           LOGGER.info("jsonData: " + jsonData);
           LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
-          pstmt.setString(2, jsonData);
-          pstmt.setTimestamp(3, emittedAt);
+          pstmt.setObject (2, new JSONStruct("JSON",new Object[] {jsonData}));
+	  pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
 
         }
