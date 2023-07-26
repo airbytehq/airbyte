@@ -55,8 +55,9 @@ connectionSpecification:
       format: date-time
       order: 5
     force_use_bulk_api:
+      title: Force to use BULK API
       type: boolean
-      description: Toggle to Bulk API (this might cause empty fields for some streams)
+      description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
       order: 6
     streams_criteria:

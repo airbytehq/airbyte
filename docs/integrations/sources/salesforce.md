@@ -85,6 +85,13 @@ The Salesforce connector retrieves deleted records from Salesforce. For the stre
 
 The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) sync mode.
 
+:::tip
+
+Airbyte recommends to use at least [Enterpise edition](https://help.salesforce.com/s/articleView?id=sf.users_add_products_subscription_management.htm&type=5) for daily base syncs.
+You may also turn on feature `Force to use BULK API` for faster syncs.
+
+:::
+
 ## Supported Objects
 
 The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
