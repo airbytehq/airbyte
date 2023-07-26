@@ -27,9 +27,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,9 +166,16 @@ public class PostgresUtils {
     return isXmin;
   }
 
-  public static boolean isIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
+  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
+  }
+
+  public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
+    return streamList.
+        stream().
+        map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).
+        collect(Collectors.joining(", "));
   }
 
 }

@@ -248,21 +248,14 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
-      - name: Install Pyenv
-        run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
-          rm -r venv || echo "no pre-existing venv"
-          python3 -m virtualenv venv
-          source venv/bin/activate
+          python-version: "3.10"
       - name: Install CI scripts
-        # all CI python packages have the prefix "ci_"
         run: |
-          source venv/bin/activate
-          pip install --quiet -e ./tools/ci_*
+          pip install pipx
+          pipx install airbyte-ci/connectors/ci_credentials
+          pipx install airbyte-ci/connectors/connector_ops
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
-          source venv/bin/activate
           ci_credentials ${{ matrix.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
@@ -290,7 +283,6 @@ jobs:
         id: qa_checks
         if: always()
         run: |
-          source venv/bin/activate
           run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
@@ -309,7 +301,6 @@ jobs:
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
         if: always()
         run: |
-          source venv/bin/activate
           ci_credentials ${{ matrix.connector }} update-secrets
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then

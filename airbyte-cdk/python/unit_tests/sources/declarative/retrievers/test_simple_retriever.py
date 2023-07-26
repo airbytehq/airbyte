@@ -75,10 +75,6 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_request_body_json.return_value = request_body_json
     request_kwargs = {"kwarg": "value"}
     requester.request_kwargs.return_value = request_kwargs
-    cache_filename = "cache"
-    requester.cache_filename = cache_filename
-    use_cache = True
-    requester.use_cache = use_cache
 
     retriever = SimpleRetriever(
         name="stream_name",
@@ -101,7 +97,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.stream_slices() == stream_slices
 
     assert retriever._last_response is None
-    assert retriever._records_from_last_response is None
+    assert retriever._records_from_last_response == []
     assert retriever.parse_response(response, stream_state={}) == records
     assert retriever._last_response == response
     assert retriever._records_from_last_response == records
@@ -112,8 +108,8 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.backoff_time(requests.Response()) == backoff_time
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
-    assert retriever.cache_filename == cache_filename
-    assert retriever.use_cache == use_cache
+    assert retriever.cache_filename == "stream_name.yml"
+    assert not retriever.use_cache
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
@@ -185,7 +181,7 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     )
 
     assert retriever._last_response is None
-    assert retriever._records_from_last_response is None
+    assert retriever._records_from_last_response == []
     assert retriever.parse_response(response, stream_state={}) == request_response_logs
     assert retriever._last_response == response
     assert retriever._records_from_last_response == request_response_logs
