@@ -28,7 +28,6 @@ public class DebeziumEventUtils {
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
     final JsonNode op = debeziumRecord.get("op");
-    System.out.println("Debezium record " + debeziumRecord);
 
     final JsonNode data = formatDebeziumData(before, after, source, op, cdcMetadataInjector);
     final String schemaName = cdcMetadataInjector.namespace(source);
@@ -59,7 +58,7 @@ public class DebeziumEventUtils {
     base.put(CDC_UPDATED_AT, transactionTimestamp);
     base.put(CDC_OP, getDebeziumOpReadable(op.asText()));
     cdcMetadataInjector.addMetaData(base, source);
-  
+
     if (after.isNull()) {
       base.put(CDC_DELETED_AT, transactionTimestamp);
     } else {
@@ -77,7 +76,7 @@ public class DebeziumEventUtils {
       case DELETE -> "DELETE";
       case READ -> "READ";
       default -> throw new RuntimeException("Encountered unhandled change event operation " + op);
-      //This should never happen as truncate and message events should be skipped by connectors. 
+      // This should never happen as truncate and message events should be skipped by connectors.
     };
   }
 
