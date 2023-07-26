@@ -91,7 +91,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         else:
                             # We shouldn't hit this branch. Either unparseable records should be skipped or we should fail
                             # Logging a warning as this is unexpected
-                            self.logger.warning(f"Unparseable record in file {file.uri} at line {line_no}")
+                            self.logger.warning(f"Tried to process an unparseable record in file {file.uri} at line {line_no}. This is probably due to a misconfiguration and a bug in the record validation policy.")
                             yield AirbyteMessage(
                                 type=MessageType.LOG,
                                 log=AirbyteLogMessage(
