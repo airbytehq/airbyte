@@ -58,7 +58,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 5. To authenticate:
 
 <!-- env:cloud -->
-**For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
+**For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
 <!-- /env:cloud -->
 <!-- env:oss -->
 **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
