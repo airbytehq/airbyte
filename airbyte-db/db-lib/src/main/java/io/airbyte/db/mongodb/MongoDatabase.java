@@ -38,7 +38,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
+public class    MongoDatabase extends AbstractDatabase implements AutoCloseable {
 
   public static final String COLLECTION_COUNT_KEY = "collectionCount";
   public static final String COLLECTION_STORAGE_SIZE_KEY = "collectionStorageSize";
@@ -137,12 +137,18 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
   public Map<String, Object> getCollectionStats(final String collectionName) {
     try {
       final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
-      return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
-          COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
-    } catch (final MongoCommandException e) {
-      LOGGER.warn("Unable to retrieve collection statistics", e);
-      return Map.of();
+      final var count = collectionStats.get("count");
+      final var storageSize = collectionStats.get("storageSize");
+
+      if (count != null && storageSize != null) {
+        return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
+            COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+      }
+    } catch (final Exception e) {
+      LOGGER.warn("Unable to retrieve collection statistics - {}", e.getMessage(), e);
     }
+
+    return Map.of();
   }
 
   public String getServerType() {
