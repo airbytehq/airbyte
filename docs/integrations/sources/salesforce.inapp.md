@@ -54,9 +54,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-
 5. To authenticate:
-
 <!-- env:cloud -->
 **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
 <!-- /env:cloud -->
