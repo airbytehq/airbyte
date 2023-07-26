@@ -51,13 +51,7 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                if config_format.autogenerate_column_names:
-                    headers = self._auto_generate_headers(fp, config_format)
-                else:
-                    self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-                    reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
-                    headers = next(reader)  # type: ignore
-
+                headers = self._get_headers(fp, config_format, dialect_name)
                 schema = {field.strip(): {"type": "string"} for field in headers}
                 csv.unregister_dialect(dialect_name)
                 return schema
@@ -130,6 +124,16 @@ class CsvParser(FileTypeParser):
     def _skip_rows_before_header(fp: IOBase, rows_to_skip: int) -> None:
         for _ in range(rows_to_skip):
             fp.readline()
+
+    def _get_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> List[str]:
+        if config_format.autogenerate_column_names:
+            return self._auto_generate_headers(fp, config_format)
+        else:
+            # If we're not autogenerating column names, we need to skip the rows before the header
+            self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+            # Then read the header
+            reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+            return next(reader)  # type: ignore
 
     def _auto_generate_headers(self, fp: IOBase, config_format: CsvFormat) -> List[str]:
         """
