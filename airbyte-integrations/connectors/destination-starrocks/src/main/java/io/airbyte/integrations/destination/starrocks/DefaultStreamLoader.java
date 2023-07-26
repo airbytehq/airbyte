@@ -24,7 +24,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
@@ -33,15 +32,6 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +39,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -78,29 +64,6 @@ public class DefaultStreamLoader implements StreamLoader {
 
     private volatile long availableHostPos;
 
-    private CloseableHttpClient createHttpClient() throws Exception {
-        // Create a custom SSLContext that trusts all certificates
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, createTrustManager(), null);
-
-        // Build a custom CloseableHttpClient that uses the custom SSLContext
-        return HttpClients.custom()
-                .setSSLContext(sslContext)
-                .build();
-    }
-
-    private TrustManager[] createTrustManager() {
-        // Create a custom TrustManager that trusts all certificates
-        // this is work-in-place solution, which is potentially dangerous
-        return new TrustManager[] {
-            new X509TrustManager() {
-                public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException { }
-                public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException { }
-                public X509Certificate[] getAcceptedIssuers() { return null; }
-            }
-        };
-    }
-
     public DefaultStreamLoader(StreamLoadProperties properties) {
         this.properties = properties;
         this.database = properties.getDatabase();
@@ -110,31 +73,13 @@ public class DefaultStreamLoader implements StreamLoader {
                 database,
                 loadTable);
 
-        try {
-            // Create SSL context
-            TrustStrategy trustStrategy = new TrustSelfSignedStrategy();
-            SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial(trustStrategy).build();
-
-            // Create SSL socket factory with NoopHostnameVerifier
-            SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-
-            // Create connection manager with SSL support
-            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", sslSocketFactory)
-                    .build());
-
-            this.clientBuilder = HttpClients.custom()
-                    .setRedirectStrategy(new DefaultRedirectStrategy() {
-                        @Override
-                        protected boolean isRedirectable(String method) {
-                            return true;
-                        }
-                    })
-                    .setConnectionManager(connectionManager);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to configure SSL/TLS", e);
-        }
+        this.clientBuilder  = HttpClients.custom()
+                .setRedirectStrategy(new DefaultRedirectStrategy() {
+                    @Override
+                    protected boolean isRedirectable(String method) {
+                        return true;
+                    }
+                });
     }
 
     @Override
@@ -153,19 +98,19 @@ public class DefaultStreamLoader implements StreamLoader {
 
         int port = properties.getHttpPort();
         String scheme = "http";
-
-        // check if port for approapriate url scheme
-        if (port == 443) {
+        // check if port for appropriate url scheme
+        if (properties.getSSL()) {
             scheme = "https";
         }
 
         String sendUrl = String.format("%s://%s:%d%s", scheme, host, port, loadUrlPath);
-        String label = StreamLoadUtils.label(loadTable);
+        LOG.info("Stream Load URL : {}", sendUrl);
 
+        String label = StreamLoadUtils.label(loadTable);
         HttpPut httpPut = new HttpPut(sendUrl);
-        httpPut.setConfig(RequestConfig.custom().setExpectContinueEnabled(true).setRedirectsEnabled(true).build());
+
         httpPut.setEntity(new StreamLoadEntity(records));
-        httpPut.setHeaders(defaultHeaders);
+        httpPut.setHeaders(defaultHeaders);;
         httpPut.addHeader("label", label);
 
         LOG.info("Stream loading, label : {}, database : {}, table : {}, request : {}",
@@ -173,7 +118,7 @@ public class DefaultStreamLoader implements StreamLoader {
 
         String responseBody = null;
 
-        try (CloseableHttpClient client = createHttpClient()) {
+        try (CloseableHttpClient client = HttpClients.createDefault();) {
             long startNanoTime = System.nanoTime();
             try (CloseableHttpResponse response = client.execute(httpPut)) {
                 HttpEntity responseEntity = response.getEntity();

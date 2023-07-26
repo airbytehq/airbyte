@@ -19,16 +19,20 @@ public class StreamLoadProperties {
     private String table;
     private String[] feHost;
     private int httpPort;
+    private int queryPort;
     private String user;
     private String password;
+    private boolean ssl;
 
-    public StreamLoadProperties(String database, String table, String[] feHost, int httpPort, String user, String password) {
+    public StreamLoadProperties(String database, String table, String[] feHost, int httpPort, String user, String password, int queryPort, boolean ssl) {
         this.database = database;
         this.table = table;
         this.feHost = feHost;
         this.httpPort = httpPort;
         this.user = user;
         this.password = password;
+        this.queryPort = queryPort;
+        this.ssl = ssl;
     }
 
     public String getDatabase() {
@@ -53,5 +57,13 @@ public class StreamLoadProperties {
 
     public String getPassword() {
         return password;
+    }
+
+    public int getQueryPort() {
+        return queryPort;
+    }
+
+    public boolean getSSL() {
+        return ssl;
     }
 }

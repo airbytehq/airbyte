@@ -22,7 +22,7 @@ public interface StarRocksConstants {
     String DEFAULT_USER = "root";
     String KEY_PWD = "password";
     String DEFAULT_PWD = "";
-    String KEY_FE_HOST = "fe_host";
+    String KEY_FE_HOST = "host";
     String KEY_FE_HTTP_PORT = "http_port";
     int DEFAULT_FE_HTTP_PORT = 8030;
     String KEY_FE_QUERY_PORT = "query_port";
@@ -30,6 +30,8 @@ public interface StarRocksConstants {
     String KEY_DB = "database";
     String DEFAULT_DB = "airbyte";
     String KEY_TABLE = "table";
+    String KEY_SSL = "ssl";
+
 
     //jdbc
     String JDBC_DRIVER = "com.mysql.jdbc.Driver";

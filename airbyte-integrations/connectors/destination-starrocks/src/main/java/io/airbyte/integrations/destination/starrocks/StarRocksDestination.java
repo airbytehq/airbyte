@@ -31,6 +31,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Consumer;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.impl.client.CloseableHttpClient;
+
+import org.apache.http.impl.client.HttpClients;
+import java.io.IOException;
+import org.apache.http.StatusLine;
+
 public class StarRocksDestination extends BaseConnector implements Destination {
 
     private static final Logger LOG = LoggerFactory.getLogger(StarRocksDestination.class);
@@ -47,6 +56,37 @@ public class StarRocksDestination extends BaseConnector implements Destination {
         try {
             Preconditions.checkNotNull(config);
             conn = SqlUtil.createJDBCConnection(config);
+
+            // test HTTP/HTTPS connectivity
+            String host = config.get(StarRocksConstants.KEY_FE_HOST).asText();
+            if (host == null) {
+                throw new IOException("Could not find an available fe host.");
+            }
+
+            int port = config.get(StarRocksConstants.KEY_FE_HTTP_PORT).asInt(StarRocksConstants.DEFAULT_FE_HTTP_PORT);
+            String scheme = "http";
+
+            // check if port for appropriate url scheme
+            if (config.get(StarRocksConstants.KEY_SSL).asBoolean()) {
+                scheme = "https";
+            }
+
+            String sendUrl = String.format("%s://%s:%d", scheme, host, port);
+            LOG.info("HTTP/HTTPS test connectivity : {}", sendUrl);
+
+            HttpPut httpPut = new HttpPut(sendUrl);
+
+            try (CloseableHttpClient client = HttpClients.createDefault();) {
+                CloseableHttpResponse response = client.execute(httpPut);
+                StatusLine sl = response.getStatusLine();
+                LOG.info("HTTP Response Code : {}", sl.getStatusCode());
+                switch (sl.getStatusCode()) {
+                    case 404: new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("No HTTP/HTTPS connectivity.");;                     
+                    default: new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);;                     
+                }
+            }
+
+
         } catch (final Exception e) {
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage());
         }

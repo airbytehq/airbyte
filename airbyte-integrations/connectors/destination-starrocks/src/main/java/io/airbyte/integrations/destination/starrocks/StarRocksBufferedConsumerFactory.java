@@ -159,6 +159,8 @@ public class StarRocksBufferedConsumerFactory {
                     StarRocksConstants.DEFAULT_PWD :
                     config.get(StarRocksConstants.KEY_PWD).asText();
             int httpPort = config.get(StarRocksConstants.KEY_FE_HTTP_PORT).asInt(StarRocksConstants.DEFAULT_FE_HTTP_PORT);
+            int queryPort = config.get(StarRocksConstants.KEY_FE_QUERY_PORT).asInt(StarRocksConstants.DEFAULT_FE_QUERY_PORT);
+            boolean ssl = config.get(StarRocksConstants.KEY_SSL).asBoolean();
 
             final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
             Preconditions.checkNotNull(syncMode, "Undefined destination sync mode");
@@ -178,7 +180,7 @@ public class StarRocksBufferedConsumerFactory {
 
 
             StreamLoadProperties streamLoadProperties = new StreamLoadProperties(
-                    database, tmpTableName, feHost.split(","), httpPort, user, password);
+                    database, tmpTableName, feHost.split(","), httpPort, user, password, queryPort, ssl);
             StreamLoader streamLoader = new DefaultStreamLoader(streamLoadProperties);
 
             return StarRocksWriteConfig.builder()

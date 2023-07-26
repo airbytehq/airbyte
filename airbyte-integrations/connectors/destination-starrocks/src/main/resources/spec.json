@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "StarRocks Destination Spec",
     "type": "object",
-    "required": ["fe_host"],
+    "required": ["host"],
     "properties": {
       "host": {
         "title": "Host",
@@ -57,6 +57,13 @@
         "default": "",
         "airbyte_secret": true,
         "order": 5
+      },
+      "ssl": {
+        "title": "SSL",
+        "description": "Use SSL connection.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
       }
     }
   }

@@ -15,7 +15,7 @@ dependencies {
     implementation 'com.alibaba:fastjson:1.2.75'
 
     implementation project(':airbyte-config-oss:config-models-oss')
-//    implementation project(':airbyte-protocol:protocol-models')
+    // implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation libs.airbyte.protocol
