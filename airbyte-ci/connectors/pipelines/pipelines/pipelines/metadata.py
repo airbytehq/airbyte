@@ -120,7 +120,7 @@ class DeployOrchestrator(Step):
         "--deployment",
         "prod",
         "--python-version",
-        "3.10",
+        "3.9",
     ]
 
     async def _run(self) -> StepResult:
