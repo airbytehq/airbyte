@@ -1,7 +1,7 @@
 ## Prerequisites
 
 * [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
-* (Optional) Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
+* (Optional, Recommended) Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
 
 ## Setup guide
 
@@ -44,7 +44,7 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 
 * If the object has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
 
-### Incremental Deletes
+### Incremental deletes
 
 The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
 
