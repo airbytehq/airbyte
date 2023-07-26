@@ -143,7 +143,7 @@ class CsvParser(FileTypeParser):
         return [f"f{i}" for i in range(number_of_columns)]
 
 
-def cast_types(row: Dict[str, str], property_types: Dict[str, Any], format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
+def cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
     """
     Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 
@@ -169,9 +169,9 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], format: CsvF
 
             elif python_type == bool:
                 try:
-                    if value in format.true_values:
+                    if value in config_format.true_values:
                         cast_value = True
-                    elif value in format.false_values:
+                    elif value in config_format.false_values:
                         cast_value = False
                     else:
                         raise ValueError(f"Value {value} is not a valid boolean value")

@@ -2624,3 +2624,148 @@ csv_autogenerate_column_names_scenario = (
         ]
     )
 ).build()
+
+csv_custom_bool_values_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_bool_values")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": {"col1": "boolean", "col2": "boolean"},
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "true_values": ["this_is_true"],
+                            "false_values": ["this_is_false"],
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("this_is_true", "this_is_false"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "boolean"
+                            },
+                            "col2": {
+                                "type": "boolean"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": True, "col2": False, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
+
+csv_custom_null_values_scenario = (
+    TestScenarioBuilder()
+    .set_name("csv_custom_null_values")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "input_schema": {"col1": "boolean", "col2": "string"},
+                    "format": {
+                        "csv": {
+                            "filetype": "csv",
+                            "null_values": ["null"],
+                        }
+                    }
+                }
+            ],
+            "start_date": "2023-06-04T03:54:07Z"
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("null", "na"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": "boolean"
+                            },
+                            "col2": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"data": {"col1": None, "col2": "na", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
+        ]
+    )
+).build()
