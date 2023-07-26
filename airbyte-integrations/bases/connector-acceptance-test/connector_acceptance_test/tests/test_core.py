@@ -121,7 +121,7 @@ class TestSpec(BaseTest):
         except jsonschema.exceptions.SchemaError as err:
             pytest.fail(f"Spec is invalid: {err}")
 
-    def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
+    def test_match_expected(self, connector_spec: Optional[ConnectorSpecification], actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
@@ -276,12 +276,12 @@ class TestSpec(BaseTest):
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
 
-    def test_property_type_is_not_array(self, connector_spec: ConnectorSpecification):
+    def test_property_type_is_not_array(self, actual_connector_spec: ConnectorSpecification):
         """
         Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
         """
         errors = []
-        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/properties/*/type", yielded=True):
+        for type_path, type_value in dpath.util.search(actual_connector_spec.connectionSpecification, "**/properties/*/type", yielded=True):
             if isinstance(type_value, List):
                 number_of_types = len(type_value)
                 if number_of_types != 2 and number_of_types != 1:
@@ -294,14 +294,14 @@ class TestSpec(BaseTest):
                     )
         self._fail_on_errors(errors)
 
-    def test_object_not_empty(self, connector_spec: ConnectorSpecification):
+    def test_object_not_empty(self, actual_connector_spec: ConnectorSpecification):
         """
         Each object field needs to have at least one property as the UI won't be able to show them otherwise.
         If the whole spec is empty, it's allowed to have a single empty object at the top level
         """
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         errors = []
-        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+        for type_path, type_value in dpath.util.search(actual_connector_spec.connectionSpecification, "**/type", yielded=True):
             if type_path == "type":
                 # allow empty root object
                 continue
@@ -313,13 +313,13 @@ class TestSpec(BaseTest):
                     )
         self._fail_on_errors(errors)
 
-    def test_array_type(self, connector_spec: ConnectorSpecification):
+    def test_array_type(self, actual_connector_spec: ConnectorSpecification):
         """
         Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
         """
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         errors = []
-        for type_path, type_type in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+        for type_path, type_type in dpath.util.search(actual_connector_spec.connectionSpecification, "**/type", yielded=True):
             property_definition = schema_helper.get_parent(type_path)
             if type_type != "array":
                 # unrelated "items", not an array definition
@@ -333,7 +333,7 @@ class TestSpec(BaseTest):
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
         self._fail_on_errors(errors)
 
-    def test_forbidden_complex_types(self, connector_spec: ConnectorSpecification):
+    def test_forbidden_complex_types(self, actual_connector_spec: ConnectorSpecification):
         """
         not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
         """
@@ -351,25 +351,27 @@ class TestSpec(BaseTest):
         ]
         found_keys = set()
         for forbidden_key in forbidden_keys:
-            for path, value in dpath.util.search(connector_spec.connectionSpecification, f"**/{forbidden_key}", yielded=True):
+            for path, value in dpath.util.search(actual_connector_spec.connectionSpecification, f"**/{forbidden_key}", yielded=True):
                 found_keys.add(path)
 
         for forbidden_key in forbidden_keys:
             # remove forbidden keys if they are used as properties directly
-            for path, _value in dpath.util.search(connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True):
+            for path, _value in dpath.util.search(
+                actual_connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True
+            ):
                 found_keys.remove(path)
 
         if len(found_keys) > 0:
             key_list = ", ".join(found_keys)
             pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
 
-    def test_date_pattern(self, connector_spec: ConnectorSpecification, detailed_logger):
+    def test_date_pattern(self, actual_connector_spec: ConnectorSpecification, detailed_logger):
         """
         Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
         that corresponds with the format the datepicker component is creating.
         """
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
-        for format_path, format in dpath.util.search(connector_spec.connectionSpecification, "**/format", yielded=True):
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        for format_path, format in dpath.util.search(actual_connector_spec.connectionSpecification, "**/format", yielded=True):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
                 continue
@@ -384,12 +386,12 @@ class TestSpec(BaseTest):
                     f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
                 )
 
-    def test_date_format(self, connector_spec: ConnectorSpecification, detailed_logger):
+    def test_date_format(self, actual_connector_spec: ConnectorSpecification, detailed_logger):
         """
         Properties with a pattern that looks like a date should have their format set to date or date-time.
         """
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
-        for pattern_path, pattern in dpath.util.search(connector_spec.connectionSpecification, "**/pattern", yielded=True):
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        for pattern_path, pattern in dpath.util.search(actual_connector_spec.connectionSpecification, "**/pattern", yielded=True):
             if not isinstance(pattern, str):
                 # pattern is not a pattern definition here but a property named pattern
                 continue
@@ -405,15 +407,15 @@ class TestSpec(BaseTest):
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
-    def test_duplicate_order(self, connector_spec: ConnectorSpecification):
+    def test_duplicate_order(self, actual_connector_spec: ConnectorSpecification):
         """
         Custom ordering of field (via the "order" property defined in the field) is not allowed to have duplicates within the same group.
         `{ "a": { "order": 1 }, "b": { "order": 1 } }` is invalid because there are two fields with order 1
         `{ "a": { "order": 1 }, "b": { "order": 1, "group": "x" } }` is valid because the fields with the same order are in different groups
         """
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         errors = []
-        for properties_path, properties in dpath.util.search(connector_spec.connectionSpecification, "**/properties", yielded=True):
+        for properties_path, properties in dpath.util.search(actual_connector_spec.connectionSpecification, "**/properties", yielded=True):
             definition = schema_helper.get_parent(properties_path)
             if definition.get("type") != "object":
                 # unrelated "properties", not an actual object definition
@@ -432,15 +434,15 @@ class TestSpec(BaseTest):
                 orders_for_group.add(order)
         self._fail_on_errors(errors)
 
-    def test_nested_group(self, connector_spec: ConnectorSpecification):
+    def test_nested_group(self, actual_connector_spec: ConnectorSpecification):
         """
         Groups can only be defined on the top level properties
         `{ "a": { "group": "x" }}` is valid because field "a" is a top level field
         `{ "a": { "oneOf": [{ "type": "object", "properties": { "b": { "group": "x" } } }] }}` is invalid because field "b" is nested in a oneOf
         """
         errors = []
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
-        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
             group_path = result[0]
             parent_path = schema_helper.get_parent_path(group_path)
             is_property_named_group = parent_path.endswith("properties")
@@ -449,13 +451,13 @@ class TestSpec(BaseTest):
                 errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
         self._fail_on_errors(errors)
 
-    def test_required_always_show(self, connector_spec: ConnectorSpecification):
+    def test_required_always_show(self, actual_connector_spec: ConnectorSpecification):
         """
         Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
         """
         errors = []
-        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
-        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
             always_show_path = result[0]
             parent_path = schema_helper.get_parent_path(always_show_path)
             is_property_named_always_show = parent_path.endswith("properties")

@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
+import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from destination_langchain.config import ProcessingConfigModel
@@ -206,16 +207,26 @@ def test_process_multiple_chunks_with_relevant_fields():
     assert id_to_delete is None
 
 
-def test_process_multiple_chunks_with_dedupe_mode():
+@pytest.mark.parametrize(
+    "primary_key_value, stringified_primary_key, primary_key",
+    [
+        ({"id": 99}, "99", [["id"]]),
+        ({"id": 99, "name": "John Doe"}, "99_John Doe", [["id"], ["name"]]),
+        ({"id": 99, "name": "John Doe", "age": 25}, "99_John Doe_25", [["id"], ["name"], ["age"]]),
+        ({"nested": {"id": "abc"}, "name": "John Doe"}, "abc_John Doe", [["nested", "id"], ["name"]]),
+        ({"nested": {"id": "abc"}}, "abc___not_found__", [["nested", "id"], ["name"]]),
+    ]
+)
+def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]):
     processor = initialize_processor()
 
     record = AirbyteRecordMessage(
         stream="stream1",
         namespace="namespace1",
         data={
-            "id": 99,
             "text": "This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks",
             "age": 25,
+            **primary_key_value
         },
         emitted_at=1234,
     )
@@ -223,10 +234,11 @@ def test_process_multiple_chunks_with_dedupe_mode():
     processor.text_fields = ["text"]
 
     processor.streams["namespace1_stream1"].destination_sync_mode = DestinationSyncMode.append_dedup
-    processor.streams["namespace1_stream1"].primary_key = [["id"]]  # Primary key defined
+    processor.streams["namespace1_stream1"].primary_key = primary_key
 
     chunks, id_to_delete = processor.process(record)
 
     assert len(chunks) > 1
-    assert chunks[0].metadata["_record_id"] == 99
-    assert id_to_delete == 99
+    for chunk in chunks:
+        assert chunk.metadata["_record_id"] == stringified_primary_key
+    assert id_to_delete == stringified_primary_key

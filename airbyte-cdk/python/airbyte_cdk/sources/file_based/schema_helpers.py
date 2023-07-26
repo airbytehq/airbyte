@@ -42,6 +42,7 @@ TYPE_PYTHON_MAPPING: Mapping[str, Tuple[str, Optional[Type[Any]]]] = {
     "object": ("object", dict),
     "string": ("string", str),
 }
+PYTHON_TYPE_MAPPING = {t: k for k, (_, t) in TYPE_PYTHON_MAPPING.items()}
 
 
 def get_comparable_type(value: Any) -> Optional[ComparableType]:

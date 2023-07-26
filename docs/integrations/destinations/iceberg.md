@@ -50,13 +50,16 @@ specify the target size of compacted Iceberg data file.
     rename. For `HadoopCatalog`, this connector use **Storage Config** (S3 or HDFS) to manage Iceberg tables.
   - [JdbcCatalog](https://iceberg.apache.org/docs/latest/jdbc/) uses a table in a relational database to manage
     Iceberg tables through JDBC. So far, this connector supports **PostgreSQL** only.
+  - [RESTCatalog](https://iceberg.apache.org/docs/latest/spark-configuration/#catalog-configuration) connects to a REST
+    server, which manages Iceberg tables.
 - **Storage medium** means where Iceberg data files storages in. So far, this connector supports **S3/S3N/S3N**
   object-storage only.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject        |
-| :------ | :--------- | :------------------------------------------------------- | :------------- |
+|:--------| :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.3   | 2023-07-12 | [28158](https://github.com/airbytehq/airbyte/pull/28158) | Bump Iceberg library to 1.3.0 and add REST catalog support |
 | 0.1.2   | 2023-07-14 | [28345](https://github.com/airbytehq/airbyte/pull/28345) | Trigger rebuild of image |
 | 0.1.1   | 2023-02-27 | [23201](https://github.com/airbytehq/airbyte/pull/23301) | Bump Iceberg library to 1.1.0 |
 | 0.1.0   | 2022-11-01 | [18836](https://github.com/airbytehq/airbyte/pull/18836) | Initial Commit |
