@@ -55,6 +55,10 @@ class HttpRequester(Requester):
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     error_handler: Optional[ErrorHandler] = None
 
+    disable_retries: bool = False
+    _DEFAULT_MAX_RETRY = 5
+    _DEFAULT_RETRY_FACTOR = 5
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
         self._path = InterpolatedString.create(self.path, parameters=parameters)
@@ -153,10 +157,6 @@ class HttpRequester(Requester):
         return self._request_options_provider.get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-
-    disable_retries: bool = False
-    _DEFAULT_MAX_RETRY = 5
-    _DEFAULT_RETRY_FACTOR = 5
 
     @property
     def max_retries(self) -> Union[int, None]:

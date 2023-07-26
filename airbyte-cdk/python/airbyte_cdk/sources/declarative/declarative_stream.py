@@ -94,9 +94,9 @@ class DeclarativeStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,  # type: ignore
-        stream_slice: Mapping[str, Any] = None,  # type: ignore
-        stream_state: Mapping[str, Any] = None,  # type: ignore
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
@@ -113,7 +113,7 @@ class DeclarativeStream(Stream):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None  # type: ignore
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

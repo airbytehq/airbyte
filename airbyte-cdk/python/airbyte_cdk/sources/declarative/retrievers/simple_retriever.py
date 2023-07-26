@@ -100,10 +100,11 @@ class SimpleRetriever(Retriever):
         stream_slicer_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
     ) -> Union[Mapping[str, Any], str]:
         """
-        Get the request_option from the requester, the authenticator and extra_options passed in.
+        Get the request_option from the paginator and the stream slicer.
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         paginator_mapping, paginator_keys = self._get_mapping(
             paginator_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
@@ -224,7 +225,7 @@ class SimpleRetriever(Retriever):
             raise ValueError("Request body json cannot be a string")
         return body_json
 
-    def _path(
+    def _paginator_path(
         self,
     ) -> Optional[str]:
         """
@@ -279,7 +280,7 @@ class SimpleRetriever(Retriever):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Optional[requests.Response]:
         response = self.requester.send_request(
-            path=self._path(),
+            path=self._paginator_path(),
             stream_state=stream_state,
             stream_slice=stream_slice,
             next_page_token=next_page_token,

@@ -340,7 +340,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
         config={},
     )
 
-    actual_path = retriever._path()
+    actual_path = retriever._paginator_path()
     assert expected_path == actual_path
 
 

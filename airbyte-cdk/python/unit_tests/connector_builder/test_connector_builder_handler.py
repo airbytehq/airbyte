@@ -640,7 +640,7 @@ def create_mock_http_stream(name, url_base, path):
     http_stream.requester = MagicMock()
     http_stream.requester.get_url_base.return_value = url_base
     http_stream.requester.get_path.return_value = path
-    http_stream._path.return_value = None
+    http_stream._paginator_path.return_value = None
     return http_stream
 
 
