@@ -1,19 +1,22 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gympass",
+  "documentationUrl": "https://developers.gympass.com/product/partner-app-apis/1.0/events-api",
   "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
+    "overwrite","append"
   ],
   "supportsIncremental": true,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Gympass",
     "type": "object",
-    "required": ["TODO -- fix me!"],
+    "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
-      "TODO": {
+    "api_key": {
         "type": "string",
-        "description": "FIX ME"
+        "title": "Client Secret",
+        "description": "Your OAuth Bearer Token",
+        "airbyte_secret": true,
+        "order": 1
       }
     }
   }

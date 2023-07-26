@@ -3,6 +3,7 @@
 This is the repository for the Gympass destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/gympass).
 
+Built via: [Python destination tutorial](https://docs.airbyte.com/connector-development/tutorials/building-a-python-destination/)
 ## Local development
 
 ### Prerequisites
