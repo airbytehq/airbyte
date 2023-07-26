@@ -1,7 +1,8 @@
-FROM python:3.9-slim
+FROM python:3.9.17-alpine3.18
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk upgrade && apk add bash
+RUN apk add make automake gcc g++ subversion python3-dev
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 
