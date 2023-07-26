@@ -598,8 +598,12 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
         object_name (str): The name of the object in the GCS bucket.
         credentials (str): The GCS credentials as a JSON string.
     """
-    credentials = service_account.Credentials.from_service_account_info(json.loads(credentials))
+    # Exit early if file does not exist
+    if not file_path.exists():
+        main_logger.warning(f"File {file_path} does not exist. Skipping upload to GCS.")
+        return "", ""
 
+    credentials = service_account.Credentials.from_service_account_info(json.loads(credentials))
     client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(object_name)
