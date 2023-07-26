@@ -103,7 +103,7 @@ public class MySqlDebeziumStateUtil {
     return jsonNode;
   }
 
-  private MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
         resultSet -> {
