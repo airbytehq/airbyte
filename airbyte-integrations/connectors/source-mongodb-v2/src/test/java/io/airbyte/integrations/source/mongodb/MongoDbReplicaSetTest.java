@@ -115,7 +115,6 @@ class MongoDbReplicaSetTest {
 
     LOGGER.info("Initializing replica set...");
     final String replicaSetConfigJson = buildReplicaSetConfig();
-    LOGGER.info("********* {}", replicaSetConfigJson);
     LOGGER.info(MONGO_DB1.execInContainer("/bin/bash", "-c",
         "mongosh --eval \"rs.initiate(" + replicaSetConfigJson + ", { force: true })\"").getStderr());
     LOGGER.info(MONGO_DB1.execInContainer("/bin/bash", "-c",

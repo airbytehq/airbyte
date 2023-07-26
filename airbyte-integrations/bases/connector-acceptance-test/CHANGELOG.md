@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.2
+Do not enforce spec.json/spec.yaml
+
 ## 0.11.1
 Test connector image labels and make sure they are set correctly and match metadata.yaml.
 
