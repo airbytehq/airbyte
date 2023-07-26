@@ -58,7 +58,9 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     connector_secrets = {}
     for secret_file in await with_downloaded_secrets.directory(secrets_path).entries():
         secret_plaintext = await with_downloaded_secrets.directory(secrets_path).file(secret_file).contents()
-        connector_secrets[secret_file] = context.dagger_client.set_secret(secret_file, secret_plaintext)
+        # We have to namespace secrets as Dagger derives session wide secret ID from their name
+        unique_secret_name = f"{context.connector.technical_name}_{secret_file}"
+        connector_secrets[secret_file] = context.dagger_client.set_secret(unique_secret_name, secret_plaintext)
 
     return connector_secrets
 
@@ -82,8 +84,9 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
 
     return await (
-        ci_credentials.with_directory(secrets_path, context.updated_secrets_dir)
-        .with_exec(["ci_credentials", context.connector.technical_name, "update-secrets"])
+        ci_credentials.with_directory(secrets_path, context.updated_secrets_dir).with_exec(
+            ["ci_credentials", context.connector.technical_name, "update-secrets"]
+        )
     )
 
 
