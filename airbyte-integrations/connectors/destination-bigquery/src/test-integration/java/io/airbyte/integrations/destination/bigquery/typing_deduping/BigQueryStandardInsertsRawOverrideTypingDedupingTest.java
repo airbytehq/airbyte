@@ -6,4 +6,9 @@ public class BigQueryStandardInsertsRawOverrideTypingDedupingTest extends Abstra
   public String getConfigPath() {
     return "secrets/credentials-1s1t-standard-raw-override.json";
   }
+
+  @Override
+  protected String getRawDataset() {
+    return "overridden_raw_dataset";
+  }
 }

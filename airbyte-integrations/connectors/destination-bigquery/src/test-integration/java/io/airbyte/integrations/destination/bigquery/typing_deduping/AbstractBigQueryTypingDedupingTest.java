@@ -43,7 +43,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset(getConfig()) + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
@@ -63,15 +63,14 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     }
     // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
     // so we don't need to do any existence checks here.
-    bq.delete(TableId.of(getRawDataset(getConfig()), streamNamespace + "_ab__ab_" + streamName));
+    bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 
-  private static String getRawDataset(JsonNode config) {
-    if (config.hasNonNull(TypingAndDedupingFlag.RAW_DATA_DATASET)) {
-      return config.get(TypingAndDedupingFlag.RAW_DATA_DATASET).asText();
-    } else {
-      return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
-    }
+  /**
+   * Subclasses using a config with a nonstandard raw table dataset should override this method.
+   */
+  protected String getRawDataset() {
+    return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
   }
 }
