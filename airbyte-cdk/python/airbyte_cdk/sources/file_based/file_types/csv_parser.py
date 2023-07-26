@@ -51,7 +51,7 @@ class CsvParser(FileTypeParser):
             with stream_reader.open_file(file) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                if config_format.auto_generate_column_names:
+                if config_format.autogenerate_column_names:
                     headers = self._auto_generate_headers(fp, config_format)
                 else:
                     self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
@@ -92,7 +92,7 @@ class CsvParser(FileTypeParser):
             # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
             #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
             self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-            field_names = self._auto_generate_headers(fp, config_format) if config_format.auto_generate_column_names else None
+            field_names = self._auto_generate_headers(fp, config_format) if config_format.autogenerate_column_names else None
             reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
 
             yield from self._read_and_cast_types(reader, schema, config_format, logger)
