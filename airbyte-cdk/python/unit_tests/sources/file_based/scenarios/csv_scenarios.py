@@ -1626,8 +1626,8 @@ csv_string_can_be_null_with_input_schemas_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    '''col1,col2''',
-                    '''2,null''',
+                    ("col1", "col2"),
+                    ("2", "null"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
@@ -1696,8 +1696,8 @@ csv_string_not_null_if_no_null_values_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    '''col1,col2''',
-                    '''2,null''',
+                    ("col1", "col2"),
+                    ("2", "null"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
@@ -1767,8 +1767,8 @@ csv_strings_can_be_null_not_quoted_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    '''col1,col2''',
-                    '''2,null''',
+                    ("col1", "col2"),
+                    ("2", "null"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
@@ -1838,8 +1838,8 @@ csv_newline_in_values_quoted_value_scenario = (
         {
             "a.csv": {
                 "contents": [
-                    '''col1,col2''',
-                    '''2,"val\n2"''',
+                    ("col1", "col2"),
+                    ("2", 'val\n2'),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             }
