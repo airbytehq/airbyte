@@ -309,4 +309,8 @@ def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishCon
     As strict-encrypt variant are often modified in the same PR as the non strict-encrypt variant, we want to publish them first.
     """
 
-    return sorted(contexts, key=lambda context: ("strict-encrypt" in context.connector.technical_name, context.connector.technical_name), reverse=True)
+    def has_secure_variant(context: PublishConnectorContext) -> bool:
+        SECURE_VARIANT_KEYS = ["secure", "strict-encrypt"]
+        return any(key in context.connector.technical_name for key in SECURE_VARIANT_KEYS)
+
+    return sorted(contexts, key=lambda context: (has_secure_variant(context), context.connector.technical_name), reverse=True)
