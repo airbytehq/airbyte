@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from pipelines.contexts import ConnectorContext, PipelineContext
 
 
-def with_python_base(context: PipelineContext) -> Container:
+def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:
@@ -50,7 +50,7 @@ def with_python_base(context: PipelineContext) -> Container:
 
     base_container = (
         context.dagger_client.container()
-        .from_("python:3.10-slim")
+        .from_(f"python:{python_version}-slim")
         .with_exec(["apt-get", "update"])
         .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
