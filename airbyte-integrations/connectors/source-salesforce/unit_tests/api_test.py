@@ -82,16 +82,17 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     stream = generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
 
+
 def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    job_id = f"fake_job"
+    job_id = "fake_job"
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
     requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
     resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
-    result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
-                               [{'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "somelocator_1"}},
-    {'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "somelocator_2"}},
-    {'text': "\n".join(resp_text), "headers":{"Sforce-Locator": "null"}}
+    result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results", [
+        {'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
+        {'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
+        {'text': "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
     ])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
@@ -182,12 +183,12 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
     ],
 )
 def test_stream_start_date(
-    start_date_provided,
-    stream_name,
-    expected_start_date,
-    stream_config,
-    stream_api,
-    stream_config_without_start_date,
+        start_date_provided,
+        stream_name,
+        expected_start_date,
+        stream_config,
+        stream_api,
+        stream_config_without_start_date,
 ):
     if start_date_provided:
         stream = generate_stream(stream_name, stream_config, stream_api)
@@ -275,18 +276,19 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, c
 @pytest.mark.parametrize(
     "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
     (
-        (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}], 200, {}, "API Call limit is exceeded"),
-        (
-            200,
-            {"access_token": "access_token", "instance_url": "https://instance_url"},
-            403,
-            [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}],
-            'An error occurred: [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}]',
-        ),
+            (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}], 200, {},
+             "API Call limit is exceeded"),
+            (
+                    200,
+                    {"access_token": "access_token", "instance_url": "https://instance_url"},
+                    403,
+                    [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}],
+                    'An error occurred: [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}]',
+            ),
     ),
 )
 def test_check_connection_rate_limit(
-    stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
+        stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
 ):
     source = SourceSalesforce()
     logger = logging.getLogger("airbyte")
@@ -503,18 +505,18 @@ def test_csv_reader_dialect_unix():
 @pytest.mark.parametrize(
     "stream_names,catalog_stream_names,",
     (
-        (
-            ["stream_1", "stream_2", "Describe"],
-            None,
-        ),
-        (
-            ["stream_1", "stream_2"],
-            ["stream_1", "stream_2", "Describe"],
-        ),
-        (
-            ["stream_1", "stream_2", "stream_3", "Describe"],
-            ["stream_1", "Describe"],
-        ),
+            (
+                    ["stream_1", "stream_2", "Describe"],
+                    None,
+            ),
+            (
+                    ["stream_1", "stream_2"],
+                    ["stream_1", "stream_2", "Describe"],
+            ),
+            (
+                    ["stream_1", "stream_2", "stream_3", "Describe"],
+                    ["stream_1", "Describe"],
+            ),
     ),
 )
 def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_names) -> None:
@@ -671,10 +673,12 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
 @pytest.mark.parametrize(
     "status_code,response_json,log_message",
     [
-        (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
+        (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}],
+         "Account is not supported by the Bulk API"),
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
         (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
-        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
+        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}],
+         "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
     ]
 )
 def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, stream_api, status_code, response_json, log_message, caplog):
@@ -699,11 +703,12 @@ def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, s
 @pytest.mark.parametrize(
     "status_code,response_json,error_message",
     [
-        (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}], 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
+        (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR",
+                "message": "We can't complete the action because enabled transaction security policies took too long to complete."}],
+         'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
     ]
 )
 def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
-
     stream = generate_stream("Account", stream_config, stream_api)
     url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query/queryJobId"
     requests_mock.register_uri(

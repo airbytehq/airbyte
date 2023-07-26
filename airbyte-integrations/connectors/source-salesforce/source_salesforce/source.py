@@ -111,7 +111,8 @@ class SourceSalesforce(AbstractSource):
                 start_date = config.get(
                     "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
                 )
-                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
+                end_date = config.get("end_date")
+                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date, end_date=end_date)
             else:
                 stream = full_refresh(**streams_kwargs)
             if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
@@ -161,5 +162,7 @@ class SourceSalesforce(AbstractSource):
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
-                raise Exception(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")  # if got 403 rate limit response, finish the sync with success.
+                raise Exception(
+                    f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'"
+                )  # if got 403 rate limit response, finish the sync with success.
             raise error

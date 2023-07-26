@@ -33,7 +33,7 @@ from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
-# TODO can we remove this? 
+# TODO can we remove this?
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
@@ -565,6 +565,17 @@ class BulkSalesforceStream(SalesforceStream):
                 req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})  # 'maxRecords': 5
                 tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
                 for record in self.read_with_chunks(tmp_file, response_encoding):
+                    # Our typing may be wrong since read_with_chunks() claims to return Tuple[int, Mapping[str, Any]] but its actually a Mapping
+                    if isinstance(record, Mapping) and self.cursor_field:
+                        record_timestamp = record.get(self.cursor_field)
+                        if (
+                            record_timestamp
+                            and record_timestamp < stream_slice["start_date"]
+                            or record_timestamp > stream_slice["end_date"]
+                        ):
+                            self.logger.warning(
+                                f"Received record with id: {record.get('Id')} and timestamp: {record_timestamp} from the current batch that is outside the provided date range"
+                            )
                     yield record
 
                 if response_headers.get("Sforce-Locator", "null") == "null":
@@ -607,10 +618,11 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
     STREAM_SLICE_STEP = 10
 
-    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
+    def __init__(self, replication_key: str, start_date: Optional[str], end_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
         self.start_date = self.format_start_date(start_date)
+        self.end_date = self.format_start_date(end_date)
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -623,7 +635,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start, end = (None, None)
-        now = pendulum.now(tz="UTC")
+        now = pendulum.parse(self.end_date) if self.end_date else pendulum.now(tz="UTC")
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
 
         slice_number = 1
