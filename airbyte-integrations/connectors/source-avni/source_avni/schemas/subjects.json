@@ -1,105 +1,109 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "ID": {
       "type": "string"
     },
     "External ID": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "Voided": {
       "type": "boolean"
     },
     "Subject type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "Registration location": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "X": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "Y": {
-          "type": ["number", "null"],
+          "type": ["null", "number"],
           "example": 74.7364501
         }
       }
     },
     "Registration date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "location": {
-      "type": ["object", "null"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "relatives": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
           "Voided": {
             "type": "boolean"
           },
           "Relationship type": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "Relative ID": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "Relative external ID": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "Enter date": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "Exit date": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           }
         }
       }
     },
     "observations": {
-      "type": ["object", "null"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "encounters": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
-        "type": "string",
+        "type": ["null", "string"],
         "format": "uuid"
       }
     },
     "enrolments": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
-        "type": "string",
+        "type": ["null", "string"],
         "format": "uuid"
       }
     },
     "audit": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "Created at": {
-          "type": "string",
-          "format": "date-time",
-          "example": "2016-07-21T17:32:28Z"
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
         },
         "Last modified at": {
-          "type": "string",
-          "format": "date-time",
-          "example": "2018-07-21T17:32:28Z"
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
         },
         "Created by": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "Last modified by": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "Groups": {
-      "type": ["array","null"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["string","null"]
+        "type": ["null", "string"]
       }
     }
   }

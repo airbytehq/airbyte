@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - username
     - password
-    - lastModifiedDateTime
+    - start_date
   properties:
     username:
       type: string
@@ -15,7 +15,7 @@ connectionSpecification:
       type: string
       description: Your avni platform password
       airbyte_secret: true
-    lastModifiedDateTime:
+    start_date:
       type: string
       default: "2000-06-23T01:30:00.000Z"
       description: Specify Date and time from which you want to fetch data

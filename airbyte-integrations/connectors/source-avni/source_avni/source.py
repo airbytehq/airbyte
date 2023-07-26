@@ -10,19 +10,21 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import SyncMode
 
 
 class AvniStream(HttpStream, ABC):
 
     url_base = "https://app.avniproject.org/api/"
     primary_key = "ID"
+    cursor_value = None
+    current_page = 0
+    last_record = None
 
-    def __init__(self, lastModifiedDateTime: str, auth_token: str, **kwargs):
+    def __init__(self, start_date: str, auth_token: str, **kwargs):
         super().__init__(**kwargs)
-        self.cursor_value = None
-        self.current_page = 0
-        self.lastModifiedDateTime = lastModifiedDateTime
-        self.last_record = None
+        
+        self.start_date = start_date
         self.auth_token = auth_token
 
     def request_params(
@@ -52,8 +54,9 @@ class AvniStream(HttpStream, ABC):
 
         if self.last_record:
             updated_last_date = self.last_record["audit"]["Last modified at"]
-            self.state = {self.cursor_field[1]: updated_last_date}
-            self.last_record = None
+            if updated_last_date>self.state[self.cursor_field[1]]:
+                self.state = {self.cursor_field[1]: updated_last_date}
+        self.last_record = None
 
         return None
 
@@ -87,7 +90,7 @@ class IncrementalAvniStream(AvniStream, IncrementalMixin, ABC):
         if self.cursor_value:
             return {self.cursor_field[1]: self.cursor_value}
         else:
-            return {self.cursor_field[1]: self.lastModifiedDateTime}
+            return {self.cursor_field[1]: self.start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -96,26 +99,52 @@ class IncrementalAvniStream(AvniStream, IncrementalMixin, ABC):
 
 
 class Subjects(IncrementalAvniStream):
+    
+    """
+        This implement Subject Stream in Source Avni
+        Api docs : https://avni.readme.io/docs/api-guide
+        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    """
+    
     def path(self, **kwargs) -> str:
         return "subjects"
 
 
 class ProgramEnrolments(IncrementalAvniStream):
+    
+    """
+        This implement ProgramEnrolments Stream in Source Avni
+        Api docs : https://avni.readme.io/docs/api-guide
+        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    """
     def path(self, **kwargs) -> str:
         return "programEnrolments"
 
 
 class ProgramEncounters(IncrementalAvniStream):
+    
+    """
+        This implement ProgramEncounters Stream in Source Avni
+        Api docs : https://avni.readme.io/docs/api-guide
+        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    """
     def path(self, **kwargs) -> str:
         return "programEncounters"
 
 
 class Encounters(IncrementalAvniStream):
+    
+    """
+        This implement Encounters Stream in Source Avni
+        Api docs : https://avni.readme.io/docs/api-guide
+        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    """
     def path(self, **kwargs) -> str:
         return "encounters"
 
 
 class SourceAvni(AbstractSource):
+    
     def get_client_id(self):
 
         url_client = "https://app.avniproject.org/idp-details"
@@ -144,18 +173,12 @@ class SourceAvni(AbstractSource):
 
         try:
             auth_token = self.get_token(username, password, client_id)
+            stream_kwargs = {"auth_token": auth_token, "start_date": config["start_date"]}
+            stream = Subjects(**stream_kwargs).read_records(SyncMode.full_refresh)
+            return True, None
+        
         except Exception as error:
             return False, error
-
-        url = "https://app.avniproject.org/api/subjects"
-        params = {"lastModifiedDateTime": "2100-10-31T01:30:00.000Z"}
-        headers = {"accept": "application/json", "auth-token": auth_token}
-        response = requests.get(url, params=params, headers=headers)
-
-        if response.status_code == 200:
-            return True, None
-        else:
-            return False, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
@@ -170,7 +193,7 @@ class SourceAvni(AbstractSource):
 
         auth_token = self.get_token(username, password, client_id)
 
-        stream_kwargs = {"auth_token": auth_token, "lastModifiedDateTime": config["lastModifiedDateTime"]}
+        stream_kwargs = {"auth_token": auth_token, "start_date": config["start_date"]}
 
         return [
             Subjects(**stream_kwargs),
