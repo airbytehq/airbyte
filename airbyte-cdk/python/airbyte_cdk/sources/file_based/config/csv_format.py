@@ -16,6 +16,9 @@ class QuotingBehavior(Enum):
     QUOTE_NONNUMERIC = "Quote Non-numeric"
     QUOTE_NONE = "Quote None"
 
+DEFAULT_TRUE_VALUES = ['y', 'yes', 't', 'true', 'on', '1']
+DEFAULT_FALSE_VALUES = ['n', 'no', 'f', 'false', 'off', '0']
+
 
 class CsvFormat(BaseModel):
     filetype: Literal["csv"] = "csv"
@@ -61,6 +64,12 @@ class CsvFormat(BaseModel):
     )
     auto_generate_column_names: bool = Field(
         title="Autogenerate Column Names", default=False, description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header."
+    )
+    true_values: List[str] = Field(
+        default=DEFAULT_TRUE_VALUES,
+    )
+    false_values: List[str] = Field(
+        default=DEFAULT_FALSE_VALUES,
     )
 
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not

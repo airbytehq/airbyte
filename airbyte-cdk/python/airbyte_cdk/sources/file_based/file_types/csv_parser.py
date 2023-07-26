@@ -74,38 +74,32 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Iterable[Optional[Dict[str, Any]]]:
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
-        config_format = config.format.get(config.file_type) if config.format else None
-        if config_format:
-            if not isinstance(config_format, CsvFormat):
-                raise ValueError(f"Invalid format config: {config_format}")
-            null_values = config_format.null_values if config_format else []
-            # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
-            # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
-            dialect_name = config.name + DIALECT_NAME
-            csv.register_dialect(
-                dialect_name,
-                delimiter=config_format.delimiter,
-                quotechar=config_format.quote_char,
-                escapechar=config_format.escape_char,
-                doublequote=config_format.double_quote,
-                quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
-            )
-            with stream_reader.open_file(file) as fp:
-                # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
-                #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-                field_names = self._auto_generate_headers(fp, config_format) if config_format.auto_generate_column_names else None
-                reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
+        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        if not isinstance(config_format, CsvFormat):
+            raise ValueError(f"Invalid format config: {config_format}")
+        # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
+        # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
+        dialect_name = config.name + DIALECT_NAME
+        csv.register_dialect(
+            dialect_name,
+            delimiter=config_format.delimiter,
+            quotechar=config_format.quote_char,
+            escapechar=config_format.escape_char,
+            doublequote=config_format.double_quote,
+            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+        )
+        with stream_reader.open_file(file) as fp:
+            # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
+            #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
+            self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+            field_names = self._auto_generate_headers(fp, config_format) if config_format.auto_generate_column_names else None
+            reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
 
-                yield from self._read_and_cast_types(reader, schema, null_values, config_format.skip_rows_after_header, logger)
-        else:
-            with stream_reader.open_file(file) as fp:
-                reader = csv.DictReader(fp)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, [], 0, logger)
+            yield from self._read_and_cast_types(reader, schema, config_format, logger)
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], null_values: List[str], skip_rows_after_header: int, logger: logging.Logger  # type: ignore
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger  # type: ignore
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -116,14 +110,14 @@ class CsvParser(FileTypeParser):
         """
         if not schema:
             for i, row in enumerate(reader):
-                if i < skip_rows_after_header:
+                if i < config_format.skip_rows_after_header:
                     continue
-                yield CsvParser._to_nullable(row, null_values)
+                yield CsvParser._to_nullable(row, config_format.null_values)
 
         else:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
             for row in reader:
-                yield CsvParser._to_nullable(cast_types(row, property_types, logger), null_values)
+                yield CsvParser._to_nullable(cast_types(row, property_types, config_format, logger), config_format.null_values)
 
     @staticmethod
     def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional[Dict[str, Optional[str]]]:
@@ -149,7 +143,7 @@ class CsvParser(FileTypeParser):
         return [f"f{i}" for i in range(number_of_columns)]
 
 
-def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
+def cast_types(row: Dict[str, str], property_types: Dict[str, Any], format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
     """
     Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 
@@ -175,7 +169,12 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], logger: logg
 
             elif python_type == bool:
                 try:
-                    cast_value = strtobool(value)
+                    if value in format.true_values:
+                        cast_value = True
+                    elif value in format.false_values:
+                        cast_value = False
+                    else:
+                        raise ValueError(f"Value {value} is not a valid boolean value")
                 except ValueError:
                     warnings.append(_format_warning(key, value, prop_type))
 
