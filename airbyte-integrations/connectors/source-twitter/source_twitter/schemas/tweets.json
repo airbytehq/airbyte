@@ -2,33 +2,63 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "edit_history_tweet_ids": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
+    "attachments": {
+      "type": ["null", "object"]
     },
-    "id": {
+    "author_id": {
       "type": ["null", "string"]
     },
-    "text": {
+    "context_annotations": {
+      "type": ["null", "object"]
+    },
+    "conversation_id": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "lang": {
+    "edit_controls": {
+      "type": ["null", "object"]
+    },
+    "edit_history_tweet_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "entities": {
+      "type": ["null", "object"]
+    },
+    "geo": {
       "type": ["null", "string"]
     },
-    "author_id": {
-      "type": ["null", "string"]
-    },
-    "conversation_id": {
+    "id": {
       "type": ["null", "string"]
     },
     "in_reply_to_user_id": {
       "type": ["null", "string"]
+    },
+    "lang": {
+      "type": ["null", "string"]
+    },
+    "possibly_sensitive": {
+      "type": ["null", "string"]
+    },
+    "referenced_tweets": {
+      "type": ["null", "array"]
+    },
+    "reply_settings": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "withheld": {
+      "type": ["null", "object"]
     }
   }
 }
