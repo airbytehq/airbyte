@@ -34,9 +34,11 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
     success_user_provided_schema_scenario,
 )
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_custom_bool_values_scenario,
     csv_custom_delimiter_in_double_quotes_scenario,
     csv_custom_delimiter_with_escape_char_scenario,
     csv_custom_format_scenario,
+    csv_custom_null_values_scenario,
     csv_double_quote_is_set_scenario,
     csv_escape_char_is_set_scenario,
     csv_legacy_format_scenario,
@@ -60,8 +62,6 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
-    csv_custom_bool_values_scenario,
-    csv_custom_null_values_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,

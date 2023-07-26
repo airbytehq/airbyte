@@ -16,8 +16,9 @@ class QuotingBehavior(Enum):
     QUOTE_NONNUMERIC = "Quote Non-numeric"
     QUOTE_NONE = "Quote None"
 
-DEFAULT_TRUE_VALUES = ['y', 'yes', 't', 'true', 'on', '1']
-DEFAULT_FALSE_VALUES = ['n', 'no', 'f', 'false', 'off', '0']
+
+DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
+DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
@@ -60,24 +61,18 @@ class CsvFormat(BaseModel):
         description="The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
     )
     skip_rows_after_header: int = Field(
-        title="Skip Rows After Header",
-        default=0,
-        description="The number of rows to skip after the header row."
+        title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row."
     )
     autogenerate_column_names: bool = Field(
         title="Autogenerate Column Names",
         default=False,
-        description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header."
+        description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header.",
     )
     true_values: List[str] = Field(
-        title="True Values",
-        default=DEFAULT_TRUE_VALUES,
-        description="A set of strings that should be interpreted as true values."
+        title="True Values", default=DEFAULT_TRUE_VALUES, description="A set of strings that should be interpreted as true values."
     )
     false_values: List[str] = Field(
-        title="False Values",
-        default=DEFAULT_FALSE_VALUES,
-        description="A set of strings that should be interpreted as false values."
+        title="False Values", default=DEFAULT_FALSE_VALUES, description="A set of strings that should be interpreted as false values."
     )
 
     # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not

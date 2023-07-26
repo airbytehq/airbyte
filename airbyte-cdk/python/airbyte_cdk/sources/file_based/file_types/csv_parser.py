@@ -176,12 +176,7 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_forma
 
             elif python_type == bool:
                 try:
-                    if value in config_format.true_values:
-                        cast_value = True
-                    elif value in config_format.false_values:
-                        cast_value = False
-                    else:
-                        raise ValueError(f"Value {value} is not a valid boolean value")
+                    cast_value = _value_to_bool(value, config_format.true_values, config_format.false_values)
                 except ValueError:
                     warnings.append(_format_warning(key, value, prop_type))
 
@@ -215,6 +210,14 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_forma
             f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join([w for w in warnings])}",
         )
     return result
+
+
+def _value_to_bool(value: str, true_values: List[str], false_values: List[str]) -> bool:
+    if value in true_values:
+        return True
+    if value in false_values:
+        return False
+    raise ValueError(f"Value {value} is not a valid boolean value")
 
 
 def _format_warning(key: str, value: str, expected_type: Optional[Any]) -> str:

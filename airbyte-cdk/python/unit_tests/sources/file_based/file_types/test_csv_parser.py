@@ -5,8 +5,7 @@
 import logging
 
 import pytest
-
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES
+from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
 from airbyte_cdk.sources.file_based.file_types.csv_parser import cast_types
 
 PROPERTY_TYPES = {
