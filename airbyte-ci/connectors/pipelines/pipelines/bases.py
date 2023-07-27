@@ -102,7 +102,9 @@ class Step(ABC):
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
     should_log: ClassVar[bool] = True
-    max_duration: ClassVar[timedelta] = timedelta(hours=3)
+    # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
+    # The default of 5 hours is arbitrary and can be changed if needed.
+    max_duration: ClassVar[timedelta] = timedelta(hours=5)
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
