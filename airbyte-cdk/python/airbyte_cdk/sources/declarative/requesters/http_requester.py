@@ -4,6 +4,7 @@
 
 import logging
 import os
+import urllib
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Set, Tuple, Union
@@ -350,6 +351,25 @@ class HttpRequester(Requester):
             raise ValueError("Request body json cannot be a string")
         return options
 
+    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+        """
+        Remove query parameters from params mapping if they are already encoded in the URL.
+        :param url: URL with
+        :param params:
+        :return:
+        """
+        if params is None:
+            params = {}
+        query_string = urllib.parse.urlparse(url).query
+        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
+
+        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
+        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
+
+    @classmethod
+    def _join_url(cls, url_base: str, path: str) -> str:
+        return urljoin(url_base, path)
+
     def _create_prepared_request(
         self,
         path: str,
@@ -358,8 +378,10 @@ class HttpRequester(Requester):
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
+        url = urljoin(self.get_url_base(), path)
         http_method = str(self._http_method.value)
-        args = {"method": http_method, "url": urljoin(self.get_url_base(), path), "headers": headers, "params": params}
+        query_params = self.deduplicate_query_params(url, params)
+        args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -421,7 +443,7 @@ class HttpRequester(Requester):
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request)  # type: ignore
