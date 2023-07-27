@@ -103,6 +103,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.16.0  | 2023-07-27 | [28776](https://github.com/airbytehq/airbyte/pull/28776) | Add new fields to stream schemas                                                                                                                     |
 | 3.15.0  | 2023-07-09 | [28709](https://github.com/airbytehq/airbyte/pull/28709) | Remove duplicate streams                                                                                                                             |
 | 3.14.0  | 2023-07-09 | [27217](https://github.com/airbytehq/airbyte/pull/27217) | Add `ShippingRates` stream                                                                                                                           |
 | 3.13.0  | 2023-07-18 | [28466](https://github.com/airbytehq/airbyte/pull/28466) | Pin source API version                                                                                                                               |
