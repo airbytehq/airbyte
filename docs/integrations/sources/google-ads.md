@@ -15,20 +15,24 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ### Step 1: (For Airbyte Open Source) Apply for a developer token
 
+To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
+
 :::note
-You'll need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/) since Google Ads accounts cannot generate a developer token.
+To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
 :::
 
-To set up the Google Ads source connector with Airbyte Open Source, you'll need a developer token. This token allows you to access your data from the Google Ads API. However, Google is selective about which software and use cases can get a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and make sure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
+To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
 
-Follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token) to apply for the token. Note that you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications.
-
-When you apply for a token, make sure to mention:
+When you apply for the token, make sure to include the following:
 
 - Why you need the token (example: Want to run some internal analytics)
 - That you will be using the Airbyte Open Source project
 - That you have full access to the code base (because we're open source)
 - That you have full access to the server running the code (because you're self-hosting Airbyte)
+
+:::note
+You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
+:::
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
