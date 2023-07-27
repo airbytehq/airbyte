@@ -92,6 +92,7 @@ runs:
       shell: bash
       run: |
         pip install pipx
+        pipx ensurepath
         pipx install airbyte-ci/connectors/pipelines/
     - name: Run airbyte-ci
       shell: bash
