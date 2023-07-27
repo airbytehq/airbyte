@@ -38,6 +38,7 @@ from orchestrator.config import (
     NIGHTLY_GHA_WORKFLOW_ID,
     CI_TEST_REPORT_PREFIX,
     CI_MASTER_TEST_OUTPUT_REGEX,
+    HIGH_QUEUE_PRIORITY,
 )
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
@@ -155,7 +156,7 @@ SENSORS = [
 ]
 
 SCHEDULES = [
-    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="* * * * *"),
+    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/5 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
 ]
 
