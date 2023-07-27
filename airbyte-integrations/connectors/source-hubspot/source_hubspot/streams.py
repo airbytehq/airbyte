@@ -16,7 +16,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -60,6 +60,16 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+
+def retry_token_expired_handler(**kwargs):
+    """Retry helper when token expired"""
+
+    return backoff.on_exception(
+        backoff.expo,
+        HubspotInvalidAuth,
+        **kwargs,
+    )
 
 
 def retry_connection_handler(**kwargs):
@@ -327,6 +337,12 @@ class Stream(HttpStream, ABC):
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == HTTPStatus.UNAUTHORIZED:
+            message = response.json().get("message")
+            raise HubspotInvalidAuth(message, response=response)
+        return super().should_retry(response)
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
             return float(response.headers.get("Retry-After", 3))
@@ -345,6 +361,7 @@ class Stream(HttpStream, ABC):
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
+    @retry_token_expired_handler(max_tries=5)
     def handle_request(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -1756,6 +1773,74 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+
+
+class ContactsMergedAudit(Stream):
+
+    url = "/contacts/v1/contact/vids/batch/"
+    updated_at_field = "timestamp"
+    scopes = {"crm.objects.contacts.read"}
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config = kwargs
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Override get_json_schema defined in Stream class
+        Final object does not have properties field
+        We return JSON schema as defined in :
+        source_hubspot/schemas/contacts_merged_audit.json
+        """
+        return super(Stream, self).get_json_schema()
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+
+        slices = []
+
+        # we can query a max of 100 contacts at a time
+        max_contacts = 100
+        slices = []
+        contact_batch = []
+
+        contacts = Contacts(**self.config)
+        contacts._sync_mode = SyncMode.full_refresh
+        contacts.filter_old_records = False
+
+        for contact in contacts.read_records(sync_mode=SyncMode.full_refresh):
+            if contact["properties"].get("hs_merged_object_ids"):
+                contact_batch.append(contact["id"])
+
+                if len(contact_batch) == max_contacts:
+                    slices.append({"vid": contact_batch})
+                    contact_batch = []
+
+        if contact_batch:
+            slices.append({"vid": contact_batch})
+
+        return slices
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {"vid": stream_slice["vid"]}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        response = self._parse_response(response)
+        if response.get("status", None) == "error":
+            self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+            return
+
+        for contact_id in list(response.keys()):
+            yield from response[contact_id]["merge-audits"]
 
 
 class EngagementsCalls(CRMSearchStream):

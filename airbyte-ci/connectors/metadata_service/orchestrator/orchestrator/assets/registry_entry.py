@@ -1,4 +1,5 @@
 import yaml
+import json
 import pandas as pd
 import os
 import copy
@@ -6,7 +7,7 @@ import copy
 from pydantic import ValidationError
 from google.cloud import storage
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue
+from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue, AutoMaterializePolicy
 from pydash.objects import get
 
 from metadata_service.spec_cache import get_cached_spec
@@ -17,7 +18,7 @@ from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 from orchestrator.utils.object_helpers import deep_copy_params
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES
+from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
 
 from typing import List, Optional, Tuple, Union
 
@@ -66,7 +67,7 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
     base_url = f"{documentation_url}-migrations"
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
-    return releases_or_breaking_change.get("migrationDocumentationUrl", default_migration_documentation_url)
+    return releases_or_breaking_change.get("migrationDocumentationUrl", None) or default_migration_documentation_url
 
 
 @deep_copy_params
@@ -164,8 +165,8 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
 
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
-    yaml_string = registry_entry_blob.download_as_string().decode("utf-8")
-    registry_entry_dict = yaml.safe_load(yaml_string)
+    json_string = registry_entry_blob.download_as_string().decode("utf-8")
+    registry_entry_dict = json.loads(json_string)
 
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
@@ -257,7 +258,9 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     registries_field = get(metadata_data_dict, "data.registries") or {}
 
     # registries is a dict of registry_name -> {enabled: bool}
-    all_enabled_registries = [registry_name for registry_name, registry_data in registries_field.items() if registry_data and registry_data.get("enabled")]
+    all_enabled_registries = [
+        registry_name for registry_name, registry_data in registries_field.items() if registry_data and registry_data.get("enabled")
+    ]
 
     valid_enabled_registries = [registry_name for registry_name in all_enabled_registries if registry_name in VALID_REGISTRIES]
 
@@ -301,57 +304,76 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
 
 
 @asset(
-    required_resource_keys={"all_metadata_file_blobs"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def, output_required=False
+    required_resource_keys={"all_metadata_file_blobs"},
+    group_name=GROUP_NAME,
+    partitions_def=metadata_partitions_def,
+    output_required=False,
+    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
-def metadata_entry(context: OpExecutionContext) -> Output[LatestMetadataEntry]:
+def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
+    context.log.info(f"Processing metadata file with etag {etag}")
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
 
     # find the blob with the matching etag
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
-    metadata_file_path = matching_blob.name
-
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
+
+    metadata_file_path = matching_blob.name
+    context.log.info(f"Found metadata file with path {metadata_file_path} for etag {etag}")
+
+    # read the matching_blob into a metadata definition
+    metadata_def = safe_parse_metadata_definition(matching_blob)
 
     dagster_metadata = {
         "bucket_name": matching_blob.bucket.name,
         "file_path": metadata_file_path,
         "partition_key": etag,
+        "invalid_metadata": metadata_def is None,
     }
-
-    # read the matching_blob into a metadata definition
-    metadata_def = safe_parse_metadata_definition(matching_blob)
 
     # return only if the metadata definition is valid
     if not metadata_def:
         context.log.warn(f"Could not parse metadata definition for {metadata_file_path}")
-    else:
-        icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
-        icon_blob = matching_blob.bucket.blob(icon_file_path)
+        return Output(value=None, metadata=dagster_metadata)
 
-        icon_url = (
-            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
-            if icon_blob.exists()
-            else None
-        )
+    icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
+    icon_blob = matching_blob.bucket.blob(icon_file_path)
 
-        metadata_entry = LatestMetadataEntry(
-            metadata_definition=metadata_def,
-            icon_url=icon_url,
-            bucket_name=matching_blob.bucket.name,
-            file_path=metadata_file_path,
-        )
+    icon_url = (
+        get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+        if icon_blob.exists()
+        else None
+    )
 
-        yield Output(value=metadata_entry, metadata=dagster_metadata)
+    metadata_entry = LatestMetadataEntry(
+        metadata_definition=metadata_def,
+        icon_url=icon_url,
+        bucket_name=matching_blob.bucket.name,
+        file_path=metadata_file_path,
+    )
+
+    return Output(value=metadata_entry, metadata=dagster_metadata)
 
 
-@asset(required_resource_keys={"root_metadata_directory_manager"}, group_name=GROUP_NAME, partitions_def=metadata_partitions_def)
-def registry_entry(context: OpExecutionContext, metadata_entry: LatestMetadataEntry, cached_specs: pd.DataFrame) -> Output[dict]:
+@asset(
+    required_resource_keys={"root_metadata_directory_manager"},
+    group_name=GROUP_NAME,
+    partitions_def=metadata_partitions_def,
+    auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
+)
+def registry_entry(
+    context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame
+) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
+    if not metadata_entry:
+        # if the metadata entry is invalid, return an empty dict
+        return Output(metadata={"empty_metadata": True}, value=None)
+
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
 

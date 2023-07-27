@@ -63,6 +63,21 @@
         }
       }
     },
+    "ilsFilterBranch": {
+      "type": ["null", "string"]
+    },
+    "internal":{
+      "type": ["null", "boolean"]
+    },
+    "authorId":{
+      "type": ["null", "integer"]
+    },
+    "limitExempt":{
+      "type": ["null", "boolean"]
+    },
+    "teamIds":{
+      "type": ["null", "array"]
+    },
     "portalId": {
       "type": ["null", "integer"]
     },

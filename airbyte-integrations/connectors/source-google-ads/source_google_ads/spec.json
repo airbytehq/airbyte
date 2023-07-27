@@ -95,6 +95,7 @@
           "properties": {
             "query": {
               "type": "string",
+              "multiline": true,
               "title": "Custom Query",
               "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression because it is used by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v11/overview_query_builder\">query builder</a> for more information.",
               "examples": [

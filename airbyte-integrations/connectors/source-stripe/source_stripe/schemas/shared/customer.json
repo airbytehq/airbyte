@@ -835,6 +835,9 @@
     },
     "tax_info": {
       "type": ["null", "string"]
+    },
+    "test_clock": {
+      "type": ["null", "string"]
     }
   }
 }
