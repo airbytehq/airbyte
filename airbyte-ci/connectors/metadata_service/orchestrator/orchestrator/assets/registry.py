@@ -10,6 +10,7 @@ from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from metadata_service.utils import to_json_sanitized_dict
 from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 from typing import List
 
@@ -38,6 +39,7 @@ def persist_registry_to_json(
 
 
 def generate_and_persist_registry(
+    context: OpExecutionContext,
     registry_entry_file_blobs: List[storage.Blob],
     registry_directory_manager: GCSFileManager,
     registry_name: str,
@@ -51,6 +53,12 @@ def generate_and_persist_registry(
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating {registry_name} registry...",
+    )
     registry_dict = {"sources": [], "destinations": []}
     for blob in registry_entry_file_blobs:
         registry_entry, connector_type = read_registry_entry_blob(blob)
@@ -70,6 +78,13 @@ def generate_and_persist_registry(
         "gcs_path": MetadataValue.url(file_handle.public_url),
     }
 
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.SUCCESS,
+        f"Generating {registry_name} registry...",
+    )
+
     return Output(metadata=metadata, value=registry_model)
 
 
@@ -86,6 +101,7 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
     latest_oss_registry_entries_file_blobs = context.resources.latest_oss_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_oss_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
@@ -102,6 +118,7 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
     latest_cloud_registry_entries_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_cloud_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,

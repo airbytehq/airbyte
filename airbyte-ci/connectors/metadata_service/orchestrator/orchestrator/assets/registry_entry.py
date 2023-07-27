@@ -19,6 +19,7 @@ from orchestrator.utils.object_helpers import deep_copy_params
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 from typing import List, Optional, Tuple, Union
 
@@ -299,12 +300,6 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
             print(f"WARNING: Could not parse metadata definition for {metadata_blob.name}. Error: {e}")
             return None
 
-# LOGGING lifecycle
-
-def notification_log(context: OpExecutionContext, message: str, level: str = "info"):
-    slack_webhook_url = os.getenv("PUBLISH_UPDATE_SLACK_WEBHOOK_URL")
-    if slack_webhook_url:
-        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
 
 # ASSETS
 
@@ -328,7 +323,12 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         raise Exception(f"Could not find blob with etag {etag}")
 
     metadata_file_path = matching_blob.name
-    context.log.info(f"Found metadata file with path {metadata_file_path} for etag {etag}")
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.METADATA_VALIDATION,
+        StageStatus.IN_PROGRESS,
+        f"Found metadata file with path {metadata_file_path} for etag {etag}",
+    )
 
     # read the matching_blob into a metadata definition
     metadata_def = safe_parse_metadata_definition(matching_blob)
@@ -342,7 +342,12 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 
     # return only if the metadata definition is valid
     if not metadata_def:
-        context.log.warn(f"Could not parse metadata definition for {metadata_file_path}")
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.METADATA_VALIDATION,
+            StageStatus.FAILED,
+            f"Could not parse metadata definition for {metadata_file_path}, dont panic, this can be expected for old metadata files",
+        )
         return Output(value=None, metadata=dagster_metadata)
 
     icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
@@ -361,6 +366,13 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         file_path=metadata_file_path,
     )
 
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.METADATA_VALIDATION,
+        StageStatus.SUCCESS,
+        f"Successfully parsed metadata definition for {metadata_file_path}",
+    )
+
     return Output(value=metadata_entry, metadata=dagster_metadata)
 
 
@@ -377,6 +389,13 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)
+
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating registry entry for {metadata_entry.file_path}",
+    )
 
     cached_specs = pd.DataFrame(list_cached_specs())
 
@@ -405,5 +424,23 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         **dagster_metadata_persist,
         **dagster_metadata_delete,
     }
+
+    # Log the registry entries that were created
+    for registry_name, registry_url in persisted_registry_entries.items():
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+            StageStatus.SUCCESS,
+            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+        )
+
+    # Log the registry entries that were deleted
+    for registry_name, registry_url in deleted_registry_entries.items():
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+            StageStatus.SUCCESS,
+            f"Successfully deleted {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+        )
 
     return Output(metadata=dagster_metadata, value=persisted_registry_entries)
