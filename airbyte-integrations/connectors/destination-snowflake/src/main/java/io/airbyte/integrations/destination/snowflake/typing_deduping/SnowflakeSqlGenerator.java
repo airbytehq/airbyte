@@ -95,7 +95,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_COLUMN_NAMES)) {
+    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES)) {
       throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
     }
 
@@ -105,15 +105,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
     LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> !JavaBaseConstants.V2_COLUMN_NAMES.contains(column.getKey()))
+        .filter(column -> !JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.contains(column.getKey()))
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
     boolean sameColumns = actualColumns.equals(intendedColumns)
         && "VARCHAR".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_DATA));
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.));
 
     return sameColumns;
   }
