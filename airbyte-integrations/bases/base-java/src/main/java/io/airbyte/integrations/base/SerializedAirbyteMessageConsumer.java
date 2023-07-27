@@ -59,19 +59,24 @@ public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<Stri
    */
   static SerializedAirbyteMessageConsumer appendOnClose(final SerializedAirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
     return new SerializedAirbyteMessageConsumer() {
+
       @Override
       public void start() throws Exception {
         consumer.start();
       }
+
       @Override
       public void accept(final String message, final Integer sizeInBytes) throws Exception {
         consumer.accept(message, sizeInBytes);
       }
+
       @Override
       public void close() throws Exception {
         consumer.close();
         voidCallable.call();
       }
+
     };
   }
+
 }
