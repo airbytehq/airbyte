@@ -24,6 +24,9 @@
     "BudgetType": {
       "type": ["null", "string"]
     },
+    "MultimediaAdsBidAdjustment": {
+      "type": ["null", "number"]
+    },
     "DailyBudget": {
       "type": ["null", "number"]
     },

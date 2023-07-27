@@ -63,8 +63,10 @@ public class RelationalDbQueryUtils {
     return quoteString + identifier + quoteString;
   }
 
-  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery,
-      final String tableName, final String schemaName) {
+  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database,
+                                                                                          final String sqlQuery,
+                                                                                          final String tableName,
+                                                                                          final String schemaName) {
     final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {

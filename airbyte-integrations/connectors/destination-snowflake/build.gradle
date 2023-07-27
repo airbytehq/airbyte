@@ -12,10 +12,10 @@ application {
             '-XX:MaxRAMPercentage=75.0',
 //            '-Xmx2000m',
 //            '-XX:NativeMemoryTracking=detail',
-//            "-Djava.rmi.server.hostname=localhost",
+//            '-Djava.rmi.server.hostname=localhost',
 //            '-Dcom.sun.management.jmxremote=true',
 //            '-Dcom.sun.management.jmxremote.port=6000',
-//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
 //            '-Dcom.sun.management.jmxremote.local.only=false',
 //            '-Dcom.sun.management.jmxremote.authenticate=false',
 //            '-Dcom.sun.management.jmxremote.ssl=false',
@@ -27,14 +27,17 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
-  // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization. 
-  // See: https://github.com/airbytehq/airbyte/actions/runs/3078146312
-    implementation 'net.snowflake:snowflake-jdbc:3.13.19'
+    // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization.
+    // See: https://github.com/airbytehq/airbyte/actions/runs/3078146312
+    // implementation 'net.snowflake:snowflake-jdbc:3.13.19'
+    // Temporarily switch to a forked version of snowflake-jdbc to prevent infinitely-retried http requests
+    // the diff is to replace this while(true) with while(retryCount < 100) https://github.com/snowflakedb/snowflake-jdbc/blob/v3.13.19/src/main/java/net/snowflake/client/jdbc/RestRequest.java#L121
+    // TODO (edgao) explain how you built this jar
+    implementation files('lib/snowflake-jdbc.jar')
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
-    implementation 'com.azure:azure-storage-blob:12.12.0'
 
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-db:db-lib')
@@ -42,6 +45,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
@@ -49,9 +53,17 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+}
+
+tasks.named("airbyteDocker") {
+    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
+    // but it's also just simple to implement.
+    // this also goes away once airbyte-ci becomes a reality.
+    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
 }

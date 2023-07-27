@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerImageTag: 0.1.0
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
@@ -14,6 +8,13 @@ data:
   icon: zuora.svg
   license: MIT
   name: Zuora
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/zuora
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zuora
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

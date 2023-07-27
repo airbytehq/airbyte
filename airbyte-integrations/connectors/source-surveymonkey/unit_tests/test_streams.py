@@ -396,11 +396,11 @@ def test_surveys_responses_get_updated_state(current_stream_state, latest_record
     [
         (
             {"307785415": {"date_modified": "2021-01-01T00:00:00+00:00"}},
-            {"start_modified_at": "2021-01-01T00:00:00"},
+            {"sort_order": "ASC", "sort_by": "date_modified", "per_page": 100, "start_modified_at": "2021-01-01T00:00:00"},
         ),
         (
             {},
-            {"start_modified_at": "2000-01-01T00:00:00"},  # return start_date
+            {"sort_order": "ASC", "sort_by": "date_modified", "per_page": 100, "start_modified_at": "2000-01-01T00:00:00"},  # return start_date
         ),
     ],
 )

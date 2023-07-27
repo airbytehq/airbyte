@@ -1,12 +1,35 @@
 {
-    "score": { "type": "integer" },
-    "scoreSum": { "type": "integer" },
-    "metricsType": { "type": "string" },
-    "promoters": { "type": "integer" },
-    "passives": { "type": "integer" },
-    "detractors": { "type": "integer" },
-    "promotersCount": { "type": "integer" },
-    "passivesCount": { "type": "integer" },
-    "detractorsCount": { "type": "integer" },
-    "totalResponses": { "type": "integer" }
+  "type": "object",
+  "properties": {
+    "score": {
+      "type": ["integer", "null"]
+    },
+    "scoreSum": {
+      "type": ["integer", "null"]
+    },
+    "metricsType": {
+      "type": ["string", "null"]
+    },
+    "promoters": {
+      "type": ["integer", "null"]
+    },
+    "passives": {
+      "type": ["integer", "null"]
+    },
+    "detractors": {
+      "type": ["integer", "null"]
+    },
+    "promotersCount": {
+      "type": ["integer", "null"]
+    },
+    "passivesCount": {
+      "type": ["integer", "null"]
+    },
+    "detractorsCount": {
+      "type": ["integer", "null"]
+    },
+    "totalResponses": {
+      "type": ["integer", "null"]
+    }
+  }
 }

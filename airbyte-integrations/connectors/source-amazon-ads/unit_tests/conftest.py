@@ -39,6 +39,13 @@ def profiles_response():
 
 
 @fixture
+def portfolios_response():
+    return """
+[{"portfolioId":253945852845204,"name":"Test Portfolio 2","inBudget":true,"state":"enabled","creationDate":1687510907465,"lastUpdatedDate":1687510907465,"servingStatus":"PORTFOLIO_STATUS_ENABLED"},{"portfolioId":270076898441727,"name":"Test Portfolio","budget":{"amount":1.0,"currencyCode":"USD","policy":"dateRange","startDate":"20230623","endDate":"20230624"},"inBudget":true,"state":"enabled","creationDate":1687510616329,"lastUpdatedDate":1687514774484,"servingStatus":"PORTFOLIO_STATUS_ENABLED"}]
+"""
+
+
+@fixture
 def campaigns_response():
     return """
 [{"campaignId":37387403419888,"name":"sswdd","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":59249214322256,"name":"My test camp","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":16117299922278,"name":"ssw","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":202914386115504,"name":"ssdf","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"}]
@@ -62,7 +69,7 @@ def product_ads_response():
 @fixture
 def targeting_response():
     return """
-[{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":{"type":"asinSameAs","value":"B0123456789"},"resolvedExpression":{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}}]
+[{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":[{"type":"asinSameAs","value":"B0123456789"}],"resolvedExpression":[{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}]}]
 """
 
 
@@ -177,8 +184,3 @@ def attribution_report_response():
         return json.dumps(responses[report_type])
 
     return _internal
-
-
-@fixture
-def attribution_report_bad_response():
-    return "bad response"

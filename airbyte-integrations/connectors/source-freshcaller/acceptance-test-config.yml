@@ -2,6 +2,8 @@ connector_image: airbyte/source-freshcaller:dev
 tests:
   spec:
     - spec_path: "source_freshcaller/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: 0.1.0 # Fix start_date type
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

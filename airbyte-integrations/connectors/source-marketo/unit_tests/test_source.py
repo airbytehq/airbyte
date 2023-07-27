@@ -246,7 +246,7 @@ def test_source_streams(config, activity):
     source = SourceMarketo()
     with patch("source_marketo.source.ActivityTypes.read_records", Mock(return_value=[activity])):
         streams = source.streams(config)
-    assert len(streams) == 6
+    assert len(streams) == 7
     assert all(isinstance(stream, MarketoStream) for stream in streams)
 
 

@@ -6,6 +6,11 @@ import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
+@pytest.fixture(autouse=True)
+def disable_cache(mocker):
+    mocker.patch("source_iterable.streams.ListUsers.use_cache", False)
+
+
 @pytest.fixture
 def catalog(request):
     return ConfiguredAirbyteCatalog(
@@ -32,12 +37,11 @@ def mock_lists_resp(mocker):
 @pytest.fixture(name="lists_stream")
 def lists_stream():
     # local imports
-    from airbyte_cdk.sources.streams.http.auth import NoAuth
     from source_iterable.streams import Lists
 
     # return the instance of the stream so we could make global tests on it,
     # to cover the different `should_retry` logic
-    return Lists(authenticator=NoAuth())
+    return Lists(authenticator=None)
 
 
 @pytest.fixture(autouse=True)

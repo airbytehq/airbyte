@@ -97,7 +97,12 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
-| 0.2.2   | 2023-03-22 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
+| 1.1.2   | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields                                           |
+| 1.1.1   | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes                                    |
+| 1.1.0   | 2023-05-24 | [26485](https://github.com/airbytehq/airbyte/pull/26485) | Remove deprecated authSpecification in favour of advancedAuth              |
+| 1.0.1   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                          |
+| 1.0.0   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                          |
+| 0.2.2   | 2023-03-22 | [22867](https://github.com/airbytehq/airbyte/pull/22867) | Specified date formatting in specification                                 |
 | 0.2.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                    |
 | 0.2.0   | 2022-11-14 | [19369](https://github.com/airbytehq/airbyte/pull/19369) | Migrate to low code (YAML); update API to version  2022-10-19; update docs |
 | 0.1.4   | 2021-12-02 | [6842](https://github.com/airbytehq/airbyte/pull/6842)   | Added oauth support                                                        |

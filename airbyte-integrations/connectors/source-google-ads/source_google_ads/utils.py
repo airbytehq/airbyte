@@ -25,7 +25,7 @@ class GAQL:
         r"""\s*
             SELECT\s+(?P<FieldNames>\S.*)
             \s+
-            FROM\s+(?P<ResourceName>[a-z]([a-zA-Z_])*)
+            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
             \s*
             (\s+WHERE\s+(?P<WhereClause>\S.*?))?
             (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
@@ -42,14 +42,18 @@ class GAQL:
     def parse(cls, query):
         m = cls.REGEX.match(query)
         if not m:
-            raise Exception(f"incorrect GAQL query statement: {repr(query)}")
+            raise ValueError
 
         fields = [f.strip() for f in m.group("FieldNames").split(",")]
         for field in fields:
             if not cls.REGEX_FIELD_NAME.match(field):
-                raise Exception(f"incorrect GAQL query statement: {repr(query)}")
+                raise ValueError
 
-        resource_name = m.group("ResourceName")
+        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
+        if len(resource_names) > 1:
+            raise ValueError
+        resource_name = resource_names[0]
+
         where = cls._normalize(m.group("WhereClause") or "")
         order_by = cls._normalize(m.group("OrderByClause") or "")
         limit = m.group("LimitClause")

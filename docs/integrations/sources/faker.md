@@ -10,27 +10,42 @@ This source will generate an "e-commerce-like" dataset with users, products, and
 
 ```sql
 CREATE TABLE "public"."users" (
-    "id" float8,
-    "age" int8,
-    "name" text,
-    "email" text,
-    "title" text,
+    "address" jsonb,
+    "occupation" text,
     "gender" text,
-    "height" text,
+    "academic_degree" text,
     "weight" int8,
+    "created_at" timestamptz,
     "language" text,
     "telephone" text,
-    "blood_type" text,
-    "created_at" timestamptz,
-    "occupation" text,
+    "title" text,
     "updated_at" timestamptz,
     "nationality" text,
-    "academic_degree" text,
+    "blood_type" text,
+    "name" text,
+    "id" float8,
+    "age" int8,
+    "email" text,
+    "height" text,
     -- "_airbyte_ab_id" varchar,
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_dev_users_hashid" text,
-    -- "_airbyte_unique_key" text
+    -- "_airbyte_users_hashid" text
+);
+
+CREATE TABLE "public"."users_address" (
+    "_airbyte_users_hashid" text,
+    "country_code" text,
+    "province" text,
+    "city" text,
+    "street_number" text,
+    "state" text,
+    "postal_code" text,
+    "street_name" text,
+    -- "_airbyte_ab_id" varchar,
+    -- "_airbyte_emitted_at" timestamptz,
+    -- "_airbyte_normalized_at" timestamptz,
+    -- "_airbyte_address_hashid" text
 );
 
 CREATE TABLE "public"."products" (
@@ -44,21 +59,19 @@ CREATE TABLE "public"."products" (
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
     -- "_airbyte_dev_products_hashid" text,
-    -- "_airbyte_unique_key" text
 );
 
 CREATE TABLE "public"."purchases" (
     "id" float8,
     "user_id" float8,
     "product_id" float8,
-    "returned_at" timestamptz,
     "purchased_at" timestamptz,
     "added_to_cart_at" timestamptz,
+    "returned_at" timestamptz,
     -- "_airbyte_ab_id" varchar,
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
     -- "_airbyte_dev_purchases_hashid" text,
-    -- "_airbyte_unique_key" text
 );
 
 ```
@@ -82,10 +95,15 @@ None!
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-| :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 2.0.3   | 2022-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
-| 2.0.2   | 2022-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
-| 2.0.1   | 2022-01-30 | [22117](https://github.com/airbytehq/airbyte/pull/22117)                                                              | `source-faker` goes beta                                                                                        |
+|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 4.0.0   | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485)                                                              | Bump to test publication                                                                                        |
+| 3.0.2   | 2023-07-07 | [27807](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |
+| 3.0.1   | 2023-06-28 | [27807](https://github.com/airbytehq/airbyte/pull/27807)                                                              | Fix bug with purchase stream updated_at                                                                         |
+| 3.0.0   | 2023-06-23 | [27684](https://github.com/airbytehq/airbyte/pull/27684)                                                              | Stream cursor is now `updated_at` & remove `records_per_sync` option                                            |
+| 2.1.0   | 2023-05-08 | [25903](https://github.com/airbytehq/airbyte/pull/25903)                                                              | Add user.address (object)                                                                                       |
+| 2.0.3   | 2023-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
+| 2.0.2   | 2023-02-20 | [23259](https://github.com/airbytehq/airbyte/pull/23259)                                                              | bump to test publication                                                                                        |
+| 2.0.1   | 2023-01-30 | [22117](https://github.com/airbytehq/airbyte/pull/22117)                                                              | `source-faker` goes beta                                                                                        |
 | 2.0.0   | 2022-12-14 | [20492](https://github.com/airbytehq/airbyte/pull/20492) and [20741](https://github.com/airbytehq/airbyte/pull/20741) | Decouple stream states for better parallelism                                                                   |
 | 1.0.0   | 2022-11-28 | [19490](https://github.com/airbytehq/airbyte/pull/19490)                                                              | Faker uses the CDK; rename streams to be lower-case (breaking), add determinism to random purchases, and rename |
 | 0.2.1   | 2022-10-14 | [19197](https://github.com/airbytehq/airbyte/pull/19197)                                                              | Emit `AirbyteEstimateTraceMessage`                                                                              |

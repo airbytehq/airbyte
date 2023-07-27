@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: destination
   definitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
@@ -13,6 +8,13 @@ data:
   icon: kinesis.svg
   license: MIT
   name: Kinesis
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/kinesis
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/kinesis
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

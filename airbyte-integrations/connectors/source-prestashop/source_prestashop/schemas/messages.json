@@ -1,30 +1,30 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_cart": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_customer": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_employee": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "private": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

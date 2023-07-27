@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -62,10 +63,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 class PostgresSourceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -146,6 +155,7 @@ class PostgresSourceTest {
 
   @BeforeEach
   void setup() throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -161,7 +171,7 @@ class PostgresSourceTest {
             "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1), (1,'goku', 'Infinity'), ('NaN', 'piccolo', '-Infinity');");
+            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
@@ -518,6 +528,7 @@ class PostgresSourceTest {
         ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
         return null;
       });
+
       final ConfiguredAirbyteCatalog configuredCatalog =
           CONFIGURED_INCR_CATALOG
               .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
@@ -537,7 +548,7 @@ class PostgresSourceTest {
           createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
       // Assert that the correct number of messages are emitted.
-      assertEquals(actualMessages.size(), expectedOutput.size() + 2);
+      assertEquals(actualMessages.size(), expectedOutput.size() + 1);
       assertThat(actualMessages.contains(expectedOutput));
       // Assert that the Postgres source is emitting records & state messages in the correct order.
       assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -560,25 +571,32 @@ class PostgresSourceTest {
     }
   }
 
-  /* The messages that are emitted from an incremental sync should follow certain invariants. They should :
-  (i) Be emitted in increasing order of the defined cursor.
-  (ii) A record that is emitted after a state message should not have a cursor value less than a previously emitted state message.
+  /*
+   * The messages that are emitted from an incremental sync should follow certain invariants. They
+   * should : (i) Be emitted in increasing order of the defined cursor. (ii) A record that is emitted
+   * after a state message should not have a cursor value less than a previously emitted state
+   * message.
    */
-  private void assertCorrectRecordOrderForIncrementalSync(final List<AirbyteMessage> messages, final String cursorField,
-      final JsonSchemaPrimitive cursorType, final ConfiguredAirbyteCatalog catalog, final AirbyteStreamNameNamespacePair pair) {
+  private void assertCorrectRecordOrderForIncrementalSync(final List<AirbyteMessage> messages,
+                                                          final String cursorField,
+                                                          final JsonSchemaPrimitive cursorType,
+                                                          final ConfiguredAirbyteCatalog catalog,
+                                                          final AirbyteStreamNameNamespacePair pair) {
     String prevRecordCursorValue = null;
     String prevStateCursorValue = null;
     for (final AirbyteMessage message : messages) {
       if (message.getType().equals(Type.RECORD)) {
-        // Parse the cursor. Assert that (i) it's greater/equal to the prevRecordCursorValue and (ii) greater than the previous state cursor value.
+        // Parse the cursor. Assert that (i) it's greater/equal to the prevRecordCursorValue and (ii)
+        // greater than the previous state cursor value.
         final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
         assertThat(IncrementalUtils.compareCursors(prevRecordCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
         assertThat(IncrementalUtils.compareCursors(prevStateCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
         prevRecordCursorValue = cursorCandidate;
       } else if (message.getType().equals(Type.STATE)) {
-        // Parse the state and the cursor value here. Assert that it is (i) greater than the previous state emission value.
+        // Parse the state and the cursor value here. Assert that it is (i) greater than the previous state
+        // emission value.
         final StateManager stateManager =
-            StateManagerFactory.createStateManager(AirbyteStateType.LEGACY, List.of(message.getState()), catalog);
+            StateManagerFactory.createStateManager(AirbyteStateType.STREAM, List.of(message.getState()), catalog);
         final Optional<CursorInfo> cursorInfoOptional = stateManager.getCursorInfo(pair);
         final String cursorCandidate = cursorInfoOptional.get().getCursor();
         assertThat(IncrementalUtils.compareCursors(prevStateCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
@@ -663,7 +681,7 @@ class PostgresSourceTest {
     assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(

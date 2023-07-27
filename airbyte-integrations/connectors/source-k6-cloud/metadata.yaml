@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
@@ -13,6 +8,14 @@ data:
   icon: k6cloud.svg
   license: MIT
   name: K6 Cloud
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
+  documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
