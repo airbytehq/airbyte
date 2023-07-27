@@ -1,4 +1,13 @@
 # Introduction
+
+## airbyte-to-flow
+
+The way we use airbyte connectors is:
+- We have a component called `airbyte-to-flow`, which you can find [here](https://github.com/estuary/airbyte/tree/master/airbyte-to-flow)
+- `airbyte-to-flow` basically translates between the Airbyte protocol to Flow protocol, since the protocols are different
+- For us to be able to use Airbyte connectors, we create docker images which are based on Airbyte connector docker images, and then we add `airbyte-to-flow` to those docker images, and run the connector through `airbyte-to-flow`. This allows us to run these new docker images in our system. You can find an example of such a [Dockerfile here](https://github.com/estuary/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce/Dockerfile).
+- The Dockerfiles are rather simple, they are based on the airbyte image, pull in `airbyte-to-flow`, and add some JSON files to the docker image (for the purpose of Patching, which you can read about in our README), and add some labels which help Flow determine what kind of protocol this connector speaks (in case of airbyte connectors, they use flow json capture protocol)
+
 ## Adding a new connector
 
 1. First, find the latest tag of a connector. To do so, find your connector in airbyte repository [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors) and look at the `Dockerfile` of the connector, there will be a `io.airbyte.version` LABEL at the bottom of the `Dockerfile`, use the value of this label exactly as it is.
