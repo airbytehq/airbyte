@@ -19,7 +19,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.NameAndNamespacePair;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -28,6 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -591,11 +592,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
+  private String wrapAndQuote(AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair) {
+    return Stream.of(airbyteStreamNameNamespacePair.getNamespace(), airbyteStreamNameNamespacePair.getName())
+        .map(part -> StringUtils.wrap(part, QUOTE))
+        .collect(joining("."));
+  }
+
   @Override
-  public String migrateFromV1toV2(StreamConfig stream, NameAndNamespacePair v1RawTableNameAndNamespace) {
+  public String migrateFromV1toV2(StreamConfig stream, AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace) {
     return new StringSubstitutor(Map.of(
         "v2_raw_table", stream.id().finalTableId(QUOTE),
-        "v1_raw_table", v1RawTableNameAndNamespace.combinedAndQuoted(QUOTE))
+        "v1_raw_table", wrapAndQuote(v1RawTableNameAndNamespace))
     ).replace(
         """
             CREATE OR REPLACE TABLE ${v2_raw_table} (

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.Set;
 
 public interface SqlGenerator<DialectTableDefinition> {
@@ -76,6 +77,6 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   String overwriteFinalTable(StreamId stream, String finalSuffix);
 
-  String migrateFromV1toV2(StreamConfig stream, NameAndNamespacePair v1RawTableNameAndNamespace);
+  String migrateFromV1toV2(StreamConfig stream, AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace);
 
 }

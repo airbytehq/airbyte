@@ -8,10 +8,10 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.MigrationResult;
-import io.airbyte.integrations.base.destination.typing_deduping.NameAndNamespacePair;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.protocol.models.v1.DestinationSyncMode;
-import io.airbyte.protocol.models.v1.SyncMode;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -30,10 +30,8 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
     this.bQdestinationHandler = bQdestinationHandler;
   }
 
-  public Optional<MigrationResult> migrateIfNecessary(SyncMode syncMode, DestinationSyncMode destinationSyncMode, StreamConfig streamConfig,
-      NameAndNamespacePair v1RawTableNameAndNamespace) {
-    return migrateIfNecessary(syncMode, destinationSyncMode, this.bQsqlGenerator, this.bQdestinationHandler, streamConfig,
-        v1RawTableNameAndNamespace);
+  public Optional<MigrationResult> migrateIfNecessary(SyncMode syncMode, DestinationSyncMode destinationSyncMode, StreamConfig streamConfig) {
+    return migrateIfNecessary(syncMode, destinationSyncMode, this.bQsqlGenerator, this.bQdestinationHandler, streamConfig);
   }
 
   @Override
@@ -42,8 +40,8 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
   }
 
   @Override
-  public Optional<TableDefinition> getTableIfExists(NameAndNamespacePair nameAndNamespacePair) {
-    Table table = bq.getTable(TableId.of(nameAndNamespacePair.namespace(), nameAndNamespacePair.tableName()));
+  public Optional<TableDefinition> getTableIfExists(AirbyteStreamNameNamespacePair nameAndNamespacePair) {
+    Table table = bq.getTable(TableId.of(nameAndNamespacePair.getNamespace(), nameAndNamespacePair.getName()));
     return table.exists() ? Optional.of(table.getDefinition()) : Optional.empty();
   }
 
@@ -59,5 +57,10 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
 
     return !existingSchemaColumns.isEmpty() &&
         CollectionUtils.containsAllIgnoreCase(expectedColumnNames, existingSchemaColumns);
+  }
+
+  @Override
+  public AirbyteStreamNameNamespacePair convertToV1RawName(StreamConfig streamConfig) {
+    return null;
   }
 }
