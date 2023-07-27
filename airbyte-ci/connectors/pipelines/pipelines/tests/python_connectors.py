@@ -4,9 +4,11 @@
 
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
+from datetime import timedelta
 from typing import List
 
 import asyncer
+from dagger import Container
 from pipelines.actions import environments, secrets
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
@@ -15,7 +17,6 @@ from pipelines.contexts import ConnectorContext
 from pipelines.helpers.steps import run_steps
 from pipelines.tests.common import AcceptanceTests, PytestStep
 from pipelines.utils import export_container_to_tarball
-from dagger import Container
 
 
 class CodeFormatChecks(Step):
@@ -58,6 +59,7 @@ class ConnectorPackageInstall(Step):
     """A step to install the Python connector package in a container."""
 
     title = "Connector package install"
+    max_duration = timedelta(minutes=10)
     max_retries = 3
 
     async def _run(self) -> StepResult:

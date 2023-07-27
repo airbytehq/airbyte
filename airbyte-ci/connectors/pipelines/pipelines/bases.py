@@ -18,12 +18,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import anyio
 import asyncer
 from anyio import Path
-from pipelines.actions import remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
 from connector_ops.utils import console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
+from pipelines.actions import remote_storage
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -102,6 +102,9 @@ class Step(ABC):
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
     should_log: ClassVar[bool] = True
+    # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
+    # The default of 5 hours is arbitrary and can be changed if needed.
+    max_duration: ClassVar[timedelta] = timedelta(hours=5)
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
@@ -125,7 +128,8 @@ class Step(ABC):
             disabled_logger.disabled = True
             return disabled_logger
 
-    async def log_progress(self, completion_event) -> None:
+    async def log_progress(self, completion_event: anyio.Event) -> None:
+        """Log the step progress every 30 seconds until the step is done."""
         while not completion_event.is_set():
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
@@ -133,10 +137,18 @@ class Step(ABC):
                 self.logger.info(f"⏳ Still running {self.title}... (duration: {format_duration(duration)})")
             await anyio.sleep(1)
 
-    async def run_with_completion(self, completion_event, *args, **kwargs) -> StepResult:
-        result = await self._run(*args, **kwargs)
-        completion_event.set()
-        return result
+    async def run_with_completion(self, completion_event: anyio.Event, *args, **kwargs) -> StepResult:
+        """Run the step with a timeout and set the completion event when the step is done."""
+        try:
+            with anyio.fail_after(self.max_duration.total_seconds()):
+                result = await self._run(*args, **kwargs)
+                completion_event.set()
+            return result
+        except TimeoutError:
+            self.retry_count = self.max_retries + 1
+            self.logger.error(f"🚨 {self.title} timed out after {self.max_duration}. No additional retry will happen.")
+            completion_event.set()
+            return self._get_timed_out_step_result()
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -221,6 +233,13 @@ class Step(ABC):
             stderr=stderr,
             stdout=stdout,
             output_artifact=container,
+        )
+
+    def _get_timed_out_step_result(self) -> StepResult:
+        return StepResult(
+            self,
+            StepStatus.FAILURE,
+            stdout=f"Timed out after the max duration of {format_duration(self.max_duration)}. Please checkout the Dagger logs to see what happened.",
         )
 
 
