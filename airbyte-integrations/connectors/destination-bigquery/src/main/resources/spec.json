@@ -11,11 +11,6 @@
     "required": ["project_id", "dataset_location", "dataset_id"],
     "additionalProperties": true,
     "properties": {
-      "use_1s1t_format": {
-        "type": "boolean",
-        "description": "(Beta) Use <a href=\"https://github.com/airbytehq/airbyte/issues/26028\" target=\"_blank\">Destinations V2</a>. Contact Airbyte Support to participate in the beta program.",
-        "title": "Use Destinations V2 (Early Access)"
-      },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
@@ -211,6 +206,18 @@
         "default": 15,
         "examples": ["15"],
         "order": 6
+      },
+      "use_1s1t_format": {
+        "type": "boolean",
+        "description": "(Beta) Use <a href=\"https://github.com/airbytehq/airbyte/issues/26028\" target=\"_blank\">Destinations V2</a>. Contact Airbyte Support to participate in the beta program.",
+        "title": "Use Destinations V2 (Early Access)",
+        "order": 7
+      },
+      "raw_data_dataset": {
+        "type": "string",
+        "description": "(Beta) The dataset to write raw tables into",
+        "title": "Destinations V2 Raw Table Dataset (Early Access)",
+        "order": 8
       }
     }
   }
