@@ -320,7 +320,7 @@ public class MongoUtils {
     LOGGER.debug("Fetching types for field '{}'...", name);
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", name))),
+        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", "$" + name))),
         new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
     final var listOfTypes = new ArrayList<String>();
