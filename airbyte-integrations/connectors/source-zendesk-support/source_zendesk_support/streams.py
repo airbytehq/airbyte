@@ -503,7 +503,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    cursor_field = 'generated_timestamp'
+    cursor_field = "generated_timestamp"
 
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
