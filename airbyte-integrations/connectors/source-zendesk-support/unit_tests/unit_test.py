@@ -204,13 +204,10 @@ def test_check_start_time_param():
     "stream_state, expected",
     [
         # valid state, expect the value of the state
-        ({"updated_at": "2022-04-01"}, 1648771200),
-        # invalid state, expect the start_date from STREAM_ARGS
-        ({"updated_at": ""}, 1622505600),
-        ({"updated_at": None}, 1622505600),
-        ({"missing_cursor": "2022-04-01"}, 1622505600),
+        ({"generated_timestamp": 1648771200}, 1648771200),
+        (None, 1622505600),
     ],
-    ids=["state present", "empty string in state", "state is None", "cursor is not in the state object"],
+    ids=["state present", "state is None"],
 )
 def test_check_stream_state(stream_state, expected):
     result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
