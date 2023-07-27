@@ -20,6 +20,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -29,12 +30,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.RawBsonDocument;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
+
+  public static final String COLLECTION_COUNT_KEY = "collectionCount";
+  public static final String COLLECTION_STORAGE_SIZE_KEY = "collectionStorageSize";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
@@ -106,8 +112,8 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
 
   public Stream<JsonNode> read(final String collectionName, final List<String> columnNames, final Optional<Bson> filter) {
     try {
-      final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final MongoCursor<Document> cursor = collection
+      final MongoCollection<RawBsonDocument> collection = database.getCollection(collectionName, RawBsonDocument.class);
+      final MongoCursor<RawBsonDocument> cursor = collection
           .find(filter.orElse(new BsonDocument()))
           .batchSize(BATCH_SIZE)
           .cursor();
@@ -127,13 +133,27 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
     }
   }
 
-  private Stream<JsonNode> getStream(final MongoCursor<Document> cursor, final CheckedFunction<Document, JsonNode, Exception> mapper) {
+  public Map<String, Object> getCollectionStats(final String collectionName) {
+    final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
+    return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
+        COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
+  }
+
+  public String getServerType() {
+    return mongoClient.getClusterDescription().getType().name();
+  }
+
+  public String getServerVersion() {
+    return getDatabase().runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version").toString();
+  }
+
+  private Stream<JsonNode> getStream(final MongoCursor<RawBsonDocument> cursor, final CheckedFunction<RawBsonDocument, JsonNode, Exception> mapper) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
       public boolean tryAdvance(final Consumer<? super JsonNode> action) {
         try {
-          final Document document = cursor.tryNext();
+          final RawBsonDocument document = cursor.tryNext();
           if (document == null) {
             return false;
           }
