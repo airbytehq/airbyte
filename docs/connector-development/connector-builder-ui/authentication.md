@@ -180,7 +180,8 @@ We will walk through each part of the configuration below. Throughout this, we w
   - For Metabase, the `/api/session` response looks like `{"id":"<session-token-value>"}`, so the value here would simply be `id`.
 - `Expiration Duration` - an [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) indicating how long the session token has until it expires
   - Once this duration is reached, your connector will automatically fetch a new session token, and continue making data requests with that new one.
-  - If this is left unset, the session token will be refreshed before every single data request.
+  - If this is left unset, the session token will be refreshed before every single data request. This is **not recommended** if it can be avoided, as this will cause the connector to run much slower, as it will need to make an extra token request for every data request.
+  - Note: this **does _not_ support dynamic expiration durations of session tokens**. If your token expiration duration is dynamic, you should set the `Expiration Duration` field to the expected minimum duration to avoid problems during syncing.
   - For Metabase, the token retrieved from the `/api/session` endpoint expires after 14 days by default, so this value can be set to `P2W` or `P14D`.
 - `Data Request Authentication` - configures how the session token is used to authenticate the data requests made to the API
   - Choose `API Key` if your session token needs to be injected into a query parameter or header of the data requests.
