@@ -63,4 +63,5 @@ class PublishConnectorLifecycle:
 
         slack_webhook_url = os.getenv("PUBLISH_UPDATE_SLACK_WEBHOOK_URL")
         if slack_webhook_url:
-            send_slack_webhook(slack_webhook_url, message)
+            slack_message = f"🤖 {message}"
+            send_slack_webhook(slack_webhook_url, slack_message)

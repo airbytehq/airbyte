@@ -1,4 +1,3 @@
-from dagster import op
 from slack_sdk import WebhookClient
 
 
@@ -13,9 +12,10 @@ def chunk_messages(report):
     yield msg
 
 
-@op
-def send_slack_webhook(webhook_url, report):
+def send_slack_webhook(webhook_url, report, wrap_in_code_block=False):
     webhook = WebhookClient(webhook_url)
     for msg in chunk_messages(report):
         # Wrap in code block as slack does not support markdown in webhooks
-        webhook.send(text=f"```{msg}```")
+        if wrap_in_code_block:
+            msg = f"```{msg}```"
+        webhook.send(msg)
