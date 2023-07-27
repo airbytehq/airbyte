@@ -35,11 +35,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   public StagingDatabaseCsvSheetGenerator() {
     use1s1t = TypingAndDedupingFlag.isDestinationV2();
-    if (use1s1t) {
-      this.header = JavaBaseConstants.V2_COLUMN_NAMES;
-    } else {
-      this.header = JavaBaseConstants.LEGACY_COLUMN_NAMES;
-    }
+    this.header = use1s1t ? JavaBaseConstants.V2_COLUMN_NAMES : JavaBaseConstants.LEGACY_COLUMN_NAMES;
   }
 
   // TODO is this even used anywhere?
