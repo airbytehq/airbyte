@@ -1,0 +1,8 @@
+name: Airbyte CI pipeline tests
+
+on:
+  push:
+    branches:
+      - !master
+    paths:
+      - "airbyte-ci/"

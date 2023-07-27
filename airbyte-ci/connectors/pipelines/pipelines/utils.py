@@ -26,7 +26,7 @@ from dagger import Client, Config, Connection, Container, DaggerError, ExecError
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
-from pipelines import consts, main_logger
+from pipelines import consts, main_logger, sentry_utils
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 if TYPE_CHECKING:
@@ -452,6 +452,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
 
 
 class DaggerPipelineCommand(click.Command):
+    @sentry_utils.with_command_context
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:

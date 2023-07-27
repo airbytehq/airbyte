@@ -942,7 +942,7 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "--upgrade", "pip"])
         .with_exec(["apt-get", "install", "-y", "tzdata"])
-        .with_file("setup.py", await context.get_connector_dir(include="setup.py").file("setup.py"))
+        .with_file("setup.py", (await context.get_connector_dir(include="setup.py")).file("setup.py"))
     )
 
     for dependency_path in setup_dependencies_to_mount:
@@ -957,8 +957,8 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", "Etc/UTC")
         .with_exec(["apt-get", "install", "-y", "bash"])
-        .with_file("main.py", await context.get_connector_dir(include="main.py").file("main.py"))
-        .with_directory(snake_case_name, await context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
+        .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
         .with_entrypoint(entrypoint)
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])

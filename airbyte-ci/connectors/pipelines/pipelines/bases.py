@@ -21,6 +21,7 @@ from anyio import Path
 from connector_ops.utils import console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
+from pipelines import sentry_utils
 from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
@@ -137,6 +138,7 @@ class Step(ABC):
             completion_event.set()
             return self._get_timed_out_step_result()
 
+    @sentry_utils.with_step_context
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
 
