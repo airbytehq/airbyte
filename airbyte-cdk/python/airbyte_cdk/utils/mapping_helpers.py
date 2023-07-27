@@ -1,10 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 
 from typing import Any, List, Mapping, Optional, Set, Union
 
 
-def combine_mappings(
-    mappings: List[Optional[Union[Mapping[str, Any], str]]]
-) -> Union[Mapping[str, Any], str]:
+def combine_mappings(mappings: List[Optional[Union[Mapping[str, Any], str]]]) -> Union[Mapping[str, Any], str]:
     """
     Combine multiple mappings into a single mapping. If any of the mappings are a string, return
     that string. Raise errors in the following cases:
@@ -38,4 +40,4 @@ def combine_mappings(
         raise ValueError(f"Duplicate keys found: {intersection}")
 
     # Return the combined mappings
-    return {key: value for mapping in mappings if mapping for key, value in mapping.items()}
+    return {key: value for mapping in mappings if mapping for key, value in mapping.items()}  # type: ignore # mapping can't be string here

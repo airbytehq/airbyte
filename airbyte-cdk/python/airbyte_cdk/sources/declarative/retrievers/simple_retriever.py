@@ -106,10 +106,12 @@ class SimpleRetriever(Retriever):
         Returned merged mapping otherwise
         """
         # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        return combine_mappings([
-            paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        ])
+        return combine_mappings(
+            [
+                paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ]
+        )
 
     def _request_headers(
         self,
