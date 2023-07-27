@@ -101,7 +101,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| :------ | :--------- |:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
+| 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
 | 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |
 | 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733) | Fix bug preventing syncs from discovering field types                                                     |
 | 0.2.2   | 2023-07-25 | [28692](https://github.com/airbytehq/airbyte/pull/28692) | Fix bug preventing statistics retrieval from views                                                        |
