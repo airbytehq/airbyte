@@ -45,6 +45,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +134,14 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     return Jsons.emptyObject();
+  }
+
+  @Override
+  @Deprecated
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
   }
 
   @Override
