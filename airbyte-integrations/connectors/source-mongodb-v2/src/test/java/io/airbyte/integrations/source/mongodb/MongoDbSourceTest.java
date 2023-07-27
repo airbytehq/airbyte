@@ -21,6 +21,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -148,6 +150,23 @@ class MongoDbSourceTest {
 
     assertNotNull(results);
     assertEquals(DATASET_SIZE - 1000, results.size());
+  }
+
+  @Test
+  void testDiscover() throws Exception {
+    final AirbyteCatalog airbyteCatalog = source.discover(airbyteSourceConfig);
+    assertEquals(0, airbyteCatalog.getStreams().stream().filter(s -> s.getName().startsWith("system.")).count());
+    assertEquals(0, airbyteCatalog.getStreams().stream().filter(s -> s.getName().startsWith("replset.")).count());
+    assertEquals(0, airbyteCatalog.getStreams().stream().filter(s -> s.getName().startsWith("oplog.")).count());
+    assertEquals(1, airbyteCatalog.getStreams().stream().filter(s -> s.getName().startsWith("movies")).count());
+
+    final Optional<AirbyteStream> stream = airbyteCatalog.getStreams().stream().filter(s -> s.getName().startsWith("movies")).findFirst();
+    assertEquals("object", stream.get().getJsonSchema().get("type").asText());
+    assertEquals(4, stream.get().getJsonSchema().get("properties").size());
+    assertEquals("string", stream.get().getJsonSchema().get("properties").get("index").get("type").asText());
+    assertEquals("string", stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
+    assertEquals("string", stream.get().getJsonSchema().get("properties").get("title").get("type").asText());
+    assertEquals("string", stream.get().getJsonSchema().get("properties").get("timestamp").get("type").asText());
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {

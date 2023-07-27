@@ -51,6 +51,12 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
+  /**
+   * Set of collection prefixes that should be ignored when performing operations, such as discover to
+   * avoid access issues.
+   */
+  private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
+
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
@@ -109,20 +115,22 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
     final Set<String> authorizedCollections = getAuthorizedCollections(database);
-    authorizedCollections.parallelStream().forEach(collectionName -> {
-      final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+    authorizedCollections.parallelStream()
+        .filter(this::isSupportedCollection)
+        .forEach(collectionName -> {
+          final MongoCollection<Document> collection = database.getCollection(collectionName);
+          final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
 
-      // The field name _id is reserved for use as a primary key;
-      final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
-          .nameSpace(database.getName())
-          .name(collectionName)
-          .fields(fields)
-          .primaryKeys(List.of(MongoUtils.PRIMARY_KEY))
-          .build();
+          // The field name _id is reserved for use as a primary key;
+          final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
+              .nameSpace(database.getName())
+              .name(collectionName)
+              .fields(fields)
+              .primaryKeys(List.of(MongoUtils.PRIMARY_KEY))
+              .build();
 
-      tableInfos.add(tableInfo);
-    });
+          tableInfos.add(tableInfo);
+        });
     return tableInfos;
   }
 
@@ -269,6 +277,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     data.put("version", database.getServerVersion());
     data.put("type", database.getServerType());
     LOGGER.info(Jsons.serialize(data));
+  }
+
+  private boolean isSupportedCollection(final String collectionName) {
+    return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
   }
 
 }
