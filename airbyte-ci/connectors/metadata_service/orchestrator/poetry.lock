@@ -639,6 +639,21 @@ dagster = "1.4.2"
 pandas = "*"
 
 [[package]]
+name = "dagster-slack"
+version = "0.20.2"
+description = "A Slack client resource for posting to Slack"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dagster-slack-0.20.2.tar.gz", hash = "sha256:29be819e6abb472cf1ab00b3439ec5a2461d11afb158532fb84fc3f3502022af"},
+    {file = "dagster_slack-0.20.2-py3-none-any.whl", hash = "sha256:5e55a401abe2fc4c1db97398a6504474e88135aa9d7110831b1713422b216c50"},
+]
+
+[package.dependencies]
+dagster = "1.4.2"
+slack-sdk = "*"
+
+[[package]]
 name = "dagster-webserver"
 version = "1.4.2"
 description = "Web UI for dagster."
@@ -4282,4 +4297,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0c4dd1205284d881fa6a9b039bbbdb1d0ed744a64df0852a15bbde292fbc85ca"
+content-hash = "964ff9e472e8e698f295151163aa6dc39aa972a116d79de633b657260de4f93c"

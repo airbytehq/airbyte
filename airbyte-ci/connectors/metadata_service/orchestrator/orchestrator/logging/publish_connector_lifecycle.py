@@ -2,7 +2,7 @@ import os
 
 from enum import Enum
 from dagster import OpExecutionContext
-from orchestrator.ops.slack import send_slack_webhook
+from orchestrator.ops.slack import send_slack_message
 
 
 class StageStatus(str, Enum):
@@ -36,6 +36,14 @@ class PublishConnectorLifecycleStage(str, Enum):
 
 
 class PublishConnectorLifecycle:
+    """
+    This class is used to log the lifecycle of a publishing a connector to the registries.
+
+    It is used to log to the logger and slack (if enabled).
+
+    This is nessesary as this lifecycle is not a single job, asset, resource, schedule, or sensor.
+    """
+
     @staticmethod
     def stage_to_log_level(stage_status: StageStatus) -> str:
         if stage_status == StageStatus.FAILED:
@@ -60,8 +68,7 @@ class PublishConnectorLifecycle:
         level = PublishConnectorLifecycle.stage_to_log_level(stage_status)
         log_method = getattr(context.log, level)
         log_method(message)
-
-        slack_webhook_url = os.getenv("PUBLISH_UPDATE_SLACK_WEBHOOK_URL")
-        if slack_webhook_url:
+        channel = os.getenv("PUBLISH_UPDATE_CHANNEL")
+        if channel:
             slack_message = f"🤖 {message}"
-            send_slack_webhook(slack_webhook_url, slack_message)
+            send_slack_message(context, channel, slack_message)

@@ -305,7 +305,7 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
 
 
 @asset(
-    required_resource_keys={"all_metadata_file_blobs"},
+    required_resource_keys={"slack", "all_metadata_file_blobs"},
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
     output_required=False,
@@ -377,7 +377,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 
 
 @asset(
-    required_resource_keys={"root_metadata_directory_manager"},
+    required_resource_keys={"slack", "root_metadata_directory_manager"},
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),

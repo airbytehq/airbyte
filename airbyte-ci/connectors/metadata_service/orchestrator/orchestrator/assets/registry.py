@@ -91,7 +91,7 @@ def generate_and_persist_registry(
 # Registry Generation
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
@@ -108,7 +108,7 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
     )
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
