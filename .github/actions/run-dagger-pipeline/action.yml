@@ -47,6 +47,9 @@ inputs:
     description: "Bucket name for metadata service"
     required: false
     default: "prod-airbyte-cloud-connector-metadata-service"
+  sentry_dsn:
+    description: "Sentry DSN"
+    required: false
   spec_cache_bucket_name:
     description: "Bucket name for GCS spec cache"
     required: false
@@ -110,6 +113,7 @@ runs:
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        SENTRY_DSN: ${{ inputs.sentry_dsn }}
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
