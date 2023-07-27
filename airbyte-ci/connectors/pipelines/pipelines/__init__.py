@@ -6,6 +6,7 @@
 import logging
 import os
 import sentry_sdk
+import importlib.metadata
 
 from rich.logging import RichHandler
 
@@ -22,4 +23,7 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 main_logger = logging.getLogger(__name__)
 
 if os.environ.get("SENTRY_DSN", None):
-    sentry_sdk.init(dsn=os.environ["SENTRY_DSN"])
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"], 
+        release=f"pipelines@{importlib.metadata.version('pipelines')}"
+    )
