@@ -1,4 +1,4 @@
-# Authentication
+# Authentication 
 
 Authentication allows the connector to check whether it has sufficient permission to fetch data and communicate its identity to the API. The authentication feature provides a secure way to configure authentication using a variety of methods.
 
