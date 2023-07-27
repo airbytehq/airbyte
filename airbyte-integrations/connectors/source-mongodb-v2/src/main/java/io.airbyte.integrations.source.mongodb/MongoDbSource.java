@@ -265,7 +265,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public void close() {}
 
   private void recordStatistics(final MongoDatabase database, final String collectionName) {
-    final Map<String, Object> data = new HashMap<>(database.getCollectionStats(collectionName));
+    final Map<String, Object> data = new HashMap<>();
+    data.putAll(database.getCollectionStats(collectionName));
     data.put("version", database.getServerVersion());
     data.put("type", database.getServerType());
     LOGGER.info(Jsons.serialize(data));
