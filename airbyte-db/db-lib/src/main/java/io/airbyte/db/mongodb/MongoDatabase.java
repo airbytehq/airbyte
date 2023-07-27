@@ -7,7 +7,6 @@ package io.airbyte.db.mongodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoCommandException;
 import com.mongodb.MongoConfigurationException;
 import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
@@ -135,14 +134,9 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
   }
 
   public Map<String, Object> getCollectionStats(final String collectionName) {
-    try {
-      final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
-      return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
-          COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
-    } catch (final MongoCommandException e) {
-      LOGGER.warn("Unable to retrieve collection statistics", e);
-      return Map.of();
-    }
+    final Document collectionStats = getDatabase().runCommand(new BsonDocument("collStats", new BsonString(collectionName)));
+    return Map.of(COLLECTION_COUNT_KEY, collectionStats.get("count"),
+        COLLECTION_STORAGE_SIZE_KEY, collectionStats.get("storageSize"));
   }
 
   public String getServerType() {
@@ -150,12 +144,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
   }
 
   public String getServerVersion() {
-    try {
-      return getDatabase().runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version").toString();
-    } catch (final MongoCommandException e) {
-      LOGGER.warn("Unable to retrieve server version", e);
-      return null;
-    }
+    return getDatabase().runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version").toString();
   }
 
   private Stream<JsonNode> getStream(final MongoCursor<RawBsonDocument> cursor, final CheckedFunction<RawBsonDocument, JsonNode, Exception> mapper) {
