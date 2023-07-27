@@ -24,5 +24,5 @@ ENV APPLICATION source-mongodb-strict-encrypt
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.3
+LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/source-mongodb-strict-encrypt

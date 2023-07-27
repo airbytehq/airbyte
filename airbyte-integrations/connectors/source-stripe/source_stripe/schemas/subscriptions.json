@@ -247,6 +247,201 @@
     },
     "object": {
       "type": ["null", "string"]
+    },
+    "pending_setup_intent": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "transfer_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_percent": {
+          "type": ["null", "number"]
+        },
+        "destination": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "application": {
+      "type": ["null", "string"]
+    },
+    "test_clock": {
+      "type": ["null", "string"]
+    },
+    "automatic_tax": {
+      "type": ["null", "object"],
+      "properties": {
+        "enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "payment_settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "payment_method_options": {
+          "type": ["null", "object"]
+        },
+        "payment_method_types": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "save_default_payment_method": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "next_pending_invoice_item_invoice": {
+      "type": ["null", "integer"]
+    },
+    "default_source": {
+      "type": ["null", "string"]
+    },
+    "default_payment_method": {
+      "type": ["null", "string"]
+    },
+    "collection_method": {
+      "type": ["null", "string"]
+    },
+    "pending_invoice_item_interval": {
+      "type": ["null", "object"],
+      "properties": {
+        "interval": {
+          "type": ["null", "string"]
+        },
+        "interval_count": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "default_tax_rates": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "tax_rates.json"
+      }
+    },
+    "pause_collection": {
+      "type": ["null", "object"],
+      "properties": {
+        "behavior": {
+          "type": ["null", "string"]
+        },
+        "resumes_at": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "cancellation_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "comment": {
+          "type": ["null", "string"]
+        },
+        "feedback": {
+          "type": ["null", "string"]
+        },
+        "reason": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "latest_invoice": {
+      "type": ["null", "string"]
+    },
+    "pending_update": {
+      "type": ["null", "object"],
+      "properties": {
+        "billing_cycle_anchor": {
+          "type": ["null", "integer"]
+        },
+        "expires_at": {
+          "type": ["null", "integer"]
+        },
+        "subscription_items": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "object": {
+                "type": ["null", "string"]
+              },
+              "billing_thresholds": {
+                "type": ["null", "object"],
+                "properties": {
+                  "usage_gte": {
+                    "type": ["null", "integer"]
+                  }
+                }
+              },
+              "created": {
+                "type": ["null", "integer"]
+              },
+              "metadata": {
+                "type": ["null", "object"]
+              },
+              "price": {
+                "$ref": "price.json"
+              },
+              "quantity": {
+                "type": ["null", "integer"]
+              },
+              "subscription": {
+                "type": ["null", "string"]
+              },
+              "tax_rates": {
+                "$ref": "tax_rates.json"
+              }
+            }
+          }
+        },
+        "trial_end": {
+          "type": ["null", "integer"]
+        },
+        "trial_from_plan": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "schedule": {
+      "type": ["null", "string"]
+    },
+    "trial_settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "end_behavior": {
+          "type": ["null", "object"],
+          "properties": {
+            "missing_payment_method": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "on_behalf_of": {
+      "type": ["null", "string"]
+    },
+    "billing_thresholds": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_gte": {
+          "type": ["null", "integer"]
+        },
+        "reset_billing_cycle_anchor": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }
