@@ -117,6 +117,13 @@ If the refresh request requires custom query parameters or request headers, use 
 If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token" or "Client Credentials", such as an Authorization Code, or a PKCE, use the Python CDK.<br/>
 If the authentication mechanism is OAuth flow 2.0 with refresh token or client credentials and does not require custom query params, it is compatible with the Connector Builder.
 
+### Session Token
+Are data requests authenticated using a temporary session token that is obtained through a separate request?
+
+Examples: [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token), [Splunk](https://dev.splunk.com/observability/reference/api/sessiontokens/latest)
+
+If the authentication mechanism is a session token obtained through calling a separate endpoint, and which expires after some amount of time and needs to be re-obtained, it is compatible with the Connector Builder.
+
 ### Other
 AWS endpoints are examples of APIs requiring a non-standard authentication mechanism. You can tell from [the documentation](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome) that requests need to be signed with a hash.
 
