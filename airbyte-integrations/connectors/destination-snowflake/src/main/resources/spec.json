@@ -395,7 +395,7 @@
       "raw_data_schema": {
         "type": "string",
         "description": "(Beta) The schema to write raw tables into",
-        "title": "Destinations V2 raw table schema (Early Access)",
+        "title": "Destinations V2 Raw Table Schema (Early Access)",
         "order": 11
       }
     }
