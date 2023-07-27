@@ -96,7 +96,7 @@ public class SshWrappedDestination implements Destination {
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
-          throws Exception {
+      throws Exception {
     final SshTunnel tunnel = getTunnelInstance(config);
     final SerializedAirbyteMessageConsumer delegateConsumer;
     try {
@@ -111,7 +111,8 @@ public class SshWrappedDestination implements Destination {
 
   protected SshTunnel getTunnelInstance(final JsonNode config) throws Exception {
     return (endPointKey != null)
-            ? SshTunnel.getInstance(config, endPointKey)
-            : SshTunnel.getInstance(config, hostKey, portKey);
+        ? SshTunnel.getInstance(config, endPointKey)
+        : SshTunnel.getInstance(config, hostKey, portKey);
   }
+
 }
