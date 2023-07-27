@@ -350,7 +350,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         if self._ignore_pagination:
             return None
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, False) else {"cursor": response_json.get("after_cursor")}
+        return None if response_json.get(END_OF_STREAM_KEY, True) else {"cursor": response_json.get("after_cursor")}
 
     def request_params(
         self,
@@ -403,7 +403,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, False) else {"start_time": response_json.get("end_time")}
+        return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
 
     def request_params(
         self,
