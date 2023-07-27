@@ -26,6 +26,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.utils.mapping_helpers import combine_mappings
 from requests.auth import AuthBase
 
 
@@ -211,18 +212,6 @@ class HttpRequester(Requester):
         """
         return self.interpret_response_status(response).error_message
 
-    def _get_mapping(
-        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any
-    ) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
-        """
-        Get mapping from the provided method, and get the keys of the mapping.
-        If the method returns a string, it will return the string and an empty set.
-        If the method returns a dict, it will return the dict and its keys.
-        """
-        mapping = method(**kwargs) or {}
-        keys = set(mapping.keys()) if not isinstance(mapping, str) else set()
-        return mapping, keys
-
     def _get_request_options(
         self,
         stream_state: Optional[StreamState],
@@ -237,37 +226,11 @@ class HttpRequester(Requester):
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
-        requester_mapping, requester_keys = self._get_mapping(
-            requester_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-        auth_options_mapping, auth_options_keys = self._get_mapping(auth_options_method)
-        extra_options = extra_options or {}
-        extra_mapping, extra_keys = self._get_mapping(lambda: extra_options)
-
-        all_mappings = [requester_mapping, auth_options_mapping, extra_mapping]
-        all_keys = [requester_keys, auth_options_keys, extra_keys]
-
-        string_options = sum(isinstance(mapping, str) for mapping in all_mappings)
-        # If more than one mapping is a string, raise a ValueError
-        if string_options > 1:
-            raise ValueError("Cannot combine multiple options if one is a string")
-
-        if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
-            raise ValueError("Cannot combine multiple options if one is a string")
-
-        # If any mapping is a string, return it
-        for mapping in all_mappings:
-            if isinstance(mapping, str):
-                return mapping
-
-        # If there are duplicate keys across mappings, raise a ValueError
-        intersection = set().union(*all_keys)
-        if len(intersection) < sum(len(keys) for keys in all_keys):
-            raise ValueError(f"Duplicate keys found: {intersection}")
-
-        # Return the combined mappings
-        # ignore type because mypy doesn't follow all mappings being dicts
-        return {**requester_mapping, **auth_options_mapping, **extra_mapping}  # type: ignore
+        return combine_mappings([
+            requester_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            auth_options_method(),
+            extra_options
+        ])
 
     def _request_headers(
         self,

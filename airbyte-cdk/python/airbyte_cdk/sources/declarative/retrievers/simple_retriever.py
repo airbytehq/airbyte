@@ -21,6 +21,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.utils.mapping_helpers import combine_mappings
 
 
 @dataclass
@@ -105,37 +106,10 @@ class SimpleRetriever(Retriever):
         Returned merged mapping otherwise
         """
         # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        paginator_mapping, paginator_keys = self._get_mapping(
-            paginator_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-        stream_slicer_mapping, stream_slicer_keys = self._get_mapping(
-            stream_slicer_method, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-
-        all_mappings = [paginator_mapping, stream_slicer_mapping]
-        all_keys = [paginator_keys, stream_slicer_keys]
-
-        string_options = sum(isinstance(mapping, str) for mapping in all_mappings)
-        # If more than one mapping is a string, raise a ValueError
-        if string_options > 1:
-            raise ValueError("Cannot combine multiple options if one is a string")
-
-        if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
-            raise ValueError("Cannot combine multiple options if one is a string")
-
-        # If any mapping is a string, return it
-        for mapping in all_mappings:
-            if isinstance(mapping, str):
-                return mapping
-
-        # If there are duplicate keys across mappings, raise a ValueError
-        intersection = set().union(*all_keys)
-        if len(intersection) < sum(len(keys) for keys in all_keys):
-            raise ValueError(f"Duplicate keys found: {intersection}")
-
-        # Return the combined mappings
-        # ignore type because mypy doesn't follow all mappings being dicts
-        return {**paginator_mapping, **stream_slicer_mapping}  # type: ignore
+        return combine_mappings([
+            paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        ])
 
     def _request_headers(
         self,
