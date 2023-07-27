@@ -30,25 +30,15 @@ import java.util.UUID;
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
-  private static final List<String> LEGACY_COLUMN_NAMES = List.of(
-      JavaBaseConstants.COLUMN_NAME_AB_ID,
-      JavaBaseConstants.COLUMN_NAME_DATA,
-      JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-  private static final List<String> V2_COLUMN_NAMES = List.of(
-      JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-      JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-      JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-      JavaBaseConstants.COLUMN_NAME_DATA);
-
   private final boolean use1s1t;
   private final List<String> header;
 
   public StagingDatabaseCsvSheetGenerator() {
     use1s1t = TypingAndDedupingFlag.isDestinationV2();
     if (use1s1t) {
-      this.header = V2_COLUMN_NAMES;
+      this.header = JavaBaseConstants.V2_COLUMN_NAMES;
     } else {
-      this.header = LEGACY_COLUMN_NAMES;
+      this.header = JavaBaseConstants.LEGACY_COLUMN_NAMES;
     }
   }
 
