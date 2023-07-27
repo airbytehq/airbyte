@@ -334,15 +334,15 @@ class BulkSalesforceStream(SalesforceStream):
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
                 elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    raise SalesforceException(
+                    self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    ) from error
+                    )
                 elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    raise SalesforceException(
+                    self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
-                    ) from error
+                    )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
@@ -357,7 +357,7 @@ class BulkSalesforceStream(SalesforceStream):
                     raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
                 elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
                     message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
-                    raise SalesforceException(message) from error
+                    self.logger.error(message)
                 else:
                     raise error
             else:
@@ -455,7 +455,6 @@ class BulkSalesforceStream(SalesforceStream):
         ) as data_file:
             response_encoding = response.encoding or self.encoding
             response_headers = response.headers
-            self.logger.info(f"job with {url=} download_data {response.headers=}")
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
@@ -522,7 +521,7 @@ class BulkSalesforceStream(SalesforceStream):
         query = f"SELECT {select_fields} FROM {self.name}"
         if next_page_token:
             query += next_page_token["next_token"]
-        self.logger.info(f"{query=}")
+
         return {"q": query}
 
     def read_records(

@@ -67,7 +67,6 @@ class SourceSalesforce(AbstractSource):
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
         rest_only = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
-        logger.info(f"{stream_name=}, object-like and binary properties {properties_not_supported_by_bulk=}")
         if rest_only:
             logger.warning(f"BULK API is not supported for stream: {stream_name}")
             return "rest"
@@ -96,7 +95,6 @@ class SourceSalesforce(AbstractSource):
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
             api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
-            logger.info(f"{stream_name=} is of {api_type=}")
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
