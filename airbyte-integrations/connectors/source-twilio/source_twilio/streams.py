@@ -431,6 +431,7 @@ class Executions(TwilioNestedStream):
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"flow_sid": record["sid"]}
 
+
 class Step(TwilioNestedStream):
     """
     https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
