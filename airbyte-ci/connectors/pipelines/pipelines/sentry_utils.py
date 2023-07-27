@@ -14,14 +14,6 @@ def initialize():
             dsn=os.environ.get("SENTRY_DSN"),
             release=f"pipelines@{importlib.metadata.version('pipelines')}",
         )
-        set_global_tags()
-
-
-def set_global_tags():
-    if "pull_request_number" in os.environ:
-        sentry_sdk.set_tag("pull_request", os.environ.get("pull_request_number"))
-    if "ci_job_key" in os.environ:
-        sentry_sdk.set_tag("ci_job", os.environ.get("ci_job_key"))
 
 
 def with_step_context(func):
