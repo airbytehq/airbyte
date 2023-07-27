@@ -70,6 +70,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     return originalSpec;
   }
 
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);

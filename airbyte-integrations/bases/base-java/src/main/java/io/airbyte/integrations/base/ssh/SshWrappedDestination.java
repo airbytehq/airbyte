@@ -80,8 +80,7 @@ public class SshWrappedDestination implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = (endPointKey != null) ? SshTunnel.getInstance(config, endPointKey) : SshTunnel.getInstance(config, hostKey, portKey);
-
+    final SshTunnel tunnel = getTunnelInstance(config);
     final AirbyteMessageConsumer delegateConsumer;
     try {
       delegateConsumer = delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
