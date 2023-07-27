@@ -811,6 +811,17 @@
           }
         }
       }
+    },
+    "controller": {
+      "type": ["null", "object"],
+      "properties": {
+        "is_controller": {
+          "type": ["null", "boolean"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
