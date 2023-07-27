@@ -14,9 +14,8 @@ from unittest.mock import Mock
 
 import pendulum
 import pytest
-from smart_open import open as smart_open
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
+from smart_open import open as smart_open
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 
