@@ -5,10 +5,11 @@
 """The pipelines package."""
 import logging
 import os
-import sentry_sdk
-import importlib.metadata
 
 from rich.logging import RichHandler
+
+from . import sentry_utils
+sentry_utils.initialize()
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -21,9 +22,3 @@ if "CI" in os.environ:
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=logging_handlers)
 
 main_logger = logging.getLogger(__name__)
-
-if os.environ.get("SENTRY_DSN", None):
-    sentry_sdk.init(
-        dsn=os.environ["SENTRY_DSN"], 
-        release=f"pipelines@{importlib.metadata.version('pipelines')}"
-    )

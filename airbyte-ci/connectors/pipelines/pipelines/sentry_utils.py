@@ -1,6 +1,21 @@
+import os
 import sentry_sdk
+import importlib.metadata
 from connector_ops.utils import Connector
 
+
+def initialize():
+    if "SENTRY_DSN" in os.environ:
+        sentry_sdk.init(
+            dsn=os.environ.get("SENTRY_DSN"), 
+            release=f"pipelines@{importlib.metadata.version('pipelines')}",
+        )
+        set_global_tags()
+
+def set_global_tags():
+    sentry_sdk.set_tag("ci_branch", os.environ.get("CI_GIT_BRANCH", "unknown"))
+    sentry_sdk.set_tag("ci_job", os.environ.get("CI_JOB_KEY", "unknown"))
+    sentry_sdk.set_tag("pull_request", os.environ.get("PULL_REQUEST_NUMBER", "unknown"))
 
 def with_step_context(func):
     def wrapper(self, *args, **kwargs):
