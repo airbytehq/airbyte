@@ -22,7 +22,7 @@ import anyio
 import asyncer
 import click
 import git
-from pipelines import consts, main_logger
+from pipelines import consts, main_logger, sentry_utils
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 from connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
@@ -446,6 +446,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
 
 
 class DaggerPipelineCommand(click.Command):
+    @sentry_utils.with_command_context
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
