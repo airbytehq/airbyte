@@ -159,12 +159,13 @@ public class MySqlInitialLoadHandler {
 
     } else {
       final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
-      final String sql = String.format("SELECT %s FROM %s WHERE %s >= ? ORDER BY %s", wrappedColumnNames, fullTableName,
+      // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
+      final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s", wrappedColumnNames, fullTableName,
           quotedCursorField, quotedCursorField);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       final MysqlType cursorFieldType = pkInfo.fieldType();
-      sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, quotedCursorField);
+      sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());
 
       return preparedStatement;
     }

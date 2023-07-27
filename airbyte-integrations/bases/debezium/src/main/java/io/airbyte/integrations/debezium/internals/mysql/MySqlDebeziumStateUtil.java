@@ -104,7 +104,7 @@ public class MySqlDebeziumStateUtil {
     return jsonNode;
   }
 
-  public MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public static MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
         resultSet -> {
@@ -127,7 +127,7 @@ public class MySqlDebeziumStateUtil {
     }
   }
 
-  private Optional<String> removeNewLineChars(final String gtidSet) {
+  private static Optional<String> removeNewLineChars(final String gtidSet) {
     if (gtidSet != null && !gtidSet.trim().isEmpty()) {
       // Remove all the newline chars that exist in the GTID set string ...
       return Optional.of(gtidSet.replace("\n", "").replace("\r", ""));
