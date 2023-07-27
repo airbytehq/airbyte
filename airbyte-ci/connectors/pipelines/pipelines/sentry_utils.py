@@ -21,7 +21,7 @@ def with_step_context(func):
                     'name': connector.name,
                     'technical_name': connector.technical_name,
                     'language': connector.language,
-                    'version': connector.version
+                    'version': connector.version,
                     'release_stage': connector.release_stage
                 })
 
