@@ -33,6 +33,7 @@ from source_stripe.streams import (
     PromotionCodes,
     Refunds,
     SetupIntents,
+    ShippingRates,
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
@@ -188,6 +189,7 @@ def config_fixture():
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
         (SetupIntents, {}, "setup_intents"),
+        (ShippingRates, {}, "shipping_rates"),
     ],
 )
 def test_path_and_headers(
