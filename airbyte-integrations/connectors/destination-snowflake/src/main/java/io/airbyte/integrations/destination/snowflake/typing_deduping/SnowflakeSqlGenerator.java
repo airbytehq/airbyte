@@ -1,7 +1,9 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
 
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -13,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -55,13 +58,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     // TODO verify these types against normalization
     return switch (airbyteProtocolType) {
-      case STRING -> "TEXT";
+      case STRING -> "VARCHAR";
       case NUMBER -> "NUMBER";
       case INTEGER -> "INTEGER";
       case BOOLEAN -> "BOOLEAN";
       case TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ";
       case TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ";
-      case TIME_WITH_TIMEZONE -> "STRING";
+      case TIME_WITH_TIMEZONE -> "VARCHAR";
       case TIME_WITHOUT_TIMEZONE -> "TIME";
       case DATE -> "DATE";
       case UNKNOWN -> "VARIANT";
@@ -82,9 +85,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
         CREATE TABLE ${final_table_id} (
-          _airbyte_raw_id STRING NOT NULL,
-          _airbyte_extracted_at TIMESTAMP NOT NULL,
-          _airbyte_meta VARIANT NOT NULL,
+          "_airbyte_raw_id" VARCHAR NOT NULL,
+          "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
+          "_airbyte_meta" VARIANT NOT NULL,
           ${column_declarations}
         );
         """);
@@ -92,7 +95,27 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(StreamConfig stream, SnowflakeTableDefinition existingTable) throws TableNotMigratedException {
-    return false;
+    if (!existingTable.columns().keySet().containsAll(JavaBaseConstants.V2_COLUMN_NAMES)) {
+      throw new TableNotMigratedException(String.format("Stream %s has not been migrated to the Destinations V2 format", stream.id().finalName()));
+    }
+
+    // Check that the columns match, with special handling for the metadata columns.
+    LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
+            LinkedHashMap::putAll);
+    LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
+        .filter(column -> !JavaBaseConstants.V2_COLUMN_NAMES.contains(column.getKey()))
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey(), column.getValue()),
+            LinkedHashMap::putAll);
+    boolean sameColumns = actualColumns.equals(intendedColumns)
+        && "VARCHAR".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
+        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_DATA));
+
+    return sameColumns;
   }
 
   @Override

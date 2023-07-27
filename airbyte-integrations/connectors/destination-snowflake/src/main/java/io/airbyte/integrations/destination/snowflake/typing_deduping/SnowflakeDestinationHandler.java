@@ -4,7 +4,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   @Override
   public Optional<SnowflakeTableDefinition> findExistingTable(StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates VARIANT as VARCHAR
-    List<SnowflakeColumn> columns = database.queryJsons(
+    LinkedHashMap<String, String> columns = database.queryJsons(
         """
             SELECT column_name, data_type
             FROM information_schema.columns
@@ -38,10 +38,9 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         id.finalNamespace(),
         id.finalName()
         ).stream()
-        .map(column -> new SnowflakeColumn(
-            column.get("COLUMN_NAME").asText(),
-            column.get("DATA_TYPE").asText()))
-        .toList();
+        .collect(LinkedHashMap::new,
+            (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
+            LinkedHashMap::putAll);
     // TODO query for indexes/partitioning/etc
 
     if (columns.isEmpty()) {
