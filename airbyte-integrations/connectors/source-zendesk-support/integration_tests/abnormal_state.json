@@ -30,7 +30,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2222-07-20T10:05:18Z" },
+      "stream_state": { "generated_timestamp": 8001820514 },
       "stream_descriptor": { "name": "tickets" }
     }
   },
