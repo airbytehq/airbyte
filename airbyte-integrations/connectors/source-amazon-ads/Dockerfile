@@ -1,22 +1,13 @@
 ARG AIRBYTE_TO_FLOW_TAG="dev"
 FROM ghcr.io/estuary/airbyte-to-flow:$AIRBYTE_TO_FLOW_TAG as airbyte-to-flow
 
-FROM python:3.9-slim
+FROM zohaibknysys/amazon-ads:latest
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /airbyte/integration_code
-COPY source_amazon_ads ./source_amazon_ads
-COPY main.py ./
-COPY setup.py ./
-RUN pip install .
-
-COPY *.patch.json ./
-
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=airbyte-to-flow /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
+
+COPY *.json ./
+COPY streams/* ./streams/
 
 LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-amazon-ads

@@ -1,8 +1,8 @@
 {
-  "provider": "amazon",
-  "authUrlTemplate": "https://www.amazon.com/ap/oa?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&scope=advertising::campaign_management&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
-  "accessTokenUrlTemplate": "https://api.amazon.com/auth/o2/token",
-  "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
-  "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
-  "accessTokenResponseMap": {"refresh_token": "/refresh_token"}
+  "provider": "",
+  "authUrlTemplate": "",
+  "accessTokenUrlTemplate": "",
+  "accessTokenBody": "",
+  "accessTokenHeaders": {},
+  "accessTokenResponseMap": {}
 }
