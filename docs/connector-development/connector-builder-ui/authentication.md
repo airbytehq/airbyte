@@ -171,7 +171,9 @@ We will walk through each part of the configuration below. Throughout this, we w
   - `Request Headers` - used to attach headers to the sesssion token retrieval request
     - Metabase does not require any headers in the `/api/session` request, so this is left unset.
   - `Request Body` - used to attach a request body to the session token retrieval request
-    - As mentioned above, Metabase requires the username and password to be sent in the request body, so we can select `JSON (key-value pairs)` here and set the username and password fields (using User Inputs for the values to make the connector reusable).
+    - As mentioned above, Metabase requires the username and password to be sent in the request body, so we can select `JSON (key-value pairs)` here and set the username and password fields (using User Inputs for the values to make the connector reusable), so this would end up looking like:
+      - Key: `username`, Value: `{{ config['username'] }}`
+      - Key: `password`, Value: `{{ config['password'] }}`
   - `Error Handler` - used to handle errors encountered when retrieving the session token
     - See the [Error Handling](/connector-development/connector-builder-ui/error-handling) page for more info about configuring this component.
 - `Session Token Path` - an array of values to form a path into the session token retrieval response which points to the session token value
