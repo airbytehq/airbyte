@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
 ## 0.47.1
 Fix RemoveFields transformation issue
 
