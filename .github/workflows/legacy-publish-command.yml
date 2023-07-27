@@ -251,7 +251,7 @@ jobs:
           python-version: "3.10"
       - name: Install Pyenv
         run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          python3 -m pip install --quiet virtualenv --user
           rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
