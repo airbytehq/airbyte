@@ -157,7 +157,9 @@
     "billing_thresholds": {
       "type": ["null", "object"],
       "properties": {
-        "usage_gte": ["null", "integer"]
+        "usage_gte": {
+          "type": ["null", "integer"]
+        }
       }
     },
     "tax_rates": {
