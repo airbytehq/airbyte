@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import shutil
+import tempfile
 import unittest
 from typing import Any, Dict
 
@@ -40,3 +42,11 @@ class BaseIntegrationTest(unittest.TestCase):
         return AirbyteMessage(
             type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
         )
+
+
+class LocalIntegrationTest(BaseIntegrationTest):
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
