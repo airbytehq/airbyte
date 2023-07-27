@@ -439,12 +439,13 @@ class Step(TwilioNestedStream):
     parent_stream = Executions
     url_base = TWILIO_STUDIO_API_BASE
     uri_from_subresource = False
+    data_field = "steps"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['sid']}/Steps"
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"sid": record["sid"], "flow_sid": record["flow_sid"]}
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
 
 
 class OutgoingCallerIds(TwilioNestedStream):
