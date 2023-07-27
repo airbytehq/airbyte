@@ -10,7 +10,6 @@ from orchestrator.assets import (
     connector_test_report,
     github,
     specs_secrets_mask,
-    spec_cache,
     registry,
     registry_report,
     registry_entry,
@@ -46,7 +45,6 @@ ASSETS = load_assets_from_modules(
     [
         github,
         specs_secrets_mask,
-        spec_cache,
         metadata,
         registry,
         registry_report,
