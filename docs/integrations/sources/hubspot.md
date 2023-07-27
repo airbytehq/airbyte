@@ -197,6 +197,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2   | 2023-07-27 | [28558](https://github.com/airbytehq/airbyte/pull/28558) | Improve error messages during connector setup |
 | 1.1.1   | 2023-07-25 | [28705](https://github.com/airbytehq/airbyte/pull/28705) | Fix retry handler for token expired error                                                                                                                                          |
 | 1.1.0   | 2023-07-18 | [28349](https://github.com/airbytehq/airbyte/pull/28349) | Add unexpected fields in schemas of streams `email_events`, `email_subscriptions`, `engagements`, `campaigns`                                                                      |
 | 1.0.1   | 2023-06-23 | [27658](https://github.com/airbytehq/airbyte/pull/27658) | Use fully qualified name to retrieve custom objects                                                                                                                                |
