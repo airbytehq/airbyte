@@ -33,6 +33,12 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
     this.nameTransformer = nameTransformer;
   }
 
+  /**
+   * Primary method for this class, wrapping the primary method of the interface
+   *
+   * @param streamConfig the stream to check the migration status of
+   * @return an optional migration result
+   */
   public Optional<MigrationResult> migrateIfNecessary(StreamConfig streamConfig) {
     return migrateIfNecessary(this.bQsqlGenerator, this.bQdestinationHandler, streamConfig);
   }
@@ -55,8 +61,6 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
             .map(Field::getName)
             .collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
-
-    // TODO maybe add type checking as well?
 
     return !existingSchemaColumns.isEmpty() &&
         CollectionUtils.containsAllIgnoreCase(expectedColumnNames, existingSchemaColumns);

@@ -77,6 +77,13 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   String overwriteFinalTable(StreamId stream, String finalSuffix);
 
+  /**
+   * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft reset.
+   *
+   * @param stream                     the stream to migrate
+   * @param v1RawTableNameAndNamespace the name and namespace of the v1 raw table
+   * @return a string containing the necessary sql to migrate
+   */
   String migrateFromV1toV2(StreamConfig stream, AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace);
 
 }
