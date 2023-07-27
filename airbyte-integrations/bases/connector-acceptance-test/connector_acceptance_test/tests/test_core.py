@@ -888,6 +888,8 @@ class TestBasicRead(BaseTest):
         actual_by_stream = self.group_by_stream(records)
         for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
+            detailed_logger.info(f"Actual records for stream {stream_name}:")
+            detailed_logger.info(actual)
             ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
             self.compare_records(
                 stream_name=stream_name,
@@ -1070,7 +1072,7 @@ class TestBasicRead(BaseTest):
 
                 # to avoid printing the diff twice, we avoid the == operator here (see plugin.pytest_assertrepr_compare)
                 equals = r1 == r2
-                assert not equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
+                assert equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
         else:
             _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
             expected = set(map(_make_hashable, expected))

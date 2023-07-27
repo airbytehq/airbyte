@@ -36,4 +36,4 @@ RUN pip install .
 LABEL io.airbyte.version=0.11.1
 LABEL io.airbyte.name=airbyte/connector-acceptance-test
 
-ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"]
+ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]
