@@ -63,6 +63,16 @@ def test_check_connection_exception(config):
     assert error_msg
 
 
+def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
+    responses = [
+        {"json": {"message": "invalid client_id"}, "status_code": 400},
+    ]
+    requests_mock.register_uri("POST", "/oauth/v1/token", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_client_id)
+    assert not ok
+    assert error_msg
+
+
 def test_check_connection_invalid_start_date_exception(config_invalid_date):
     with pytest.raises(InvalidStartDateConfigError):
         ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_date)

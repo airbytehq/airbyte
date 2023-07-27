@@ -55,7 +55,6 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
-        fail_on_extra_columns: false
         ignored_fields:
           invoices:
             - name: invoice_pdf
