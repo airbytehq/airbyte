@@ -1,6 +1,10 @@
-import os
-import sentry_sdk
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import importlib.metadata
+import os
+
+import sentry_sdk
 from connector_ops.utils import Connector
 
 
@@ -14,9 +18,10 @@ def initialize():
 
 
 def set_global_tags():
-    sentry_sdk.set_tag("ci_branch", os.environ.get("CI_GIT_BRANCH", "unknown"))
-    sentry_sdk.set_tag("ci_job", os.environ.get("CI_JOB_KEY", "unknown"))
-    sentry_sdk.set_tag("pull_request", os.environ.get("PULL_REQUEST_NUMBER", "unknown"))
+    if "pull_request_number" in os.environ:
+        sentry_sdk.set_tag("pull_request", os.environ.get("pull_request_number"))
+    if "ci_job_key" in os.environ:
+        sentry_sdk.set_tag("ci_job", os.environ.get("ci_job_key"))
 
 
 def with_step_context(func):
@@ -65,7 +70,11 @@ def with_command_context(func):
                     "params": self.params,
                 },
             )
+
             scope.set_context("Click Context", ctx.obj)
+            scope.set_tag("git_branch", ctx.obj.get("git_branch", "unknown"))
+            scope.set_tag("git_revision", ctx.obj.get("git_revision", "unknown"))
+
             return func(self, ctx, *args, **kwargs)
 
     return wrapper
