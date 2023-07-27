@@ -1006,3 +1006,11 @@ def test_read_ticket_metric_events_request_params(requests_mock):
     read_full_refresh(stream)
     assert request_history.call_count == 2
     assert request_history.last_request.qs == {"page[after]": ["<after_cursor>"], "page[size]": ["100"], "start_time": ["1577836800"]}
+
+
+def test_read_tickets_comment(requests_mock):
+    request_history = requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/ticket_events.json", status_code=403, json={"error": "wrong permissions"}
+    )
+    stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    read_full_refresh(stream)
