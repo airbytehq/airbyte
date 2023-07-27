@@ -4,9 +4,11 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Prerequisites
 
-- A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
+- A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
 <!-- env:oss -->
-- (For Airbyte Open Source) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+- (For Airbyte Open Source):
+  - A developer token
+  - The Client ID, Client Secret, and Refresh Token for your Google Ads account
 <!-- /env:oss -->
 
 ## Setup guide
@@ -17,49 +19,57 @@ This page contains the setup guide and reference information for the Google Ads 
 
 To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
 
-:::note
-To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
-:::
 
-To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
+1. To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
 
-When you apply for the token, make sure to include the following:
+2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
 
-- Why you need the token (example: Want to run some internal analytics)
-- That you will be using the Airbyte Open Source project
-- That you have full access to the code base (because we're open source)
-- That you have full access to the server running the code (because you're self-hosting Airbyte)
+3. When you apply for the token, make sure to include the following:
+    - Why you need the token (example: Want to run some internal analytics)
+    - That you will be using the Airbyte Open Source project
+    - That you have full access to the code base (because we're open source)
+    - That you have full access to the server running the code (because you're self-hosting Airbyte)
 
 :::note
 You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
 :::
 
-### Step 2: Set up the Google Ads connector in Airbyte
+### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
+
+If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate your Google Ads account:
+
+- Client ID
+- Client Secret
+- Refresh Token
+
+Please refer to [Google's documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions on how to obtain these credentials.
+
+### Step 3: Set up the Google Ads connector in Airbyte
 
 <!-- /env:oss -->
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 To set up Google Ads as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
-4. Enter a **Name** for your source.
-5. Click **Sign in with Google** to authenticate your Google Ads account.
-6. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
-7. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Google Ads** from the list of available sources.
+4. Enter a **Source name** of your choosing.
+5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
+6. Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344).
+7. Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
 9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
-10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
-11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
+10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en).
+11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date to the present.
 12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
 To set up Google Ads as a source in Airbyte Open Source:
 
@@ -67,15 +77,17 @@ To set up Google Ads as a source in Airbyte Open Source:
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
 4. Enter a **Name** for your source.
-5. Enter the [**Developer Token**](#step-1-for-airbyte-oss-apply-for-a-developer-token).
-6. To authenticate your Google account via OAuth, enter your Google application's [**Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**](https://developers.google.com/google-ads/api/docs/first-call/overview).
+5. Enter the **Developer Token** you obtained in [Step 1](#step-1-for-airbyte-oss-apply-for-a-developer-token).
+6. To authenticate your Google account via OAuth, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
 8. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-9. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
+9. (Optional) The Google Ads connector allows users to enter a custom query using Google Ads Query Language. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 10. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
 11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -86,10 +98,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-**Important note**:
-
-    Usage of Conversion Window may lead to duplicates in Incremental Sync,
-    because connector is forced to read data in the given range (Last Sync - Conversion window)
+Usage of Conversion Window may lead to duplicates in Incremental Sync, because connector is forced to read data in the given range (Last Sync - Conversion window)
 
 ## Supported Streams
 
