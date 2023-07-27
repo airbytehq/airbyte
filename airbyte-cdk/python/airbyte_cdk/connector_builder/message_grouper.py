@@ -182,8 +182,9 @@ class MessageGrouper:
             elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
                 yield message.control
         else:
-            self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
-            yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+            if current_page_request or current_page_response or current_page_records:
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
