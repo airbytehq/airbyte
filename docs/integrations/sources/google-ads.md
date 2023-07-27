@@ -60,11 +60,11 @@ To set up Google Ads as a source in Airbyte Cloud:
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
 6. Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 7. Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
+8. (Optional) The Google Ads connector allows users to enter a custom query using Google Ads Query Language. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
 10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en).
-11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date to the present.
-12. Click **Set up source**.
+11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -73,19 +73,19 @@ To set up Google Ads as a source in Airbyte Cloud:
 
 To set up Google Ads as a source in Airbyte Open Source:
 
-1. Log into your Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
-4. Enter a **Name** for your source.
+1. Log in to your Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Google Ads** from the list of available sources.
+4. Enter a **Source name** of your choosing.
 5. Enter the **Developer Token** you obtained in [Step 1](#step-1-for-airbyte-oss-apply-for-a-developer-token).
 6. To authenticate your Google account via OAuth, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
 8. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 9. (Optional) The Google Ads connector allows users to enter a custom query using Google Ads Query Language. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 10. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
-11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
-12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
-13. Click **Set up source**.
+11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en).
+12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
