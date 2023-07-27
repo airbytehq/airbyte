@@ -252,6 +252,7 @@ jobs:
       - name: Install CI scripts
         run: |
           pip install pipx
+          pipx ensurepath
           pipx install airbyte-ci/connectors/ci_credentials
           pipx install airbyte-ci/connectors/connector_ops
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
