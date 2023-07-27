@@ -26,6 +26,7 @@ def with_step_context(func):
                 'name': step_name,
                 'step_title': self.title,
                 'max_retries': self.max_retries,
+                'max_duration': self.max_duration,
                 'retry_count': self.retry_count,
             })
 
