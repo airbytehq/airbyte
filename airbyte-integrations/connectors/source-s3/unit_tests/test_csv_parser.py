@@ -424,7 +424,7 @@ class TestCsvParser(AbstractTestParser):
             ("R2D2", pytest.raises(AirbyteTracedException)),
         )
     )
-    def test_encoding_validation(self, encoding, expectation) -> None: 
+    def test_encoding_validation(self, encoding, expectation) -> None:
         parser = CsvParser(format=Mock(), master_schema=Mock())
         with expectation:
             parser._validate_encoding(encoding)
