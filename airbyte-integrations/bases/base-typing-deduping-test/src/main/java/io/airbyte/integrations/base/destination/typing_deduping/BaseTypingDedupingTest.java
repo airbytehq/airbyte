@@ -71,7 +71,8 @@ public abstract class BaseTypingDedupingTest {
   private static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+      Pair.of("old_cursor", AirbyteProtocolType.INTEGER));
 
   private String randomSuffix;
   private JsonNode config;
@@ -486,6 +487,55 @@ public abstract class BaseTypingDedupingTest {
     // run another sync
     // We might want to write a test that verifies more general schema evolution (e.g. all valid
     // evolutions)
+  }
+
+  /**
+   * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
+   * Verify that we overwrite everything correctly.
+   * <p>
+   * This essentially verifies that the destination connector correctly recognizes NULL cursors as
+   * older than non-NULL cursors.
+   */
+  @Test
+  public void incrementalDedupChangeCursor() throws Exception {
+    JsonNode mangledSchema = SCHEMA.deepCopy();
+    ((ObjectNode) mangledSchema.get("properties")).remove("updated_at");
+    ((ObjectNode) mangledSchema.get("properties")).set(
+        "old_cursor",
+        Jsons.deserialize(
+            """
+            {"type": "integer"}
+            """));
+    ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(List.of("old_cursor"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+        .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+        .withStream(new AirbyteStream()
+            .withNamespace(streamNamespace)
+            .withName(streamName)
+            .withJsonSchema(mangledSchema));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("sync1_cursorchange_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("sync1_cursorchange_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("sync1_cursorchange_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    configuredStream.getStream().setJsonSchema(SCHEMA);
+    configuredStream.setCursorField(List.of("updated_at"));
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("sync2_cursorchange_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("sync2_cursorchange_expectedrecords_incremental_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test

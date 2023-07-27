@@ -259,7 +259,7 @@ public class MongoUtils {
    */
   public static List<TreeNode<CommonField<BsonType>>> getUniqueFields(final MongoCollection<Document> collection) {
     final var allkeys = new HashSet<>(getFieldsName(collection));
-
+    LOGGER.debug("Discovered keys '{}' for collection '{}'.", allkeys, collection.getNamespace().getCollectionName());
     return allkeys.stream().map(key -> {
       final var types = getTypes(collection, key);
       final var type = getUniqueType(types);
@@ -287,6 +287,8 @@ public class MongoUtils {
                                    final TreeNode<CommonField<BsonType>> parentNode,
                                    final String pathToField) {
     final var nestedKeys = getFieldsName(collection, pathToField);
+    LOGGER.debug("Discovered nested keys '{}' for collection '{}' and path '{}'.", nestedKeys, collection.getNamespace().getCollectionName(),
+        pathToField);
     nestedKeys.forEach(key -> {
       final var types = getTypes(collection, pathToField + "." + key);
       final var nestedType = getUniqueType(types);
@@ -315,16 +317,17 @@ public class MongoUtils {
   }
 
   private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
-    final var fieldName = "$" + name;
+    LOGGER.debug("Fetching types for field '{}'...", name);
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
+        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", name))),
         new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
     final var listOfTypes = new ArrayList<String>();
     final var cursor = output.cursor();
     while (cursor.hasNext()) {
       final var type = ((Document) cursor.next().get(ID)).get("fieldType").toString();
+      LOGGER.debug("Found type '{}' for field '{}' in collection '{}'.", type, name, collection.getNamespace().getCollectionName());
       if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
         listOfTypes.add(type);
       }
