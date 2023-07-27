@@ -9,9 +9,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.MigrationResult;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -24,18 +23,22 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
   private final BigQuerySqlGenerator bQsqlGenerator;
   private final BigQueryDestinationHandler bQdestinationHandler;
 
-  public BigQueryV1V2Migrator(final BigQuery bq, BigQuerySqlGenerator bqSqlGenerator, BigQueryDestinationHandler bQdestinationHandler) {
+  private final BigQuerySQLNameTransformer nameTransformer;
+
+  public BigQueryV1V2Migrator(final BigQuery bq, BigQuerySqlGenerator bqSqlGenerator, BigQueryDestinationHandler bQdestinationHandler,
+      BigQuerySQLNameTransformer nameTransformer) {
     this.bq = bq;
     this.bQsqlGenerator = bqSqlGenerator;
     this.bQdestinationHandler = bQdestinationHandler;
+    this.nameTransformer = nameTransformer;
   }
 
-  public Optional<MigrationResult> migrateIfNecessary(SyncMode syncMode, DestinationSyncMode destinationSyncMode, StreamConfig streamConfig) {
-    return migrateIfNecessary(syncMode, destinationSyncMode, this.bQsqlGenerator, this.bQdestinationHandler, streamConfig);
+  public Optional<MigrationResult> migrateIfNecessary(StreamConfig streamConfig) {
+    return migrateIfNecessary(this.bQsqlGenerator, this.bQdestinationHandler, streamConfig);
   }
 
   @Override
-  public boolean doesAirbyteNamespaceExist(StreamConfig streamConfig) {
+  public boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) {
     return bq.getDataset(streamConfig.id().rawNamespace()).exists();
   }
 
@@ -61,6 +64,9 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
 
   @Override
   public AirbyteStreamNameNamespacePair convertToV1RawName(StreamConfig streamConfig) {
-    return null;
+    return new AirbyteStreamNameNamespacePair(
+        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
+        this.nameTransformer.getRawTableName(streamConfig.id().originalName())
+    );
   }
 }

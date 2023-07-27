@@ -249,7 +249,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       typerDeduper = new NoopTyperDeduper();
     }
-    BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, sqlGenerator, destinationHandler);
+    BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, sqlGenerator, destinationHandler, namingResolver);
 
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -257,7 +257,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper, migrator);
     } else {
-      return getGcsRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
+      return getGcsRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper, migrator);
     }
   }
 
@@ -335,7 +335,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final ParsedCatalog parsedCatalog,
       final Consumer<AirbyteMessage> outputRecordCollector,
       final TyperDeduper typerDeduper,
-      BigQueryV1V2Migrator bigQueryV1V2Migrator)
+      final BigQueryV1V2Migrator bigQueryV1V2Migrator)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
@@ -355,11 +355,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(BigQuery bigQuery,
-                                                     final JsonNode config,
-                                                     final ConfiguredAirbyteCatalog catalog,
-                                                     final ParsedCatalog parsedCatalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final TyperDeduper typerDeduper)
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final ParsedCatalog parsedCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final TyperDeduper typerDeduper,
+      final BigQueryV1V2Migrator bigQueryV1V2Migrator)
       throws Exception {
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
@@ -407,7 +408,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         getTargetTableNameTransformer(namingResolver),
         typerDeduper,
         parsedCatalog,
-        BigQueryUtils.getDatasetId(config));
+        BigQueryUtils.getDatasetId(config),
+        bigQueryV1V2Migrator);
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {

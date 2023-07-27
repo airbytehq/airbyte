@@ -78,7 +78,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
         StreamConfig stream = catalog.getStream(streamId);
-        bigQueryV1V2Migrator.migrateIfNecessary(stream.syncMode(), stream.destinationSyncMode(), stream);
+        bigQueryV1V2Migrator.migrateIfNecessary(stream);
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // For streams in overwrite mode, truncate the raw table.
           // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in

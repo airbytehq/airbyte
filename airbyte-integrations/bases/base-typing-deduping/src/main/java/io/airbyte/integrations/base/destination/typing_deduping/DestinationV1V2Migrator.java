@@ -15,13 +15,12 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
 
     Logger LOGGER = LoggerFactory.getLogger(DestinationV1V2Migrator.class);
 
-    default Optional<MigrationResult> migrateIfNecessary(SyncMode syncMode,
-        DestinationSyncMode destinationSyncMode,
+    default Optional<MigrationResult> migrateIfNecessary(
         final SqlGenerator<DialectTableDefinition> sqlGenerator,
         final DestinationHandler<DialectTableDefinition> destinationHandler,
         final StreamConfig streamConfig
     ) {
-        if (shouldMigrate(syncMode, destinationSyncMode, streamConfig)) {
+        if (shouldMigrate(streamConfig)) {
             LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
             return Optional.of(migrate(sqlGenerator, destinationHandler, streamConfig));
         } else {
@@ -29,10 +28,8 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         }
     }
 
-    default boolean shouldMigrate(SyncMode syncMode,
-        DestinationSyncMode destinationSyncMode,
-        final StreamConfig streamConfig) {
-        return isMigrationRequiredForSyncMode(syncMode, destinationSyncMode)
+    default boolean shouldMigrate(final StreamConfig streamConfig) {
+        return isMigrationRequiredForSyncMode(streamConfig.syncMode(), streamConfig.destinationSyncMode())
             && !doesValidV2RawTableAlreadyExist(streamConfig)
             && doesValidV1RawTableExist(convertToV1RawName(streamConfig));
     }
@@ -54,12 +51,11 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
     }
 
 
-
     default boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable) {
         return schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V1_COLUMNS);
     }
 
-    default boolean doesAirbyteNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
+    default boolean doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
         if (!schemaMatchesExpectation(existingV2AirbyteRawTable, RAW_TABLE_EXPECTED_V2_COLUMNS)) {
             throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
         } else {
@@ -72,10 +68,10 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
     }
 
     default boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) {
-        if (doesAirbyteNamespaceExist(streamConfig)) {
+        if (doesAirbyteInternalNamespaceExist(streamConfig)) {
             final var existingV2Table = getTableIfExists(
                 new AirbyteStreamNameNamespacePair(streamConfig.id().rawNamespace(), streamConfig.id().rawName()));
-            return existingV2Table.isPresent() && doesAirbyteNamespaceRawTableMatchExpectedV2Schema(existingV2Table.get());
+            return existingV2Table.isPresent() && doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(existingV2Table.get());
         }
         return false;
     }
@@ -85,7 +81,7 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         return existingV1RawTable.isPresent() && doesV1RawTableMatchExpectedSchema(existingV1RawTable.get());
     }
 
-    boolean doesAirbyteNamespaceExist(StreamConfig streamConfig);
+    boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig);
 
     boolean schemaMatchesExpectation(DialectTableDefinition existingTable, Collection<String> column);
 
