@@ -36,7 +36,7 @@ public class TypeAndDedupeOperationValveTest {
   public void testAddStream() {
     final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
     valve.addStream(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 1, valve.getIncrementInterval(STREAM_A));
+    Assertions.assertEquals(0, valve.getIncrementInterval(STREAM_A));
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     Assertions.assertEquals(valve.get(STREAM_A), 0l);
   }
@@ -80,7 +80,7 @@ public class TypeAndDedupeOperationValveTest {
   public void testUpdateTimeAndIncreaseInterval() {
     final var valve = new TypeAndDedupeOperationValve(minuteUpdates);
     valve.addStream(STREAM_A);
-    IntStream.range(0, 1).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 1).forEach(__ -> Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A))); // start ready to T&D
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
     IntStream.range(0, 15).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
