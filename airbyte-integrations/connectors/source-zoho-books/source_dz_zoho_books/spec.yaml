@@ -39,8 +39,8 @@ connectionSpecification:
     start_date:
       title: Date-From Filter
       type: string
-      description: Date time filter for incremental filter, Specify which date to extract from.
-      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{4}$"
+      description: Date time filter for incremental filter, Specify which date to extract from e.g. 2023-05-31T00:00:00Z
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       examples:
-        - "2022-03-01T00:00:00+0000"
+        - "2023-05-31T00:00:00Z"
       format: "date-time"
