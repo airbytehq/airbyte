@@ -58,7 +58,7 @@ class PublishConnectorLifecycle:
         message: str,
     ) -> str:
         emoji = stage_status.to_emoji()
-        return f"**{emoji} {lifecycle_stage} {stage_status}**: {message}"
+        return f"*{emoji} _{lifecycle_stage}_ {stage_status}*: {message}"
 
     @staticmethod
     def log(context: OpExecutionContext, lifecycle_stage: PublishConnectorLifecycleStage, stage_status: StageStatus, message: str):

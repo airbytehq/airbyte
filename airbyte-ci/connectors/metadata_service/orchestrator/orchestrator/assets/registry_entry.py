@@ -440,7 +440,7 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
             context,
             PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
             StageStatus.SUCCESS,
-            f"Successfully deleted {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+            f"Successfully deleted {registry_name} registry entry for {metadata_entry.file_path}",
         )
 
     return Output(metadata=dagster_metadata, value=persisted_registry_entries)
