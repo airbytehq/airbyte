@@ -8,31 +8,31 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import toml
 import re
 import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
+import toml
 import yaml
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
-    CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
+    CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
 from pipelines.utils import get_file_contents
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
-from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from pipelines.contexts import ConnectorContext, PipelineContext
 
 
-def with_python_base(context: PipelineContext) -> Container:
+def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:
@@ -50,7 +50,7 @@ def with_python_base(context: PipelineContext) -> Container:
 
     base_container = (
         context.dagger_client.container()
-        .from_("python:3.10-slim")
+        .from_(f"python:{python_version}-slim")
         .with_exec(["apt-get", "update"])
         .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
@@ -980,7 +980,7 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "--upgrade", "pip"])
         .with_exec(["apt-get", "install", "-y", "tzdata"])
-        .with_file("setup.py", await context.get_connector_dir(include="setup.py").file("setup.py"))
+        .with_file("setup.py", (await context.get_connector_dir(include="setup.py")).file("setup.py"))
     )
 
     for dependency_path in setup_dependencies_to_mount:
@@ -995,8 +995,8 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", "Etc/UTC")
         .with_exec(["apt-get", "install", "-y", "bash"])
-        .with_file("main.py", await context.get_connector_dir(include="main.py").file("main.py"))
-        .with_directory(snake_case_name, await context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
+        .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
         .with_entrypoint(entrypoint)
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
