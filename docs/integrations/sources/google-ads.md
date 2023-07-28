@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the Google Ads 
 <!-- env:oss -->
 - (For Airbyte Open Source):
   - A Developer Token
-  - The Client ID, Client Secret, and Refresh Token for your Google Ads account
+  - OAuth credentials to authenticate your Google account
 <!-- /env:oss -->
 
 ## Setup guide
