@@ -98,9 +98,9 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 :::caution
-When using the Conversion Window feature, be cautious of potential duplicates in Incremental Sync. The connector reads data in a specified range (typically from the last synchronization timestamp) to fetch new records. However, the Conversion Window extends this range by considering a certain period of time after ad interactions, during which conversions are recorded in Google Ads. This extension may include data that was already captured in previous syncs, leading to duplicates in the dataset.
+When using the Conversion Window feature, please be aware that it may result in duplicates during Incremental Sync. Due to the possibility of conversions happening within the specified window, the connector will extend the range of the sync, which could potentially result in duplicated data.
 
-To avoid duplicates, consider using Incremental Sync - Deduped History
+To mitigate this, we recommend using the Incremental Sync - Deduped History sync mode. This mode ensures that the connector remembers the records it has previously synced and excludes duplicates during subsequent syncs. Please be aware that data may still be resent multiple times within the specified window.
 :::
 
 ## Supported Streams
@@ -116,21 +116,21 @@ The Google Ads source connector can sync the following tables. It can also sync 
 - [ad_group_labels](https://developers.google.com/google-ads/api/fields/v11/ad_group_label)
 - [campaign_labels](https://developers.google.com/google-ads/api/fields/v11/campaign_label)
 - [click_view](https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView)
-- [keyword](https://developers.google.com/google-ads/api/fields/v11/keyword_view)
 - [geographic](https://developers.google.com/google-ads/api/fields/v11/geographic_view)
+- [keyword](https://developers.google.com/google-ads/api/fields/v11/keyword_view)
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 ### Report Tables
  
+- [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_groups](https://developers.google.com/google-ads/api/fields/v14/ad_group)
+- [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
 - [ad_group_criterion_labels](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
 - [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
 - [campaign budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
 - [customer_labels](https://developers.google.com/google-ads/api/fields/v14/customer_label)
-- [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
-- [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 - [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 - [labels](https://developers.google.com/google-ads/api/fields/v14/label)
