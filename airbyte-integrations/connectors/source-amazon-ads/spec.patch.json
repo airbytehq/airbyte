@@ -1,4 +1,7 @@
 {
+    "required": [
+        "credentials"
+    ],
     "properties": {
         "auth_type": null,
         "client_id": null,
