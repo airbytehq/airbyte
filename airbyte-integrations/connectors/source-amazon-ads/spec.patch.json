@@ -1,4 +1,55 @@
 {
-  "properties": {
-  }
+    "properties": {
+        "auth_type": null,
+        "client_id": null,
+        "client_secret": null,
+        "report_record_types": null,
+        "look_back_window": null,
+        "state_filter": null,
+        "refresh_token": null,
+        "region": {
+            "description": "Region to pull data from (EU/NA/FE). See the docs for more details https://go.estuary.dev/8Ra66M"
+        },
+        "start_date": {
+            "description": "Date from which to start collecting reports, in YYYY-MM-DD format. Shouldn’t be more than 60 days in the past.",
+            "format": "date"
+        },
+        "report_generation_max_retries": {
+            "format": "number"
+        },
+        "report_wait_timeout": {
+            "format": "number"
+        },
+        "credentials": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "title": "Credentials",
+                    "x-oauth2-provider": "amazon-ads",
+                    "properties": {
+                        "auth_type": {
+                            "type": "string",
+                            "title": "Auth Type",
+                            "default": "oauth2.0"
+                        },
+                        "client_id": {
+                            "type": "string",
+                            "title": "Client ID",
+                            "description": "The client ID"
+                        },
+                        "client_secret": {
+                            "type": "string",
+                            "title": "Client secret",
+                            "description": "The client secret."
+                        },
+                        "refresh_token": {
+                            "type": "string",
+                            "title": "Refresh token",
+                            "description": "The key to refresh the expired access token."
+                        }
+                    }
+                }
+            ]
+        }
+    }
 }
