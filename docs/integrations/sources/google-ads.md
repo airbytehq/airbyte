@@ -100,7 +100,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 :::caution
 When using the Conversion Window feature, please be aware that it may result in duplicates during Incremental Sync. Due to the possibility of conversions happening within the specified window, the connector will extend the range of the sync, which could potentially result in duplicated data.
 
-To mitigate this, we recommend using the Incremental Sync - Deduped History sync mode. This mode ensures that the connector remembers the records it has previously synced and excludes duplicates during subsequent syncs. Please be aware that data may still be resent multiple times within the specified window.
+To mitigate this, we recommend using the Incremental Sync - Deduped History sync mode. This mode ensures that the connector remembers the records it has previously synced and excludes duplicates during subsequent syncs. However, please be aware that data may still be resent multiple times within the specified window.
 :::
 
 ## Supported Streams
@@ -129,7 +129,7 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 - [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
 - [ad_group_criterion_labels](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
 - [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
-- [campaign budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
+- [campaign_budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
 - [customer_labels](https://developers.google.com/google-ads/api/fields/v14/customer_label)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 - [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
