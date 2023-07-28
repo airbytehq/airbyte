@@ -82,7 +82,7 @@ def generate_and_persist_registry(
         context,
         PublishConnectorLifecycleStage.REGISTRY_GENERATION,
         StageStatus.SUCCESS,
-        f"Generating {registry_name} registry...",
+        f"New {registry_name} registry available at {file_handle.public_url}",
     )
 
     return Output(metadata=metadata, value=registry_model)
