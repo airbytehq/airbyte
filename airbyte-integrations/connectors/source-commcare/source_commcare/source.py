@@ -1,8 +1,7 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -14,7 +13,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from flatten_json import flatten
 
 
 # Basic full refresh stream
@@ -34,7 +32,7 @@ class CommcareStream(HttpStream, ABC):
     forms = set()
     last_form_date = None
     schemas = {}
-   
+
     @property
     def dateformat(self):
         return "%Y-%m-%dT%H:%M:%S.%f"
@@ -43,15 +41,15 @@ class CommcareStream(HttpStream, ABC):
         new_dict = {}
         for key, value in form.items():
             if key in self.form_fields_to_exclude:
-             continue
+                continue
             if any(key.startswith(prefix) for prefix in self.form_fields_to_exclude):
-             continue
+                continue
             if isinstance(value, dict):
-             new_dict[key] = self.scrubUnwantedFields(value)
+                new_dict[key] = self.scrubUnwantedFields(value)
             else:
                 new_dict[key] = value
         return new_dict
-       
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
             # Server returns status 500 when there are no more rows.
@@ -189,9 +187,9 @@ class Case(IncrementalStream):
         for record in super().read_records(*args, **kwargs):
             date_string = record[self.cursor_field]
             if "Z" in date_string:
-                 date_format = "%Y-%m-%dT%H:%M:%S.%fZ"  
+                date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
             else:
-                 date_format = "%Y-%m-%dT%H:%M:%S.%f"
+                date_format = "%Y-%m-%dT%H:%M:%S.%f"
             found = False
             for f in record["xform_ids"]:
                 if f in CommcareStream.forms:
@@ -266,9 +264,9 @@ class Form(IncrementalStream):
         for record in super().read_records(*args, **kwargs):
             date_string = record[self.cursor_field]
             if "Z" in date_string:
-                 date_format = "%Y-%m-%dT%H:%M:%S.%fZ"  
+                date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
             else:
-                 date_format = "%Y-%m-%dT%H:%M:%S.%f"
+                date_format = "%Y-%m-%dT%H:%M:%S.%f"
             self._cursor_value = datetime.strptime(date_string, date_format)
             CommcareStream.forms.add(record["id"])
             newform = self.scrubUnwantedFields(record)
@@ -300,16 +298,27 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        appdata = Application(**{**args, "app_id": config["app_id"], "form_fields_to_exclude": config["form_fields_to_exclude"], "project_space": config["project_space"]}).read_records(
-            sync_mode=SyncMode.full_refresh
-        )
+        appdata = Application(
+            **{
+                **args,
+                "app_id": config["app_id"],
+                "form_fields_to_exclude": config["form_fields_to_exclude"],
+                "project_space": config["project_space"],
+            }
+        ).read_records(sync_mode=SyncMode.full_refresh)
 
         # Generate streams for forms, one per xmlns and one stream for cases.
         streams = self.generate_streams(args, config, appdata)
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "form_fields_to_exclude": config["form_fields_to_exclude"], "project_space": config["project_space"], **args}
+        form_args = {
+            "app_id": config["app_id"],
+            "start_date": config["start_date"],
+            "form_fields_to_exclude": config["form_fields_to_exclude"],
+            "project_space": config["project_space"],
+            **args,
+        }
         streams = []
         name2xmlns = {}
 
