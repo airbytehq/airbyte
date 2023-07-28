@@ -27,6 +27,8 @@ public class DatabricksSource extends AbstractJdbcSource<JDBCType> implements So
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksSource.class);
   private String schema = null;
   static final String DRIVER_CLASS = DatabricksConstants.DATABRICKS_DRIVER_CLASS;
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
 
   public DatabricksSource() {
     super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, new DatabricksSourceOperations());
@@ -64,6 +66,11 @@ public class DatabricksSource extends AbstractJdbcSource<JDBCType> implements So
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("system", "information_schema", "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

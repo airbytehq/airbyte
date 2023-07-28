@@ -27,10 +27,6 @@ public class DatabricksSourceTestUtil {
         new HashMap<String, String>());
   }
 
-  protected static String buildConnectionProperty(JsonNode config, String key, String jdbcKey) {
-    return config.has(key) ? jdbcKey + "=" + config.get(key).asText().toLowerCase() : "";
-  }
-
   public static JsonNode buildJdbcConfig(final JsonNode config) {
     final DatabricksSourceConfig databricksConfig = DatabricksSourceConfig.get(config);
 
@@ -38,14 +34,6 @@ public class DatabricksSourceTestUtil {
         .put(JdbcUtils.USERNAME_KEY, DatabricksConstants.DATABRICKS_USERNAME)
         .put(JdbcUtils.PASSWORD_KEY, databricksConfig.personalAccessToken())
         .put(JdbcUtils.JDBC_URL_KEY, databricksConfig.getDatabricksConnectionString());
-
-    StringBuilder connectionProperties = new StringBuilder();
-    connectionProperties.append(buildConnectionProperty(config, DATABRICKS_CATALOG_KEY, DATABRICKS_CATALOG_JDBC_KEY));
-    connectionProperties.append(buildConnectionProperty(config, DATABRICKS_SCHEMA_KEY, JdbcUtils.AMPERSAND + DATABRICKS_SCHEMA_JDBC_KEY));
-
-    if (connectionProperties.length() > 0) {
-      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionProperties.toString());
-    }
     return Jsons.jsonNode(configBuilder.build());
   }
 }

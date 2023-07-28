@@ -44,18 +44,16 @@
       },
       "database": {
         "title": "Databricks catalog",
-        "description": "The name of the catalog. If not specified otherwise, the \"hive_metastore\" will be used.",
+        "description": "The name of the catalog.",
         "type": "string",
         "examples": ["hive_metastore"],
-        "default": "hive_metastore",
         "order": 5
       },
       "schema": {
-        "title": "Default Schema",
-        "description": "The default schema tables are written. If not specified otherwise, the \"default\" will be used.",
+        "title": "Schema",
+        "description": "The schema in catalog where tables are written. If not specified otherwise, all the schemas in catalog considered for streams discovery.",
         "type": "string",
         "examples": ["default"],
-        "default": "default",
         "order": 6
       },
       "jdbc_url_params": {
