@@ -5,8 +5,11 @@ from typing import List, Set
 
 import dpath.util
 import yaml
+
 from dagster import MetadataValue, Output, asset
+
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from orchestrator.logging import sentry
 
 GROUP_NAME = "specs_secrets_mask"
 
@@ -46,6 +49,7 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
+@sentry.capture_asset_op_exceptions
 def all_specs_secrets(persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0) -> Set[str]:
     oss_registry_from_metadata_dict = persisted_oss_registry.dict()
     cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()
@@ -63,6 +67,7 @@ def all_specs_secrets(persisted_oss_registry: ConnectorRegistryV0, persisted_clo
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
+@sentry.capture_asset_op_exceptions
 def specs_secrets_mask_yaml(context, all_specs_secrets: Set[str]) -> Output:
     yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
     registry_directory_manager = context.resources.registry_directory_manager

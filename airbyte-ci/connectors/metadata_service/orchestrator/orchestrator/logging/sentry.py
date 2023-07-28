@@ -4,6 +4,7 @@ import functools
 
 from dagster import OpExecutionContext, get_dagster_logger
 
+
 def setup_dagster_sentry():
     """
     Setup the sentry SDK for Dagster if SENTRY_DSN is defined for the environment.
@@ -42,7 +43,6 @@ def setup_dagster_sentry():
             ],
         )
 
-setup_dagster_sentry()
 
 def log_asset_or_op_context(context: OpExecutionContext):
     """
@@ -68,6 +68,8 @@ def log_asset_or_op_context(context: OpExecutionContext):
 
 def capture_asset_op_exceptions(func):
     """
+    Note: This is nessesary as Dagster captures exceptions and logs them before Sentry can.
+
     Captures exceptions thrown by Dagster Ops and forwards them to Sentry
     before re-throwing them for Dagster.
 
@@ -77,7 +79,7 @@ def capture_asset_op_exceptions(func):
     It will log a unique ID that can be then entered into Sentry to find
     the exception.
 
-    This should be used as a decorator between Dagster's `@op`,
+    This should be used as a decorator between Dagster's `@op`, or `@asset`
     and the function to be handled.
 
     @op
