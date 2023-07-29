@@ -1,0 +1,20 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c4c8c2f0-0800-45cb-896a-8f5ce564d361
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-uptimerobot
+  githubIssueLabel: source-uptimerobot
+  icon: uptimerobot.svg
+  license: MIT
+  name: UptimeRobot
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/uptimerobot
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

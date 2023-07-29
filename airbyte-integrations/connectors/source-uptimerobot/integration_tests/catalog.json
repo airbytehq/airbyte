@@ -1,0 +1,15 @@
+{
+  "streams": [
+    {
+      "name": "uptimerobot",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
+    }
+  ]
+}
