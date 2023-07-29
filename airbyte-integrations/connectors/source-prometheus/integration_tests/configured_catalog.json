@@ -1,0 +1,433 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "metric_alertmanager_alerts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "state",
+              "description": "The value of the label state"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_alertmanager_alerts_invalid_total",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "version",
+              "description": "The value of the label version"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_alertmanager_alerts_received_total",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "status",
+              "description": "The value of the label status"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "version",
+              "description": "The value of the label version"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_node_cpu_seconds_total",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "cpu",
+              "description": "The value of the label cpu"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "mode",
+              "description": "The value of the label mode"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_node_cpu_utilization_percent_threshold",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "severity",
+              "description": "The value of the label severity"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_node_disk_io_now",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "device",
+              "description": "The value of the label device"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metric_node_disk_io_time_seconds_total",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": [
+            {
+              "type": "date-time",
+              "name": "time",
+              "description": "The time of the data point"
+            },
+            {
+              "type": "number",
+              "name": "value",
+              "description": "The value of the data point"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "device",
+              "description": "The value of the label device"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "env",
+              "description": "The value of the label env"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "instance",
+              "description": "The value of the label instance"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "name": "job",
+              "description": "The value of the label job"
+            }
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

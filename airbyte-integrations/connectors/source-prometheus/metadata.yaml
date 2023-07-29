@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a79e9e40-2381-4c7c-918d-fd85c3ae0ee7
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-prometheus
+  githubIssueLabel: source-prometheus
+  icon: prometheus.svg
+  license: MIT
+  name: Prometheus
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/prometheus
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

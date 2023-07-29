@@ -1,0 +1,7 @@
+{
+  "base_url": "http://foobar.prometheus.io",
+  "basic_auth_user": "",
+  "basic_auth_pass": "",
+  "start_date": "2020-01-01",
+  "step": 42
+}
