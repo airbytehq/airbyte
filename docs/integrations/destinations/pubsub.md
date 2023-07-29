@@ -80,7 +80,7 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 
 ### Setup the PubSub destination in Airbyte
 
-You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
+You should now have all the requirements needed to configure PubSub as a destination in the UI. You'll need the following information to configure the PubSub destination:
 
 * **Project ID**: GCP project id
 * **Topic ID**: name of pubsub topic under the project

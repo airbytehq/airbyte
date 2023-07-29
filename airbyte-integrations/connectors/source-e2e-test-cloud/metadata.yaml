@@ -14,7 +14,7 @@ data:
     oss:
       enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/sources/e2e-test
+  documentationUrl: https://docs.airbyte.com/integrations/sources/e2e-test
   tags:
     - language:java
 metadataSpecVersion: "1.0"

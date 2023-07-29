@@ -1,5 +1,5 @@
 # CDK and Connector Acceptance Tests
-/airbyte-cdk/ @airbytehq/connector-extensibility
+/airbyte-cdk/python @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
@@ -48,3 +48,4 @@
 /airbyte-integrations/connectors/destination-rockset/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-tidb/ @airbytehq/destinations
