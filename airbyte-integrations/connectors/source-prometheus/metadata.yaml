@@ -1,19 +1,19 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
+  # allowedHosts:
+  #   hosts:
+  #     - TODO # Please change to the hostname of the source.
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: a79e9e40-2381-4c7c-918d-fd85c3ae0ee7
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-prometheus
   githubIssueLabel: source-prometheus
-  icon: prometheus.svg
+  icon: icon.svg
   license: MIT
   name: Prometheus
   releaseDate: TODO
