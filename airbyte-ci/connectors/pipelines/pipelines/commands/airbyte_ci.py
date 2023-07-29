@@ -7,6 +7,7 @@
 from typing import List
 
 import click
+from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -17,7 +18,6 @@ from pipelines.utils import (
     get_modified_files_in_commit,
     get_modified_files_in_pull_request,
 )
-from github import PullRequest
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
@@ -132,6 +132,7 @@ def airbyte_ci(
         main_logger.info(f"Pull Request Number: {pull_request_number}")
         main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
+
 
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)

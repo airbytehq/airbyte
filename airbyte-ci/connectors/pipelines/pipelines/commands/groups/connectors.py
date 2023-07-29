@@ -7,10 +7,11 @@
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Set, Tuple, Union
 
 import anyio
 import click
+from connector_ops.utils import Connector, ConnectorLanguage, console, get_all_released_connectors
 from pipelines import main_logger
 from pipelines.builds import run_connector_build_pipeline
 from pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
@@ -19,8 +20,7 @@ from pipelines.github import update_global_commit_status_check_for_tests
 from pipelines.pipelines.connectors import run_connectors_pipelines
 from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from pipelines.tests import run_connector_test_pipeline
-from pipelines.utils import DaggerPipelineCommand, get_modified_connectors
-from connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
+from pipelines.utils import DaggerPipelineCommand, get_connector_modified_files, get_modified_connectors_and_files
 from rich.table import Table
 from rich.text import Text
 
@@ -87,45 +87,26 @@ def connectors(
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["connector_names"] = names
-    ctx.obj["connector_languages"] = languages
-    ctx.obj["release_states"] = release_stages
-    ctx.obj["modified"] = modified
+    ctx.obj["selected_connectors_names"] = set(names) if names else set()
+    ctx.obj["selected_connectors_languages"] = set(languages) if languages else set()
+    ctx.obj["selected_connectors_release_stages"] = set(release_stages) if release_stages else set()
+    ctx.obj["select_modified_connectors"] = modified
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
-
-    all_connectors = get_all_released_connectors()
-
-    # We get the modified connectors and downstream connector deps, and files
-    modified_connectors_and_files = get_modified_connectors(ctx.obj["modified_files"])
-
-    # We select all connectors by default
-    # and attach modified files to them
-    selected_connectors_and_files = {connector: modified_connectors_and_files.get(connector, []) for connector in all_connectors}
-
-    if modified:
-        selected_connectors_and_files = modified_connectors_and_files
-    if names:
-        selected_connectors_and_files = {
-            connector: selected_connectors_and_files[connector]
-            for connector in selected_connectors_and_files
-            if connector.technical_name in names
-        }
-    if languages:
-        selected_connectors_and_files = {
-            connector: selected_connectors_and_files[connector]
-            for connector in selected_connectors_and_files
-            if connector.language in languages
-        }
-    if release_stages:
-        selected_connectors_and_files = {
-            connector: selected_connectors_and_files[connector]
-            for connector in selected_connectors_and_files
-            if connector.release_stage in release_stages
-        }
-
-    ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
-    ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
+    ctx.obj["all_connectors"] = get_all_released_connectors()
+    ctx.obj["selected_connectors_by_names"] = {Connector(technical_name=name) for name in names}
+    ctx.obj["selected_connectors_by_languages"] = {connector for connector in ctx.obj["all_connectors"] if connector.language in languages}
+    ctx.obj["selected_connectors_by_release_stages"] = {
+        connector for connector in ctx.obj["all_connectors"] if connector.release_stage in release_stages
+    }
+    ctx.obj["selected_connectors"] = (
+        ctx.obj["selected_connectors_by_names"]
+        | ctx.obj["selected_connectors_by_languages"]
+        | ctx.obj["selected_connectors_by_release_stages"]
+    )
+    ctx.obj["selected_connectors_and_files"] = {
+        connector: get_connector_modified_files(connector, ctx.obj["modified_files"]) for connector in ctx.obj["selected_connectors"]
+    }
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
@@ -142,7 +123,13 @@ def test(
         main_logger.info("Skipping connectors tests for draft pull request.")
         sys.exit(0)
 
-    main_logger.info(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}")
+    if ctx.obj["select_modified_connectors"]:
+        ctx.obj["selected_connectors_and_files"] = {
+            **ctx.obj["selected_connectors_and_files"],
+            **get_modified_connectors_and_files(ctx.obj["modified_files"]),
+        }
+    main_logger.info(ctx.obj)
+    log_selected_connectors(ctx.obj["selected_connectors_and_files"])
     if ctx.obj["selected_connectors_and_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
     else:
@@ -198,7 +185,14 @@ def test(
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
 @click.pass_context
 def build(ctx: click.Context) -> bool:
-    main_logger.info(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.")
+    """Runs a build pipeline for the selected connectors."""
+    if ctx.obj["select_modified_connectors"]:
+        ctx.obj["selected_connectors_and_files"] = {
+            **ctx.obj["selected_connectors_and_files"],
+            **get_modified_connectors_and_files(ctx.obj["modified_files"]),
+        }
+
+    log_selected_connectors(ctx.obj["selected_connectors_and_files"])
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Build connector {connector.technical_name}",
@@ -305,17 +299,19 @@ def publish(
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
-
     if ctx.obj["is_local"]:
         click.confirm(
-            "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
+            "Publishing from a local environment is not recommended and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
             abort=True,
         )
 
-    selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
-    selected_connectors_names = ctx.obj["selected_connectors_names"]
+    if ctx.obj["select_modified_connectors"]:
+        ctx.obj["selected_connectors_and_files"] = {
+            **ctx.obj["selected_connectors_and_files"],
+            **get_modified_connectors_and_files(ctx.obj["modified_files"], metadata_modification_only=True, dependency_scanning=False),
+        }
 
-    main_logger.info(f"Will publish the following connectors: {', '.join(selected_connectors_names)}")
+    log_selected_connectors(ctx.obj["selected_connectors_and_files"])
     publish_connector_contexts = reorder_contexts(
         [
             PublishConnectorContext(
@@ -342,7 +338,7 @@ def publish(
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
             )
-            for connector, modified_files in selected_connectors_and_files.items()
+            for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
         ]
     )
 
@@ -394,23 +390,18 @@ def list(
     return True
 
 
-@connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
+@connectors.command(name="format", cls=DaggerPipelineCommand, help="Autoformat connector code.")
 @click.pass_context
-def format(ctx: click.Context) -> bool:
-    if ctx.obj["modified"]:
-        # We only want to format the connector that with modified files on the current branch.
-        connectors_and_files_to_format = [
-            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items() if modified_files
-        ]
-    else:
-        # We explicitly want to format specific connectors
-        connectors_and_files_to_format = [
-            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
-        ]
+def format_code(ctx: click.Context) -> bool:
+    if ctx.obj["select_modified_connectors"]:
+        ctx.obj["selected_connectors_and_files"] = {
+            **ctx.obj["selected_connectors_and_files"],
+            **get_modified_connectors_and_files(ctx.obj["modified_files"]),
+        }
 
-    if connectors_and_files_to_format:
+    if ctx.obj["selected_connectors_and_files"]:
         main_logger.info(
-            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}."
+            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in ctx.obj['selected_connectors_and_files'].keys()])}."
         )
     else:
         main_logger.info("No connectors to format.")
@@ -435,7 +426,7 @@ def format(ctx: click.Context) -> bool:
             pull_request=ctx.obj.get("pull_request"),
             should_save_report=False,
         )
-        for connector, modified_files in connectors_and_files_to_format
+        for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
 
     anyio.run(
@@ -449,3 +440,11 @@ def format(ctx: click.Context) -> bool:
     )
 
     return True
+
+
+def log_selected_connectors(selected_connectors_and_files: dict[Connector, Set[Union[str, Path]]]) -> None:
+    if selected_connectors_and_files:
+        selected_connectors_names = [c.technical_name for c in selected_connectors_and_files.keys()]
+        main_logger.info(f"Will run on the following connectors: {', '.join(selected_connectors_names)}.")
+    else:
+        main_logger.info("No connectors to run.")

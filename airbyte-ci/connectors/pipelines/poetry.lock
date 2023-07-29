@@ -391,7 +391,7 @@ test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
 
 [[package]]
 name = "connector-ops"
-version = "0.2.1"
+version = "0.2.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 optional = false
 python-versions = "^3.10"
