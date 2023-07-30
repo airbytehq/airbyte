@@ -14,13 +14,15 @@ from airbyte_cdk.sources.file_based.types import StreamState
 class DefaultFileBasedCursor(FileBasedCursor):
     DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    CONFIG_START_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-    def __init__(self, max_history_size: int, days_to_sync_if_history_is_full: Optional[int]):
+    def __init__(self, max_history_size: int, days_to_sync_if_history_is_full: Optional[int], config_start_date: Optional[str]):
         self._file_to_datetime_history: MutableMapping[str, str] = {}
         self._max_history_size = max_history_size
         self._time_window_if_history_is_full = timedelta(
             days=days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
         )
+        self._config_start_date = datetime.strptime(config_start_date, self.CONFIG_START_DATE_FORMAT) if config_start_date else None
 
         if self._max_history_size <= 0:
             raise ValueError(f"max_history_size must be a positive integer, got {self._max_history_size}")
@@ -85,8 +87,9 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 # Otherwise, only sync the file if it has been modified since the start of the time window
                 return file.last_modified >= self.get_start_time()
         else:
-            # The file is not in the history and the history is complete. We know we need to sync the file
-            return True
+            # The file is not in the history and the history is complete. We know we need to sync the file if it
+            # was modified after the source configured start_date
+            return file.last_modified >= self._config_start_date if self._config_start_date else True
 
     def get_files_to_sync(self, all_files: Iterable[RemoteFile], logger: logging.Logger) -> Iterable[RemoteFile]:
         if self._is_history_full():
@@ -111,6 +114,8 @@ class DefaultFileBasedCursor(FileBasedCursor):
 
     def _compute_start_time(self) -> datetime:
         if not self._file_to_datetime_history:
+            # if self._config_start_date:
+            #     return datetime.strptime(self._config_start_date, self.CONFIG_START_DATE_FORMAT)
             return datetime.min
         else:
             earliest = min(self._file_to_datetime_history.values())

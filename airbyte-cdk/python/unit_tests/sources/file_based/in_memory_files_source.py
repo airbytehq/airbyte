@@ -25,7 +25,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from avro import datafile
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -115,15 +115,6 @@ class InMemorySpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
-
-    start_date: Optional[str] = Field(
-        title="Start Date",
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-        examples=["2021-01-01T00:00:00Z"],
-        format="date-time",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        order=1,
-    )
 
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
