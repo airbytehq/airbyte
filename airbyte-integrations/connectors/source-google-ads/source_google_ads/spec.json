@@ -114,7 +114,7 @@
         "type": "string",
         "title": "Login Customer ID for Managed Accounts",
         "description": "If your access to the customer account is through a manager account, this field is required, and must be set to the 10-digit customer ID of the manager account. For more information about this field, refer to <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">Google's documentation</a>.",
-        "pattern_descriptor": "The customer ID must be 10 digits, with no dashes.",
+        "pattern_descriptor": ": 10 digits, with no dashes.",
         "pattern": "^([0-9]{10})?$",
         "examples": ["7349206847"],
         "order": 4
