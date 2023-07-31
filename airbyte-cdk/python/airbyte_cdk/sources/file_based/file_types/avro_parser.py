@@ -10,8 +10,8 @@ import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileReadMode, FileTypeParser
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
