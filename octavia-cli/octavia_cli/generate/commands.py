@@ -49,14 +49,14 @@ def destination(ctx: click.Context, definition_id: str, resource_name: str):
     "source_path",
     type=click.Path(exists=True, readable=True),
     required=True,
-    help="Path to the YAML fine defining your source configuration.",
+    help="Path to the YAML file defining your source configuration.",
 )
 @click.option(
     "--destination",
     "destination_path",
     type=click.Path(exists=True, readable=True),
     required=True,
-    help="Path to the YAML fine defining your destination configuration.",
+    help="Path to the YAML file defining your destination configuration.",
 )
 @click.pass_context
 def connection(ctx: click.Context, connection_name: str, source_path: str, destination_path: str):

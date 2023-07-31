@@ -17,7 +17,7 @@ Api key is not required for this connector to work,But a dummy key need to be pa
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Punk-API connector and select **Punk-API** from the Source type dropdown.
 4. Enter your dummy `api_key`.

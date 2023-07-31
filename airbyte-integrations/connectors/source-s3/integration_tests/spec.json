@@ -91,7 +91,6 @@
               "additional_reader_options": {
                 "title": "Additional Reader Options",
                 "description": "Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\" target=\"_blank\">detailed here</a>. 'column_types' is used internally to handle schema so overriding that would likely cause problems.",
-                "default": "{}",
                 "examples": [
                   "{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"
                 ],
@@ -101,7 +100,6 @@
               "advanced_options": {
                 "title": "Advanced Options",
                 "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
-                "default": "{}",
                 "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
                 "order": 8,
                 "type": "string"
@@ -245,6 +243,15 @@
             "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
             "default": "",
             "order": 4,
+            "type": "string"
+          },
+          "start_date": {
+            "title": "Start Date",
+            "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+            "examples": ["2021-01-01T00:00:00Z"],
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "order": 5,
             "type": "string"
           }
         },

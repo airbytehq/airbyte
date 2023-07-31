@@ -8,7 +8,16 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_orb.source import CreditsLedgerEntries, Customers, IncrementalOrbStream, OrbStream, Plans, Subscriptions, SubscriptionUsage
+from source_orb.source import (
+    CreditsLedgerEntries,
+    Customers,
+    IncrementalOrbStream,
+    Invoices,
+    OrbStream,
+    Plans,
+    Subscriptions,
+    SubscriptionUsage,
+)
 
 
 @fixture
@@ -89,6 +98,34 @@ def test_request_params(patch_incremental_base_class, mocker, config, current_st
     assert stream.request_params(**inputs) == expected_params
 
 
+@pytest.mark.parametrize(
+    ("config", "current_stream_state", "next_page_token", "expected_params"),
+    [
+        (
+            {},
+            dict(invoice_date="2022-01-25T12:00:00+00:00"),
+            {"cursor": "f96594d0-8220-11ec-a8a3-0242ac120002"},
+            {"invoice_date[gte]": "2022-01-25T12:00:00+00:00", "cursor": "f96594d0-8220-11ec-a8a3-0242ac120002"},
+        ),
+        ({}, dict(invoice_date="2022-01-25T12:00:00+00:00"), None, {"invoice_date[gte]": "2022-01-25T12:00:00+00:00"}),
+        # Honors lookback_window_days
+        (
+            dict(lookback_window_days=3),
+            dict(invoice_date="2022-01-25T12:00:00+00:00"),
+            None,
+            {"invoice_date[gte]": "2022-01-22T12:00:00+00:00"},
+        ),
+        ({}, {}, None, None),
+    ],
+)
+def test_invoices_request_params(patch_incremental_base_class, mocker, config, current_stream_state, next_page_token, expected_params):
+    stream = Invoices(**config)
+    inputs = {"stream_state": current_stream_state, "next_page_token": next_page_token}
+    expected_params = expected_params or {}
+    expected_params["limit"] = OrbStream.page_size
+    expected_params["status[]"] = ['void', 'paid', 'issued', 'synced']
+    assert stream.request_params(**inputs) == expected_params
+
 # We have specific unit tests for CreditsLedgerEntries incremental stream
 # because that employs slicing logic
 
@@ -121,6 +158,29 @@ def test_request_params(patch_incremental_base_class, mocker, config, current_st
 )
 def test_credits_ledger_entries_get_updated_state(mocker, current_stream_state, latest_record, expected_state):
     stream = CreditsLedgerEntries()
+    inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
+    assert stream.get_updated_state(**inputs) == expected_state
+
+
+@pytest.mark.parametrize(
+    ("current_stream_state", "latest_record", "expected_state"),
+    [
+        # No state
+        (
+            {},
+            dict(invoice_date="2022-01-26T12:00:00+00:00"),
+            dict(invoice_date="2022-01-26T12:00:00+00:00"),
+        ),
+        # Existing state
+        (
+            dict(invoice_date="2022-01-26T12:00:00+00:00"),
+            dict(invoice_date="2023-01-26T12:00:00+00:00"),
+            dict(invoice_date="2023-01-26T12:00:00+00:00"),
+        ),
+    ],
+)
+def test_invoices_get_updated_state(mocker, current_stream_state, latest_record, expected_state):
+    stream = Invoices()
     inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
     assert stream.get_updated_state(**inputs) == expected_state
 

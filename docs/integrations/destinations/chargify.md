@@ -7,7 +7,7 @@ description: >-
 
 ## Overview
 
-The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.io/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
+The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.com/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
 
 ### Sync overview
 
@@ -57,7 +57,7 @@ The Chargify Connector requires your `Project ID` and `Master Key` for authentic
 
 #### Timestamp Inference
 
-The `Infer Timestamp` field lets you specify if you want the connector to infer the [chargify.timestamp](https://help.chargify.com/events/getting-data-in-guide.html#event-timestamps) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Chargify's time series analytics. By default, this property is set to true. If toggled off, chargify.timestamp will be set to the datetime when the data was recorded by Chargify.
+The `Infer Timestamp` field lets you specify if you want the connector to infer the [chargify.timestamp](https://maxio-chargify.zendesk.com/hc/en-us/articles/5405362457613#event-timestamps) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Chargify's time series analytics. By default, this property is set to true. If toggled off, chargify.timestamp will be set to the datetime when the data was recorded by Chargify.
 
 ### Setup the Chargify destination in Airbyte
 

@@ -5,7 +5,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the project category.",
-      "format": "uri",
       "readOnly": true
     },
     "id": {

@@ -24,13 +24,13 @@ public class FileBuffer implements BufferStorage {
   // https://docs.snowflake.com/en/user-guide/data-load-considerations-prepare.html#general-file-sizing-recommendations
   // "To optimize the number of parallel operations for a load,
   // we recommend aiming to produce data files roughly 100-250 MB (or larger) in size compressed."
-  public static final long MAX_PER_STREAM_BUFFER_SIZE_BYTES = 200 * 1024 * 1024; // mb
+  public static final long MAX_PER_STREAM_BUFFER_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
   /*
    * Other than the per-file size limit, we also limit the total size (which would limit how many
    * concurrent streams we can buffer simultaneously too) Since this class is storing data on disk,
    * the buffer size limits below are tied to the necessary disk storage space.
    */
-  public static final long MAX_TOTAL_BUFFER_SIZE_BYTES = 1024 * 1024 * 1024; // mb
+  public static final long MAX_TOTAL_BUFFER_SIZE_BYTES = 1024 * 1024 * 1024; // 1 GB
   /*
    * We limit number of stream being buffered simultaneously anyway (limit how many files are
    * stored/open for writing)

@@ -1,0 +1,131 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ "{{ parameters.get('data_field') }}" ]
+  requester:
+    type: HttpRequester
+    url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency Server' else '' }}amplitude.com/api"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['secret_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [ 400 ]
+          action: FAIL
+          error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
+        - http_codes: [ 404 ]
+          action: IGNORE
+          error_message: No data collected
+        - http_codes: [ 504 ]
+          action: FAIL
+          error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  datetime_incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+    datetime_format: "%Y-%m-%d"
+    cursor_granularity: P1D
+    step: P15D
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  annotations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "annotations"
+      primary_key: "id"
+      path: "/2/annotations"
+      data_field: "data"
+
+  cohorts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "cohorts"
+      primary_key: "id"
+      path: "/3/cohorts"
+      data_field: "cohorts"
+
+  base_incremental_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+          end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+    incremental_sync:
+      $ref: "#/definitions/datetime_incremental_sync"
+
+  average_session_length_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_incremental_stream/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_amplitude.components.AverageSessionLengthRecordExtractor
+    $parameters:
+      name: "average_session_length"
+      primary_key: "date"
+      path: "/2/sessions/average"
+      stream_cursor_field: "date"
+
+  active_users_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_incremental_stream/retriever/requester"
+        request_parameters:
+          start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+          end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+          m: "active"
+          i: "1"
+          g: "country"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_amplitude.components.ActiveUsersRecordExtractor
+    incremental_sync:
+      $ref: "#/definitions/datetime_incremental_sync"
+      step: P1M
+      cursor_field: "date"
+    $parameters:
+      name: "active_users"
+      primary_key: "date"
+      path: "/2/users"
+
+
+streams:
+  - "#/definitions/annotations_stream"
+  - "#/definitions/cohorts_stream"
+  - "#/definitions/average_session_length_stream"
+  - "#/definitions/active_users_stream"
+
+check:
+  stream_names:
+    - "active_users"

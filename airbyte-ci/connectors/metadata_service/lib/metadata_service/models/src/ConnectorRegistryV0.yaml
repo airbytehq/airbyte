@@ -1,0 +1,18 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte-platform/blob/main/airbyte-config/config-models/src/main/resources/types/ConnectorRegistryV0.yaml
+title: ConnectorRegistryV0
+description: describes the collection of connectors retrieved from a registry
+type: object
+required:
+  - destinations
+  - sources
+properties:
+  destinations:
+    type: array
+    items:
+      $ref: ConnectorRegistryDestinationDefinition.yaml
+  sources:
+    type: array
+    items:
+      $ref: ConnectorRegistrySourceDefinition.yaml

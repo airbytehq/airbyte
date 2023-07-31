@@ -111,3 +111,7 @@ class AbstractFileParser(ABC):
 
     def _validate_config(self, config: Mapping[str, Any]):
         pass
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        pass

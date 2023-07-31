@@ -15,6 +15,6 @@ class DatabendClient:
         self.password = password
 
     def open(self):
-        handle = connector.connect(f"https://{self.username}:{self.password}@{self.host}:{self.port}").cursor()
+        handle = connector.connect(f"https://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}").cursor()
 
         return handle

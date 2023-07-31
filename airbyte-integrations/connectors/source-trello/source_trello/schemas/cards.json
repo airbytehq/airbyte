@@ -208,19 +208,10 @@
       }
     },
     "idChecklists": {
-      "anyOf": [
-        {
-          "type": ["null", "array"],
-          "items": {
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "idMembers": {
       "type": ["null", "array"],

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "integer" },
     "first_name": { "type": ["null", "string"] },
@@ -8,8 +9,8 @@
     "job_title": { "type": ["null", "string"] },
     "primary_email": { "type": ["null", "string"] },
     "secondary_emails": { "type": ["null", "array"] },
-    "work_phone_number": { "type": ["null", "integer"] },
-    "mobile_phone_number": { "type": ["null", "integer"] },
+    "work_phone_number": { "type": ["null", "string"] },
+    "mobile_phone_number": { "type": ["null", "string"] },
     "department_ids": { "type": ["null", "array"] },
     "can_see_all_tickets_from_associated_departments": {
       "type": ["null", "boolean"]
@@ -26,6 +27,13 @@
     "has_logged_in": { "type": ["null", "boolean"] },
     "created_at": { "type": ["null", "string"] },
     "updated_at": { "type": ["null", "string"] },
-    "is_agent": { "type": ["null", "boolean"] }
+    "is_agent": { "type": ["null", "boolean"] },
+    "department_names": { "type": ["null", "array"] },
+    "vip_user": { "type": ["null", "boolean"] },
+    "external_id": { "type": ["null", "string"] },
+    "can_see_all_changes_from_associated_departments": {
+      "type": ["null", "boolean"]
+    },
+    "location_name": { "type": ["null", "string"] }
   }
 }

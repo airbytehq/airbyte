@@ -53,7 +53,14 @@
                 "type": "string"
               },
               "id": {
-                "type": "integer"
+                "oneOf": [
+                  {
+                    "type": ["null", "string"]
+                  },
+                  {
+                    "type": ["null", "integer"]
+                  }
+                ]
               }
             }
           }

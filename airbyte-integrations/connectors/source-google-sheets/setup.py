@@ -11,8 +11,9 @@ MAIN_REQUIREMENTS = [
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
-    "PyYAML==5.4",
+    "PyYAML~=6.0",
     "pydantic~=1.9.2",
+    "Unidecode",
 ]
 
 TEST_REQUIREMENTS = [
@@ -21,7 +22,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="google_sheets_source",
+    name="source_google_sheets",
     description="Source implementation for Google Sheets.",
     author="Airbyte",
     author_email="contact@airbyte.io",

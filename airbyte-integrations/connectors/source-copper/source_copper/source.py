@@ -91,6 +91,15 @@ class Companies(CopperStream):
         return "companies/search"
 
 
+class Opportunities(CopperStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "opportunities/search"
+
+
 # Source
 class SourceCopper(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -102,4 +111,4 @@ class SourceCopper(AbstractSource):
             return False, f"Unable to connect to Copper API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [People(**config), Companies(**config), Projects(**config)]
+        return [People(**config), Companies(**config), Projects(**config), Opportunities(**config)]

@@ -17,7 +17,7 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the SpaceX-API connector and select **Spacex-API** from the Source type dropdown.
 4. Enter your `api_key`.
@@ -62,11 +62,11 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 
 ## API method example
 
-GET https://api.spacexdata.com/v5/launches/latest
+`GET https://api.spacexdata.com/v5/launches/latest`
 
 ## Performance considerations
 
-SpaceX's [API reference](https://api.spacexdata.com/v5/) has both v4 an v5 for launches. The connector as default uses V4 as it has minimal bugs.
+The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as default uses V4 as it has minimal bugs.
 
 ## Changelog
 

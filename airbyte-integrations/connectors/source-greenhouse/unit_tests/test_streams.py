@@ -139,7 +139,7 @@ def test_parse_response_expected_response(applications_stream):
     """
     response._content = response_content
     parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
-    records = [record for record in parsed_response]
+    records = [dict(record) for record in parsed_response]
 
     assert records == json.loads(response_content)
 
@@ -152,6 +152,12 @@ def test_parse_response_empty_content(applications_stream):
     records = [record for record in parsed_response]
 
     assert records == []
+
+
+def test_number_of_streams():
+    source = SourceGreenhouse()
+    streams = source.streams({})
+    assert len(streams) == 36
 
 
 def test_ignore_403(applications_stream):

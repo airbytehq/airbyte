@@ -4,7 +4,7 @@
 
 import datetime
 from multiprocessing import current_process
-from typing import Dict
+from typing import Dict, List
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Datetime, Numeric
@@ -47,13 +47,13 @@ class PurchaseGenerator:
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
         return random_date
 
-    def generate(self, user_id: int) -> list[Dict]:
+    def generate(self, user_id: int) -> List[Dict]:
         """
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
 
-        purchases: list[Dict] = []
+        purchases: List[Dict] = []
         last_user_id_digit = int(repr(user_id)[-1])
         purchase_count = 1
         id_offset = 0
@@ -72,6 +72,7 @@ class PurchaseGenerator:
             id = user_id + i + 1 - id_offset
             time_a = dt.datetime()
             time_b = dt.datetime()
+            updated_at = format_airbyte_time(datetime.datetime.now())
             created_at = time_a if time_a <= time_b else time_b
             product_id = numeric.integer_number(1, total_products)
             added_to_cart_at = self.random_date_in_range(created_at)
@@ -88,6 +89,8 @@ class PurchaseGenerator:
                 "id": id,
                 "product_id": product_id,
                 "user_id": user_id + 1,
+                "created_at": created_at,
+                "updated_at": updated_at,
                 "added_to_cart_at": format_airbyte_time(added_to_cart_at) if added_to_cart_at is not None else None,
                 "purchased_at": format_airbyte_time(purchased_at) if purchased_at is not None else None,
                 "returned_at": format_airbyte_time(returned_at) if returned_at is not None else None,

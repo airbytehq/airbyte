@@ -8,11 +8,11 @@ Flexport source uses [Flexport API](https://developers.flexport.com/s/api) to ex
 
 This Source is capable of syncing the following data as streams:
 
-- [Companies](https://apidocs.flexport.com/reference/company)
-- [Locations](https://apidocs.flexport.com/reference/location)
-- [Products](https://apidocs.flexport.com/reference/product)
-- [Invoices](https://apidocs.flexport.com/reference/invoices)
-- [Shipments](https://apidocs.flexport.com/reference/shipment)
+- [Companies](https://apidocs.flexport.com/v3/tag/Company)
+- [Locations](https://apidocs.flexport.com/v3/tag/Location)
+- [Products](https://apidocs.flexport.com/v3/tag/Product)
+- [Invoices](https://apidocs.flexport.com/v3/tag/Invoices)
+- [Shipments](https://apidocs.flexport.com/v3/tag/Shipment)
 
 ### Data type mapping
 
@@ -40,7 +40,7 @@ This Source is capable of syncing the following data as streams:
 
 ### Authentication
 
-Authentication uses a pre-created API token which can be [created in the UI](https://apidocs.flexport.com/reference/authentication).
+Authentication uses a pre-created API token which can be [created in the UI](https://apidocs.flexport.com/v3/tag/Authentication/).
 
 ## Changelog
 

@@ -14,13 +14,13 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.3.1"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: activity
-            bypass_reason: "data changes very fast"
           - name: cards
             bypass_reason: "data changes very fast"
           - name: collections
@@ -29,9 +29,10 @@ acceptance_tests:
             bypass_reason: "data changes very fast"
           - name: users
             bypass_reason: "data changes very fast"
+        fail_on_extra_columns: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-      bypass_reason: "This connector does not implement incremental sync"
+    bypass_reason: "This connector does not implement incremental sync"

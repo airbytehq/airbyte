@@ -108,7 +108,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "creator_uid": {
       "type": ["string", "null"]

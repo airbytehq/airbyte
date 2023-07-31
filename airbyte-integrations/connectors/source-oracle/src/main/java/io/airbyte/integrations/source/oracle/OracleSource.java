@@ -47,6 +47,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   private static final String UNRECOGNIZED = "Unrecognized";
   private static final String CONNECTION_DATA = "connection_data";
 
+  private static final String ORACLE_JDBC_PARAMETER_DELIMITER = ";";
+
   enum Protocol {
     TCP,
     TCPS
@@ -115,7 +117,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     }
 
     if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
+      final String connectionParams = String.join(ORACLE_JDBC_PARAMETER_DELIMITER, additionalParameters);
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
     }
 
@@ -191,11 +193,6 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of();
-  }
-
-  @Override
-  protected String getJdbcParameterDelimiter() {
-    return ";";
   }
 
   @Override

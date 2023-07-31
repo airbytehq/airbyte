@@ -20,17 +20,13 @@
         "type": ["null", "object"],
         "properties": {
           "LineAmount": {
-            "type": ["null", "number"],
-            "minimum": -1e33,
-            "maximum": 1e33
+            "type": ["null", "number"]
           },
           "Description": {
             "type": ["null", "string"]
           },
           "TaxAmount": {
-            "type": ["null", "number"],
-            "minimum": -1e33,
-            "maximum": 1e33
+            "type": ["null", "number"]
           },
           "AccountID": {
             "type": ["null", "string"]

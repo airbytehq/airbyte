@@ -31,9 +31,7 @@
           "type": ["null", "string"]
         },
         "UnitPrice": {
-          "type": ["null", "number"],
-          "minimum": -1e33,
-          "maximum": 1e33
+          "type": ["null", "number"]
         },
         "AccountCode": {
           "type": ["null", "string"]
@@ -48,9 +46,7 @@
           "type": ["null", "string"]
         },
         "UnitPrice": {
-          "type": ["null", "number"],
-          "minimum": -1e33,
-          "maximum": 1e33
+          "type": ["null", "number"]
         },
         "AccountCode": {
           "type": ["null", "string"]

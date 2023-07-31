@@ -6,6 +6,8 @@ package io.airbyte.commons.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -18,15 +20,17 @@ import java.util.function.Supplier;
  *
  * @param <T> type
  */
-class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
+class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T>, AirbyteStreamAware {
 
   private final Supplier<AutoCloseableIterator<T>> iteratorSupplier;
 
+  private final AirbyteStreamNameNamespacePair airbyteStream;
   private boolean hasSupplied;
   private AutoCloseableIterator<T> internalIterator;
 
-  public LazyAutoCloseableIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier) {
+  public LazyAutoCloseableIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier, final AirbyteStreamNameNamespacePair airbyteStream) {
     Preconditions.checkNotNull(iteratorSupplier);
+    this.airbyteStream = airbyteStream;
     this.iteratorSupplier = iteratorSupplier;
     this.hasSupplied = false;
   }
@@ -51,6 +55,11 @@ class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCl
     if (internalIterator != null) {
       internalIterator.close();
     }
+  }
+
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.ofNullable(airbyteStream);
   }
 
 }

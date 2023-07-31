@@ -9,7 +9,7 @@
     "properties": {
       "org_id": {
         "title": "Organization ID",
-        "type": "integer",
+        "type": "string",
         "airbyte_secret": true,
         "description": "Specify the Organization ID",
         "examples": ["123456789"]
@@ -66,14 +66,6 @@
           }
         ]
       }
-    }
-  },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", "0"],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }

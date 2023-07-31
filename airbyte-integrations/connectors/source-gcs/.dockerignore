@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_gcs
+!setup.py
+!secrets

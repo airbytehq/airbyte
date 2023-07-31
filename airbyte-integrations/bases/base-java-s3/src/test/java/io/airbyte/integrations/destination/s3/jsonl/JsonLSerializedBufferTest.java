@@ -70,7 +70,7 @@ public class JsonLSerializedBufferTest {
       throws Exception {
     final File outputFile = buffer.getFile();
     try (final JsonLSerializedBuffer writer = (JsonLSerializedBuffer) JsonLSerializedBuffer
-        .createFunction(null, () -> buffer)
+        .createBufferFunction(null, () -> buffer)
         .apply(streamPair, catalog)) {
       writer.withCompression(withCompression);
       writer.accept(message);

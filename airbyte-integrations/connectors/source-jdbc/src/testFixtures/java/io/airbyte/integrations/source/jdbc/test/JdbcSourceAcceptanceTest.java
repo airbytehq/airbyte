@@ -222,12 +222,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+    dataSource = getDataSource(jdbcConfig);
 
     database = new StreamingJdbcDatabase(dataSource,
         getDefaultSourceOperations(),
@@ -288,6 +283,15 @@ public abstract class JdbcSourceAcceptanceTest {
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
 
     });
+  }
+
+  protected DataSource getDataSource(final JsonNode jdbcConfig) {
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
   }
 
   public void tearDown() throws SQLException {
@@ -385,7 +389,8 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    String driverClass = getDriverClass().toLowerCase();
+    if (driverClass.contains("mysql") || driverClass.contains("clickhouse") || driverClass.contains("teradata")) {
       return;
     }
 
@@ -832,10 +837,11 @@ public abstract class JdbcSourceAcceptanceTest {
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
   @Test
-  void testIncrementalWithConcurrentInsertion() throws Exception {
+  public void testIncrementalWithConcurrentInsertion() throws Exception {
+    final String driverName = getDriverClass().toLowerCase();
     final String namespace = getDefaultNamespace();
     final String fullyQualifiedTableName = getFullyQualifiedTableName(TABLE_NAME_AND_TIMESTAMP);
-    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, timestamp %s NOT NULL", COL_TIMESTAMP_TYPE);
+    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, %s %s NOT NULL", COL_TIMESTAMP, COL_TIMESTAMP_TYPE);
 
     // 1st sync
     database.execute(ctx -> {
@@ -873,7 +879,12 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("a", "b"), firstSyncNames);
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
+    } else {
+      assertEquals(List.of("a", "b"), firstSyncNames);
+    }
 
     // 2nd sync
     database.execute(ctx -> {
@@ -923,10 +934,17 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
+    } else {
+      assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+    }
+
   }
 
-  private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
     for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
       if (stream.get("stream_name").asText().equals(streamName)) {
         return stream;
@@ -947,13 +965,13 @@ public abstract class JdbcSourceAcceptanceTest {
         getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages,
-                                      final ConfiguredAirbyteStream airbyteStream)
+  protected void incrementalCursorCheck(
+                                        final String initialCursorField,
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages,
+                                        final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(List.of(cursorField));
@@ -962,31 +980,32 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(airbyteStream));
 
-    final DbStreamState dbStreamState = new DbStreamState()
-        .withStreamName(airbyteStream.getStream().getName())
-        .withStreamNamespace(airbyteStream.getStream().getNamespace())
-        .withCursorField(List.of(initialCursorField))
-        .withCursor(initialCursorValue)
-        .withCursorRecordCount(1L);
+    final DbStreamState dbStreamState = buildStreamState(airbyteStream, initialCursorField, initialCursorValue);
 
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
 
     setEmittedAtToNull(actualMessages);
 
-    final List<DbStreamState> expectedStreams = List.of(
-        new DbStreamState()
-            .withStreamName(airbyteStream.getStream().getName())
-            .withStreamNamespace(airbyteStream.getStream().getNamespace())
-            .withCursorField(List.of(cursorField))
-            .withCursor(endCursorValue)
-            .withCursorRecordCount(1L));
+    final List<DbStreamState> expectedStreams = List.of(buildStreamState(airbyteStream, cursorField, endCursorValue));
+
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
+  }
+
+  protected DbStreamState buildStreamState(final ConfiguredAirbyteStream configuredAirbyteStream,
+                                           final String cursorField,
+                                           final String cursorValue) {
+    return new DbStreamState()
+        .withStreamName(configuredAirbyteStream.getStream().getName())
+        .withStreamNamespace(configuredAirbyteStream.getStream().getNamespace())
+        .withCursorField(List.of(cursorField))
+        .withCursor(cursorValue)
+        .withCursorRecordCount(1L);
   }
 
   // get catalog and perform a defensive copy.
@@ -1154,7 +1173,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse") ||
+        getDriverClass().toLowerCase().contains("teradata")) {
       return config.get(JdbcUtils.DATABASE_KEY).asText();
     } else {
       return SCHEMA_NAME;

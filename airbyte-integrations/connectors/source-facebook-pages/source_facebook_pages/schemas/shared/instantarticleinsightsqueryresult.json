@@ -9,7 +9,7 @@
     },
     "time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "value": {
       "type": ["string", "null"]

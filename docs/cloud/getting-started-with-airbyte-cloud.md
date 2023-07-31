@@ -6,7 +6,7 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 
 To use Airbyte Cloud:
 
-1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
+1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.com/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
 
    Airbyte Cloud offers a 14-day free trial. For more information, see [Pricing](https://airbyte.com/pricing).
 
@@ -27,6 +27,12 @@ A source is an API, file, database, or data warehouse that you want to ingest da
 :::
 
 To set up a source:
+
+:::note
+
+Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) before creating a new source to ensure your data is processed in the correct region.
+
+:::
 
 1. On the Airbyte Cloud dashboard, click **Sources** and then click **+ New source**.
 2. On the Set up the source page, select the source you want to set up from the **Source type** dropdown.
@@ -61,7 +67,7 @@ Setting up a connection involves configuring the following parameters:
 | Parameter                              | Description                                                                                                                                                                                                                                                           |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Replication frequency                  | How often should the data sync?                                                                                                                                                                                                                                       |
-| Data residency                         | Where should the data be processed? |
+| [Data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-the-data-residency-for-a-connection)                         | Where should the data be processed? |
 | Destination Namespace and stream names | Where should the replicated data be written?                                                                                                                                                                                                                          |
 | Catalog selection                      | Which streams and fields should be replicated from the source to the destination?                                                                                                                                                                                     |
 | Sync mode                              | How should the streams be replicated (read and written)?                                                                                                                                                                                                              |
@@ -82,6 +88,12 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 :::
 
 To set up a connection:
+
+:::note
+
+Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) before creating a new connection to ensure your data is processed in the correct region.
+
+:::
 
 1. On the Airbyte Cloud dashboard, click **Connections** and then click **+ New connection**.
 2. On the New connection page, select a source:
@@ -181,10 +193,13 @@ Verify the sync by checking the logs:
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
 ## Allowlist IP addresses
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
 #### GCP region: us-west3
+
+[comment]: # (IMPORTANT: if changing the list of IP addresses below, you must also update the connector.airbyteCloudIpAddresses LaunchDarkly flag to show the new list so that the correct list is shown in the Airbyte Cloud UI, then reach out to the frontend team and ask them to update the default value in the useAirbyteCloudIps hook!)
+
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
@@ -195,23 +210,6 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 * 34.106.225.141
 
 ### European Union
-
-:::note 
-
-Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
-
-:::
-
-#### GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
-
 #### AWS region: eu-west-3
 * 13.37.4.46
 * 13.37.142.60
