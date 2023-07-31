@@ -29,7 +29,7 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
   // increasing interval based approach, from 0 up to 4 hours.
   // This is not fancy, just hard coded intervals.
   private static final List<Long> typeAndDedupeIncreasingIntervals =
-      List.of(ZERO_MINUTES_MILLIS, FIFTEEN_MINUTES_MILLIS, ONE_HOUR_MILLIS, TWO_HOURS_MILLIS, FOUR_HOURS_MILLIS);
+      List.of(NEGATIVE_MILLIS, FIFTEEN_MINUTES_MILLIS, ONE_HOUR_MILLIS, TWO_HOURS_MILLIS, FOUR_HOURS_MILLIS);
 
   private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
