@@ -172,7 +172,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
             new NoopTyperDeduper(),
             // The parsedcatalog is only used in v2 mode, so just pass null for now
             null,
-            100 * 1024 * 1024);
+            10 * 1024 * 1024);
   }
 
   /**
