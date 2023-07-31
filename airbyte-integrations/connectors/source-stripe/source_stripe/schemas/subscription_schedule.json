@@ -258,6 +258,9 @@
     },
     "test_clock": {
       "type": ["null", "string"]
+    },
+    "renewal_interval": {
+      "type": ["null", "string"]
     }
   }
 }
