@@ -680,8 +680,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get('end_date'))
         max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
-            max_cursor_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
-            max_possible_value = min(max_cursor_value, slice_max_value)
+            if latest_record_value > slice_max_value:
+                return {self.cursor_field: current_stream_state[self.cursor_field]}
+            max_possible_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
         return {self.cursor_field: max_possible_value.isoformat()}
 
 
