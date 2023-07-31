@@ -6,21 +6,21 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
 <!-- env:oss -->
-- (For Airbyte Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
+- (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
 <!-- /env:oss -->
 
 ## Setup guide
 
 <!-- env:oss -->
 
-### (For Airbyte Open Source) Generate an access token and request a rate increase limit:
+### (For Airbyte Open Source) Generate an access token and request a rate limit increase:
 
-To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate increase limit from Facebook. The following steps will guide you through this process:
+To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate limit increase from Facebook. The following steps will guide you through this process:
 
 1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create a Facebook app. Set the app type to **Business** when prompted.
 2. From your App’s dashboard, [set up the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
 3. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
-4. Request a rate increase limit: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+4. Request a rate limit increase: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook apps with the default Standard Access tier, making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
 
    - Ads Management Standard Access
    - ads_read
@@ -36,14 +36,14 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Facebook Marketing** from the list of available sources.
 4. For **Source name**, enter a name for your Facebook Marketing connector.
-5. To authenticate the Facebook Marketing source:
+5. To authenticate the connection:
 
-<!-- env:cloud -->
+   <!-- env:cloud -->
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-<!-- /env:cloud -->
-<!-- env:oss -->
+   <!-- /env:cloud -->
+   <!-- env:oss -->
    **For Airbyte Open Source**: Enter the access token you generated with your Facebook app.
-<!-- /env:oss -->
+   <!-- /env:oss -->
 
 #### Facebook Marketing Source Settings:
 
@@ -54,7 +54,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
    Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
    :::
 
-3. For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+3. For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
 4. (Optional) Toggle the **Include Deleted Campaigns, Ads, and AdSets** button to include data from deleted Campaigns, Ads, and AdSets.
 
    :::info
