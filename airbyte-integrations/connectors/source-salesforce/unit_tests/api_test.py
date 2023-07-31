@@ -103,7 +103,6 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     assert result_uri.call_count == 3
     assert result_uri.request_history[1].query == "locator=somelocator_1"
     assert result_uri.request_history[2].query == "locator=somelocator_2"
-    print(2)
 
 
 def _prepare_mock(m, stream):
