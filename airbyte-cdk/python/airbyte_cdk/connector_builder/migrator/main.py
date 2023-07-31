@@ -17,9 +17,12 @@ def main(repository: str) -> None:
 
     logger.info("Starting the migration...")
     repo = SourceRepository(repository)
+
     for source_name in repo.fetch_no_code_sources():
         logger.debug(f"Trying to migrate {source_name}...")
         repo.merge_spec_inside_manifest(source_name)
+        repo.merge_schemas_inside_manifest(source_name)
+        repo.delete_schemas_folder(source_name)
         logger.debug(f"Successfully updated source `{source_name}`!")
     logger.info("Migration successful!")
 
