@@ -18,7 +18,7 @@ import java.time.Instant;
 
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
-  final Instant emittedAt;
+  private final Instant emittedAt;
 
   public MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
     this.emittedAt = emittedAt;
