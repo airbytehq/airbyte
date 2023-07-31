@@ -5,12 +5,12 @@
 from langchain.chains import RetrievalQA
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
-from langchain.vectorstores import DocArrayHnswSearch
+from langchain.vectorstores import Chroma
 
 # Run with OPENAI_API_KEY set in the environment
 
 embeddings = OpenAIEmbeddings()
-vector_store = DocArrayHnswSearch.from_params(embeddings, "/tmp/airbyte_local/special_path", 1536)
+vector_store = Chroma(embedding_function=embeddings, persist_directory="/tmp/airbyte_local/my_chroma_db")
 
 # print(vector_store.similarity_search("python", 1))
 
