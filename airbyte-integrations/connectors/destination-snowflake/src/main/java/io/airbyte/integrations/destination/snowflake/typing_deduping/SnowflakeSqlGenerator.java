@@ -159,7 +159,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         ${dedupe_raw_table}
         ${cdc_deletes}
         ${commit_raw_table}
-        COMMIT TRANSACTION;
+        COMMIT;
         """);
   }
 
