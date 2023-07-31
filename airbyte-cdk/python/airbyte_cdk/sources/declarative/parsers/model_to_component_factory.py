@@ -697,6 +697,7 @@ class ModelToComponentFactory:
             config=config,
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
+            message_repository=self._message_repository,
         )
 
     @staticmethod
@@ -913,7 +914,6 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
                 parameters=model.parameters or {},
-                message_repository=self._message_repository,
             )
         return SimpleRetriever(
             name=name,
@@ -925,7 +925,6 @@ class ModelToComponentFactory:
             cursor=cursor,
             config=config,
             parameters=model.parameters or {},
-            message_repository=self._message_repository,
         )
 
     @staticmethod

@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -135,6 +135,8 @@ class Requester(RequestOptionsProvider):
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
+        log_request: bool = False,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
         """
         Sends a request and returns the response. Might return no response if the error handler chooses to ignore the response or throw an exception in case of an error.

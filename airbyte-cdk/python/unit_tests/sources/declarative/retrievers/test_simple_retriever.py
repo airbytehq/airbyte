@@ -467,21 +467,19 @@ def test_emit_log_request_response_messages(mocker):
     response.status_code = 200
 
     format_http_message_mock = mocker.patch("airbyte_cdk.sources.declarative.retrievers.simple_retriever.format_http_message")
-    message_repository = Mock()
+    requester = MagicMock()
     retriever = SimpleRetrieverTestReadDecorator(
         name="stream_name",
         primary_key=primary_key,
-        requester=MagicMock(),
+        requester=requester,
         paginator=MagicMock(),
         record_selector=record_selector,
         stream_slicer=SinglePartitionRouter(parameters={}),
         parameters={},
         config={},
-        message_repository=message_repository,
     )
 
-    list(retriever._parse_records(response=response, stream_slice={}, stream_state={}))
+    retriever._fetch_next_page(stream_state={}, stream_slice={})
 
-    assert len(message_repository.log_message.call_args_list) == 1
-    assert message_repository.log_message.call_args_list[0].args[0] == Level.DEBUG
-    assert message_repository.log_message.call_args_list[0].args[1]() == format_http_message_mock.return_value
+    assert requester.send_request.call_args_list[0][1]["log_request"] == True
+    assert requester.send_request.call_args_list[0][1]["log_formatter"](response) == format_http_message_mock.return_value

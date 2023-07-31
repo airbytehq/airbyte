@@ -7,7 +7,7 @@ from itertools import islice
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 import requests
-from airbyte_cdk.models import AirbyteMessage, Level
+from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -19,7 +19,6 @@ from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.http_logger import format_http_message
-from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
 
@@ -59,7 +58,6 @@ class SimpleRetriever(Retriever):
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
     cursor: Optional[Cursor] = None
-    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
@@ -255,7 +253,7 @@ class SimpleRetriever(Retriever):
     def _fetch_next_page(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Optional[requests.Response]:
-        response = self.requester.send_request(
+        return self.requester.send_request(
             path=self._paginator_path(),
             stream_state=stream_state,
             stream_slice=stream_slice,
@@ -269,8 +267,6 @@ class SimpleRetriever(Retriever):
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             ),
         )
-
-        return response
 
     def _read_pages(
         self,
@@ -392,21 +388,27 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
-    def _parse_records(
-        self,
-        response: Optional[requests.Response],
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]],
-    ) -> Iterable[StreamData]:
-        if response is not None:
-            current_response = response
-            self.message_repository.log_message(
-                Level.DEBUG,
-                lambda: format_http_message(
-                    current_response,
-                    f"Stream '{self.name}' request",
-                    f"Request performed in order to extract records for stream '{self.name}'",
-                    self.name,
-                ),
-            )
-        yield from self._parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+    def _fetch_next_page(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Optional[requests.Response]:
+        return self.requester.send_request(
+            path=self._paginator_path(),
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_body_data=self._request_body_data(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            ),
+            request_body_json=self._request_body_json(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            ),
+            log_request=True,
+            log_formatter=lambda response: format_http_message(
+                response,
+                f"Stream '{self.name}' request",
+                f"Request performed in order to extract records for stream '{self.name}'",
+                self.name,
+            ),
+        )
