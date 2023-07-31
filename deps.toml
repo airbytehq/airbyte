@@ -8,7 +8,6 @@ connectors-source-testcontainers-clickhouse = "1.17.3"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
 connectors-testcontainers-mariadb = "1.16.2"
-connectors-testcontainers-mongodb = "1.18.3"
 connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
@@ -55,7 +54,7 @@ connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elastic
 connectors-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "connectors-testcontainers-mariadb" }
-connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers-mongodb" }
+connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "connectors-testcontainers" }
@@ -64,7 +63,6 @@ connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers
 connectors-testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-tidb" }
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
-docker-java-api = { module = "com.github.docker-java:docker-java-api", version = "3.3.2" }
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
@@ -101,7 +99,6 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.6.1" }
 mockk = { module = "io.mockk:mockk", version = "1.13.3" }
-mongodb-driver = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.1" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
 otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
