@@ -20,18 +20,18 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.types import SpecType
 from airbyte_cdk.sources.streams import Stream
 from pydantic.error_wrappers import ValidationError
 
 DEFAULT_MAX_HISTORY_SIZE = 10_000
 
 
-SpecType = TypeVar('SpecType')
 
 class FileBasedSource(AbstractSource, ABC, Generic[SpecType]):
     def __init__(
         self,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[SpecType],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),

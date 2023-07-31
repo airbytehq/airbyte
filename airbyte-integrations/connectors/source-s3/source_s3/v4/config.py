@@ -6,22 +6,16 @@ from typing import Optional
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import AnyUrl, Field, ValidationError, root_validator
+from pydantic import AnyUrl, BaseModel, Field
 
-
-class Config(AbstractFileBasedSpec):
-    config_version: str = "0.1"
-
-    @classmethod
-    def documentation_url(cls) -> AnyUrl:
-        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
-
+class S3Config(BaseModel):
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
 
     aws_access_key_id: Optional[str] = Field(
         title="AWS Access Key ID",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-        "permissions. If accessing publicly available data, this field is not necessary.",
+                    "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=1,
     )
@@ -30,7 +24,7 @@ class Config(AbstractFileBasedSpec):
         title="AWS Secret Access Key",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-        "permissions. If accessing publicly available data, this field is not necessary.",
+                    "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=2,
     )
@@ -54,3 +48,12 @@ class Config(AbstractFileBasedSpec):
                     "Either `aws_access_key_id` and `aws_secret_access_key` or `endpoint` must be set, but not both.", model=Config
                 )
         return values
+
+
+class Config(AbstractFileBasedSpec[S3Config]):
+    config_version: str = "0.1"
+
+    @classmethod
+    def documentation_url(cls) -> AnyUrl:
+        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
+

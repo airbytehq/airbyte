@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, TypeVar
 
 StreamSlice = Mapping[str, Any]
 StreamState = MutableMapping[str, Any]
+SpecType = TypeVar('SpecType')

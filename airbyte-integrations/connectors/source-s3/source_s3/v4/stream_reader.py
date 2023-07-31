@@ -17,7 +17,7 @@ from botocore.client import Config as ClientConfig
 from source_s3.v4.config import Config
 
 
-class SourceS3StreamReader(AbstractFileBasedStreamReader):
+class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
     def __init__(self):
         super().__init__()
         self._s3_client = None

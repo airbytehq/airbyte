@@ -13,17 +13,7 @@ from pydantic import AnyUrl, BaseModel, Field
 SourceConfigType = TypeVar('SourceConfigType')
 
 class AbstractFileBasedSpec(BaseModel, Generic[SourceConfigType]):
-    """
-    Used during spec; allows the developer to configure the cloud provider specific options
-    that are needed when users configure a file-based source.
-    """
-
-    streams: List[FileBasedStreamConfig] = Field(
-        title="The list of streams to sync",
-        description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
-        order=10,
-    )
-
+    streams: List[FileBasedStreamConfig] = Field()
     source_config: SourceConfigType
 
     @classmethod
