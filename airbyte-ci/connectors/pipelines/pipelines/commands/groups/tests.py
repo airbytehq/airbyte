@@ -7,6 +7,7 @@ Module exposing the tests command to test airbyte-ci projects.
 """
 
 import logging
+import sys
 
 import anyio
 import click
@@ -34,7 +35,7 @@ async def run_test(airbyte_ci_package_path: str):
     """
     logger = logging.getLogger(f"{airbyte_ci_package_path}.tests")
     logger.info(f"Running tests for {airbyte_ci_package_path}")
-    async with dagger.Connection(dagger.Config()) as dagger_client:
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
             pytest_stdout = await (
                 dagger_client.container()
