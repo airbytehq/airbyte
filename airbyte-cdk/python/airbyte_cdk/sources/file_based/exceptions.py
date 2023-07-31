@@ -73,7 +73,3 @@ class UndefinedParserError(BaseFileBasedSourceError):
 
 class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
     pass
-
-
-class ErrorListingFiles(BaseFileBasedSourceError):
-    pass
