@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPoli
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser
 from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
 
@@ -42,7 +42,7 @@ class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamRea
 
 
 class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
-    def open_file(self, file: RemoteFile) -> IOBase:
+    def open_file(self, file: RemoteFile, file_read_mode: FileReadMode, logger: logging.Logger) -> IOBase:
         raise Exception("Error opening file")
 
 

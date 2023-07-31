@@ -3,9 +3,15 @@
 #
 
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel
+
+
+class FileReadMode(Enum):
+    READ = "r"
+    READ_BINARY = "rb"
 
 
 class RemoteFile(BaseModel):
@@ -15,12 +21,11 @@ class RemoteFile(BaseModel):
 
     uri: str
     last_modified: datetime
-    file_type: Optional[str] = None
 
-    def extension_agrees_with_file_type(self) -> bool:
+    def extension_agrees_with_file_type(self, file_type: Optional[str]) -> bool:
         extensions = self.uri.split(".")[1:]
         if not extensions:
             return True
-        if not self.file_type:
+        if not file_type:
             return True
-        return any(self.file_type.casefold() in e.casefold() for e in extensions)
+        return any(file_type.casefold() in e.casefold() for e in extensions)
