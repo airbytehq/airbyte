@@ -184,8 +184,8 @@ class TestSpec(BaseTest):
                 assert (
                     "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
                 ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
-                assert (
-                    "enum" not in prop_obj or (len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"])
+                assert "enum" not in prop_obj or (
+                    len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
                 ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
 
     def test_required(self):
