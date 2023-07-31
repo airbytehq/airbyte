@@ -20,7 +20,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
@@ -39,8 +38,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
-
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,24 +134,20 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    throw new NotImplementedException("Please use getSerializedMessageConsumer instead");
+    final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+    return new StagingConsumerFactory().create(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
+        getNamingResolver(),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
+        config,
+        catalog,
+        isPurgeStagingData(config));
+
   }
 
-  @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
-    final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
-    return new StagingConsumerFactory().createAsync(
-            outputRecordCollector,
-            getDatabase(getDataSource(config)),
-            new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
-            getNamingResolver(),
-            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-            config,
-            catalog,
-            isPurgeStagingData(config));
-  }
 }

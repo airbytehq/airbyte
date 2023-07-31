@@ -40,8 +40,29 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
-                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    log.info("destination class: {}", getClass());
+    final var useAsyncSnowflake = useAsyncSnowflake(config);
+    log.info("using async snowflake: {}", useAsyncSnowflake);
+    if (useAsyncSnowflake) {
       return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+    } else {
+      return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
+    }
+
+  }
+
+  public static boolean useAsyncSnowflake(final JsonNode config) {
+    final Set<String> stagingLoadingMethods = Set.of("internal staging", "internal-staging", "internal_staging");
+
+    return Optional.of(config)
+            .map(node -> node.get("loading_method"))
+            .map(node -> node.get("method"))
+            .map(JsonNode::asText)
+            .map(String::toLowerCase)
+            .map(loadingMethod -> stagingLoadingMethods.contains(loadingMethod))
+            .orElse(false);
   }
 
 }
