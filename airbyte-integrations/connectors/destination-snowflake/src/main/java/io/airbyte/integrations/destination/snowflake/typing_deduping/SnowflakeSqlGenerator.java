@@ -106,7 +106,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
-    return "";
+    return new StringSubstitutor(Map.of(
+        "final_table", stream.finalTableId(QUOTE),
+        "tmp_final_table", stream.finalTableId(finalSuffix, QUOTE))).replace(
+            """
+                BEGIN TRANSACTION;
+                DROP TABLE IF EXISTS ${final_table};
+                ALTER TABLE ${tmp_final_table} RENAME TO ${final_table}
+                COMMIT;
+                """
+        );
   }
 
   @Override
