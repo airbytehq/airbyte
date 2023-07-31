@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  */
 public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> {
 
-  private static final long ZERO_MINUTES_MILLIS = 0;
+  private static final long NEGATIVE_MILLIS = -1;
   private static final long FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
   private static final long ONE_HOUR_MILLIS = 1000 * 60 * 60 * 1;
   private static final long TWO_HOURS_MILLIS = 1000 * 60 * 60 * 2;
