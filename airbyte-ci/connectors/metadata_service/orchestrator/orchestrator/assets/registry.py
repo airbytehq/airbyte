@@ -103,7 +103,6 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
     """
     This asset is used to generate the cloud registry from the registry entries.
     """
-    # raise Exception("This is a test error by Ben")
     registry_name = "cloud"
     registry_directory_manager = context.resources.registry_directory_manager
     latest_cloud_registry_entries_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs

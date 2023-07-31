@@ -23,7 +23,7 @@ def setup_dagster_sentry():
     from sentry_sdk.integrations.modules import ModulesIntegration
     from sentry_sdk.integrations.stdlib import StdlibIntegration
 
-    # TODO explain why?
+    # We ignore the Dagster internal logging to prevent a single error from being logged per node in the job graph
     ignore_logger("dagster")
 
     SENTRY_DSN = os.environ.get("SENTRY_DSN")
@@ -107,7 +107,7 @@ def capture_asset_op_exceptions(func):
             return func(*args, **kwargs)
         except Exception as e:
             event_id = sentry_sdk.capture_exception(e)
-            sentry_logger.error(f"Sentry captured an exception. Event ID: {event_id}")
+            sentry_logger.info(f"Sentry captured an exception. Event ID: {event_id}")
             raise e
 
     return wrapped_fn
