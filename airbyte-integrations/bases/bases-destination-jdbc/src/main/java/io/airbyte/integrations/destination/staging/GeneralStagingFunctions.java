@@ -5,9 +5,12 @@
 package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +23,8 @@ public class GeneralStagingFunctions {
 
   public static OnStartFunction onStartFunction(final JdbcDatabase database,
                                                 final StagingOperations stagingOperations,
-                                                final List<WriteConfig> writeConfigs) {
+                                                final List<WriteConfig> writeConfigs,
+                                                final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
@@ -53,6 +57,8 @@ public class GeneralStagingFunctions {
       }
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
+
+      typerDeduper.prepareFinalTables();
     };
   }
 
@@ -66,11 +72,23 @@ public class GeneralStagingFunctions {
                                             final List<String> stagedFiles,
                                             final String tableName,
                                             final String schemaName,
-                                            final StagingOperations stagingOperations)
+                                            final StagingOperations stagingOperations,
+                                            final String streamNamespace,
+                                            final String streamName,
+                                            final TypeAndDedupeOperationValve typerDeduperValve,
+                                            final TyperDeduper typerDeduper)
       throws Exception {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
+
+      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamNamespace, streamName);
+      if (!typerDeduperValve.containsKey(streamId)) {
+        typerDeduperValve.addStream(streamId);
+      } else if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
+      }
     } catch (final Exception e) {
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       log.info("Cleaning stage path {}", stagingPath);
@@ -90,7 +108,8 @@ public class GeneralStagingFunctions {
   public static OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                                 final StagingOperations stagingOperations,
                                                 final List<WriteConfig> writeConfigs,
-                                                final boolean purgeStagingData) {
+                                                final boolean purgeStagingData,
+                                                final TyperDeduper typerDeduper) {
     return (hasFailed) -> {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
@@ -103,7 +122,11 @@ public class GeneralStagingFunctions {
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
+
+        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
       }
+
+      typerDeduper.commitFinalTables();
       log.info("Cleaning up destination completed.");
     };
   }

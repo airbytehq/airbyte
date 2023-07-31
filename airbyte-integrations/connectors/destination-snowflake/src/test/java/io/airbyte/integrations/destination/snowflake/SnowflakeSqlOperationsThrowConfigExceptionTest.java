@@ -8,12 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.DestinationConfig;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -37,24 +41,42 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
   private static final String TEST_PERMISSION_EXCEPTION_CATCHED = "but current role has no privileges on it";
   private static final String TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED = "not allowed to access Snowflake";
 
-  private static final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations =
-      new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+  private static SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations;
 
-  private static final SnowflakeSqlOperations snowflakeSqlOperations = new SnowflakeSqlOperations();
+  private static SnowflakeSqlOperations snowflakeSqlOperations;
 
-  final static JdbcDatabase dbForExecuteQuery = Mockito.mock(JdbcDatabase.class);
-  final static JdbcDatabase dbForRunUnsafeQuery = Mockito.mock(JdbcDatabase.class);
+  private static final JdbcDatabase dbForExecuteQuery = Mockito.mock(JdbcDatabase.class);
+  private static final JdbcDatabase dbForRunUnsafeQuery = Mockito.mock(JdbcDatabase.class);
 
-  final static Executable createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
-  final static Executable dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);
-  final static Executable cleanUpStage = () -> snowflakeStagingSqlOperations.cleanUpStage(dbForExecuteQuery, STAGE_NAME, FILE_PATH);
-  final static Executable copyIntoTableFromStage =
-      () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
+  private static Executable createStageIfNotExists;
+  private static Executable dropStageIfExists;
+  private static Executable cleanUpStage;
+  private static Executable copyIntoTableFromStage;
 
-  final static Executable createSchemaIfNotExists = () -> snowflakeSqlOperations.createSchemaIfNotExists(dbForExecuteQuery, SCHEMA_NAME);
-  final static Executable isSchemaExists = () -> snowflakeSqlOperations.isSchemaExists(dbForRunUnsafeQuery, SCHEMA_NAME);
-  final static Executable createTableIfNotExists = () -> snowflakeSqlOperations.createTableIfNotExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
-  final static Executable dropTableIfExists = () -> snowflakeSqlOperations.dropTableIfExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
+  private static Executable createSchemaIfNotExists;
+  private static Executable isSchemaExists;
+  private static Executable createTableIfNotExists;
+  private static Executable dropTableIfExists;
+
+  @BeforeAll
+  public static void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+
+    snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+    snowflakeSqlOperations = new SnowflakeSqlOperations();
+
+
+    createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
+    dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);
+    cleanUpStage = () -> snowflakeStagingSqlOperations.cleanUpStage(dbForExecuteQuery, STAGE_NAME, FILE_PATH);
+    copyIntoTableFromStage =
+        () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
+
+    createSchemaIfNotExists = () -> snowflakeSqlOperations.createSchemaIfNotExists(dbForExecuteQuery, SCHEMA_NAME);
+    isSchemaExists = () -> snowflakeSqlOperations.isSchemaExists(dbForRunUnsafeQuery, SCHEMA_NAME);
+    createTableIfNotExists = () -> snowflakeSqlOperations.createTableIfNotExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
+    dropTableIfExists = () -> snowflakeSqlOperations.dropTableIfExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME);
+  }
 
   private static Stream<Arguments> testArgumentsForDbExecute() {
     return Stream.of(
