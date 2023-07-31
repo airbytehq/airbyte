@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_OP;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 
@@ -19,6 +20,7 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
     final String eventSerialNo = source.get("event_serial_no").asText();
     event.put(CDC_LSN, commitLsn);
     event.put(CDC_EVENT_SERIAL_NO, eventSerialNo);
+    event.put(CDC_OP, event.get(CDC_OP).asText());
   }
 
   @Override

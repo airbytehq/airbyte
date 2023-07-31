@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_OP;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
@@ -505,6 +506,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
+    properties.set(CDC_OP, stringType);
 
     return stream;
   }
