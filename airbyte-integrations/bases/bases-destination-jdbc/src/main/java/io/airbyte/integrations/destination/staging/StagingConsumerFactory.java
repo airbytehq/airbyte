@@ -111,19 +111,20 @@ public class StagingConsumerFactory {
   }
 
   public SerializedAirbyteMessageConsumer createAsyncWithOptimalBufferSize(final Consumer<AirbyteMessage> outputRecordCollector,
-                                                                     final JdbcDatabase database,
-                                                                     final StagingOperations stagingOperations,
-                                                                     final NamingConventionTransformer namingResolver,
-                                                                     final JsonNode config,
-                                                                     final ConfiguredAirbyteCatalog catalog,
-                                                                     final boolean purgeStagingData,
-                                                                     TypeAndDedupeOperationValve typerDeduperValve,
-                                                                     final TyperDeduper typerDeduper,
-                                                                     final ParsedCatalog parsedCatalog,
-                                                                     final long optimalBufferSize) {
+                                                                           final JdbcDatabase database,
+                                                                           final StagingOperations stagingOperations,
+                                                                           final NamingConventionTransformer namingResolver,
+                                                                           final JsonNode config,
+                                                                           final ConfiguredAirbyteCatalog catalog,
+                                                                           final boolean purgeStagingData,
+                                                                           TypeAndDedupeOperationValve typerDeduperValve,
+                                                                           final TyperDeduper typerDeduper,
+                                                                           final ParsedCatalog parsedCatalog,
+                                                                           final long optimalBufferSize) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, optimalBufferSize);
+    final var flusher =
+        new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, optimalBufferSize);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
