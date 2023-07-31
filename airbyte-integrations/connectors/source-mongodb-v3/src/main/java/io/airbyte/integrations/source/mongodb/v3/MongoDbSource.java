@@ -27,19 +27,19 @@ public class MongoDbSource implements Source, AutoCloseable {
     LOGGER.info("completed source: {}", MongoDbSource.class);
   }
 
-
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     return null;
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
     return null;
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state) throws Exception {
     return null;
   }
 
