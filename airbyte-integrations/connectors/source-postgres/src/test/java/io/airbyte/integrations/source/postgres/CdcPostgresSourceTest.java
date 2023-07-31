@@ -266,7 +266,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
-    System.out.println("THis is the data " + data);
     assertNotNull(data.get(CDC_LSN));
     assertNotNull(data.get(CDC_UPDATED_AT));
     assertNotNull(data.get(CDC_OP));
