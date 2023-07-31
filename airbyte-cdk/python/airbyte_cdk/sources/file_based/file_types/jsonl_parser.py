@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileReadMode, FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, merge_schemas
 
@@ -31,7 +31,7 @@ class JsonlParser(FileTypeParser):
         inferred_schema: Dict[str, Any] = {}
         read_bytes = 0
 
-        with stream_reader.open_file(file) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
             for line in fp:
                 if read_bytes < self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
                     line_schema = self.infer_schema_for_record(json.loads(line))
@@ -53,7 +53,7 @@ class JsonlParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        with stream_reader.open_file(file) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
             for line in fp:
                 yield json.loads(line)
 
@@ -67,3 +67,7 @@ class JsonlParser(FileTypeParser):
                 record_schema[key] = {"type": PYTHON_TYPE_MAPPING[type(value)]}
 
         return record_schema
+
+    @property
+    def file_read_mode(self) -> FileReadMode:
+        return FileReadMode.READ
