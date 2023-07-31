@@ -177,7 +177,7 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 

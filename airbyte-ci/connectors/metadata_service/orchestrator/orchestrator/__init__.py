@@ -26,7 +26,7 @@ from orchestrator.jobs.registry import (
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor
-from orchestrator.sentry import setup_dagster_sentry
+from orchestrator.logging.sentry import setup_dagster_sentry
 
 from orchestrator.config import (
     REPORT_FOLDER,

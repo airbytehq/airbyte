@@ -79,7 +79,7 @@ def generate_and_persist_registry(
 
 
 @asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
@@ -96,11 +96,12 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
 
 
 @asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
     """
+    # raise Exception("This is a test error by Ben")
     registry_name = "cloud"
     registry_directory_manager = context.resources.registry_directory_manager
     latest_cloud_registry_entries_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs
@@ -116,19 +117,19 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
@@ -137,7 +138,7 @@ def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-@sentry.capture_asset_op_exceptions
+@sentry.instrument
 def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_oss_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
