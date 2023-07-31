@@ -47,7 +47,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
         if self._s3_client is None:
-            if self.config.endpoint:
+            if self.config.source_config.endpoint:
                 client_kv_args = _get_s3_compatible_client_args(self.config)
                 self._s3_client = boto3.client("s3", **client_kv_args)
             else:
@@ -70,11 +70,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
         try:
             if prefixes:
                 for prefix in prefixes:
-                    for remote_file in self._page(s3, globs, self.config.bucket, prefix, seen, logger):
+                    for remote_file in self._page(s3, globs, self.config.source_config.bucket, prefix, seen, logger):
                         total_n_keys += 1
                         yield remote_file
             else:
-                for remote_file in self._page(s3, globs, self.config.bucket, None, seen, logger):
+                for remote_file in self._page(s3, globs, self.config.source_config.bucket, None, seen, logger):
                     total_n_keys += 1
                     yield remote_file
 
@@ -83,9 +83,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
             raise ErrorListingFiles(
                 FileBasedSourceError.ERROR_LISTING_FILES,
                 source="s3",
-                bucket=self.config.bucket,
+                bucket=self.config.source_config.bucket,
                 globs=globs,
-                endpoint=self.config.endpoint,
+                endpoint=self.config.source_config.endpoint,
             ) from exc
 
     @contextmanager
@@ -97,11 +97,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
 
         logger.debug(f"try to open {file.uri}")
         try:
-            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value)
+            result = smart_open.open(f"s3://{self.config.source_config.bucket}/{file.uri}", transport_params=params, mode=mode.value)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
-                f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
+                f"Check whether key {file.uri} exists in `{self.config.source_config.bucket}` bucket and/or has proper ACL permissions"
             )
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
         try:
@@ -162,7 +162,7 @@ def _get_s3_compatible_client_args(config: Config) -> dict:
     client_kv_args = {"config": client_config}
     client_kv_args.update(
         {
-            "endpoint_url": config.endpoint,
+            "endpoint_url": config.source_config.endpoint,
             "use_ssl": True,
             "verify": True,
             "config": ClientConfig(s3={"addressing_style": "auto"}),
