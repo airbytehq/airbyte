@@ -100,15 +100,15 @@ public class StagingConsumerFactory {
         new BufferManager());
   }
 
-  public SerializedAirbyteMessageConsumer createAsyncWithCustomMemoryLimit(final Consumer<AirbyteMessage> outputRecordCollector,
-                                                      final JdbcDatabase database,
-                                                      final StagingOperations stagingOperations,
-                                                      final NamingConventionTransformer namingResolver,
-                                                      final BufferCreateFunction onCreateBuffer,
-                                                      final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean purgeStagingData,
-                                                                           final long memoryLimit ) {
+  public SerializedAirbyteMessageConsumer createAsyncWithMemoryLimit(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                                     final JdbcDatabase database,
+                                                                     final StagingOperations stagingOperations,
+                                                                     final NamingConventionTransformer namingResolver,
+                                                                     final BufferCreateFunction onCreateBuffer,
+                                                                     final JsonNode config,
+                                                                     final ConfiguredAirbyteCatalog catalog,
+                                                                     final boolean purgeStagingData,
+                                                                     final long memoryLimit ) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);

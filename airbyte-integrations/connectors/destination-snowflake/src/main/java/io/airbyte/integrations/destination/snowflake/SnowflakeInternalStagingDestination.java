@@ -114,7 +114,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new StagingConsumerFactory().createAsyncWithCustomMemoryLimit(
+    return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
@@ -122,8 +122,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
-        true,
-            (long) (Runtime.getRuntime().maxMemory() * 0.6));
+        true);
   }
 
 }

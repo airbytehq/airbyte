@@ -160,7 +160,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().createAsync(
+    return new StagingConsumerFactory().createAsyncWithMemoryLimit(
             outputRecordCollector,
             getDatabase(getDataSource(config)),
             new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
@@ -168,7 +168,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
             CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
             config,
             catalog,
-            isPurgeStagingData(s3Options));
+            isPurgeStagingData(s3Options),
+            (long) (Runtime.getRuntime().maxMemory() * 0.6));
   }
 
   /**
