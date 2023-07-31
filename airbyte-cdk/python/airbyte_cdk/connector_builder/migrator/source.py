@@ -5,20 +5,27 @@
 import json
 import logging
 import os
-import re
+import shutil
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import ruamel.yaml
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow, Spec
+from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+_NO_CONFIG: Mapping[str, Any] = {}
 
 logger = logging.getLogger("migrator.source")
+
+ManifestModelNode = Dict[str, Any]
 
 
 class SourceRepository:
 
-    def __init__(self, base_path: str) -> None:
-        self._base_path = base_path
+    def __init__(self, base_path: str, schema_resolver: Optional[SchemaResolver] = None) -> None:
+        self._base_path = os.path.abspath(base_path)
+        self._schema_resolver = schema_resolver if schema_resolver is not None else SchemaResolver()
 
     def merge_spec_inside_manifest(self, source_name: str) -> None:
         spec = self._fetch_spec_outside_manifest(source_name)
@@ -59,7 +66,7 @@ class SourceRepository:
             return None
 
     @staticmethod
-    def _assemble_spec(spec: Dict[str, Any]) -> Spec:
+    def _assemble_spec(spec: ManifestModelNode) -> Spec:
         return Spec(
             type="Spec",
             connection_specification=spec["connectionSpecification"],
@@ -80,21 +87,26 @@ class SourceRepository:
 
         connectors_folder_path = os.path.join("airbyte-integrations", "connectors")
         for directory in os.listdir(connectors_folder_path):
-            manifest_file_path = os.path.join(connectors_folder_path, directory, directory.replace("-", "_"), "manifest.yaml")
-            if self._is_no_code_connector(manifest_file_path):
+            python_package_path = os.path.join(connectors_folder_path, directory, directory.replace("-", "_"))
+            if self._is_no_code_connector(python_package_path):
                 no_code_sources.append(directory)
         return no_code_sources
 
     @staticmethod
-    def _is_no_code_connector(manifest_file_path: str) -> bool:
+    def _is_no_code_connector(python_package_path: str) -> bool:
+        manifest_file_path = os.path.join(python_package_path, "manifest.yaml")
         if not os.path.exists(manifest_file_path):
             return False
 
+        python_source_path = os.path.join(python_package_path, "source.py")
+        with open(python_source_path) as python_source_file:
+            if "YamlDeclarativeSource" not in python_source_file.read():
+                return False
+
         with open(manifest_file_path) as manifest_file:
-            file_content = manifest_file.read()
             # We can't rely on the `type: Custom*` as some components do not require this tag. We therefore assume that if there is a field
             # `class_name`, it'll be a custom component
-            return not re.search("class_name:", file_content)
+            return "class_name:" not in manifest_file.read()
 
     def _get_spec_path(self, source_name: str) -> Tuple[Optional[str], Optional[str]]:
         json_spec_path = os.path.join(self._python_package_path(source_name), "spec.json")
@@ -108,8 +120,175 @@ class SourceRepository:
     def _manifest_path(self, source_name: str) -> str:
         return os.path.join(self._python_package_path(source_name), "manifest.yaml")
 
+    def _schemas_path(self, source_name: str) -> str:
+        return os.path.join(self._python_package_path(source_name), "schemas")
+
     def _python_package_path(self, source_name: str) -> str:
         return os.path.join(self._path_from_name(source_name), source_name.replace("-", "_"))
 
     def _path_from_name(self, source_name: str) -> str:
         return os.path.join(self._base_path, "airbyte-integrations", "connectors", source_name)
+
+    def delete_schemas_folder(self, source_name: str) -> None:
+        schemas_folder_path = os.path.join(self._path_from_name(source_name), source_name.replace("-", "_"), "schemas")
+        shutil.rmtree(schemas_folder_path, ignore_errors=True)
+
+    def merge_schemas_inside_manifest(self, source_name: str) -> None:
+        python_package_path = self._python_package_path(source_name)
+        schemas_path = os.path.join(python_package_path, "schemas")
+        if os.path.exists(schemas_path):
+            manifest_path = self._manifest_path(source_name)
+            with open(manifest_path) as f:
+                manifest_model = yaml.safe_load(f.read())
+
+            source = YamlDeclarativeSource(manifest_path)
+            for stream in source.streams(_NO_CONFIG):
+                if not isinstance(stream, DeclarativeStream):
+                    raise ValueError("All streams should be of type DeclarativeStream")
+                if isinstance(stream.schema_loader, InlineSchemaLoader):
+                    logger.info(f"Stream {stream.name} for {source_name} already has inline schema")
+                    continue
+
+                resolved_schema = self._schema_resolver.resolve(python_package_path, stream.name)
+                if not resolved_schema:
+                    logger.warning(f"Could not find schema in schemas folder for stream {stream.name}")
+                    continue
+
+                stream_model = self._fetch_stream_model(manifest_model, stream.name)
+                schema_loader_model = self._fetch_or_create_schema_loader_model(stream_model)
+                self._clean_json_schema_loaders_even_if_shared(manifest_model, stream_model)
+                schema_loader_model.pop("file_path", None)
+                schema_loader_model.pop("$parameters", None)
+                schema_loader_model["type"] = "InlineSchemaLoader"
+                schema_loader_model["schema"] = resolved_schema
+
+            with open(manifest_path, 'w') as outfile:
+                yaml.dump(manifest_model, outfile, sort_keys=False, Dumper=_ManifestDumper)
+        else:
+            logger.info(f"Skipping {source_name} as it does not have a schemas folder at {schemas_path}")
+
+    def _clean_json_schema_loaders_even_if_shared(self, manifest_model: ManifestModelNode, stream_model: ManifestModelNode) -> None:
+        """
+        This method will remove schema loader on all the referenced nodes associated with the stream. Those nodes can be shared accross
+        streams so be careful using this method as if you don't intend to delete the node for the other streams, you might break things
+        """
+        stream_model_ref = stream_model
+        while "$ref" in stream_model_ref:
+            stream_model_ref = self._extract_ref(manifest_model, stream_model_ref["$ref"])
+            if "schema_loader" in stream_model_ref:
+                # We assume there if not multiple level of referencing for schema loaders
+                if "$ref" in stream_model_ref.get("schema_loader"):  # type: ignore  # MyPy is complaining because stream_model_ref.get("schema_loader") is typed as Any but in practice, it is a Dict[str, any]
+                    self._delete_ref(manifest_model, stream_model_ref["schema_loader"]["$ref"])
+                    stream_model_ref.pop("schema_loader", None)
+                stream_model_ref.pop("schema_loader", None)
+
+        if "$ref" in stream_model.get("schema_loader", {}):
+            self._delete_ref(manifest_model, stream_model["schema_loader"]["$ref"])
+            stream_model["schema_loader"].pop("$ref", None)
+
+    def _fetch_or_create_schema_loader_model(self, stream_model: ManifestModelNode) -> ManifestModelNode:
+        if "schema_loader" not in stream_model:
+            schema_loader: Dict[Any, Any] = {}
+            stream_model["schema_loader"] = schema_loader
+            return schema_loader
+        else:
+            return stream_model["schema_loader"]  # type: ignore  # in practice, this is ManifestModelNode
+
+    def _fetch_stream_model(self, manifest_model: ManifestModelNode, stream_name: str) -> ManifestModelNode:
+        for manifest_stream in manifest_model["streams"]:
+            manifest_stream_model = (
+                self._extract_ref(manifest_model, manifest_stream)
+                if isinstance(manifest_stream, str)
+                else manifest_stream
+            )
+            name = (
+                manifest_stream_model.get("name", "")
+                if "name" in manifest_stream_model
+                else manifest_stream_model.get("$parameters", {}).get("name", "")
+            )
+
+            if not name:
+                raise ValueError(f"No name found for stream {manifest_stream}")
+            if name == stream_name:
+                return manifest_stream_model  # type: ignore  # in practice, this is ManifestModelNode
+        raise ValueError(f"Could not find stream {stream_name} in manifest")
+
+    def _extract_ref(self, manifest_model: ManifestModelNode, ref: str) -> ManifestModelNode:
+        return self._get_nested_value(manifest_model, self._tokenize_ref(ref))
+
+    def _delete_ref(self, manifest_model: ManifestModelNode, ref: str) -> None:
+        ref_path = self._tokenize_ref(ref)
+        result = manifest_model
+        for k in ref_path[:-1]:
+            result = result[k]
+        result.pop(ref_path[-1], None)
+
+    def _tokenize_ref(self, ref: str) -> List[str]:
+        return ref.replace("#/", "").split("/")
+
+    @staticmethod
+    def _get_nested_value(dictionary: ManifestModelNode, keys: List[str]) -> ManifestModelNode:
+        result = dictionary
+        for k in keys:
+            result = result[k]
+        return result
+
+
+class _IndentingEmitter(yaml.emitter.Emitter):
+    def increase_indent(self, flow: bool = False, indentless: bool = False) -> None:
+        """Ensure that lists items are always indented."""
+        super().increase_indent(flow=False, indentless=False)  # type: ignore
+
+
+class _ManifestDumper(
+    _IndentingEmitter,
+    yaml.serializer.Serializer,
+    yaml.representer.Representer,
+    yaml.resolver.Resolver,
+):
+    def __init__(  # type: ignore
+        self,
+        stream,
+        default_style=None,
+        default_flow_style=False,
+        canonical=None,
+        indent=None,
+        width=None,
+        allow_unicode=None,
+        line_break=None,
+        encoding=None,
+        explicit_start=None,
+        explicit_end=None,
+        version=None,
+        tags=None,
+        sort_keys=True,
+    ) -> None:
+        _IndentingEmitter.__init__(
+            self,
+            stream,
+            canonical=canonical,
+            indent=indent,
+            width=width,
+            allow_unicode=allow_unicode,
+            line_break=line_break,
+        )
+        yaml.serializer.Serializer.__init__(
+            self,
+            encoding=encoding,
+            explicit_start=explicit_start,
+            explicit_end=explicit_end,
+            version=version,
+            tags=tags,
+        )
+        yaml.representer.Representer.__init__(
+            self,
+            default_style=default_style,
+            default_flow_style=default_flow_style,
+            sort_keys=sort_keys,
+        )
+        yaml.resolver.Resolver.__init__(self)
+
+    def represent_data(self, data: Any) -> yaml.Node:
+        if isinstance(data, Enum):
+            return self.represent_data(data.value)
+        return super().represent_data(data)

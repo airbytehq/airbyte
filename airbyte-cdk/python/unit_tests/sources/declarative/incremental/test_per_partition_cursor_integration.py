@@ -9,6 +9,7 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import Per
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record
+from unit_tests.unit_test_tooling.manifest import ManifestBuilder
 
 CURSOR_FIELD = "cursor_field"
 SYNC_MODE = SyncMode.incremental
