@@ -256,6 +256,32 @@
                 "order": 5
               }
             }
+          },
+          {
+            "title": "Server-managed",
+            "type": "object",
+            "description": "Server-managed object storage",
+            "required": [
+              "storage_type",
+              "managed_warehouse_name"
+            ],
+            "properties": {
+              "storage_type" : {
+                "title" : "Storage Type",
+                "type" : "string",
+                "default" : "MANAGED",
+                "enum" : [
+                  "MANAGED"
+                ],
+                "order" : 0
+              },
+              "managed_warehouse_name": {
+                "type": "string",
+                "description": "The name of the managed warehouse",
+                "title": "Warehouse name",
+                "order": 0
+              }
+            }
           }
         ],
         "order": 1

@@ -16,7 +16,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -1773,6 +1773,74 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+
+
+class ContactsMergedAudit(Stream):
+
+    url = "/contacts/v1/contact/vids/batch/"
+    updated_at_field = "timestamp"
+    scopes = {"crm.objects.contacts.read"}
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config = kwargs
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Override get_json_schema defined in Stream class
+        Final object does not have properties field
+        We return JSON schema as defined in :
+        source_hubspot/schemas/contacts_merged_audit.json
+        """
+        return super(Stream, self).get_json_schema()
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+
+        slices = []
+
+        # we can query a max of 100 contacts at a time
+        max_contacts = 100
+        slices = []
+        contact_batch = []
+
+        contacts = Contacts(**self.config)
+        contacts._sync_mode = SyncMode.full_refresh
+        contacts.filter_old_records = False
+
+        for contact in contacts.read_records(sync_mode=SyncMode.full_refresh):
+            if contact["properties"].get("hs_merged_object_ids"):
+                contact_batch.append(contact["id"])
+
+                if len(contact_batch) == max_contacts:
+                    slices.append({"vid": contact_batch})
+                    contact_batch = []
+
+        if contact_batch:
+            slices.append({"vid": contact_batch})
+
+        return slices
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {"vid": stream_slice["vid"]}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        response = self._parse_response(response)
+        if response.get("status", None) == "error":
+            self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+            return
+
+        for contact_id in list(response.keys()):
+            yield from response[contact_id]["merge-audits"]
 
 
 class EngagementsCalls(CRMSearchStream):
