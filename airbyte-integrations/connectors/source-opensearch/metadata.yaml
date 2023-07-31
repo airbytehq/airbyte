@@ -10,6 +10,7 @@ data:
   githubIssueLabel: source-opensearch
   icon: opensearch.svg
   name: OpenSearch
+  license: MIT
   registries:
     cloud:
       enabled: false
