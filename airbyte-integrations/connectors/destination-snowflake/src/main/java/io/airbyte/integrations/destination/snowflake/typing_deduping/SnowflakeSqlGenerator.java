@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -14,13 +15,18 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
 
   public static final String QUOTE = "\"";
+
+  private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   @Override
   public StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride) {
@@ -122,7 +128,265 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String updateTable(StreamConfig stream, String finalSuffix, boolean verifyPrimaryKeys) {
-    return "";
+    String validatePrimaryKeys = "";
+    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+    }
+    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
+    String dedupFinalTable = "";
+    String cdcDeletes = "";
+    String dedupRawTable = "";
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
+      // If we're in dedup mode, then we must have a cursor
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get());
+      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+    }
+    final String commitRawTable = commitRawTable(stream.id());
+
+    return new StringSubstitutor(Map.of(
+        "validate_primary_keys", validatePrimaryKeys,
+        "insert_new_records", insertNewRecords,
+        "dedup_final_table", dedupFinalTable,
+        "cdc_deletes", cdcDeletes,
+        "dedupe_raw_table", dedupRawTable,
+        "commit_raw_table", commitRawTable)).replace(
+        """
+        BEGIN TRANSACTION;
+        ${validate_primary_keys}
+        ${insert_new_records}
+        ${dedup_final_table}
+        ${dedupe_raw_table}
+        ${cdc_deletes}
+        ${commit_raw_table}
+        COMMIT TRANSACTION;
+        """);
+  }
+
+  private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
+    if (airbyteType instanceof final Union u) {
+      // This is guaranteed to not be a Union, so we won't recurse infinitely
+      final AirbyteType chosenType = u.chooseType();
+      return extractAndCast(column, chosenType);
+    } else {
+      final String dialectType = toDialectType(airbyteType);
+      return switch (dialectType) {
+        // try_cast doesn't support variant/array/object, so handle them specially
+        case "VARIANT" -> "\"airbyte_data\":\"${column_name}\"";
+        // We need to validate that the struct is actually a struct.
+        // Note that struct columns are actually nullable in two ways. For a column `foo`:
+        // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
+        // JSON null).
+        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+            """
+            CASE
+              WHEN TYPEOF("airbyte_data":"${column_name}") != "OBJECT"
+                THEN NULL
+              ELSE "airbyte_data":"${column_name}"
+            END
+            """);
+        // Much like the object case, arrays need special handling.
+        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+            """
+            CASE
+              WHEN TYPEOF("airbyte_data":"${column_name}") != "ARRAY"
+                THEN NULL
+              ELSE "airbyte_data":"${column_name}"
+            END
+            """);
+        default -> "TRY_CAST(\"_airbyte_data\": \"" + column.originalName() + "\" as " + dialectType + ")";
+      };
+    }
+  }
+
+  @VisibleForTesting
+  String validatePrimaryKeys(final StreamId id,
+                             final List<ColumnId> primaryKeys,
+                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    final String pkNullChecks = primaryKeys.stream().map(
+        pk -> {
+          final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
+          return "AND " + jsonExtract + " IS NULL";
+        }).collect(joining("\n"));
+
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "pk_null_checks", pkNullChecks)).replace(
+        """
+        SET missing_pk_count = (
+          SELECT COUNT(1)
+          FROM ${raw_table_id}
+          WHERE
+            "_airbyte_loaded_at" IS NULL
+            ${pk_null_checks}
+          );
+
+        IF $missing_pk_count > 0 THEN
+          RAISE STATEMENT_ERROR;
+        END IF;
+        """);
+  }
+
+  @VisibleForTesting
+  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+    final String columnCasts = streamColumns.entrySet().stream().map(
+            col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+        .collect(joining("\n"));
+    final String columnErrors = streamColumns.entrySet().stream().map(
+        col -> new StringSubstitutor(Map.of(
+            "raw_col_name", col.getKey().originalName(),
+            "col_type", toDialectType(col.getValue()),
+            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+            // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
+            """
+                CASE
+                  WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
+                    AND (${json_extract} IS NULL)
+                    THEN ["Problem with `${raw_col_name}`"]
+                  ELSE []
+                END"""))
+        .reduce(
+            "ARRAY_CONSTRUCT()",
+            (acc, col) -> "ARRAY_CAT(" + acc + ", " + col + ")"
+        );
+    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+
+    String cdcConditionalOrIncludeStatement = "";
+    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+      cdcConditionalOrIncludeStatement = """
+      OR (
+        _airbyte_loaded_at IS NOT NULL
+        AND "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
+      )
+      """;
+    }
+
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "column_casts", columnCasts,
+        "column_errors", columnErrors,
+        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+        "column_list", columnList)).replace(
+        """
+            INSERT INTO ${final_table_id}
+            (
+            ${column_list}
+              "_airbyte_meta",
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at"
+            )
+            WITH intermediate_data AS (
+              SELECT
+            ${column_casts}
+            ${column_errors} as "_airbyte_cast_errors",
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at"
+              FROM ${raw_table_id}
+              WHERE
+                "_airbyte_loaded_at" IS NULL
+                ${cdcConditionalOrIncludeStatement}
+            )
+            SELECT
+            ${column_list}
+              OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_airbyte_meta",
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at"
+            FROM intermediate_data;""");
+  }
+
+  @VisibleForTesting
+  String dedupFinalTable(final StreamId id,
+                         final String finalSuffix,
+                         final List<ColumnId> primaryKey,
+                         final ColumnId cursor) {
+    final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+
+    return new StringSubstitutor(Map.of(
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "pk_list", pkList,
+        "cursor_name", cursor.name(QUOTE))
+    ).replace(
+        """
+        DELETE FROM ${final_table_id}
+        WHERE
+          "_airbyte_raw_id" IN (
+            SELECT "_airbyte_raw_id" FROM (
+              SELECT "_airbyte_raw_id", row_number() OVER (
+                PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, "_airbyte_extracted_at" DESC
+              ) as row_number FROM ${final_table_id}
+            )
+            WHERE row_number != 1
+          )
+        ;""");
+  }
+
+  @VisibleForTesting
+  String cdcDeletes(final StreamConfig stream,
+                    final String finalSuffix,
+                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP){
+      return "";
+    }
+
+    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+      return "";
+    }
+
+    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+
+    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
+    return new StringSubstitutor(Map.of(
+        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "raw_table_id", stream.id().rawTableId(QUOTE),
+        "pk_list", pkList,
+        "pk_extracts", pkCasts,
+        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)
+    ).replace(
+        """
+        DELETE FROM ${final_table_id}
+        WHERE
+          (${pk_list}) IN (
+            SELECT (
+                ${pk_extracts}
+              )
+            FROM  ${raw_table_id}
+            WHERE
+              "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
+          )
+        ;"""
+    );
+  }
+
+  @VisibleForTesting
+  String dedupRawTable(final StreamId id, final String finalSuffix) {
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE))).replace(
+        // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
+        // would be painful,
+        // and it only matters in a few edge cases.
+        """
+        DELETE FROM
+          ${raw_table_id}
+        WHERE
+          "_airbyte_raw_id" NOT IN (
+            SELECT "_airbyte_raw_id" FROM ${final_table_id}
+          )
+        ;""");
+  }
+
+  @VisibleForTesting
+  String commitRawTable(final StreamId id) {
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(QUOTE))).replace(
+        """
+        UPDATE ${raw_table_id}
+        SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
+        WHERE "_airbyte_loaded_at" IS NULL
+        ;""");
   }
 
   @Override
