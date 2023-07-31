@@ -10,6 +10,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -43,7 +44,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception {
     String tableName = StreamId.concatenateRawTableName(streamNamespace, streamName);
-    String schema = "airbyte";
+    String schema = getRawSchema();
     // TODO this was copied from SnowflakeInsertDestinationAcceptanceTest, refactor it maybe
     return database.bufferedResultSetQuery(
         connection -> {
@@ -77,12 +78,14 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
   @Override
   protected void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception {
+    // TODO create test class for raw schema override
     database.execute(
         String.format(
           """
-              DROP TABLE IF EXISTS airbyte.%s;
+              DROP TABLE IF EXISTS %s.%s;
               DROP SCHEMA IF EXISTS "%s" CASCADE
               """,
+            getRawSchema(),
             StreamId.concatenateRawTableName(streamNamespace, streamName),
             streamNamespace));
   }
@@ -90,5 +93,12 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected void globalTeardown() throws Exception {
     DataSourceFactory.close(dataSource);
+  }
+
+  /**
+   * Subclasses using a config with a nonstandard raw table schema should override this method.
+   */
+  protected String getRawSchema() {
+    return CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE;
   }
 }
