@@ -1,0 +1,7 @@
+{
+    "properties": {
+      "adId": {
+        "type": "integer"
+      }
+    }
+  }
