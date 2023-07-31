@@ -30,6 +30,7 @@ class InsightConfig(BaseModel):
     name: str = Field(
         title="Name",
         description="The name value of insight",
+        order=0
     )
 
     level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
@@ -38,18 +39,21 @@ class InsightConfig(BaseModel):
         title="Fields",
         description="A list of chosen fields for fields parameter",
         default=[],
+        order=1
     )
 
     breakdowns: Optional[List[ValidBreakdowns]] = Field(
         title="Breakdowns",
         description="A list of chosen breakdowns for breakdowns",
         default=[],
+        order=2
     )
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
         default=[],
+        order=3
     )
 
     action_report_time: str = Field(
@@ -61,6 +65,7 @@ class InsightConfig(BaseModel):
         ),
         default="mixed",
         enum=["conversion", "impression", "mixed"],
+        order=4
     )
 
     time_increment: Optional[PositiveInt] = Field(
@@ -71,6 +76,7 @@ class InsightConfig(BaseModel):
         ),
         exclusiveMaximum=90,
         default=1,
+        order=5
     )
 
     start_date: Optional[datetime] = Field(
@@ -78,6 +84,7 @@ class InsightConfig(BaseModel):
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
+        order=6
     )
 
     end_date: Optional[datetime] = Field(
@@ -89,6 +96,7 @@ class InsightConfig(BaseModel):
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
+        order=7
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
@@ -96,6 +104,7 @@ class InsightConfig(BaseModel):
         maximum=28,
         mininum=1,
         default=28,
+        order=8
     )
 
 
