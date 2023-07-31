@@ -6,72 +6,81 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 public class MockDestinationV1V2Migrator implements DestinationV1V2Migrator<String> {
 
   @Setter
   private MigrationResult migrationResultValue;
 
   @Setter
-  private boolean shouldMigrateValue;
+  private Boolean shouldMigrateValue;
 
   @Setter
-  private boolean doesV1RawTableMatchExpectedSchemaValue;
+  private Boolean doesV1RawTableMatchExpectedSchemaValue;
 
   @Setter
-  private boolean doesAirbyteInternalNamespaceRawTableMatchExpectedV2SchemaValue;
+  private Boolean doesAirbyteInternalNamespaceRawTableMatchExpectedV2SchemaValue;
 
   @Setter
-  private boolean isMigrationRequiredForSyncModeValue;
+  private Boolean isMigrationRequiredForSyncModeValue;
 
   @Setter
-  private boolean doesValidV2RawTableAlreadyExistValue;
+  private Boolean doesValidV2RawTableAlreadyExistValue;
 
   @Setter
-  private boolean doesValidV1RawTableExistValue;
+  private Boolean doesValidV1RawTableExistValue;
 
   @Setter
-  private boolean doesAirbyteInternalNamespaceExistValue;
+  private Boolean doesAirbyteInternalNamespaceExistValue;
 
   @Setter
-  private boolean schemaMatchesExpectationValue;
+  private Boolean schemaMatchesExpectationValue;
 
   @Setter
-  private boolean getTableIfExistsValue;
+  private String getTableIfExistsValue;
 
   @Setter
-  private boolean convertToV1RawNameValue;
+  private AirbyteStreamNameNamespacePair convertToV1RawNameValue;
 
-  @Override
-  public Optional<MigrationResult> migrateIfNecessary(SqlGenerator sqlGenerator, DestinationHandler destinationHandler,
-      StreamConfig streamConfig) {
-    return DestinationV1V2Migrator.super.migrateIfNecessary(sqlGenerator, destinationHandler, streamConfig);
+  public static MockDestinationV1V2Migrator shouldMigrateBuilder(final boolean isMigrationRequiredForSyncMode,
+      final boolean doesValidV2RawTableAlreadyExist,
+      final boolean doesValidV1RawTableExist) {
+    final var migrator = new MockDestinationV1V2Migrator();
+    migrator.setIsMigrationRequiredForSyncModeValue(isMigrationRequiredForSyncMode);
+    migrator.setDoesValidV2RawTableAlreadyExistValue(doesValidV2RawTableAlreadyExist);
+    migrator.setDoesValidV1RawTableExistValue(doesValidV1RawTableExist);
+    return migrator;
   }
 
   @Override
   public boolean shouldMigrate(StreamConfig streamConfig) {
-    return DestinationV1V2Migrator.super.shouldMigrate(streamConfig);
+    return overrideOrSuper(() -> DestinationV1V2Migrator.super.shouldMigrate(streamConfig), shouldMigrateValue);
   }
 
   @Override
   public MigrationResult migrate(SqlGenerator sqlGenerator, DestinationHandler destinationHandler, StreamConfig streamConfig) {
-    return DestinationV1V2Migrator.super.migrate(sqlGenerator, destinationHandler, streamConfig);
+    return overrideOrSuper(() -> DestinationV1V2Migrator.super.migrate(sqlGenerator, destinationHandler, streamConfig), migrationResultValue);
   }
 
   @Override
   public boolean doesV1RawTableMatchExpectedSchema(String existingV2AirbyteRawTable) {
-    return DestinationV1V2Migrator.super.doesV1RawTableMatchExpectedSchema(existingV2AirbyteRawTable);
+    return overrideOrSuper(() -> DestinationV1V2Migrator.super.doesV1RawTableMatchExpectedSchema(existingV2AirbyteRawTable),
+        doesV1RawTableMatchExpectedSchemaValue);
   }
 
   @Override
   public boolean doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(String existingV2AirbyteRawTable) {
-    return DestinationV1V2Migrator.super.doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(existingV2AirbyteRawTable);
+    return overrideOrSuper(() -> DestinationV1V2Migrator.super.doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(existingV2AirbyteRawTable),
+        doesAirbyteInternalNamespaceRawTableMatchExpectedV2SchemaValue);
   }
 
   @Override
   public boolean isMigrationRequiredForSyncMode(SyncMode syncMode, DestinationSyncMode destinationSyncMode) {
-    return DestinationV1V2Migrator.super.isMigrationRequiredForSyncMode(syncMode, destinationSyncMode);
+    return overrideOrSuper(() -> DestinationV1V2Migrator.super.isMigrationRequiredForSyncMode(syncMode, destinationSyncMode),
+        isMigrationRequiredForSyncModeValue);
   }
 
   @Override
@@ -86,22 +95,22 @@ public class MockDestinationV1V2Migrator implements DestinationV1V2Migrator<Stri
 
   @Override
   public boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) {
-    return false;
+    return doesAirbyteInternalNamespaceExistValue;
   }
 
   @Override
   public boolean schemaMatchesExpectation(String existingTable, Collection columns) {
-    return false;
+    return schemaMatchesExpectationValue;
   }
 
   @Override
   public Optional<String> getTableIfExists(AirbyteStreamNameNamespacePair nameAndNamespacePair) {
-    return Optional.empty();
+    return Optional.ofNullable(getTableIfExistsValue);
   }
 
   @Override
   public AirbyteStreamNameNamespacePair convertToV1RawName(StreamConfig streamConfig) {
-    return null;
+    return convertToV1RawNameValue;
   }
 
   private <T> T overrideOrSuper(Supplier<T> superMethod, T overrideValue) {

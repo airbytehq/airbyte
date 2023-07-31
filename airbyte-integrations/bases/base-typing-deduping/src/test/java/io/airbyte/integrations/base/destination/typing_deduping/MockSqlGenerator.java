@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+
 /**
  * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
@@ -44,4 +46,9 @@ class MockSqlGenerator implements SqlGenerator<String> {
     return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId(finalSuffix, "");
   }
 
+  @Override
+  public String migrateFromV1toV2(final StreamConfig stream, final AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace) {
+    return "MIGRATE TABLE " + String.join(".", v1RawTableNameAndNamespace.getNamespace(), v1RawTableNameAndNamespace.getName()) + " TO " + stream.id()
+        .rawTableId("");
+  }
 }

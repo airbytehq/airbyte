@@ -67,7 +67,7 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
         try {
             destinationHandler.execute(migrateAndReset);
         } catch (Exception e) {
-            final var message = "Attempted and failed to migrate stream {}".formatted(streamConfig.id().finalName());
+            final var message = "Attempted and failed to migrate stream %s".formatted(streamConfig.id().finalName());
             throw new TableNotMigratedException(message, e);
         }
         return new MigrationResult(true);
