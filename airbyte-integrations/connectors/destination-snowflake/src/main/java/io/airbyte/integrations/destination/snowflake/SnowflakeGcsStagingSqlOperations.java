@@ -167,7 +167,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
     return String.format(
         "COPY INTO %s.%s FROM '%s' storage_integration = gcs_airbyte_integration "
-            + " file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+            + " file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF=('') ) "
             + generateFilesList(stagedFiles) + ";",
         schemaName,
         dstTableName,
