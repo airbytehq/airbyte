@@ -5,46 +5,49 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_snapchat_marketing/spec.json"
+      - spec_path: "source_snapchat_marketing/spec.json"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      empty_streams:
-      - name: "adaccounts_stats_lifetime"
-        bypass_reason: "The data changes from sync to sync"
-      - name: "ads_stats_lifetime"
-        bypass_reason: "The data changes from sync to sync"
-      - name: "adsquads_stats_lifetime"
-        bypass_reason: "The data changes from sync to sync"
-      - name: "campaigns_stats_lifetime"
-        bypass_reason: "The data changes from sync to sync"
-      fail_on_extra_columns: false
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: "adaccounts_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "ads_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "adsquads_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "campaigns_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+        fail_on_extra_columns: false
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/incremental_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_daily.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state_daily.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_daily.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state_daily.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_lifetime.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_daily.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_lifetime.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_daily.json"

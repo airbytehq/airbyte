@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 325e0640-e7b3-4e24-b823-3361008f603f
@@ -13,6 +8,13 @@ data:
   icon: zendesk-sunshine.svg
   license: MIT
   name: Zendesk Sunshine
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

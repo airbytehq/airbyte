@@ -14,20 +14,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
+import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
 
   private static final ObjectMapper mapper = MoreMappers.initMapper();
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+  }
 
   private static Stream<Arguments> urlsDataProvider() {
     return Stream.of(
@@ -38,7 +56,8 @@ public class SnowflakeDestinationTest {
         arguments("https://acme-marketing.test-account.snowflakecomputing.com", true),
 
         // Legacy style (account locator in a region)
-        // Some examples taken from https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
+        // Some examples taken from
+        // https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
         arguments("xy12345.snowflakecomputing.com", true),
         arguments("xy12345.us-gov-west-1.aws.snowflakecomputing.com", true),
         arguments("xy12345.us-east-1.aws.snowflakecomputing.com", true),
@@ -66,7 +85,7 @@ public class SnowflakeDestinationTest {
     final ConnectorSpecification spec = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
     final Pattern pattern = Pattern.compile(spec.getConnectionSpecification().get("properties").get("host").get("pattern").asText());
 
-    Matcher matcher = pattern.matcher(url);
+    final Matcher matcher = pattern.matcher(url);
     assertEquals(isMatch, matcher.find());
   }
 
@@ -121,5 +140,52 @@ public class SnowflakeDestinationTest {
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
+
+  @Test
+  void testWriteSnowflakeInternal() throws Exception {
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
+    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
+        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
+    assertEquals(AsyncStreamConsumer.class, consumer.getClass());
+  }
+
+  static class TestEnableAsyncArgumentsProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+      final var mapper = new ObjectMapper();
+      final var standard = mapper.createObjectNode();
+      final var internalStagingSpace = mapper.createObjectNode();
+      final var internalStagingSpaceCapital = mapper.createObjectNode();
+      final var internalStagingDash = mapper.createObjectNode();
+      final var internalStagingUnderscore = mapper.createObjectNode();
+      final var noLoadingMethod = mapper.createObjectNode();
+      standard.put("loading_method", mapper.createObjectNode().put("method", "standard"));
+      internalStagingSpace.put("loading_method", mapper.createObjectNode().put("method", "internal staging"));
+      internalStagingSpaceCapital.put("loading_method", mapper.createObjectNode().put("method", "INTERNAL STAGING"));
+      internalStagingDash.put("loading_method", mapper.createObjectNode().put("method", "internal-staging"));
+      internalStagingUnderscore.put("loading_method", mapper.createObjectNode().put("method", "internal_staging"));
+      noLoadingMethod.put("loading_method", "standard");
+
+      return Stream.of(
+              Arguments.of(standard, false),
+              Arguments.of(internalStagingSpace, true),
+              Arguments.of(internalStagingSpaceCapital, true),
+              Arguments.of(internalStagingDash, true),
+              Arguments.of(internalStagingUnderscore, true),
+              Arguments.of(mapper.createObjectNode(), false),
+              Arguments.of(noLoadingMethod, false)
+      );
+    }
+  }
+
+
+  @ParameterizedTest
+  @ArgumentsSource(TestEnableAsyncArgumentsProvider.class)
+  public void testEnableAsync(final JsonNode config, boolean expected) {
+    final var actual = SnowflakeDestination.useAsyncSnowflake(config);
+    Assertions.assertEquals(expected, actual);
+  }
+
 
 }

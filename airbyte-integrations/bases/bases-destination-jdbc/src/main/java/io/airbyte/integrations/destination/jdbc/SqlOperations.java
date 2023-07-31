@@ -137,21 +137,4 @@ public interface SqlOperations {
    */
   boolean isSchemaRequired();
 
-  /**
-   * The method is responsible for executing some specific DB Engine logic in onClose method. We can
-   * override this method to execute specific logic e.g. to handle any necessary migrations in the
-   * destination, etc.
-   * <p>
-   * In next example you can see how migration from VARCHAR to SUPER column is handled for the
-   * Redshift destination:
-   *
-   * @param database - Database that the connector is interacting with
-   * @param writeConfigs - schemas and tables (streams) will be discovered
-   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
-   */
-  default void onDestinationCloseOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigs) {
-    // do nothing
-    LOGGER.info("No onDestinationCloseOperations required for this destination.");
-  }
-
 }

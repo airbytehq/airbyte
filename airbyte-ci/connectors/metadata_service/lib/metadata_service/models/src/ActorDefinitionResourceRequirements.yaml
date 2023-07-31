@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte-types/blob/master/models/src/main/resources/ActorDefinitionResourceRequirements.yaml
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ActorDefinitionResourceRequirements.yaml
 title: ActorDefinitionResourceRequirements
 description: actor definition specific resource requirements
 type: object

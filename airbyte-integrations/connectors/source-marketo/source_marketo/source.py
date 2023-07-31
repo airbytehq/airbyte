@@ -130,7 +130,7 @@ class IncrementalMarketoStream(MarketoStream):
         date_slices = []
 
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
-        while start_date <= end_date:
+        while start_date < end_date:
             # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
 
@@ -497,6 +497,29 @@ class Lists(SemiIncrementalMarketoStream):
     """
 
 
+class Segmentations(MarketoStream):
+    """
+    This stream is similar to Programs but don't support to filter using created or update at parameters
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
+    """
+
+    page_size = 200
+    offset = 0
+
+    def __init__(self, config: Mapping[str, Any]):
+        super().__init__(config)
+
+    def path(self, **kwargs) -> str:
+        return "rest/asset/v1/segmentation.json"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get(self.data_field)
+
+        if data:
+            self.offset += self.page_size + 1
+            return {"offset": self.offset}
+
+
 class MarketoAuthenticator(Oauth2Authenticator):
     def __init__(self, config):
         super().__init__(
@@ -553,7 +576,7 @@ class SourceMarketo(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
 
-        streams = [ActivityTypes(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
+        streams = [ActivityTypes(config), Segmentations(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
 
         # create dynamically activities by activity type id
         for activity in ActivityTypes(config).read_records(sync_mode=None):

@@ -44,6 +44,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
+        advanced_stream_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -173,6 +174,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
+        advanced_stream_options: Optional[str],
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -185,6 +187,9 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
+        self._advanced_stream_options = dict()
+        if advanced_stream_options is not None:
+            self._advanced_stream_options = json_lib.loads(advanced_stream_options)
 
     @property
     def url_base(self) -> str:
@@ -434,6 +439,31 @@ class FbaOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+
+
+class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
+    """
+
+    name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+
+
+class OrderReportDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
+    """
+
+    name = "GET_ORDER_REPORT_DATA_SHIPPING"
+
+    def parse_document(self, document):
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
+        result = []
+        for report in reports:
+            result.append(report.get("OrderReport", {}))
+
+        return result
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
@@ -915,6 +945,15 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.name in self._advanced_stream_options.keys():
+            _options: dict = self._advanced_stream_options[self.name]
+            if isinstance(_options, dict):
+                for _option_attr, _option_val in _options.items():
+                    setattr(self, _option_attr, _option_val)
+
 
 class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
@@ -1126,3 +1165,11 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+
+class FbaReimbursementsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
+    """
+
+    name = "GET_FBA_REIMBURSEMENTS_DATA"

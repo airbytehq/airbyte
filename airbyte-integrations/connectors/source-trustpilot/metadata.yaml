@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
@@ -13,6 +8,13 @@ data:
   icon: trustpilot.svg
   license: MIT
   name: TrustPilot
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/trustpilot
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trustpilot
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

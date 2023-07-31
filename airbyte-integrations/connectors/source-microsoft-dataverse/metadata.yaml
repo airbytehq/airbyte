@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
@@ -13,6 +8,13 @@ data:
   icon: microsoftdataverse.svg
   license: MIT
   name: Microsoft Dataverse
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

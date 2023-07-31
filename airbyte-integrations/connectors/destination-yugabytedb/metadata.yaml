@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 2300fdcf-a532-419f-9f24-a014336e7966
@@ -13,6 +8,13 @@ data:
   icon: yugabytedb.svg
   license: MIT
   name: YugabyteDB
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

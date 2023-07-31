@@ -1,0 +1,130 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_FBA_REIMBURSEMENTS_DATA",
+        "json_schema": {
+          "title": "FBA Reimbursements Data",
+          "description": "FBA Reimbursements Data Reports",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "approval-date": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "reimbursement-id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "case-id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "amazon-order-id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "reason": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "sku": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "fnsku": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "asin": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "product-name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "condition": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "currency-unit": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "amount-per-unit": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "quantity-reimbursed-cash": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "amount-total": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "quantity-reimbursed-inventory": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "quantity-reimbursed-total": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "original-reimbursement-id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "original-reimbursement-type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

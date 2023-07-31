@@ -119,45 +119,12 @@ definitions:
       primary_key: "date"
       path: "/2/users"
 
-  events_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          start: "{{format_datetime(stream_slice.start_time, '%Y%m%dT%H') }}"
-          end: "{{format_datetime(stream_slice.end_time, '%Y%m%dT%H') }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_amplitude.components.EventsExtractor
-        record_filter:
-          condition: "{{ record[parameters['stream_cursor_field']] > stream_state.get(parameters['stream_cursor_field'],config['start_date']) }}"
-    incremental_sync:
-      $ref: "#/definitions/datetime_incremental_sync"
-      step: "PT{{config.get('request_time_range', 4)}}H"
-      cursor_field: "{{ parameters.get('stream_cursor_field') }}"
-      cursor_granularity: PT1H
-      start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      end_datetime:
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    $parameters:
-      name: "events"
-      primary_key: "uuid"
-      path: "/2/export"
-      stream_cursor_field: "server_upload_time"
 
 streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohorts_stream"
   - "#/definitions/average_session_length_stream"
   - "#/definitions/active_users_stream"
-  - "#/definitions/events_stream"
 
 check:
   stream_names:

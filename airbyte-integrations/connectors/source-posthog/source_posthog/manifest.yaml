@@ -129,7 +129,13 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      class_name: source_posthog.components.EventsSimpleRetriever
+      transformations:
+        - class_name: "source_posthog.components.EventsSimpleRetriever"
+          fields:
+            - path: [ "name"]
+              value: "{{ parameters['name'] }}"
+            - path: [ "primary_key"]
+              value: "{{ parameters['primary_key'] }}"
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"
       record_selector:
@@ -145,7 +151,7 @@ definitions:
         pagination_strategy:
           type: "CursorPagination"
           cursor_value: "{{ response['next'] }}"
-          page_size: 100
+          page_size: 10000
         page_token_option:
           type: RequestPath
         $parameters:

@@ -8,6 +8,157 @@ This connector requires a JDBC driver to connect to the Databricks cluster. By u
 
 Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into an out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync an almost infinite number of streams with less than 500MB of memory.
 
+## Getting started
+
+## Databricks AWS Setup
+### 1. Create a Databricks Workspace
+- Follow Databricks guide [Create a workspace using the account console](https://docs.databricks.com/administration-guide/workspace/create-workspace.html#create-a-workspace-using-the-account-console).
+> **_IMPORTANT:_** Don't forget to create a [cross-account IAM role](https://docs.databricks.com/administration-guide/cloud-configurations/aws/iam-role.html#create-a-cross-account-iam-role) for workspaces
+
+> **_TIP:_** Alternatively use Databricks quickstart for new workspace
+> ![](../../.gitbook/assets/destination/databricks/databricks_workspace_quciksetup.png)
+
+### 2. Create a metastore and attach it to workspace
+> **_IMPORTANT:_** The metastore should be in the same region as the workspaces you want to use to access the data. Make sure that this matches the region of the cloud storage bucket you created earlier.
+
+#### Setup storage bucket and IAM role in AWS
+ Follow [Configure a storage bucket and IAM role in AWS](https://docs.databricks.com/data-governance/unity-catalog/get-started.html#configure-a-storage-bucket-and-iam-role-in-aws) to setup AWS bucket with necessary permissions.
+
+#### Create metastore
+- Login into Databricks [account console](https://accounts.cloud.databricks.com/login) with admin permissions.
+- Go to Data tab and hit Create metastore button:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_new_metastore.png)
+
+- Provide all necessary data and click Create:
+
+    ![](../../.gitbook/assets/destination/databricks/databrikcs_metastore_fields.png)
+  - `Name`
+  - `Region` The metastore should be in same region as the workspace.
+  - `S3 bucket path` created at [Setup storage bucket and IAM role in AWS](#setup-storage-bucket-and-iam-role-in-aws) step.
+  - `IAM role ARN` created at [Setup storage bucket and IAM role in AWS](#setup-storage-bucket-and-iam-role-in-aws) step. Example: `arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>`
+- Select the workspaces in `Assign to workspaces` tab and click Assign.
+
+### 3. Create Databricks SQL Warehouse
+> **_TIP:_** If you use Databricks cluster skip this step
+
+- Open the workspace tab and click on created workspace console:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_open_worspace.png)
+
+- Create SQL warehouse:
+
+- ![](../../.gitbook/assets/destination/databricks/databricks_new_warehouse.png)
+  - Switch to SQL tab
+  - Click New button
+  - Choose SQL Warehouse
+- After SQL warehouse was created we can it's Connection details to con
+
+### 4. Databricks SQL Warehouse connection details
+> **_TIP:_** If you use Databricks cluster skip this step
+
+- Open workspace console.
+- Go to SQL Warehouse section and open it
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+
+- Open Connection Details tab:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+
+> **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection
+
+### 5. Create Databricks Cluster
+> **_TIP:_** If you use Databricks SQL Warehouse skip this step
+
+- Open the workspace tab and click on created workspace console:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_open_worspace.png)
+
+- Create Cluster:
+
+  ![](../../.gitbook/assets/destination/databricks/databrick_new_cluster.png)
+
+    - Switch to Data science & Engineering
+    - Click New button
+    - Choose Cluster
+
+### 6. Databricks Cluster connection details
+> **_TIP:_** If you use Databricks SQL Warehouse skip this step
+
+- Open workspace console.
+- Go to Compute section under Data science & Engineering and click on cluster link:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_cluster_details_open.png)
+
+- Open Advanced options under Configuration, choose JDBC/ODBC tab:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_cluster_connection_details2.png)
+> **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection
+
+### 7. Create Databricks Token
+- Open workspace console.
+- Open User Settings, go to Access tokens tab and click Generate new token:
+
+  ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
+
+- In the new window put a comment (Optional) and lifetime:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
+
+> **_TIP:_** `Lifetime` can be set to `0`
+
+### 8. Adding External Locations (Optional)
+> **_TIP:_** Skip this step if no external data source is used.
+
+- Open workspace console.
+- Go to `Data` section, expand on `External Location` and click `Create Location` button:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_add_external_location.png)
+
+- Fill in the fields and click Create button:
+
+  ![](../../.gitbook/assets/destination/databricks/databricks_new_external_location.png)
+
+> **_TIP:_** The new `Storage credential` can be added in the `Storage Credentials` tab or use same as for Metastore.
+
+## Airbyte Setup
+### Databricks fields
+- `Agree to the Databricks JDBC Driver Terms & Conditions`  - [Databricks JDBC ODBC driver license](https://www.databricks.com/legal/jdbc-odbc-driver-license).
+- `Server Hostname` - can be taken from [4. Databricks SQL Warehouse connection details](#4-databricks-sql-warehouse-connection-details)  or [6. Databricks Cluster connection details](#6-databricks-cluster-connection-details) steps.
+- `HTTP Path` - can be taken from [4. Databricks SQL Warehouse connection details](#4-databricks-sql-warehouse-connection-details)  or [6. Databricks Cluster connection details](#6-databricks-cluster-connection-details) steps.
+- `Port` - can be taken from [4. Databricks SQL Warehouse connection details](#4-databricks-sql-warehouse-connection-details)  or [6. Databricks Cluster connection details](#6-databricks-cluster-connection-details) steps.
+- `Access Token` - can be taken from [7. Create Databricks Token](#7-create-databricks-token) step.
+
+### Data Source
+You could choose a data source type
+ - Managed tables
+ - Amazon S3 (External storage)
+ - Azure Blob Storage (External storage)
+
+#### Managed tables data source type
+
+Please check Databricks documentation about [What is managed tables](https://docs.databricks.com/lakehouse/data-objects.html#what-is-a-managed-table)
+
+> **_TIP:_** There is no addition setup should be done for this type.
+
+#### Amazon S3 data source type (External storage)
+> **_IMPORTANT:_** Make sure the `External Locations` has been added to the workspace. Check [Adding External Locations](#8-adding-external-locations-optional) step.
+
+Provide your Amazon S3 data:
+- `S3 Bucket Name` - The bucket name
+- `S3 Bucket Path` - Subdirectory under the above bucket to sync the data into
+- `S3 Bucket Region` - See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
+> **_IMPORTANT:_** The metastore should be in the same region as the workspaces you want to use to access the data. Make sure that this matches the region of the cloud storage bucket you created earlier.
+- `S3 Access Key ID` - Corresponding key to the above key id
+- `S3 Secret Access Key` -
+  - See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
+  - We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the bucket.
+- `S3 Filename pattern` - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't be recognized
+
+#### Azure Blob Storage data source type (External storage)
+> **_IMPORTANT:_** The work in progress.
+
 ## Sync Mode
 
 | Feature | Support | Notes |
@@ -16,14 +167,6 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 | Incremental - Append Sync | ✅ |  |
 | Incremental - Deduped History | ❌ |  |
 | Namespaces | ✅ |  |
-
-## Data Source
-### Managed table
-Please check Databricks documentation about [What is managed tables](https://docs.databricks.com/lakehouse/data-objects.html#what-is-a-managed-table)
-### External data source
-Databricks Delta Lake supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 and Azure Blob Storage are supported by this connector.
-
-Note: The [External data source](#external-data-source) is under development stage, and it is recommended to use [Managed tables](#managed-table) instead.
 
 ## Configuration
 
@@ -34,7 +177,8 @@ Note: The [External data source](#external-data-source) is under development sta
 |                     | Port                    | string  | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url).                                                                                                                                                                                             |
 |                     | Personal Access Token   | string  | Required. Example: `dapi0123456789abcdefghij0123456789AB`. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html).                                                                                                                                                                                                  |
 | General             | Databricks catalog      | string  | Optional. The name of the catalog. If not specified otherwise, the "hive_metastore" will be used.                                                                                                                                                                                                                                                           |
-|                     | Database schema         | string  | Optional. The default schema tables are written. If not specified otherwise, the "default" will be used.                                                                                                                                                                                                                                                    |
+|                     | Database schema         | string  | Optional. The default schema tables are written. If not specified otherwise, the "default" will be used.
+|                     | Schema evolution        | boolean | Optional. The connector enables automatic schema evolution in the destination tables.                                                                                                                                                                                                                                                      |
 |                     | Purge Staging Data      | boolean | The connector creates staging files and tables on S3 or Azure. By default, they will be purged when the data sync is complete. Set it to `false` for debugging purposes.                                                                                                                                                                                    |
 | Data Source - S3    | Bucket Name             | string  | Name of the bucket to sync data into.                                                                                                                                                                                                                                                                                                                       |
 |                     | Bucket Path             | string  | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                                                                                                  |
@@ -111,14 +255,6 @@ Each table will have the following columns:
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
-## Getting started
-
-### Requirements
-
-1. Credentials for a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
-2. Credentials for an S3 bucket or Azure container. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-3. Grant the Databricks cluster full access to the S3 bucket or Azure container. Or mount it as Databricks File System \(DBFS\). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
-
 ## Related tutorial
 Suppose you are interested in learning more about the Databricks connector or details on how the Delta Lake tables are created. You may want to consult the tutorial on [How to Load Data into Delta Lake on Databricks Lakehouse](https://airbyte.com/tutorials/load-data-into-delta-lake-on-databricks-lakehouse).
 
@@ -126,6 +262,9 @@ Suppose you are interested in learning more about the Databricks connector or de
 
 | Version | Date       | Pull Request                                                                                                                                                             | Subject                                                                                                                  |
 |:--------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0   | 2023-06-02 | [\#26942](https://github.com/airbytehq/airbyte/pull/26942)                                                                                                               | Support schema evolution                                                                                |
+| 1.0.2   | 2023-04-20 | [\#25366](https://github.com/airbytehq/airbyte/pull/25366)                                                                                                               | Fix default catalog to be `hive_metastore`                                                                               |
+| 1.0.1   | 2023-03-30 | [\#24657](https://github.com/airbytehq/airbyte/pull/24657)                                                                                                               | Fix support for external tables on S3                                                                                    |
 | 1.0.0   | 2023-03-21 | [\#23965](https://github.com/airbytehq/airbyte/pull/23965)                                                                                                               | Added: Managed table storage type, Databricks Catalog field                                                              |
 | 0.3.1   | 2022-10-15 | [\#18032](https://github.com/airbytehq/airbyte/pull/18032)                                                                                                               | Add `SSL=1` to the JDBC URL to ensure SSL connection.                                                                    |
 | 0.3.0   | 2022-10-14 | [\#15329](https://github.com/airbytehq/airbyte/pull/15329)                                                                                                               | Add support for Azure storage.                                                                                           |

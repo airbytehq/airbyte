@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
@@ -13,6 +8,13 @@ data:
   icon: cassandra.svg
   license: MIT
   name: Cassandra
+  registries:
+    cloud:
+      enabled: false # hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/cassandra
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/cassandra
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

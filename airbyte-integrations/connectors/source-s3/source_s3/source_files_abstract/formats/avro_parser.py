@@ -11,20 +11,20 @@ from source_s3.source_files_abstract.file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 
 # mapping from apache avro docs: https://avro.apache.org/docs/current/spec.html#schema_complex
-data_type_mapping = {
+AVRO_TO_JSON_DATA_TYPE_MAPPING = {
     "null": "null",
-    "boolean": "boolean",
-    "int": "integer",
-    "long": "integer",
-    "float": "number",
-    "double": "number",
-    "bytes": "string",
-    "string": "string",
-    "record": "object",
-    "enum": "string",
-    "array": "array",
-    "map": "object",
-    "fixed": "string",
+    "boolean": ["boolean", "null"],
+    "int": ["integer", "null"],
+    "long": ["integer", "null"],
+    "float": ["number", "null"],
+    "double": ["number", "null"],
+    "bytes": ["string", "null"],
+    "string": ["string", "null"],
+    "record": ["object", "null"],
+    "enum": ["string", "null"],
+    "array": ["array", "null"],
+    "map": ["object", "null"],
+    "fixed": ["string", "null"],
 }
 
 
@@ -36,28 +36,35 @@ class AvroParser(AbstractFileParser):
     def is_binary(self) -> bool:
         return True
 
-    def _parse_data_type(self, data_type_mapping: dict, avro_schema: dict) -> dict:
+    def avro_type_to_json_type(self, avro_type):
+        try:
+            return AVRO_TO_JSON_DATA_TYPE_MAPPING[avro_type]
+        except KeyError:
+            raise ValueError(f"Unknown Avro type: {avro_type}")
+
+    def avro_to_jsonschema(self, avro_schema: dict) -> dict:
         """Convert data types from avro to json format
-        :param data_type_mapping: mapping from avro to json data types
         :param avro_schema: schema comes with the avro file
         :return schema_dict with data types converted from avro to json standards
         """
-        schema_dict = {}
-        for i in avro_schema["fields"]:
-            data_type = i["type"]
-            # If field is nullable there will be a list of types and we need to make sure
-            # to map the whole list according to data_type_mapping
-            if isinstance(data_type, list):
-                schema_dict[i["name"]] = [data_type_mapping[dtype] for dtype in data_type]
-            # TODO: Figure out a better way to handle complex types.
-            # See https://github.com/airbytehq/airbyte/issues/23327
-            elif isinstance(data_type, dict):
-                schema_dict[i["name"]] = data_type_mapping[data_type["type"]]
-            elif data_type in data_type_mapping:
-                schema_dict[i["name"]] = data_type_mapping[data_type]
+        json_schema = {}
+        # Process Avro schema fields
+        for field in avro_schema["fields"]:
+            field_name = field["name"]
+            field_type = field["type"]
+            # Convert Avro types to JSON schema types
+            if isinstance(field_type, dict) and field_type.get("type") == "array":
+                field_schema = {"type": ["array", "null"], "items": self.avro_to_jsonschema(field_type.get("items"))}
+            elif isinstance(field_type, dict):
+                field_schema = {"type": ["object", "null"], **self.avro_to_jsonschema(field_type)}
+            elif isinstance(field_type, list) and [x.get("fields") for x in field_type if not isinstance(x, str)]:
+                # field_type = [x for x in field_type if x != 'null'][0]
+                field_schema = {"anyOf": [self.avro_to_jsonschema(t) for t in field_type]}
             else:
-                raise TypeError(f"unsupported data type: {data_type} found in avro file")
-        return schema_dict
+                field_type = [x for x in field_type if x != "null"][0] if isinstance(field_type, list) else field_type
+                field_schema = {"type": self.avro_type_to_json_type(field_type)}
+            json_schema[field_name] = field_schema
+        return json_schema
 
     def _get_avro_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """Extract schema for records
@@ -76,10 +83,10 @@ class AvroParser(AbstractFileParser):
         """Return schema
         :param file: file-like object (opened via StorageFile)
         :param file_info: file metadata
-        :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
+        :return: mapping of JsonSchema properties {columns:{"type": datatypes}}
         """
         avro_schema = self._get_avro_schema(file)
-        schema_dict = self._parse_data_type(data_type_mapping, avro_schema)
+        schema_dict = self.avro_to_jsonschema(avro_schema)
         return schema_dict
 
     def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:

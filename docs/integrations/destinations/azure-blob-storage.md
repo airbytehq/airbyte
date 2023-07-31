@@ -1,4 +1,4 @@
-# AzureBlobStorage
+# Azure Blob Storage
 
 ## Overview
 

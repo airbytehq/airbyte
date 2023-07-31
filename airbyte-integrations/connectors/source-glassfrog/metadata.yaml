@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
@@ -13,6 +8,13 @@ data:
   icon: glassfrog.svg
   license: MIT
   name: Glassfrog
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/glassfrog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/glassfrog
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

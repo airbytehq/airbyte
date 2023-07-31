@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.twitter.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
@@ -16,6 +11,14 @@ data:
   icon: twitter.svg
   license: MIT
   name: Twitter
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/twitter
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

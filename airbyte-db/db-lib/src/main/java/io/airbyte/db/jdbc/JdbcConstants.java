@@ -15,8 +15,10 @@ public final class JdbcConstants {
   public static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
   public static final String JDBC_COLUMN_TYPE_NAME = "TYPE_NAME";
   public static final String JDBC_COLUMN_SIZE = "COLUMN_SIZE";
+  public static final String JDBC_INDEX_NAME = "INDEX_NAME";
   public static final String JDBC_IS_NULLABLE = "IS_NULLABLE";
-
+  public static final String JDBC_DECIMAL_DIGITS = "DECIMAL_DIGITS";
+  public static final String JDBC_INDEX_NON_UNIQUE = "NON_UNIQUE";
   public static final String INTERNAL_SCHEMA_NAME = "schemaName";
   public static final String INTERNAL_TABLE_NAME = "tableName";
   public static final String INTERNAL_COLUMN_NAME = "columnName";
@@ -24,5 +26,6 @@ public final class JdbcConstants {
   public static final String INTERNAL_COLUMN_TYPE_NAME = "columnTypeName";
   public static final String INTERNAL_COLUMN_SIZE = "columnSize";
   public static final String INTERNAL_IS_NULLABLE = "isNullable";
+  public static final String INTERNAL_DECIMAL_DIGITS = "decimalDigits";
 
 }

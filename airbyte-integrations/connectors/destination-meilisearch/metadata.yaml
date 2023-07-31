@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: destination
   definitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
@@ -13,6 +8,13 @@ data:
   icon: meilisearch.svg
   license: MIT
   name: MeiliSearch
+  registries:
+    cloud:
+      enabled: false # hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/meilisearch
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/meilisearch
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

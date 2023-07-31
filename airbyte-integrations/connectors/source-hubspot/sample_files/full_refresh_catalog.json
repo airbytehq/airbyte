@@ -47,6 +47,15 @@
     },
     {
       "stream": {
+        "name": "contacts_merged_audit",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "deal_pipelines",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -102,6 +111,15 @@
     {
       "stream": {
         "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "goals",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

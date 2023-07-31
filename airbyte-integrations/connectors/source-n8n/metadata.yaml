@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
@@ -13,6 +8,14 @@ data:
   icon: n8n.svg
   license: MIT
   name: n8n
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/n8n
+  documentationUrl: https://docs.airbyte.com/integrations/sources/n8n
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

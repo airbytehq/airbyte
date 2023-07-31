@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - "*.chargebee.com"
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
@@ -16,6 +11,14 @@ data:
   icon: chargebee.svg
   license: MIT
   name: Chargebee
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/chargebee
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -70,13 +70,13 @@ You can use one or multiple workspaces with Airbyte Cloud.
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
-| Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
+| Multiple             | You can create multiple workspaces to allow certain users to access data in specific workspaces only. | Have to manage user access for each workspace individually. | 
  
 #### Billing
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
-| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example, different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+| Multiple             |  You can use the same payment method for all purchases. | It is generally recommended to use the same payment method card for each workspace.
 
 ### Switch between multiple workspaces
 
@@ -103,6 +103,7 @@ For individual connections, you can choose a data residency that is different fr
 :::note 
 
 While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+All your account information such as the name and email addresses of the Airbyte users are stored in the US as well.
 
 :::
 
@@ -140,17 +141,20 @@ To set up Slack notifications:
 
 ## Understand Airbyte Cloud limits
 
-Understanding the following limitations will help you better manage Airbyte Cloud:
+Airbyte Cloud limitations within the Cloud UI (does not apply to customers using [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api))
 
-* Max number of workspaces per user: 100
-* Max number of sources in a workspace: 100
-* Max number of destinations in a workspace: 100
-* Max number of connections in a workspace: 100
+* Max number of workspaces per user: 5*
+* Max number of sources in a workspace: 20*
+* Max number of destinations in a workspace: 20*
+* Max number of connections in a workspace: 20*
 * Max number of streams that can be returned by a source in a discover call: 1K
 * Max number of streams that can be configured to sync in a single connection: 1K
 * Size of a single record: 100MB
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
+
+*Limits on workspaces, sources, destinations and connections do not apply to customers of [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api). To learn more [contact us](https://airbyte.com/talk-to-sales)!
+
 
 ## View the sync summary
 The sync summary displays information about the data moved during a sync.

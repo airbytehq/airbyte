@@ -3,6 +3,41 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "application_fees" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": 10000000000 },
+      "stream_descriptor": { "name": "application_fees_refunds" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": 10000000000 },
+      "stream_descriptor": { "name": "authorizations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "cards" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "cardholders" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "charges" }
     }
   },
@@ -38,6 +73,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "persons" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "invoices" }
     }
   },
@@ -53,6 +95,13 @@
     "stream": {
       "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "transfers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "shipping_rates" }
     }
   },
   {
@@ -81,6 +130,13 @@
     "stream": {
       "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "payouts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "prices" }
     }
   },
   {
@@ -130,6 +186,55 @@
     "stream": {
       "stream_state": { "checkout_session_expires_at": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions_line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "reviews" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "setup_intents" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "top_ups" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "files" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "file_links" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "setup_attempts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "transactions" }
     }
   }
 ]

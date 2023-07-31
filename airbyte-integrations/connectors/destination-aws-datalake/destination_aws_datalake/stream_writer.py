@@ -275,7 +275,8 @@ class StreamWriter:
 
             if col_typ == "object":
                 properties = definition.get("properties")
-                if properties and self._is_invalid_struct_or_array(properties):
+                allow_additional_properties = definition.get("additionalProperties")
+                if properties and not allow_additional_properties and self._is_invalid_struct_or_array(properties):
                     object_props, _ = self._get_glue_dtypes_from_json_schema(properties)
                     result_typ = f"struct<{','.join([f'{k}:{v}' for k, v in object_props.items()])}>"
                 else:
@@ -289,6 +290,12 @@ class StreamWriter:
                     items = items[0]
 
                 raw_item_type = items.get("type")
+                airbyte_raw_item_type = items.get("airbyte_type")
+
+                # special case where the json schema type contradicts the airbyte type
+                if airbyte_raw_item_type and raw_item_type == "number" and airbyte_raw_item_type == "integer":
+                    raw_item_type = "integer"
+
                 item_type = self._get_json_schema_type(raw_item_type)
                 item_properties = items.get("properties")
 

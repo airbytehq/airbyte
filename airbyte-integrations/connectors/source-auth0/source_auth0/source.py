@@ -119,6 +119,10 @@ class IncrementalAuth0Stream(Auth0Stream, IncrementalMixin):
         yield from entities
 
 
+class Clients(Auth0Stream):
+    primary_key = "client_id"
+    resource_name = "clients"
+
 class Users(IncrementalAuth0Stream):
     min_id = "1900-01-01T00:00:00.000Z"
     primary_key = "user_id"
@@ -148,4 +152,4 @@ class SourceAuth0(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         initialization_params = {"authenticator": initialize_authenticator(config), "url_base": config.get("base_url")}
-        return [Users(**initialization_params)]
+        return [Clients(**initialization_params), Users(**initialization_params)]

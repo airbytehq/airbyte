@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
@@ -13,6 +8,13 @@ data:
   icon: awscloudtrail.svg
   license: MIT
   name: AWS CloudTrail
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

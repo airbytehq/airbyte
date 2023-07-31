@@ -2,6 +2,20 @@
   "streams": [
     {
       "stream": {
+        "name": "automations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["create_time"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["create_time"],
+      "primary_key": [["id"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "campaigns",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

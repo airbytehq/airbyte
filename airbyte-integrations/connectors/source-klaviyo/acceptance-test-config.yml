@@ -8,6 +8,10 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records.jsonl
         extra_records: true
+      ignored_fields:
+        email_templates:
+          - name: html
+            bypass_reason: unstable data
   connection:
     tests:
     - config_path: secrets/config.json
@@ -17,8 +21,6 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: secrets/config.json
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.11"
   full_refresh:
     tests:
     - config_path: secrets/config.json

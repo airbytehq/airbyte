@@ -5,7 +5,7 @@
     "title": "Dixa Spec",
     "type": "object",
     "required": ["api_token", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_token": {
         "type": "string",

@@ -126,6 +126,17 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract String getImageName();
 
+  protected boolean supportsInDestinationNormalization() {
+    return false;
+  }
+
+  protected Map<String, String> inDestinationNormalizationFlags(final boolean shouldNormalize) {
+    if (shouldNormalize && supportsInDestinationNormalization()) {
+      return Map.of("NORMALIZATION_TECHNIQUE", "LEGACY");
+    }
+    return Collections.emptyMap();
+  }
+
   private String getImageNameWithoutTag() {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
@@ -281,14 +292,6 @@ public abstract class DestinationAcceptanceTest {
     } else {
       return false;
     }
-  }
-
-  /**
-   * Override to return true if a destination implements size limits on record size (then destination
-   * should redefine getMaxRecordValueLimit() too)
-   */
-  protected boolean implementsRecordSizeLimitChecks() {
-    return false;
   }
 
   /**
@@ -827,66 +830,6 @@ public abstract class DestinationAcceptanceTest {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
-  /**
-   * This test is running a sync using the exchange rate catalog and messages. However it also
-   * generates and adds two extra messages with big records (near the destination limit as defined by
-   * getMaxValueLengthLimit()
-   * <p>
-   * The first big message should be small enough to fit into the destination while the second message
-   * would be too big and fails to replicate.
-   */
-  @Test
-  void testSyncVeryBigRecords() throws Exception {
-    if (!implementsRecordSizeLimitChecks()) {
-      return;
-    }
-
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
-            AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
-        catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
-        .collect(Collectors.toList());
-    // Add a big message that barely fits into the limits of the destination
-    messages.add(new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                // remove enough characters from max limit to fit the other columns and json characters
-                .put("currency", generateBigString(-150))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build()))));
-    // Add a big message that does not fit into the limits of the destination
-    final AirbyteMessage bigMessage = new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("id", 3)
-                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
-                .put("date", "2020-10-10T00:00:00Z")
-                .put("HKD", 10.5)
-                .put("NZD", 1.14)
-                .build())));
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteMessage> allMessages = new ArrayList<>();
-    allMessages.add(bigMessage);
-    allMessages.addAll(messages);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
   private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
     return RANDOM
@@ -1070,11 +1013,11 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final var namespace1 = "sourcenamespace";
+    final var namespace1 = Strings.addRandomSuffix("sourcenamespace", "_", 8);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
-    final var namespace2 = "diff_source_namespace";
+    final var namespace2 = Strings.addRandomSuffix("diff_sourcenamespace", "_", 8);;
     final var mapper = MoreMappers.initMapper();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream),
@@ -1340,7 +1283,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteDestination destination = getDestination();
 
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, inDestinationNormalizationFlags(runNormalization));
     messages.forEach(
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
@@ -1352,7 +1295,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    if (!runNormalization) {
+    if (!runNormalization || (runNormalization && supportsInDestinationNormalization())) {
       return destinationOutput;
     }
 
@@ -1543,7 +1486,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteDestination destination = getDestination();
 
     // Start destination
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, Collections.emptyMap());
 
     final AtomicInteger currentStreamNumber = new AtomicInteger(0);
     final AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);

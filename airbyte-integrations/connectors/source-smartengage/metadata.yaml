@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
@@ -13,6 +8,14 @@ data:
   icon: smartengage.svg
   license: MIT
   name: SmartEngage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import mock
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, SyncMode, TraceType
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+
+SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
 
 def test_declarative_stream():
@@ -23,8 +23,8 @@ def test_declarative_stream():
     records = [
         {"pk": 1234, "field": "value"},
         {"pk": 4567, "field": "different_value"},
-        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
-        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
     ]
     stream_slices = [
         {"date": "2021-01-01"},
@@ -37,10 +37,6 @@ def test_declarative_stream():
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
 
-    no_op_transform = mock.create_autospec(spec=RecordTransformation)
-    no_op_transform.transform = MagicMock(side_effect=lambda record, config, stream_slice, stream_state: record)
-    transformations = [no_op_transform]
-
     config = {"api_key": "open_sesame"}
 
     stream = DeclarativeStream(
@@ -50,7 +46,6 @@ def test_declarative_stream():
         schema_loader=schema_loader,
         retriever=retriever,
         config=config,
-        transformations=transformations,
         parameters={"cursor_field": "created_at"},
     )
 
@@ -62,9 +57,17 @@ def test_declarative_stream():
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
-    for transformation in transformations:
-        assert len(transformation.transform.call_args_list) == len(records)
-        expected_calls = [
-            call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records if isinstance(record, dict)
-        ]
-        transformation.transform.assert_has_calls(expected_calls, any_order=False)
+
+
+def test_state_checkpoint_interval():
+    stream = DeclarativeStream(
+        name="any name",
+        primary_key="any primary key",
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        config={},
+        parameters={},
+    )
+
+    assert stream.state_checkpoint_interval is None

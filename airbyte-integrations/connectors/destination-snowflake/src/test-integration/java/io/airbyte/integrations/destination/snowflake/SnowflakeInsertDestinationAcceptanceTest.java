@@ -19,6 +19,7 @@ import io.airbyte.configoss.StandardCheckConnectionOutput;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -35,6 +36,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,14 +51,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
       "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
 
-  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake."
-      + " Contact your local security administrator or please create a case with Snowflake Support or reach us on our support line";
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "is not allowed to access Snowflake. Contact your account administrator.";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
   private JsonNode config;
   private JdbcDatabase database;
   private DataSource dataSource;
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(getConfig());
+  }
 
   @Override
   protected String getImageName() {

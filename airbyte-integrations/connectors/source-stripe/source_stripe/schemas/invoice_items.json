@@ -105,7 +105,7 @@
       "type": ["null", "object"],
       "properties": {
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "start": {
           "type": ["null", "integer"]
@@ -149,6 +149,24 @@
       "type": ["null", "boolean"]
     },
     "subscription_item": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "$ref": "price.json"
+    },
+    "test_clock": {
+      "type": ["null", "string"]
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tax_rates": {
+      "$ref": "tax_rates.json"
+    },
+    "unit_amount_decimal": {
       "type": ["null", "string"]
     }
   }

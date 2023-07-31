@@ -110,7 +110,6 @@ class SurveymonkeyStream(HttpStream, ABC):
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
-
     state_checkpoint_interval = 1000
 
     @property
@@ -128,7 +127,6 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
 
 
 class SurveyIds(IncrementalSurveymonkeyStream):
-
     cursor_field = "date_modified"
 
     def path(self, **kwargs) -> str:
@@ -137,7 +135,7 @@ class SurveyIds(IncrementalSurveymonkeyStream):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort_order"] = "ASC"
-        params["sort_by"] = "date_modified"
+        params["sort_by"] = self.cursor_field
         params["per_page"] = 1000  # maybe as user input or bigger value
         since_value = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state.get(self.cursor_field) else self._start_date
 
@@ -219,7 +217,7 @@ class SurveyQuestions(SurveyIDSliceMixin, SurveymonkeyStream):
 
 class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
     """
-    Docs: https://developer.surveymonkey.com/api/v3/#survey-responses
+    Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses
     """
 
     cursor_field = "date_modified"
@@ -249,8 +247,18 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         current_stream_state[survey_id] = {self.cursor_field: state_value}
         return current_stream_state
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return next_page_token
+
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["sort_order"] = "ASC"
+        params["sort_by"] = self.cursor_field
+        # Max of 100 allowed per page. We use the highest
+        # possible value to reduce the number of API calls.
+        params["per_page"] = 100
 
         since_value_surv = stream_state.get(stream_slice["survey_id"])
         if since_value_surv:
@@ -262,3 +270,37 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
             since_value = self._start_date
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
         return params
+
+
+class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
+    """
+    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"surveys/{ stream_slice['survey_id'] }/collectors"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
+        for record in data:
+            record["survey_id"] = kwargs.get("stream_slice", {}).get("survey_id")
+            yield record
+
+
+class Collectors(SurveymonkeyStream):
+    """
+    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-
+    """
+
+    data_field = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"collectors/{stream_slice['collector_id']}"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
+
+        survey_collectors = SurveyCollectors(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_ids = survey_collectors.stream_slices(stream_state, **kwargs)
+        for slice in survey_ids:
+            for collector in survey_collectors.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=slice):
+                yield {"collector_id": collector["id"]}

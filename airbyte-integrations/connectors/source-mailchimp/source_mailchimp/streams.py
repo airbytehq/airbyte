@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -10,7 +10,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+
+logger = logging.getLogger("airbyte")
 
 
 class MailChimpStream(HttpStream, ABC):
@@ -63,6 +66,20 @@ class MailChimpStream(HttpStream, ABC):
     def data_field(self) -> str:
         """The responce entry that contains useful data"""
         pass
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
 
 
 class IncrementalMailChimpStream(MailChimpStream, ABC):
@@ -129,6 +146,16 @@ class Campaigns(IncrementalMailChimpStream):
         return "campaigns"
 
 
+class Automations(IncrementalMailChimpStream):
+    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/"""
+
+    cursor_field = "create_time"
+    data_field = "automations"
+
+    def path(self, **kwargs) -> str:
+        return "automations"
+
+
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     filter_field = "since"
@@ -179,14 +206,19 @@ class EmailActivity(IncrementalMailChimpStream):
         return current_stream_state
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Response returned with {response.status_code=}, {response.content=}")
+            response_json = {}
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
-        data = response_json[self.data_field]
+        data = response_json.get(self.data_field, [])
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
+
 
 class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"

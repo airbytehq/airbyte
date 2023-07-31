@@ -23,6 +23,14 @@ on:
         description: "Name of dataset to use for performance measurement. Currently supports 1m, 10m, 20m."
         required: false
         default: "1m"
+      stream-number:
+        description: "Number of streams to use for destination performance measurement."
+        required: false
+        default: "1"
+      sync-mode:
+        description: "Sync mode to use for destination performance measurement."
+        required: false
+        default: "full_refresh"
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -68,8 +76,11 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`
-            > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`,
+            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N`
+            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations.
+            For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
+            > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
@@ -81,9 +92,10 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' && 
-              github.event.inputs.connector != 'connectors/source-mysql' }}"
-        run: echo "Only connectors/source-postgres and source-mysql currently supported by harness" && exit 1
+        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
+              github.event.inputs.connector != 'connectors/source-mysql' &&
+              github.event.inputs.connector != 'connectors/destination-snowflake' }}"
+        run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -97,56 +109,74 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install CI scripts
-        # all CI python packages have the prefix "ci_"
         run: |
-          pip install --quiet -e ./tools/ci_*
-      - name: Write source-harness credentials
+          pip install pipx
+          pipx ensurepath
+          pipx install airbyte-ci/connectors/ci_credentials
+          pipx install airbyte-ci/connectors/connector_ops
+      - name: Source or Destination harness
+        id: which-harness
         run: |
-          ci_credentials connectors-performance/source-harness write-to-storage
+          the_harness="$(echo ${{github.event.inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
+          echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
+      - name: Write harness credentials
+        run: |
+          ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
       - name: build harness
         shell: bash
         run: |
-          echo "Building... source-harness" >> $GITHUB_STEP_SUMMARY
+          echo "Building... ${{ steps.which-harness.outputs.harness_type }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ./gradlew :airbyte-integrations:connectors-performance:source-harness:build -x check
+          ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
+        env:
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
       - name: build connector
         shell: bash
         run: |
           echo "Building... ${{github.event.inputs.connector}}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
-          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check" 
+          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
         with:
-          config: ./tools/bin/source-harness-kind-cluster-config.yaml
+          config: "./tools/bin/${{ steps.which-harness.outputs.harness_type }}-kind-cluster-config.yaml"
       - name: Run harness
         id: run-harness
         shell: bash
         env:
           CONN: ${{ github.event.inputs.connector }}
           DS: ${{ github.event.inputs.dataset }}
-          prefix: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
-          suffix: '"}}'
+          STREAM_NUMBER: ${{ github.event.inputs.stream-number }}
+          SYNC_MODE: ${{ github.event.inputs.sync-mode }}
+          PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
+          SUFFIX: '"}}'
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
           connector_name=$(echo $CONN | cut -d / -f 2)
           kind load docker-image airbyte/$connector_name:dev --name chart-testing
-          kind load docker-image airbyte/source-harness:dev --name chart-testing
+          kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
+          # envsubst requires variables to be exported
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
-          envsubst < ./tools/bin/source-harness-process.yaml | kubectl create -f -
-          POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
+          export STREAM_NUMBER=$STREAM_NUMBER
+          export SYNC_MODE=$SYNC_MODE
+          export HARNESS=$HARNESS_TYPE
+          envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
+          echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
+          POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
-          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$prefix"}; line=${line%"$suffix"}; echo $line >> $GITHUB_OUTPUT ; done 
+          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
@@ -154,7 +184,7 @@ jobs:
           reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            ## Performance test Result: 
+            ## Performance test Result:
             ```
             ${{ steps.run-harness.outputs.RUN_RESULT }}
             ```

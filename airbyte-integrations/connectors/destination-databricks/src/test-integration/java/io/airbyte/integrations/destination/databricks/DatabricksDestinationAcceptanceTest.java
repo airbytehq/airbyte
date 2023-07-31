@@ -48,12 +48,13 @@ public abstract class DatabricksDestinationAcceptanceTest extends DestinationAcc
       throws SQLException {
     final String tableName = nameTransformer.getIdentifier(streamName);
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.schema(), nameTransformer);
+    final String catalog = databricksConfig.catalog();
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       return database.query(ctx -> ctx.select(asterisk())
-          .from(String.format("%s.%s", schemaName, tableName))
+          .from(String.format("%s.%s.%s", catalog, schemaName, tableName))
           .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
           .fetch().stream()
           .map(record -> {

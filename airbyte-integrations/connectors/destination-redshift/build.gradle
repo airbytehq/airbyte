@@ -21,6 +21,7 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
@@ -39,4 +40,11 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-redshift')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+}
+
+tasks.named("airbyteDocker") {
+    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
+    // but it's also just simple to implement.
+    // this also goes away once airbyte-ci becomes a reality.
+    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDockerRedshift
 }

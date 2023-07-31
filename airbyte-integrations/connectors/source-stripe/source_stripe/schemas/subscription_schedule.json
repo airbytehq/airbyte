@@ -22,7 +22,16 @@
       "type": ["null", "integer"]
     },
     "current_phase": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "end_date": {
+          "type": ["null", "integer"]
+        },
+        "start_date": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "customer": {
       "type": ["null", "string"]
@@ -114,7 +123,7 @@
                       },
                       "created": {
                         "type": ["null", "string"],
-                        "format": "datetime"
+                        "format": "date-time"
                       },
                       "display_name": {
                         "type": ["null", "string"]
@@ -248,6 +257,9 @@
       "type": ["null", "string"]
     },
     "test_clock": {
+      "type": ["null", "string"]
+    },
+    "renewal_interval": {
       "type": ["null", "string"]
     }
   }

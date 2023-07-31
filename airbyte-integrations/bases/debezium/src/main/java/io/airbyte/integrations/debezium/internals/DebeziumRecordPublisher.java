@@ -59,7 +59,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
           // interacts with kafka. we want to ignore it.
           // more on the tombstone:
-          // https://debezium.io/documentation/reference/2.1/transformations/event-flattening.html
+          // https://debezium.io/documentation/reference/2.2/transformations/event-flattening.html
           if (e.value() != null) {
             try {
               queue.put(e);

@@ -24,7 +24,7 @@ class RequestOption:
     Describes an option to set on a request
 
     Attributes:
-        field_name (str): Describes the name of the parameter to inject. None if option_type == path. Required otherwise.
+        field_name (str): Describes the name of the parameter to inject
         inject_into (RequestOptionType): Describes where in the HTTP request to inject the parameter
     """
 

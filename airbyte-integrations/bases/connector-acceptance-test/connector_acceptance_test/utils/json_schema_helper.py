@@ -43,7 +43,7 @@ class CatalogField:
             return pendulum.parse(value)
         return value
 
-    def parse(self, record: Mapping[str, Any], path: Optional[List[str]] = None) -> Any:
+    def parse(self, record: Mapping[str, Any], path: Optional[List[Union[int, str]]] = None) -> Any:
         """Extract field value from the record and cast it to native type"""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
@@ -122,22 +122,22 @@ class JsonSchemaHelper:
             node = node[segment]
         return node
 
-    def get_parent_path(self, path: str) -> Any:
+    def get_parent_path(self, path: str, separator="/") -> Any:
         """
         Returns the parent path of the supplied path
         """
-        absolute_path = f"/{path}" if not path.startswith("/") else path
-        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        absolute_path = f"{separator}{path}" if not path.startswith(separator) else path
+        parent_path, _ = absolute_path.rsplit(sep=separator, maxsplit=1)
         return parent_path
 
-    def get_parent(self, path: str) -> Any:
+    def get_parent(self, path: str, separator="/") -> Any:
         """
         Returns the parent dict of a given path within the `obj` dict
         """
-        parent_path = self.get_parent_path(path)
+        parent_path = self.get_parent_path(path, separator=separator)
         if parent_path == "":
             return self._schema
-        return dpath.util.get(self._schema, parent_path)
+        return dpath.util.get(self._schema, parent_path, separator=separator)
 
     def find_nodes(self, keys: List[str]) -> List[List[Union[str, int]]]:
         """Find all paths that lead to nodes with the specified keys.
@@ -240,3 +240,12 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
 
     _scan_schema(schema)
     return paths
+
+
+def get_paths_in_connector_config(schema: dict) -> List[str]:
+    """
+    Traverse through the provided schema's values and extract the path_in_connector_config paths
+    :param properties: jsonschema containing values which may have path_in_connector_config attributes
+    :returns list of path_in_connector_config paths
+    """
+    return ["/" + "/".join(value["path_in_connector_config"]) for value in schema.values()]

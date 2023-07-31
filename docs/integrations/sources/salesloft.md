@@ -70,7 +70,7 @@ This connector outputs the following streams:
 * [Actions](https://developers.salesloft.com/api.html#!/Actions/get_v2_actions_json)
 * [Calls](https://developers.salesloft.com/api.html#!/Calls/get_v2_activities_calls_json)
 * [Emails Templates](https://developers.salesloft.com/api.html#!/Email_Templates/get_v2_email_templates_json)
-* [Emails Template Attachements](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json)
+* [Emails Template Attachements](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json) 
 * [Imports](https://developers.salesloft.com/api.html#!/Imports/get_v2_imports_json)
 * [Notes](https://developers.salesloft.com/api.html#!/Notes/get_v2_notes_json)
 * [Person Stages](https://developers.salesloft.com/api.html#!/Person_Stages/get_v2_person_stages_json)
@@ -82,6 +82,12 @@ This connector outputs the following streams:
 * [CRM Users](https://developers.salesloft.com/api.html#!/Crm_Users/get_v2_crm_users_json)
 * [Groups](https://developers.salesloft.com/api.html#!/Groups/get_v2_groups_json)
 * [Successes](https://developers.salesloft.com/api.html#!/Successes/get_v2_successes_json)
+* [Call Data Records](https://developers.salesloft.com/api.html#!/Call_Data_Records/get_v2_call_data_records_json)
+* [Call Dispositions](https://developers.salesloft.com/api.html#!/Call_Dispositions/get_v2_call_dispositions_json)
+* [Call Sentiments](https://developers.salesloft.com/api.html#!/Call_Sentiments/get_v2_call_sentiments_json)
+* [Custom Fields](https://developers.salesloft.com/api.html#!/Custom_Fields/get_v2_custom_fields_json)
+* [Meetings](https://developers.salesloft.com/api.html#!/Meetings/get_v2_meetings_json)
+* [Searches](https://developers.salesloft.com/api.html#!/Searches/post_v2_searches_json)
 
 ## Performance considerations
 
@@ -91,6 +97,9 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.2.0   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
+| 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
+| 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
 | 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
 | 0.1.6   | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification                        |
 | 0.1.5   | 2023-03-07 | [23828](https://github.com/airbytehq/airbyte/pull/23828) | Use `start_date` to filter data                                   |

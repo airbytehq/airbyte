@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
@@ -13,6 +8,13 @@ data:
   icon: pulsar.svg
   license: MIT
   name: RabbitMQ
+  registries:
+    cloud:
+      enabled: false # hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/rabbitmq
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/rabbitmq
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
