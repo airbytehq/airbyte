@@ -369,6 +369,7 @@ This command runs tests for the metadata service orchestrator.
 ## Changelog
 | Version | PR                                                        | Description                                                                                |
 | ------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 0.2.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI by wrapping `airbyte-ci` in `dagger run`.                    |
 | 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                            |
 | 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available. |
 
