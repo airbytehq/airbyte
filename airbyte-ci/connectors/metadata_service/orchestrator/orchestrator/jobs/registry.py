@@ -1,6 +1,6 @@
 from dagster import define_asset_job, AssetSelection, job, SkipReason, op
 from orchestrator.assets import registry_entry
-from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST
+from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, HIGH_QUEUE_PRIORITY
 
 oss_registry_inclusive = AssetSelection.keys("persisted_oss_registry", "specs_secrets_mask_yaml").upstream()
 generate_oss_registry = define_asset_job(name="generate_oss_registry", selection=oss_registry_inclusive)
@@ -44,7 +44,7 @@ def add_new_metadata_partitions_op(context):
     context.instance.add_dynamic_partitions(partition_name, new_etags_found)
 
 
-@job
+@job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
 def add_new_metadata_partitions():
     """
     This job is responsible for polling for new metadata files and adding their etag to the dynamic partition.
