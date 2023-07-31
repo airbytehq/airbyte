@@ -108,18 +108,18 @@ public class StagingConsumerFactory {
                                                                      final JsonNode config,
                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                      final boolean purgeStagingData,
-                                                                     final long memoryLimit ) {
+                                                                     final long memoryLimit) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
     return new AsyncStreamConsumer(
-            outputRecordCollector,
-            GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
-            // todo (cgardens) - wrapping the old close function to avoid more code churn.
-            () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
-            flusher,
-            catalog,
-            new BufferManager(memoryLimit));
+        outputRecordCollector,
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+        // todo (cgardens) - wrapping the old close function to avoid more code churn.
+        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
+        flusher,
+        catalog,
+        new BufferManager(memoryLimit));
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
