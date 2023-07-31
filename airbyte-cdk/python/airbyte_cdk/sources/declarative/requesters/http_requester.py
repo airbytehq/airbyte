@@ -399,7 +399,12 @@ class HttpRequester(Requester):
         response = self._send_with_retry(request, log_request=log_request, log_formatter=log_formatter)
         return self._validate_response(response)
 
-    def _send_with_retry(self, request: requests.PreparedRequest, log_request: bool = False, log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
+    def _send_with_retry(
+        self,
+        request: requests.PreparedRequest,
+        log_request: bool = False,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -432,7 +437,12 @@ class HttpRequester(Requester):
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request, log_request=log_request, log_formatter=log_formatter)  # type: ignore
 
-    def _send(self, request: requests.PreparedRequest, log_request: bool = False, log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
+    def _send(
+        self,
+        request: requests.PreparedRequest,
+        log_request: bool = False,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False

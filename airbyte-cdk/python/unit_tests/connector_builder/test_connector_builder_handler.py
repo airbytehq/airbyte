@@ -709,7 +709,7 @@ def _create_page(response_body):
     return _create_response(response_body, request)
 
 
-@patch.object(SimpleRetrieverTestReadDecorator, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
+@patch.object(requests.Session, "send", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -750,7 +750,7 @@ def test_read_source(mock_http_stream):
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
 
 
-@patch.object(SimpleRetrieverTestReadDecorator, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
+@patch.object(requests.Session, "send", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
 def test_read_source_single_page_single_slice(mock_http_stream):
     max_records = 100
     max_pages_per_slice = 1
