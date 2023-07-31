@@ -37,6 +37,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
@@ -53,6 +54,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
