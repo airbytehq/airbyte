@@ -10,7 +10,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileReadMode, FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pyarrow import Scalar
 
@@ -29,7 +29,7 @@ class ParquetParser(FileTypeParser):
 
         # Pyarrow can detect the schema of a parquet file by reading only its metadata.
         # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
-        parquet_file = pq.ParquetFile(stream_reader.open_file(file))
+        parquet_file = pq.ParquetFile(stream_reader.open_file(file, self.file_read_mode, logger))
         parquet_schema = parquet_file.schema_arrow
         schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type, parquet_format) for field in parquet_schema}
         return schema
@@ -44,13 +44,18 @@ class ParquetParser(FileTypeParser):
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
-        table = pq.read_table(stream_reader.open_file(file))
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+            table = pq.read_table(fp)
         for batch in table.to_batches():
             for i in range(batch.num_rows):
                 row_dict = {
                     column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in table.column_names
                 }
                 yield row_dict
+
+    @property
+    def file_read_mode(self) -> FileReadMode:
+        return FileReadMode.READ_BINARY
 
     @staticmethod
     def _to_output_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:
