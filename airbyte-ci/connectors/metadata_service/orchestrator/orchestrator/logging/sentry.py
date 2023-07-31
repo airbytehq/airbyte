@@ -2,10 +2,9 @@ import os
 import sentry_sdk
 import functools
 
-from dagster import OpExecutionContext, get_dagster_logger
+from dagster import OpExecutionContext, SensorEvaluationContext, get_dagster_logger
 
 sentry_logger = get_dagster_logger("sentry")
-
 
 def setup_dagster_sentry():
     """
@@ -52,7 +51,7 @@ def setup_dagster_sentry():
         )
 
 
-def log_asset_or_op_context(context: OpExecutionContext):
+def _log_asset_or_op_context(context: OpExecutionContext):
     """
     Capture Dagster OP context for Sentry Error handling
     """
@@ -74,46 +73,24 @@ def log_asset_or_op_context(context: OpExecutionContext):
     sentry_sdk.set_tag("run_id", context.run_id)
 
 
-def capture_asset_op_exceptions(func):
+def _log_sensor_context(context: SensorEvaluationContext):
     """
-    Note: This is nessesary as Dagster captures exceptions and logs them before Sentry can.
-
-    Captures exceptions thrown by Dagster Ops and forwards them to Sentry
-    before re-throwing them for Dagster.
-
-    Expects ops to receive Dagster context as the first argument,
-    but it will continue if it doesn't (it just won't get as much context).
-
-    It will log a unique ID that can be then entered into Sentry to find
-    the exception.
-
-    This should be used as a decorator between Dagster's `@op`, or `@asset`
-    and the function to be handled.
-
-    @op
-    @sentry.capture_asset_op_exceptions
-    def op_with_error(context):
-        raise Exception("Ahh!")
+    Capture Dagster Sensor context for Sentry Error handling
     """
+    sentry_sdk.add_breadcrumb(
+        category="dagster",
+        message=f"{context._sensor_name}",
+        level="info",
+        data={
+            "sensor_name": context._sensor_name,
+            "run_id": context.cursor,
+        },
+    )
 
-    @functools.wraps(func)
-    def wrapped_fn(*args, **kwargs):
-        try:
-            log_asset_or_op_context(args[0])
-        except (AttributeError, IndexError):
-            sentry_logger.warn("Sentry did not find execution context as the first arg")
+    sentry_sdk.set_tag("sensor_name", context._sensor_name)
+    sentry_sdk.set_tag("run_id", context.cursor)
 
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            event_id = sentry_sdk.capture_exception(e)
-            sentry_logger.info(f"Sentry captured an exception. Event ID: {event_id}")
-            raise e
-
-    return wrapped_fn
-
-
-def with_sentry_op_asset_transaction(context: OpExecutionContext):
+def _with_sentry_op_asset_transaction(context: OpExecutionContext):
     """
     Start or continue a Sentry transaction for the Dagster Op/Asset
     """
@@ -133,6 +110,57 @@ def with_sentry_op_asset_transaction(context: OpExecutionContext):
             name=job_name,
         )
 
+# DECORATORS
+
+def capture_asset_op_context(func):
+    """
+    Capture Dagster OP context for Sentry Error handling
+    """
+    @functools.wraps(func)
+    def wrapped_fn(*args, **kwargs):
+        context = kwargs["context"]
+        _log_asset_or_op_context(context)
+        return func(*args, **kwargs)
+
+    return wrapped_fn
+
+def capture_sensor_context(func):
+    """
+    Capture Dagster Sensor context for Sentry Error handling
+    """
+    @functools.wraps(func)
+    def wrapped_fn(*args, **kwargs):
+        _log_sensor_context(kwargs["context"])
+        return func(*args, **kwargs)
+
+    return wrapped_fn
+
+
+def capture_exceptions(func):
+    """
+    Note: This is nessesary as Dagster captures exceptions and logs them before Sentry can.
+
+    Captures exceptions thrown by Dagster Ops and forwards them to Sentry
+    before re-throwing them for Dagster.
+
+    Expects ops to receive Dagster context as the first argument,
+    but it will continue if it doesn't (it just won't get as much context).
+
+    It will log a unique ID that can be then entered into Sentry to find
+    the exception.
+    """
+
+    @functools.wraps(func)
+    def wrapped_fn(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            event_id = sentry_sdk.capture_exception(e)
+            sentry_logger.info(f"Sentry captured an exception. Event ID: {event_id}")
+            raise e
+
+    return wrapped_fn
+
 
 def start_sentry_transaction(func):
     """
@@ -140,18 +168,22 @@ def start_sentry_transaction(func):
     """
 
     def wrapped_fn(*args, **kwargs):
-        with with_sentry_op_asset_transaction(args[0]):
+        context = kwargs["context"]
+        with _with_sentry_op_asset_transaction(context):
             return func(*args, **kwargs)
 
     return wrapped_fn
 
 
 def ensure_context_arg(func):
+    """
+    Ensure that the Dagster Op/Asset has a context as the first argument.
+    """
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
         if len(args) == 0:
             raise Exception(
-                "No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument."
+                f"No context provided to Sentry Transaction for {func.__name__}. When using @instrument, ensure that the asset/op has a context as the first argument."
             )
         return func(*args, **kwargs)
 
@@ -175,7 +207,30 @@ def instrument_asset_op(func):
     @functools.wraps(func)
     @ensure_context_arg
     @start_sentry_transaction
-    @capture_asset_op_exceptions
+    @capture_asset_op_context
+    @capture_exceptions
+    def wrapped_fn(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapped_fn
+
+def instrument_sensor(func):
+    """
+    Instrument a Dagster Sensor with Sentry.
+
+    This should be used as a decorator after Dagster's `@sensor`
+    and the function to be handled.
+
+    This will start a Sentry transaction for the Sensor and capture
+    any exceptions thrown by the Sensor and forward them to Sentry
+    before re-throwing them for Dagster.
+
+    """
+
+
+    @functools.wraps(func)
+    @capture_sensor_context
+    @capture_exceptions
     def wrapped_fn(*args, **kwargs):
         return func(*args, **kwargs)
 
