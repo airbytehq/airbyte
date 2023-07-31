@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9" # This is set to 3.9 as currently there is an issue when deploying via dagster-cloud where a dependency does not have a prebuild wheel file for 3.10
 dagit = "^1.4.1"
 dagster = "^1.4.1"
 pandas = "^1.5.3"

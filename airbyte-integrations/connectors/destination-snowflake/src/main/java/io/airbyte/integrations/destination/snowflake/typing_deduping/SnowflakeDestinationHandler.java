@@ -80,4 +80,5 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
 
     LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
+
 }
