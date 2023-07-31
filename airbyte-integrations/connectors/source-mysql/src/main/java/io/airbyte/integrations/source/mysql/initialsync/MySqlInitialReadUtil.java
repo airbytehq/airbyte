@@ -1,6 +1,7 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
@@ -155,7 +156,7 @@ public class MySqlInitialReadUtil {
         }
 
         if (streamState.has(STATE_TYPE_KEY)) {
-          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("primary_key")) {
+          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(PRIMARY_KEY_STATE_TYPE)) {
             final PrimaryKeyLoadStatus primaryKeyLoadStatus = Jsons.object(streamState, PrimaryKeyLoadStatus.class);
             final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
                 streamDescriptor.getNamespace());

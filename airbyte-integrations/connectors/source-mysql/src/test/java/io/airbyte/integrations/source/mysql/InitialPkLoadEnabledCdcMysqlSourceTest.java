@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,6 +17,7 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlFeatureFlags;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -43,7 +45,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   @Override
   protected JsonNode getConfig() {
     final JsonNode config = super.getConfig();
-    ((ObjectNode) config).put("cdc_via_pk", true);
+    ((ObjectNode) config).put(MySqlFeatureFlags.CDC_VIA_PK, true);
     return config;
   }
 
@@ -85,7 +87,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
       if (i <= indexTillWhichExpectPkState) {
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals("primary_key", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else {
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
@@ -113,7 +115,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
-          assertEquals("primary_key", streamState.get(STATE_TYPE_KEY).asText());
+          assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
         } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
@@ -274,7 +276,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
-        assertEquals("primary_key", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+        assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else if (i == 5) {
         // 5th state message is the final state message emitted for the stream
         assertEquals(1, global.getStreamStates().size());
@@ -289,7 +291,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals("primary_key", c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
@@ -333,7 +335,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
             assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
-            assertEquals("primary_key", c.getStreamState().get(STATE_TYPE_KEY).asText());
+            assertEquals(PRIMARY_KEY_STATE_TYPE, c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
