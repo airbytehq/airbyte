@@ -5,8 +5,10 @@
 package io.airbyte.integrations.source.opensearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -17,6 +19,7 @@ public class OpenSearchUtils {
 
   public static AutoCloseableIterator<JsonNode> getDataIterator(final OpenSearchConnection connection,
                                                                 final AirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromAirbyteStream(stream);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         List<JsonNode> data = connection.getRecords(stream.getName());
@@ -24,7 +27,7 @@ public class OpenSearchUtils {
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(final AutoCloseableIterator<JsonNode> recordIterator,
