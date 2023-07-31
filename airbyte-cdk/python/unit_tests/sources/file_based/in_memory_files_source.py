@@ -27,9 +27,27 @@ from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from avro import datafile
 from pydantic import AnyUrl, Field
+from pydantic import AnyUrl, BaseModel, Field
 
 
-class InMemoryFilesSource(FileBasedSource):
+class InMemorySourceConfig(BaseModel):
+    start_date: Optional[str] = Field(
+        title="Start Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+        examples=["2021-01-01T00:00:00Z"],
+        format="date-time",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        order=1,
+    )
+
+class InMemorySpec(AbstractFileBasedSpec[InMemorySourceConfig]):
+    @classmethod
+    def documentation_url(cls) -> AnyUrl:
+        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
+
+
+
+class InMemoryFilesSource(FileBasedSource[InMemorySpec]):
     def __init__(
         self,
         files: Mapping[str, Any],
@@ -53,7 +71,6 @@ class InMemoryFilesSource(FileBasedSource):
         availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)  # type: ignore[assignment]
         super().__init__(
             stream_reader,
-            spec_class=InMemorySpec,
             catalog_path="fake_path" if catalog else None,
             availability_strategy=availability_strategy,
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
@@ -125,19 +142,6 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         return fh
 
 
-class InMemorySpec(AbstractFileBasedSpec):
-    @classmethod
-    def documentation_url(cls) -> AnyUrl:
-        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
-
-    start_date: Optional[str] = Field(
-        title="Start Date",
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-        examples=["2021-01-01T00:00:00Z"],
-        format="date-time",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        order=1,
-    )
 
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):

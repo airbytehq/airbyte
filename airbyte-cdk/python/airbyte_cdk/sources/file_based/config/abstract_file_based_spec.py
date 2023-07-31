@@ -4,14 +4,15 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TypeVar, Generic
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic import AnyUrl, BaseModel, Field
 
+SourceConfigType = TypeVar('SourceConfigType')
 
-class AbstractFileBasedSpec(BaseModel):
+class AbstractFileBasedSpec(BaseModel, Generic[SourceConfigType]):
     """
     Used during spec; allows the developer to configure the cloud provider specific options
     that are needed when users configure a file-based source.
@@ -22,6 +23,8 @@ class AbstractFileBasedSpec(BaseModel):
         description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
         order=10,
     )
+
+    source_config: SourceConfigType
 
     @classmethod
     @abstractmethod

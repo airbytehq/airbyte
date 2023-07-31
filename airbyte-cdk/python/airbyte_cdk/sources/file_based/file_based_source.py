@@ -5,7 +5,7 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Generic, TypeVar
 
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -26,11 +26,12 @@ from pydantic.error_wrappers import ValidationError
 DEFAULT_MAX_HISTORY_SIZE = 10_000
 
 
-class FileBasedSource(AbstractSource, ABC):
+SpecType = TypeVar('SpecType')
+
+class FileBasedSource(AbstractSource, ABC, Generic[SpecType]):
     def __init__(
         self,
         stream_reader: AbstractFileBasedStreamReader,
-        spec_class: Type[AbstractFileBasedSpec],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
@@ -39,7 +40,6 @@ class FileBasedSource(AbstractSource, ABC):
         max_history_size: int = DEFAULT_MAX_HISTORY_SIZE,
     ):
         self.stream_reader = stream_reader
-        self.spec_class = spec_class
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         self.discovery_policy = discovery_policy
         self.parsers = parsers
@@ -90,7 +90,7 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
-            parsed_config = self.spec_class(**config)
+            parsed_config = self._get_spec_class()(**config)
             self.stream_reader.config = parsed_config
             streams: List[Stream] = []
             for stream_config in parsed_config.streams:
@@ -117,10 +117,15 @@ class FileBasedSource(AbstractSource, ABC):
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
 
+        spec_class = self._get_spec_class()
+
         return ConnectorSpecification(
-            documentationUrl=self.spec_class.documentation_url(),
-            connectionSpecification=self.spec_class.schema(),
+            documentationUrl=spec_class.documentation_url(),
+            connectionSpecification=spec_class.schema(),
         )
+
+    def _get_spec_class(self) -> Type[SpecType]:
+        return self.__orig_bases__[0].__args__[0]
 
     def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) -> AbstractSchemaValidationPolicy:
         if stream_config.validation_policy not in self.validation_policies:
