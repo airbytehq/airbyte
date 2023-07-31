@@ -18,10 +18,12 @@
             "format": "date"
         },
         "report_generation_max_retries": {
-            "format": "number"
+            "type": "integer",
+            "default": 0
         },
         "report_wait_timeout": {
-            "format": "number"
+            "type": "integer",
+            "default": 0
         },
         "credentials": {
             "oneOf": [
