@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toMap;
 
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -112,7 +111,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     boolean sameColumns = actualColumns.equals(intendedColumns)
         && "VARCHAR".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.));
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_DATA));
 
     return sameColumns;
   }
