@@ -160,7 +160,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().createAsyncWithMemoryLimit(
+    return new StagingConsumerFactory().createAsyncWithOptimalBufferSize(
             outputRecordCollector,
             getDatabase(getDataSource(config)),
             new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
@@ -172,7 +172,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
             new NoopTyperDeduper(),
             // The parsedcatalog is only used in v2 mode, so just pass null for now
             null,
-            (long) (Runtime.getRuntime().maxMemory() * 0.8));
+            25 * 1024 * 1024);
   }
 
   /**

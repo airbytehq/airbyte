@@ -110,7 +110,7 @@ public class StagingConsumerFactory {
         new BufferManager());
   }
 
-  public SerializedAirbyteMessageConsumer createAsyncWithMemoryLimit(final Consumer<AirbyteMessage> outputRecordCollector,
+  public SerializedAirbyteMessageConsumer createAsyncWithOptimalBufferSize(final Consumer<AirbyteMessage> outputRecordCollector,
                                                                      final JdbcDatabase database,
                                                                      final StagingOperations stagingOperations,
                                                                      final NamingConventionTransformer namingResolver,
@@ -120,10 +120,10 @@ public class StagingConsumerFactory {
                                                                      TypeAndDedupeOperationValve typerDeduperValve,
                                                                      final TyperDeduper typerDeduper,
                                                                      final ParsedCatalog parsedCatalog,
-                                                                     final long memoryLimit) {
+                                                                     final long optimalBufferSize) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, optimalBufferSize);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
@@ -131,7 +131,7 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager(memoryLimit));
+        new BufferManager());
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
