@@ -632,6 +632,9 @@
         "null",
         "integer"
       ]
+    },
+    "effective_at": {
+      "type": ["null", "integer"]
     }
   }
 }
