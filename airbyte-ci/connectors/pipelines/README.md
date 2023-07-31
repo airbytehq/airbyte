@@ -367,9 +367,10 @@ This command runs tests for the metadata service orchestrator.
 `airbyte-ci metadata test orchestrator`
 
 ## Changelog
-| Version | PR  | Description                                                                                |
-| ------- | --- | ------------------------------------------------------------------------------------------ |
-| 0.1.0   |     | Alpha version not in production yet. All the commands described in this doc are available. |
+| Version | PR                                                        | Description                                                                                |
+| ------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 0.1.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                              |
+| 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available. |
 
 ## More info
 This project is owned by the Connectors Operations team.
