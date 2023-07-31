@@ -1,7 +1,0 @@
-{
-    "properties": {
-      "adGroupId": {
-        "type": "integer"
-      }
-    }
-  }
