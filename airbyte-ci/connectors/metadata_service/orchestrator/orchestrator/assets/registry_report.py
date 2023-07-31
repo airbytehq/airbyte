@@ -1,3 +1,4 @@
+import sentry_sdk
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 from typing import List
@@ -85,6 +86,7 @@ def test_summary_url(row: pd.DataFrame) -> str:
 # 📊 Dataframe Augmentation
 
 
+@sentry_sdk.trace
 def augment_and_normalize_connector_dataframes(
     cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primary_key: str, connector_type: str, github_connector_folders: List[str]
 ) -> pd.DataFrame:
@@ -131,7 +133,7 @@ def augment_and_normalize_connector_dataframes(
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
     latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
     sources = latest_cloud_registry_dict["sources"]
@@ -139,7 +141,7 @@ def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> Outpu
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def oss_sources_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
     latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
     sources = latest_oss_registry_dict["sources"]
@@ -147,7 +149,7 @@ def oss_sources_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDat
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
     latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
     destinations = latest_cloud_registry_dict["destinations"]
@@ -155,7 +157,7 @@ def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> 
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
     latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
     destinations = latest_oss_registry_dict["destinations"]
@@ -163,7 +165,7 @@ def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> Outp
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
@@ -179,7 +181,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github
 
 
 @asset(group_name=GROUP_NAME)
-@sentry.instrument
+@sentry.instrument_asset_op
 def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
@@ -195,6 +197,7 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
     """
     Generate a report of the connector registry.

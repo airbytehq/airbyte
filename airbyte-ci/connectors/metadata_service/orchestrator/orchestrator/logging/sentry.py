@@ -112,33 +112,66 @@ def capture_asset_op_exceptions(func):
 
     return wrapped_fn
 
+
 def with_sentry_op_asset_transaction(context: OpExecutionContext):
-    sentry_logger.info(f"Initializing Sentry Transaction for Dagster Op/Asset {context.job_name} - {context.op_def.name}")
-    return sentry_sdk.start_transaction(
-        op=context.op_def.name,
-        name=context.job_name,
-    )
+    """
+    Start or continue a Sentry transaction for the Dagster Op/Asset
+    """
+    op_name = context.op_def.name
+    job_name = context.job_name
+
+    sentry_logger.info(f"Initializing Sentry Transaction for Dagster Op/Asset {job_name} - {op_name}")
+    transaction = sentry_sdk.Hub.current.scope.transaction
+
+    if transaction:
+        return transaction.start_child(
+            op=op_name,
+        )
+    else:
+        return sentry_sdk.start_transaction(
+            op=op_name,
+            name=job_name,
+        )
+
 
 def start_sentry_transaction(func):
+    """
+    Start a Sentry transaction for the Dagster Op/Asset
+    """
+
     def wrapped_fn(*args, **kwargs):
         with with_sentry_op_asset_transaction(args[0]):
             return func(*args, **kwargs)
 
     return wrapped_fn
 
+
 def ensure_context_arg(func):
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
         if len(args) == 0:
-            raise Exception("No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument.")
+            raise Exception(
+                "No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument."
+            )
         return func(*args, **kwargs)
 
     return wrapped_fn
 
-def instrument(func):
+
+def instrument_asset_op(func):
     """
-    decorate the func with @capture_asset_op_exceptions and @sentry_sdk.trace
+    Instrument a Dagster Op/Asset with Sentry.
+
+    This should be used as a decorator after Dagster's `@op`, or `@asset`
+    and the function to be handled.
+
+    This will start a Sentry transaction for the Op/Asset and capture
+    any exceptions thrown by the Op/Asset and forward them to Sentry
+    before re-throwing them for Dagster.
+
+    This will also send traces to Sentry to help with debugging and performance monitoring.
     """
+
     @functools.wraps(func)
     @ensure_context_arg
     @start_sentry_transaction
