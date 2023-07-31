@@ -25,6 +25,7 @@ jobs:
       - name: Install ci-connector-ops package
         run: |
           pip install pipx
+          pipx ensurepath
           pipx install airbyte-ci/connectors/connector_ops
       - name: Write review requirements file
         id: write-review-requirements-file

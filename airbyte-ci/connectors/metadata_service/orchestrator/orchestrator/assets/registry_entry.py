@@ -10,7 +10,7 @@ from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue, AutoMaterializePolicy
 from pydash.objects import get
 
-from metadata_service.spec_cache import get_cached_spec
+from metadata_service.spec_cache import get_cached_spec, list_cached_specs
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
@@ -364,15 +364,15 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
-def registry_entry(
-    context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], cached_specs: pd.DataFrame
-) -> Output[Optional[dict]]:
+def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)
+
+    cached_specs = pd.DataFrame(list_cached_specs())
 
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)

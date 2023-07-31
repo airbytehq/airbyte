@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import anyio
 import asyncer
 from anyio import Path
+from pipelines import sentry_utils
+
 from connector_ops.utils import console
 from dagger import Container, DaggerError, QueryError
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -150,6 +152,7 @@ class Step(ABC):
             completion_event.set()
             return self._get_timed_out_step_result()
 
+    @sentry_utils.with_step_context
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
 
