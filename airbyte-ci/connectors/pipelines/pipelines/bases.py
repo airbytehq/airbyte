@@ -24,7 +24,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines import sentry_utils
 from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result, slugify
+from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -83,7 +83,6 @@ class Step(ABC):
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
     should_log: ClassVar[bool] = True
-    should_persist_stdout_stderr_logs: ClassVar[bool] = True
     success_exit_code: ClassVar[int] = 0
     skipped_exit_code: ClassVar[int] = None
     # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
@@ -204,36 +203,6 @@ class Step(ABC):
         """
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
 
-    async def write_log_files(self, stdout: Optional[str] = None, stderr: Optional[str] = None) -> List[Path]:
-        """Write stdout and stderr logs to a file in the connector code directory.
-
-        Args:
-            stdout (Optional[str], optional): The step final container stdout. Defaults to None.
-            stderr (Optional[str], optional): The step final container stderr. Defaults to None.
-
-        Returns:
-            List[Path]: The list of written log files.
-        """
-        if not stdout and not stderr:
-            return []
-
-        written_log_files = []
-        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs/{slugify(self.context.pipeline_name)}")
-        await log_directory.mkdir(exist_ok=True, parents=True)
-        if stdout:
-            # TODO alafanechere we could also log the stdout and stderr of the container in the pipeline context.
-            # It could be a nice alternative to the --show-dagger-logs flag.
-            stdout_log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}_stdout.log").resolve()
-            await stdout_log_path.write_text(stdout)
-            self.logger.info(f"stdout logs written to {stdout_log_path}")
-            written_log_files.append(stdout_log_path)
-        if stderr:
-            stderr_log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}_stderr.log").resolve()
-            await stderr_log_path.write_text(stderr)
-            self.logger.info(f"stderr logs written to {stderr_log_path}")
-            written_log_files.append(stderr_log_path)
-        return written_log_files
-
     def get_step_status_from_exit_code(
         self,
         exit_code: int,
@@ -268,8 +237,6 @@ class Step(ABC):
             StepResult: Failure or success with stdout and stderr.
         """
         exit_code, stdout, stderr = await get_exec_result(container)
-        if self.context.is_local and self.should_persist_stdout_stderr_logs:
-            await self.write_log_files(stdout, stderr)
         return StepResult(
             self,
             self.get_step_status_from_exit_code(exit_code),
