@@ -15,36 +15,34 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 ### For Airbyte Cloud:
 
-**To set up Facebook Marketing as a source in Airbyte Cloud:**
+#### To set up Facebook Marketing as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
-4. For Name, enter a name for your Facebook Marketing connector.
+3. Find and select **Facebook Marketing** from the list of available sources.
+4. For **Source name**, enter a name for your Facebook Marketing connector.
 
-**Facebook Marketing Source Settings:**
+#### Facebook Marketing Source Settings:
 
 1. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-2. Account ID: [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762): The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the [docs](https://www.facebook.com/business/help/1492627900875762) for more information.
-3. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+2. For **Account ID**, enter the [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
+3. For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
 
    :::warning
-   Insight tables are only able to pull data from 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
+   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
    :::
 
-4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The date until which you'd like to replicate data for all incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
-5. For **Access Token**, if you don't use OAuth. [Generate Access Token:](https://docs.airbyte.com/integrations/sources/facebook-marketing). The value of the generated access token. From your App’s Dashboard, click on "Marketing API" then "Tools". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". See the [docs](https://docs.airbyte.com/integrations/sources/facebook-marketing) for more information.
-6. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762): The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the [docs](https://www.facebook.com/business/help/1492627900875762) for more information.
-7. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
+4. For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+5. (Optional) Toggle the **Include Deleted Campaigns, Ads, and AdSets** button to include data from deleted Campaigns, Ads, and AdSets.
 
    :::info
    The Facebook Marketing API does not have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
    :::
 
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
-    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
-    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
+9. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
+
+To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook Marketing documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
 
     To configure Custom Insights:
 
