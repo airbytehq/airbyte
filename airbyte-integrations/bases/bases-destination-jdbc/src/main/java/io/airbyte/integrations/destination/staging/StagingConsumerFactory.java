@@ -125,12 +125,12 @@ public class StagingConsumerFactory {
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
     return new AsyncStreamConsumer(
-            outputRecordCollector,
-            GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
-            // todo (cgardens) - wrapping the old close function to avoid more code churn.
-            () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
-            flusher,
-            catalog,
+        outputRecordCollector,
+        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
+        // todo (cgardens) - wrapping the old close function to avoid more code churn.
+        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
+        flusher,
+        catalog,
         new BufferManager(memoryLimit));
   }
 
