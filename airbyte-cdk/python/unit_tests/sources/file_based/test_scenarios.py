@@ -291,6 +291,7 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
+    earlier_csv_scenario,
 ]
 
 

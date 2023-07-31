@@ -152,18 +152,17 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         elif self.config.schemaless:
             return schemaless_schema
         else:
-            all_files = self.list_files()
-            files_to_read = list(self._cursor.get_files_to_sync(all_files, self.logger))
-            total_n_files = len(files_to_read)
+            files = self.list_files()
+            total_n_files = len(files)
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-                files_to_read = sorted(files_to_read, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
                 self.logger.warn(
                     msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
                 )
 
-            inferred_schema = self.infer_schema(files_to_read)
+            inferred_schema = self.infer_schema(files)
 
             if not inferred_schema:
                 raise InvalidSchemaError(

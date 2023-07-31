@@ -104,9 +104,7 @@ class FileBasedSource(AbstractSource, ABC):
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
-                        cursor=DefaultFileBasedCursor(
-                            self.max_history_size, stream_config.days_to_sync_if_history_is_full, parsed_config.start_date
-                        ),
+                        cursor=DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
             return streams
