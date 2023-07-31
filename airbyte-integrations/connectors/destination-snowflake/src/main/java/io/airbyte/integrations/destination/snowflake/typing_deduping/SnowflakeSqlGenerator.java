@@ -96,12 +96,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String softReset(StreamConfig stream) {
-    return "";
+  public String updateTable(StreamConfig stream, String finalSuffix) {
+    return updateTable(stream, finalSuffix, true);
   }
 
-  @Override
-  public String updateTable(StreamConfig stream, String finalSuffix) {
+  private String updateTable(StreamConfig stream, String finalSuffix, boolean verifyPrimaryKeys) {
     return "";
   }
 
@@ -109,4 +108,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
     return "";
   }
+
+  @Override
+  public String softReset(StreamConfig stream) {
+    String createTempTable = createTable(stream, SOFT_RESET_SUFFIX);
+    String clearLoadedAt = clearLoadedAt(stream.id());
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
+    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+  }
+
+  private String clearLoadedAt(final StreamId streamId) {
+    return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
+        .replace("""
+            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL;
+            """);
+  }
+
 }
