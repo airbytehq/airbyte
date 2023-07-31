@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
+import sentry_sdk
 from google.cloud import storage
 
 from dagster import asset, OpExecutionContext, MetadataValue, Output
@@ -19,6 +20,7 @@ from typing import List
 GROUP_NAME = "registry"
 
 
+@sentry_sdk.trace
 def persist_registry_to_json(
     registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager
 ) -> GCSFileHandle:
@@ -38,7 +40,7 @@ def persist_registry_to_json(
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
-
+@sentry_sdk.trace
 def generate_and_persist_registry(
     registry_entry_file_blobs: List[storage.Blob],
     registry_directory_manager: GCSFileManager,

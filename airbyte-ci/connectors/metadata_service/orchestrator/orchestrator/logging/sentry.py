@@ -117,12 +117,6 @@ def with_sentry_op_asset_transaction(context: OpExecutionContext):
     return sentry_sdk.start_transaction(
         op=context.op_def.name,
         name=context.job_name,
-        tags={
-            "job_name": context.job_name,
-            "op_name": context.op_def.name,
-            "run_id": context.run_id,
-            "retry_number": context.retry_number,
-        },
     )
 
 def start_sentry_transaction(func):
