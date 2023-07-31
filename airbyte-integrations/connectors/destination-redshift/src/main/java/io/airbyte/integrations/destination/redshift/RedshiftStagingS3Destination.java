@@ -169,7 +169,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
             config,
             catalog,
             isPurgeStagingData(s3Options),
-            (long) (Runtime.getRuntime().maxMemory() * 0.6));
+            (long) (Runtime.getRuntime().maxMemory() * 0.7));
   }
 
   /**
