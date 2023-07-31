@@ -602,6 +602,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
     STREAM_SLICE_STEP = 30
+    _slice = None
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -626,6 +627,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
+            self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
 
@@ -674,10 +676,13 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        latest_benchmark = latest_record[self.cursor_field]
+        latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
+        slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get('end_date'))
+        max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+            max_cursor_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
+            max_possible_value = min(max_cursor_value, slice_max_value)
+        return {self.cursor_field: max_possible_value.isoformat()}
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
