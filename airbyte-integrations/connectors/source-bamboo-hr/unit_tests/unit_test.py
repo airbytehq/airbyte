@@ -6,7 +6,6 @@ import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import Status
 from source_bamboo_hr.source import CustomReportsStream, EmployeesDirectoryStream, SourceBambooHr
-
 from source_bamboo_hr.utils import validate_custom_fields
 
 

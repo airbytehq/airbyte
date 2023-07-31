@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import List, Text, Dict
+
+from typing import Dict, List, Text
 
 
 def convert_custom_reports_fields_to_list(custom_reports_fields: Text) -> List[Text]:
@@ -24,10 +25,12 @@ def validate_custom_fields(custom_fields: List[Text], available_fields: List[Dic
     denied_fields = []
     for custom_field in custom_fields:
         has_access_to_custom_field = any(
-            custom_field in [
+            custom_field
+            in [
                 available_field.get("name"),
                 available_field.get("alias"),
-            ] for available_field in available_fields
+            ]
+            for available_field in available_fields
         )
         if not has_access_to_custom_field:
             denied_fields.append(custom_field)
