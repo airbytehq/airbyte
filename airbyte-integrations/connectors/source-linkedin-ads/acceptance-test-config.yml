@@ -6,6 +6,7 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_linkedin_ads/spec.json"
+      config_path: "secrets/config_oauth.json"
   connection:
     tests:
     - config_path: "secrets/config_oauth.json"
