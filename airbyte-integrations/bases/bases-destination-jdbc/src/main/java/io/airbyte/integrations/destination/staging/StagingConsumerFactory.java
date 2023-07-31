@@ -114,21 +114,23 @@ public class StagingConsumerFactory {
                                                                      final JdbcDatabase database,
                                                                      final StagingOperations stagingOperations,
                                                                      final NamingConventionTransformer namingResolver,
-                                                                     final BufferCreateFunction onCreateBuffer,
                                                                      final JsonNode config,
                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                      final boolean purgeStagingData,
+                                                                     TypeAndDedupeOperationValve typerDeduperValve,
+                                                                     final TyperDeduper typerDeduper,
+                                                                     final ParsedCatalog parsedCatalog,
                                                                      final long memoryLimit) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
     return new AsyncStreamConsumer(
-        outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
-        // todo (cgardens) - wrapping the old close function to avoid more code churn.
-        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
-        flusher,
-        catalog,
+            outputRecordCollector,
+            GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
+            // todo (cgardens) - wrapping the old close function to avoid more code churn.
+            () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
+            flusher,
+            catalog,
         new BufferManager(memoryLimit));
   }
 

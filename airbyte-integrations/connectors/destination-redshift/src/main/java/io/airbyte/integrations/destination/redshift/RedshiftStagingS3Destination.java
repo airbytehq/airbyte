@@ -22,12 +22,9 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
-<<<<<<< HEAD
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-=======
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
->>>>>>> db24dbf5f6e1acde15a2623142620c6d1d4c59b1
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -41,7 +38,6 @@ import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -156,7 +152,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
-
     if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
       LOGGER.warn("""
                   Increasing the number of file buffers past {} can lead to increased performance but
@@ -170,10 +165,13 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
             getDatabase(getDataSource(config)),
             new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
             getNamingResolver(),
-            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
             config,
             catalog,
             isPurgeStagingData(s3Options),
+            new TypeAndDedupeOperationValve(),
+            new NoopTyperDeduper(),
+            // The parsedcatalog is only used in v2 mode, so just pass null for now
+            null,
             (long) (Runtime.getRuntime().maxMemory() * 0.7));
   }
 
