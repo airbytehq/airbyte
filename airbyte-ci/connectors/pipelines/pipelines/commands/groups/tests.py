@@ -52,7 +52,7 @@ async def run_test(airbyte_ci_package_path: str):
                 )
                 .with_workdir(f"/airbyte-ci/{airbyte_ci_package_path}")
                 .with_exec(["poetry", "install"])
-                .with_exec(["poetry", "run", "pytest", "tests/test_bases.py"])
+                .with_exec(["poetry", "run", "pytest", "tests"])
             ).stdout()
             logger.info("Successfully ran tests")
             logger.info(pytest_stdout)
