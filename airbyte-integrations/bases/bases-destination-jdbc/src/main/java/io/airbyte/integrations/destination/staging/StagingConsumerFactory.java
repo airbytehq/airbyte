@@ -100,6 +100,28 @@ public class StagingConsumerFactory {
         new BufferManager());
   }
 
+  public SerializedAirbyteMessageConsumer createAsyncWithCustomMemoryLimit(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                      final JdbcDatabase database,
+                                                      final StagingOperations stagingOperations,
+                                                      final NamingConventionTransformer namingResolver,
+                                                      final BufferCreateFunction onCreateBuffer,
+                                                      final JsonNode config,
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final boolean purgeStagingData,
+                                                                           final long memoryLimit ) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+    final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
+    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
+    return new AsyncStreamConsumer(
+            outputRecordCollector,
+            GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs),
+            // todo (cgardens) - wrapping the old close function to avoid more code churn.
+            () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
+            flusher,
+            catalog,
+            new BufferManager(memoryLimit));
+  }
+
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig = new HashMap<>();
