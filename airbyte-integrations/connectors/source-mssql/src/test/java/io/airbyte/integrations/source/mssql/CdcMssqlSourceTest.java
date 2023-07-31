@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_OP;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
@@ -374,6 +375,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
     data.remove(CDC_EVENT_SERIAL_NO);
+    data.remove(CDC_OP);
   }
 
   @Override
@@ -409,6 +411,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
     assertNull(data.get(CDC_EVENT_SERIAL_NO));
+    assertNull(data.get(CDC_OP));
   }
 
   @Override
@@ -416,6 +419,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNotNull(data.get(CDC_LSN));
     assertNotNull(data.get(CDC_EVENT_SERIAL_NO));
     assertNotNull(data.get(CDC_UPDATED_AT));
+    assertNotNull(data.get(CDC_OP));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
     } else {
@@ -433,6 +437,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
+    properties.set(CDC_OP, stringType);
 
   }
 
