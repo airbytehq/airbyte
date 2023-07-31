@@ -674,7 +674,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
-        object and returning an updated state object.
+        object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
         latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
         slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get('end_date'))
