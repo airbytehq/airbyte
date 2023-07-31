@@ -22,14 +22,13 @@ public class OpenSearchTypeMapper {
   private static final ObjectMapper mapper = new ObjectMapper();
   /*
    * Mapping from OpenSearch to Airbyte types OpenSearch data types:
-   * https://opensearch.org/docs/2.1/opensearch/supported-field-types/index/
-   * types: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+   * https://opensearch.org/docs/2.1/opensearch/supported-field-types/index/ types:
+   * https://docs.airbyte.com/understanding-airbyte/supported-data-types/
    *
-   * In OpenSearch, there is no dedicated array data type. Any field can contain zero or more
-   * values by default, however, all values in the array must be of the same data type
+   * In OpenSearch, there is no dedicated array data type. Any field can contain zero or more values
+   * by default, however, all values in the array must be of the same data type
    */
   private static final Map<String, Object> OpenSearchToAirbyte = new HashMap<>() {
-
 
     {
 
@@ -79,7 +78,6 @@ public class OpenSearchTypeMapper {
       put("ip", Arrays.asList("string", "array"));
       // Alias
       put("alias", Arrays.asList("string", "array"));
-
 
       // RANK
       put("rank_feature", "integer");

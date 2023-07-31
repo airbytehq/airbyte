@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 99732b19-4f5f-4528-9ffe-565bbd19d1de
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-opensearch
+  githubIssueLabel: source-opensearch
+  icon: opensearch.svg
+  name: OpenSearch
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/opensearch
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

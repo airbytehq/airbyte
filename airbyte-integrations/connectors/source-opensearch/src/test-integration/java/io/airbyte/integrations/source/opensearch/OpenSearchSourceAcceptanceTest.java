@@ -26,9 +26,9 @@ import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
+import org.opensearch.testcontainers.OpensearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensearch.testcontainers.OpensearchContainer;
 
 public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
