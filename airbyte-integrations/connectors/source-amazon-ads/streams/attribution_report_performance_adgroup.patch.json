@@ -1,10 +1,6 @@
 {
-    "required": [
-        "adGroupId"
-    ],
     "type": [
         "object"
     ],
-    
     "properties": {}
 }

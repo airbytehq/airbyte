@@ -1,9 +1,6 @@
 {
-    "required": [
-        "adGroupId"
+    "type": [
+        "object"
     ],
-    "type": ["object"],
-    "properties": {
-        
-    }
+    "properties": {}
 }
