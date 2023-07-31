@@ -102,22 +102,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     COLUMNS.put(GENERATOR.buildColumnId("date"), AirbyteProtocolType.DATE);
     COLUMNS.put(GENERATOR.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
 
-    CDC_COLUMNS = new LinkedHashMap<>();
-    CDC_COLUMNS.put(ID_COLUMN, AirbyteProtocolType.INTEGER);
-    CDC_COLUMNS.put(CDC_CURSOR, AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS = new LinkedHashMap<>(COLUMNS);
     CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("struct"), new Struct(new LinkedHashMap<>()));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("array"), new Array(AirbyteProtocolType.UNKNOWN));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("string"), AirbyteProtocolType.STRING);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("number"), AirbyteProtocolType.NUMBER);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("integer"), AirbyteProtocolType.INTEGER);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("boolean"), AirbyteProtocolType.BOOLEAN);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("timestamp_with_timezone"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("timestamp_without_timezone"), AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("time_with_timezone"), AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("time_without_timezone"), AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("date"), AirbyteProtocolType.DATE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
   }
 
   @BeforeAll
@@ -151,6 +137,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.delete(testDataset, BigQuery.DatasetDeleteOption.deleteContents());
   }
 
+  // TODO leave this in the per-destination class
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
     final StreamConfig stream = incrementalDedupStreamConfig();
