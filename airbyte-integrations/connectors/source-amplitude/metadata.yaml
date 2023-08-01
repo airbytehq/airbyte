@@ -27,4 +27,8 @@ data:
       0.3.0:
         message: "Change type of average_session_length.date"
         upgradeDeadline: "2023-08-01"
+  _ab_internal:
+    _sl: 200
+    _ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
