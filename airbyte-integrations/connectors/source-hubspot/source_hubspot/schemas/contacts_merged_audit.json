@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "canonical-vid": {
+      "type": ["null", "integer"]
+    },
+    "vid-to-merge": {
+      "type": ["null", "integer"]
+    },
+    "timestamp": {
+      "type": ["null", "integer"]
+    },
+    "entity-id": {
+      "type": ["null", "string"]
+    },
+    "user-id": {
+      "type": ["null", "integer"]
+    },
+    "num-properties-moved": {
+      "type": ["null", "integer"]
+    },
+    "merged_from_email": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "source-vids": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "updated-by-user-id": {
+          "type": ["null", "integer"]
+        },
+        "source-label": {
+          "type": ["null", "string"]
+        },
+        "source-type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "source-id": {
+          "type": ["null", "string"]
+        },
+        "selected": {
+          "type": ["null", "boolean"]
+        },
+        "timestamp": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "merged_to_email": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "updated-by-user-id": {
+          "type": ["null", "integer"]
+        },
+        "source-label": {
+          "type": ["null", "string"]
+        },
+        "source-type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "source-id": {
+          "type": ["null", "string"]
+        },
+        "selected": {
+          "type": ["null", "boolean"]
+        },
+        "timestamp": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "first-name": {
+      "type": ["null", "string"]
+    },
+    "last-name": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -7,13 +7,15 @@ data:
   connectorType: source
   maxSecondsBetweenMessages: 10800
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 0.10.3
+  dockerImageTag: 0.10.4
   dockerRepository: airbyte/source-zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2
   name: Zendesk Support
   registries:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseStage: generally_available

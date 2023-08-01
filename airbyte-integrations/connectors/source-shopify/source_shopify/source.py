@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -13,15 +14,16 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.exceptions import RequestException
+from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
 
 from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
-from .utils import ErrorAccessScopes
+from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyNonRetryableErrors
 from .utils import ShopifyRateLimiter as limiter
+from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -34,7 +36,11 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
+    # define default logger
+    logger = logging.getLogger("airbyte")
+
     raise_on_http_errors = True
+    max_retries = 5
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -77,7 +83,7 @@ class ShopifyStream(HttpStream, ABC):
                 records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
                 yield from self.produce_records(records)
             except RequestException as e:
-                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
                 yield {}
 
     def produce_records(self, records: Union[Iterable[Mapping[str, Any]], Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
@@ -97,15 +103,11 @@ class ShopifyStream(HttpStream, ABC):
                 yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
-        error_mapping = {
-            404: f"Stream `{self.name}` - not available or missing, skipping...",
-            403: f"Stream `{self.name}` - insufficient permissions, skipping...",
-            # extend the mapping with more handable errors, if needed.
-        }
+        known_errors = ShopifyNonRetryableErrors(self.name)
         status = response.status_code
-        if status in error_mapping.keys():
+        if status in known_errors.keys():
             setattr(self, "raise_on_http_errors", False)
-            self.logger.warn(error_mapping.get(status))
+            self.logger.warning(known_errors.get(status))
             return False
         else:
             return super().should_retry(response)
@@ -162,13 +164,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                             yield record
                     else:
                         # old entities could have cursor field in place, but set to null
-                        self.logger.warn(
+                        self.logger.warning(
                             f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
                         )
                         yield record
                 else:
                     # old entities could miss the cursor field
-                    self.logger.warn(
+                    self.logger.warning(
                         f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
                     )
                     yield record
@@ -447,7 +449,7 @@ class ProductsGraphQl(IncrementalShopifyStream):
                 json_response = response.json()["data"]["products"]["nodes"]
                 yield from self.produce_records(json_response)
             except RequestException as e:
-                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
                 yield {}
 
 
@@ -781,20 +783,53 @@ class Countries(ShopifyStream):
         return f"{self.data_field}.json"
 
 
+class ConnectionCheckTest:
+    def __init__(self, config: Mapping[str, Any]):
+        self.config = config
+        # use `Shop` as a test stream for connection check
+        self.test_stream = Shop(self.config)
+        # setting `max_retries` to 0 for the stage of `check connection`,
+        # because it keeps retrying for wrong shop names,
+        # but it should stop immediately
+        self.test_stream.max_retries = 0
+
+    def describe_error(self, pattern: str, shop_name: str = None, details: Any = None, **kwargs) -> str:
+        connection_check_errors_map: Mapping[str, Any] = {
+            "connection_error": f"Connection could not be established using `Shopify Store`: {shop_name}. Make sure it's valid and try again.",
+            "request_exception": f"Request was not successfull, check your `input configuation` and try again. Details: {details}",
+            "index_error": f"Failed to access the Shopify store `{shop_name}`. Verify the entered Shopify store or API Key in `input configuration`.",
+            # add the other patterns and description, if needed...
+        }
+        return connection_check_errors_map.get(pattern)
+
+    def test_connection(self) -> tuple[bool, str]:
+        shop_name = self.config.get("shop")
+        if not shop_name:
+            return False, "The `Shopify Store` name is missing. Make sure it's entered and valid."
+
+        try:
+            response = list(self.test_stream.read_records(sync_mode=None))
+            # check for the shop_id is present in the response
+            shop_id = response[0].get("id")
+            if shop_id is not None:
+                return True, None
+            else:
+                return False, f"The `shop_id` is invalid: {shop_id}"
+        except (SSLError, ConnectionError):
+            return False, self.describe_error("connection_error", shop_name)
+        except RequestException as req_error:
+            return False, self.describe_error("request_exception", details=req_error)
+        except IndexError:
+            return False, self.describe_error("index_error", shop_name, response)
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
         config["authenticator"] = ShopifyAuthenticator(config)
-        try:
-            response = list(Shop(config).read_records(sync_mode=None))
-            # check for the shop_id is present in the response
-            shop_id = response[0].get("id")
-            if shop_id is not None:
-                return True, None
-        except (requests.exceptions.RequestException, IndexError) as e:
-            return False, e
+        return ConnectionCheckTest(config).test_connection()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -866,12 +901,21 @@ class SourceShopify(AbstractSource):
         session = requests.Session()
         url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
-        response = session.get(url, headers=headers).json()
-        access_scopes = response.get("access_scopes")
+
+        try:
+            response = session.get(url, headers=headers).json()
+            access_scopes = response.get("access_scopes")
+        except InvalidURL:
+            raise ShopifyWrongShopNameError(url)
+        except JSONDecodeError as json_error:
+            raise ShopifyBadJsonError(json_error)
+        except (SSLError, ConnectionError) as con_error:
+            raise ShopifyConnectionError(con_error)
+
         if access_scopes:
             return access_scopes
         else:
-            raise ErrorAccessScopes(f"Reason: {response}")
+            raise ShopifyAccessScopesError(response)
 
     @staticmethod
     def format_name(name):
