@@ -5,6 +5,9 @@ title: AirbyteInternal
 description: Fields for internal use only
 type: object
 additionalProperties: false
+required:
+  - _sl
+  - _ql
 properties:
   _sl:
     type: integer
