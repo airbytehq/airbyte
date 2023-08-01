@@ -10,12 +10,10 @@ import importlib.util
 import json
 import re
 import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-import yaml
 from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
@@ -500,42 +498,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli)
-
-
-async def with_connector_acceptance_test(context: ConnectorContext, connector_under_test_image_tar: File) -> Container:
-    """Create a container to run connector acceptance tests, bound to a persistent docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        connector_under_test_image_tar (File): The file containing the tar archive the image of the connector under test.
-    Returns:
-        Container: A container with connector acceptance tests installed.
-    """
-    test_input = await context.get_connector_dir()
-    cat_config = yaml.safe_load(await test_input.file("acceptance-test-config.yml").contents())
-
-    image_sha = await load_image_to_docker_host(context, connector_under_test_image_tar, cat_config["connector_image"])
-
-    if context.connector_acceptance_test_image.endswith(":dev"):
-        cat_container = context.connector_acceptance_test_source_dir.docker_build()
-    else:
-        cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
-
-    return (
-        with_bound_docker_host(context, cat_container)
-        .with_entrypoint([])
-        .with_exec(["pip", "install", "pytest-custom_exit_code"])
-        .with_mounted_directory("/test_input", test_input)
-        .with_env_variable("CONNECTOR_IMAGE_ID", image_sha)
-        # This bursts the CAT cached results everyday.
-        # It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
-        # We keep the guarantee that a CAT runs everyday.
-        .with_env_variable("CACHEBUSTER", datetime.utcnow().strftime("%Y%m%d"))
-        .with_workdir("/test_input")
-        .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
-        .with_(mounted_connector_secrets(context, "/test_input/secrets"))
-        .with_exec(["--acceptance-test-config", "/test_input"])
-    )
 
 
 def with_gradle(
