@@ -73,7 +73,7 @@ public class PostgresQueryUtils {
       """;
   public static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+        SELECT "%s" FROM %s WHERE "%s" = (SELECT MAX("%s") FROM %s);
       """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
@@ -151,6 +151,7 @@ public class PostgresQueryUtils {
         }
 
         LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
+        cursorInfoOptional.ifPresent(cf -> LOGGER.info("*** {}", cf));
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
@@ -158,6 +159,7 @@ public class PostgresQueryUtils {
             cursorField,
             cursorField,
             name);
+        LOGGER.info("*** {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
