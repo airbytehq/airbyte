@@ -37,14 +37,16 @@ def debug_registry():
     context = build_op_context(resources=REGISTRY_ENTRY_RESOURCE_TREE)
     persisted_oss_registry(context).value
 
+
 def debug_github_folders():
-    context = build_op_context(resources={
-        **GITHUB_RESOURCE_TREE,
-        **METADATA_RESOURCE_TREE,
-    })
+    context = build_op_context(
+        resources={
+            **GITHUB_RESOURCE_TREE,
+            **METADATA_RESOURCE_TREE,
+        }
+    )
     github_md5s = github_metadata_files(context).value
     stale_metadata_files(context, github_md5s).value
-
 
 
 def debug_badges():

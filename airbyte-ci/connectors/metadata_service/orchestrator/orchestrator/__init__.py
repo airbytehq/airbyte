@@ -4,7 +4,13 @@
 from dagster import Definitions, ScheduleDefinition, load_assets_from_modules
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
-from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs, github_connectors_metadata_files
+from orchestrator.resources.github import (
+    github_client,
+    github_connector_repo,
+    github_connectors_directory,
+    github_workflow_runs,
+    github_connectors_metadata_files,
+)
 
 from orchestrator.assets import (
     connector_test_report,
