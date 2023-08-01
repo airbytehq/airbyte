@@ -19,6 +19,7 @@ class SourceClockify(AbstractSource):
             workspace_stream = Users(
                 authenticator=TokenAuthenticator(token=config["api_key"], auth_header="X-Api-Key", auth_method=""),
                 workspace_id=config["workspace_id"],
+                api_url=config["api_url"],
             )
             next(workspace_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
@@ -28,6 +29,6 @@ class SourceClockify(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"], auth_header="X-Api-Key", auth_method="")
 
-        args = {"authenticator": authenticator, "workspace_id": config["workspace_id"]}
+        args = {"authenticator": authenticator, "workspace_id": config["workspace_id"], "api_url": config["api_url"]}
 
         return [Users(**args), Projects(**args), Clients(**args), Tags(**args), UserGroups(**args), TimeEntries(**args), Tasks(**args)]
