@@ -11,7 +11,7 @@ from typing import Set, Tuple, Union
 
 import anyio
 import click
-from connector_ops.utils import Connector, ConnectorLanguage, console, get_all_released_connectors
+from connector_ops.utils import Connector, ConnectorLanguage, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.builds import run_connector_build_pipeline
 from pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
@@ -93,7 +93,7 @@ def connectors(
     ctx.obj["select_modified_connectors"] = modified
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
-    ctx.obj["all_connectors"] = get_all_released_connectors()
+    ctx.obj["all_connectors"] = get_all_connectors_in_repo()
     ctx.obj["selected_connectors_by_names"] = {Connector(technical_name=name) for name in names}
     ctx.obj["selected_connectors_by_languages"] = {connector for connector in ctx.obj["all_connectors"] if connector.language in languages}
     ctx.obj["selected_connectors_by_release_stages"] = {

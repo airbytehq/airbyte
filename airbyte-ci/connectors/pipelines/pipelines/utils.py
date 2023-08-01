@@ -21,7 +21,7 @@ import anyio
 import asyncer
 import click
 import git
-from connector_ops.utils import get_all_released_connectors, get_changed_connectors
+from connector_ops.utils import get_all_connectors_in_repo, get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -40,7 +40,7 @@ METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
-ALL_CONNECTOR_DEPENDENCIES = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
+ALL_CONNECTOR_DEPENDENCIES = [(connector, connector.get_local_dependency_paths()) for connector in get_all_connectors_in_repo()]
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented

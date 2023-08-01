@@ -351,7 +351,13 @@ def get_changed_connectors(
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
 
-def get_all_released_connectors() -> Set:
+def get_all_connectors_in_repo() -> Set[Connector]:
+    """Retrieve a set of all Connectors in the repo.
+    We globe the connectors folder for metadata.yaml files and construct Connectors from the directory name.
+
+    Returns:
+        A set of Connectors.
+    """
     repo = git.Repo(search_parent_directories=True)
     repo_path = repo.working_tree_dir
 

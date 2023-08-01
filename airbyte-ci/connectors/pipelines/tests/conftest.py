@@ -44,7 +44,7 @@ def new_connector(airbyte_repo_path: Path, mocker) -> Connector:
     mocker.patch.object(
         utils,
         "ALL_CONNECTOR_DEPENDENCIES",
-        [(connector, connector.get_local_dependency_paths()) for connector in utils.get_all_released_connectors()],
+        [(connector, connector.get_local_dependency_paths()) for connector in utils.get_all_connectors_in_repo()],
     )
     yield Connector("source-new-connector")
     new_connector_code_directory.joinpath("metadata.yaml").unlink()
