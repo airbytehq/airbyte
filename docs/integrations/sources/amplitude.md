@@ -43,6 +43,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2023-08-01 | [28913](https://github.com/airbytehq/airbyte/pull/28913) | Use latest `CDK` version, updated schema for `Average Session Length`                               |
 | 0.2.4   | 2023-05-05 | [25842](https://github.com/airbytehq/airbyte/pull/25842) | added missing attrs in events schema, enabled default availability strategy                               |
 | 0.2.3   | 2023-04-20 | [25317](https://github.com/airbytehq/airbyte/pull/25317) | Refactor Events Stream, use pre-YAML version based on Python CDK                                          |
 | 0.2.2   | 2023-04-19 | [25315](https://github.com/airbytehq/airbyte/pull/25315) | Refactor to only fetch date_time_fields once per request                                                  |
