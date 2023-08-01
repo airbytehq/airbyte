@@ -1993,7 +1993,7 @@ csv_newline_in_values_not_quoted_scenario = (
     .set_expected_logs({"read": [
         {
             "level": "ERROR",
-            "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=1 n_skipped=0",  # The error is on line 2, but the exception is raised before we increment the line count
+            "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
         }
     ]})
 ).build()
