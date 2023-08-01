@@ -65,7 +65,7 @@ RUN locale-gen ${LOCALE}
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.68.1 \
+    RUST_VERSION=1.71.0 \
     RUST_TARGET=x86_64-unknown-linux-musl
 
 RUN set -eux; \
