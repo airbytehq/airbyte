@@ -12,7 +12,6 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests import HTTPError
-from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,

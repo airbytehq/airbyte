@@ -193,7 +193,7 @@ class API:
             raise AirbyteTracedException(message, failure_type=FailureType.config_error)
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             message = (
-                f"The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
+                "The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
             )
             raise AirbyteTracedException(message, failure_type=FailureType.config_error)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
