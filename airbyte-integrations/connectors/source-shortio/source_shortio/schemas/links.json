@@ -3,16 +3,16 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "passwordContact":{
+    "passwordContact": {
       "type": ["null", "string"]
     },
-    "hasPassword":{
+    "hasPassword": {
       "type": ["null", "boolean"]
     },
     "OwnerId": {
       "type": ["null", "integer"]
     },
-    "id":{
+    "id": {
       "type": ["null", "string"]
     },
     "path": {
