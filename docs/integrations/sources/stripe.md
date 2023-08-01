@@ -71,11 +71,14 @@ The Stripe source connector supports the following streams:
 - [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
+- [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
+- [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
+- [ShippingRates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
@@ -100,7 +103,14 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.17.1  | 2023-08-01 | [28887](https://github.com/airbytehq/airbyte/pull/28887) | Fix `Invoices` schema                                                                                                                                |
+| 3.17.0  | 2023-07-28 | [26127](https://github.com/airbytehq/airbyte/pull/26127) | Add `Prices` stream                                                                                                                                  |
+| 3.16.0  | 2023-07-27 | [28776](https://github.com/airbytehq/airbyte/pull/28776) | Add new fields to stream schemas                                                                                                                     |
+| 3.15.0  | 2023-07-09 | [28709](https://github.com/airbytehq/airbyte/pull/28709) | Remove duplicate streams                                                                                                                             |
+| 3.14.0  | 2023-07-09 | [27217](https://github.com/airbytehq/airbyte/pull/27217) | Add `ShippingRates` stream                                                                                                                           |
+| 3.13.0  | 2023-07-18 | [28466](https://github.com/airbytehq/airbyte/pull/28466) | Pin source API version                                                                                                                               |
+| 3.12.0  | 2023-05-20 | [26208](https://github.com/airbytehq/airbyte/pull/26208) | Add new stream `Persons`                                                                                                                             |
 | 3.11.0  | 2023-06-26 | [27734](https://github.com/airbytehq/airbyte/pull/27734) | License Update: Elv2 stream                                                                                                                          |
 | 3.10.0  | 2023-06-22 | [27132](https://github.com/airbytehq/airbyte/pull/27132) | Add `CreditNotes` stream                                                                                                                             |
 | 3.9.1   | 2023-06-20 | [27522](https://github.com/airbytehq/airbyte/pull/27522) | Fix formatting                                                                                                                                       |

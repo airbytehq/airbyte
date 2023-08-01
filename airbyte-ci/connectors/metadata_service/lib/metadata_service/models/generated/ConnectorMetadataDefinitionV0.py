@@ -160,6 +160,9 @@ class Registry(BaseModel):
 
 
 class Data(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
     name: str
     icon: Optional[str] = None
     definitionId: UUID

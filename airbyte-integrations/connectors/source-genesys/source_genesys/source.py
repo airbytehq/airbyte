@@ -14,10 +14,16 @@ from source_genesys.authenicator import GenesysOAuthAuthenticator
 
 
 class GenesysStream(HttpStream, ABC):
-    url_base = "https://api.mypurecloud.com.au/api/v2/"
     page_size = 500
 
-    def __init__(self, *args, **kwargs):
+    @property
+    def url_base(self):
+        if self._api_base_url is not None:
+            return self._api_base_url + "/api/v2/"
+        return None
+
+    def __init__(self, api_base_url, *args, **kwargs):
+        self._api_base_url = api_base_url
         super().__init__(*args, **kwargs)
 
     def backoff_time(self, response: requests.Response) -> Optional[int]:
@@ -29,7 +35,8 @@ class GenesysStream(HttpStream, ABC):
         response_json = response.json()
 
         if response_json.get("nextUri"):
-            next_query_string = urllib.parse.urlsplit(response_json.get("nextUri")).query
+            next_query_string = urllib.parse.urlsplit(
+                response_json.get("nextUri")).query
             return dict(urllib.parse.parse_qsl(next_query_string))
 
     def request_params(
@@ -254,21 +261,24 @@ class SourceGenesys(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        GENESYS_TENANT_ENDPOINT_MAP: Dict = {
-            "Americas (US East)": "https://login.mypurecloud.com",
-            "Americas (US East 2)": "https://login.use2.us-gov-pure.cloud",
-            "Americas (US West)": "https://login.usw2.pure.cloud",
-            "Americas (Canada)": "https://login.cac1.pure.cloud",
-            "Americas (São Paulo)": "https://login.sae1.pure.cloud",
-            "EMEA (Frankfurt)": "https://login.mypurecloud.de",
-            "EMEA (Dublin)": "https://login.mypurecloud.ie",
-            "EMEA (London)": "https://login.euw2.pure.cloud",
-            "Asia Pacific (Mumbai)": "https://login.aps1.pure.cloud",
-            "Asia Pacific (Seoul)": "https://login.apne2.pure.cloud",
-            "Asia Pacific (Sydney)": "https://login.mypurecloud.com.au",
+        GENESYS_REGION_DOMAIN_MAP: Dict[str, str] = {
+            "Americas (US East)": "mypurecloud.com",
+            "Americas (US East 2)": "use2.us-gov-pure.cloud",
+            "Americas (US West)": "usw2.pure.cloud",
+            "Americas (Canada)": "cac1.pure.cloud",
+            "Americas (São Paulo)": "sae1.pure.cloud",
+            "EMEA (Frankfurt)": "mypurecloud.de",
+            "EMEA (Dublin)": "mypurecloud.ie",
+            "EMEA (London)": "euw2.pure.cloud",
+            "Asia Pacific (Mumbai)": "aps1.pure.cloud",
+            "Asia Pacific (Seoul)": "apne2.pure.cloud",
+            "Asia Pacific (Sydney)": "mypurecloud.com.au",
         }
-        base_url = GENESYS_TENANT_ENDPOINT_MAP.get(config["tenant_endpoint"])
-        args = {"authenticator": GenesysOAuthAuthenticator(base_url, config["client_id"], config["client_secret"])}
+        domain = GENESYS_REGION_DOMAIN_MAP.get(config["tenant_endpoint"])
+        base_url = f"https://login.{domain}"
+        api_base_url = f"https://api.{domain}"
+        args = {"api_base_url": api_base_url, "authenticator": GenesysOAuthAuthenticator(
+            base_url, config["client_id"], config["client_secret"])}
 
         # response = self.get_connection_response(config)
         # response.raise_for_status()

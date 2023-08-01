@@ -9,11 +9,15 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 import backoff
 import pendulum
 import requests
+from airbyte_cdk.models import Level
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from requests.auth import AuthBase
 
 from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
+_NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -22,6 +26,8 @@ class AbstractOauth2Authenticator(AuthBase):
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
+
+    _NO_STREAM_NAME = None
 
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -80,6 +86,7 @@ class AbstractOauth2Authenticator(AuthBase):
     def _get_refresh_access_token_response(self):
         try:
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            self._log_response(response)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -151,3 +158,22 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def access_token(self, value: str) -> str:
         """Setter for the access token"""
+
+    @property
+    def _message_repository(self) -> Optional[MessageRepository]:
+        """
+        The implementation can define a message_repository if it wants debugging logs for HTTP requests
+        """
+        return _NOOP_MESSAGE_REPOSITORY
+
+    def _log_response(self, response: requests.Response):
+        self._message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                "Refresh token",
+                "Obtains access token",
+                self._NO_STREAM_NAME,
+                is_auxiliary=True,
+            ),
+        )

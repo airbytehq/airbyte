@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 Schema = Dict[str, str]
@@ -20,7 +21,13 @@ class FileTypeParser(ABC):
     """
 
     @abstractmethod
-    async def infer_schema(self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Schema:
+    async def infer_schema(
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
+    ) -> Schema:
         """
         Infer the JSON Schema for this file.
         """
@@ -28,9 +35,21 @@ class FileTypeParser(ABC):
 
     @abstractmethod
     def parse_records(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
     ) -> Iterable[Record]:
         """
         Parse and emit each record.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def file_read_mode(self) -> FileReadMode:
+        """
+        The mode in which the file should be opened for reading.
         """
         ...

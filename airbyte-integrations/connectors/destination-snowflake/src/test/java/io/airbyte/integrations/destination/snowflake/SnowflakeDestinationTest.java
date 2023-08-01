@@ -15,6 +15,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -39,6 +41,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SnowflakeDestinationTest {
 
   private static final ObjectMapper mapper = MoreMappers.initMapper();
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+  }
 
   private static Stream<Arguments> urlsDataProvider() {
     return Stream.of(
@@ -161,7 +168,7 @@ public class SnowflakeDestinationTest {
       noLoadingMethod.put("loading_method", "standard");
 
       return Stream.of(
-              Arguments.of(standard, true),
+              Arguments.of(standard, false),
               Arguments.of(internalStagingSpace, true),
               Arguments.of(internalStagingSpaceCapital, true),
               Arguments.of(internalStagingDash, true),

@@ -70,6 +70,7 @@ def test_attribution_report_schema(config, profiles_response, attribution_report
     profile_stream = get_stream_by_name(streams, "profiles")
     attribution_report_stream = get_stream_by_name(streams, stream_name)
     schema = attribution_report_stream.get_json_schema()
+    schema["additionalProperties"] = False
 
     profile_records = list(read_full_refresh(profile_stream))
     attribution_records = list(read_full_refresh(attribution_report_stream))
