@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
-    "PyYAML==5.4",
+    "PyYAML~=6.0",
     "pydantic~=1.9.2",
     "Unidecode",
 ]

@@ -19,6 +19,7 @@ import io.airbyte.configoss.StandardCheckConnectionOutput;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -35,6 +36,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,6 +58,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   private JsonNode config;
   private JdbcDatabase database;
   private DataSource dataSource;
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(getConfig());
+  }
 
   @Override
   protected String getImageName() {

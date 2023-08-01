@@ -9,6 +9,7 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -59,9 +60,10 @@ public class CursorManager<S> {
                        final Function<S, String> cursorFunction,
                        final Function<S, List<String>> cursorFieldFunction,
                        final Function<S, Long> cursorRecordCountFunction,
-                       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
+                       final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+                       final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction);
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
   }
 
   /**
@@ -89,9 +91,16 @@ public class CursorManager<S> {
                                                                                 final Function<S, String> cursorFunction,
                                                                                 final Function<S, List<String>> cursorFieldFunction,
                                                                                 final Function<S, Long> cursorRecordCountFunction,
-                                                                                final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
+                                                                                final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
+                                                                                final boolean onlyIncludeIncrementalStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
+        .filter(c -> {
+          if (onlyIncludeIncrementalStreams) {
+            return c.getSyncMode() == SyncMode.INCREMENTAL;
+          }
+          return true;
+        })
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteStream)
         .collect(Collectors.toSet());

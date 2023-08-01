@@ -86,5 +86,16 @@
         "name": "ad_analytics"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "DATE": "2021-06-09"
+      },
+      "stream_descriptor": {
+        "name": "campaign_analytics_report"
+      }
+    }
   }
 ]

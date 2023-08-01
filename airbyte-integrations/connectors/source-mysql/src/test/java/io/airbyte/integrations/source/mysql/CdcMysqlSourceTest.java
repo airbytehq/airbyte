@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -192,6 +192,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
+  protected void addCdcDefaultCursorField(final AirbyteStream stream) {
+    // Leaving empty until cdc default cursor is implemented for MySQL
+  }
+
+  @Override
   protected Source getSource() {
     return source;
   }
@@ -208,6 +213,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(1, stateMessages.size());
+    assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_CDC_OFFSET));
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_DB_HISTORY));

@@ -14,16 +14,48 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: "1.0.0" # We changed the cursor field of the Purchases stream in 2.0.0
+          disable_for_version: "2.1.0" # We changed the cursor field of all streams to be "updated_at"
   basic_read:
     tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records.jsonl
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          products:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          purchases:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          products:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          purchases:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
   incremental:
     tests:
       - config_path: secrets/config.json

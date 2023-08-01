@@ -85,7 +85,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
+            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
             logger.info(f"Select account {api.account}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
@@ -108,7 +108,7 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
@@ -226,9 +226,16 @@ class SourceFacebookMarketing(AbstractSource):
                         "type": "object",
                         "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
                     },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
-            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
@@ -253,6 +260,7 @@ class SourceFacebookMarketing(AbstractSource):
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
+                action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,

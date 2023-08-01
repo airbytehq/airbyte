@@ -144,6 +144,8 @@ public class IntegrationRunner {
         case WRITE -> {
           final JsonNode config = parseConfig(parsed.getConfigPath());
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+          // save config to singleton
+          DestinationConfig.initialize(config);
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
           final Procedure consumeWriteStreamCallable = () -> {
@@ -317,7 +319,7 @@ public class IntegrationRunner {
     }
   }
 
-  private static JsonNode parseConfig(final Path path) {
+  public static JsonNode parseConfig(final Path path) {
     return Jsons.deserialize(IOs.readFile(path));
   }
 

@@ -49,19 +49,22 @@ acceptance_tests:
         extra_records: yes
       fail_on_extra_columns: false
   incremental:
-    tests:
-    - config_path: "secrets/config.json"
-      timeout_seconds: 2400
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/future_state.json"
-        missing_streams:
-        - name: attached_item
-          bypass_reason: "This stream is Full-Refresh only"
-        - name: contact
-          bypass_reason: "This stream is Full-Refresh only"
-        - name: quote_line_group
-          bypass_reason: "This stream is Full-Refresh only"
+    # tests:
+    # - config_path: "secrets/config.json"
+    #   timeout_seconds: 2400
+    #   configured_catalog_path: "integration_tests/configured_catalog.json"
+    #   future_state:
+    #     future_state_path: "integration_tests/future_state.json"
+    #     missing_streams:
+    #     - name: attached_item
+    #       bypass_reason: "This stream is Full-Refresh only"
+    #     - name: contact
+    #       bypass_reason: "This stream is Full-Refresh only"
+    #     - name: quote_line_group
+    #       bypass_reason: "This stream is Full-Refresh only"
+    bypass_reason: >
+      "Incrremental tests are disabled until CAT works with cursor data-types directly,
+      relatated slack thread: https://airbyte-globallogic.slack.com/archives/C02U9R3AF37/p1690810513681859"
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

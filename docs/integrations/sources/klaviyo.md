@@ -55,6 +55,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.3.2`  | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                          |
 | `0.3.1`  | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162)   | Anonymize check connection error message                                                  |
 | `0.3.0`  | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream                                                             |
 | `0.2.0`  | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                     |
