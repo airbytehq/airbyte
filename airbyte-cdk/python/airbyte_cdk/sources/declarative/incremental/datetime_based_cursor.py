@@ -161,11 +161,6 @@ class DatetimeBasedCursor(Cursor):
     def _format_datetime(self, dt: datetime.datetime) -> str:
         return self._parser.format(dt, self.datetime_format)
 
-    def _format_slice_datetime(self, dt: datetime.datetime) -> str:
-        if not self.cursor_datetime_formats:
-            raise RuntimeError("DatetimeBasedCursor can't operate without cursor_datetime_formats")
-        return self._parser.format(dt, self.cursor_datetime_formats[0])
-
     def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
         start_field = self.partition_field_start.eval(self.config)
         end_field = self.partition_field_end.eval(self.config)
@@ -173,7 +168,7 @@ class DatetimeBasedCursor(Cursor):
         while start <= end:
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
-            dates.append({start_field: self._format_slice_datetime(start), end_field: self._format_slice_datetime(end_date)})
+            dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
             start = next_start
         return dates
 
@@ -193,7 +188,7 @@ class DatetimeBasedCursor(Cursor):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: str) -> datetime.datetime:
-        for datetime_format in self.cursor_datetime_formats:
+        for datetime_format in self.cursor_datetime_formats + [self.datetime_format]:
             try:
                 return self._parser.parse(date, datetime_format)
             except ValueError:
