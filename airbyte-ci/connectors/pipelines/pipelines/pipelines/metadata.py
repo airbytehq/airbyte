@@ -125,7 +125,7 @@ class DeployOrchestrator(Step):
 
     async def _run(self) -> StepResult:
         parent_dir = self.context.get_repo_dir(METADATA_DIR)
-        python_base = with_python_base(self.context)
+        python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"

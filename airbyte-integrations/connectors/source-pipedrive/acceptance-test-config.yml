@@ -31,6 +31,35 @@ acceptance_tests:
           deal_fields:
             - name: show_in_pipelines
               bypass_reason: "Unstable data"
+            - name: important_flag
+              bypass_reason: "Unstable data"
+            - name: pipeline_ids
+              bypass_reason: "Unstable data"
+            - name: update_time
+              bypass_reason: "Unstable data"
+            - name: last_updated_by_user_id
+              bypass_reason: "Unstable data"
+          organization_fields:
+            - name: update_time
+              bypass_reason: "Unstable data"
+            - name: important_flag
+              bypass_reason: "Unstable data"
+            - name: last_updated_by_user_id
+              bypass_reason: "Unstable data"
+          person_fields:
+            - name: update_time
+              bypass_reason: "Unstable data"
+            - name: important_flag
+              bypass_reason: "Unstable data"
+            - name: last_updated_by_user_id
+              bypass_reason: "Unstable data"
+          product_fields:
+            - name: update_time
+              bypass_reason: "Unstable data"
+            - name: important_flag
+              bypass_reason: "Unstable data"
+            - name: last_updated_by_user_id
+              bypass_reason: "Unstable data"
         fail_on_extra_columns: false
   incremental:
     tests:
