@@ -64,7 +64,9 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 5. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 6. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
+   :::note
    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook Marketing documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
+   :::
 
    To configure Custom Insights:
 
@@ -72,7 +74,10 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
     2. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
     3. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
     4. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
-    5. (Optional) For **Action Report Time**, enter the action report time you want to configure (`mixed`, `conversion` or `impression`). Set to `mixed` by default.
+    5. (Optional) For **Action Report Time**, enter the action report time you want to configure. The default value is `mixed`. The possible values are:
+        - `impression`: Actions are attributed to the time the ad was viewed.
+        - `conversion`: Actions are attributed to the time the action was taken.
+        - `mixed`: Actions are attributed to the time the ad was viewed and the time the action was taken.
     6. (Optional) For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
     7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1. 
     8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
