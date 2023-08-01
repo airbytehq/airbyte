@@ -156,7 +156,7 @@ def test(
             **ctx.obj["selected_connectors_and_files"],
             **get_modified_connectors_and_files(ctx.obj["modified_files"]),
         }
-    main_logger.info(ctx.obj)
+
     log_selected_connectors(ctx.obj["selected_connectors_and_files"])
     if ctx.obj["selected_connectors_and_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
