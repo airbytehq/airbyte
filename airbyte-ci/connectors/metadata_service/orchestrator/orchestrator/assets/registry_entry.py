@@ -19,7 +19,7 @@ from orchestrator.utils.object_helpers import deep_copy_params
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
-
+import orchestrator.hacks as HACKS
 from typing import List, Optional, Tuple, Union
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -189,7 +189,6 @@ def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_
         raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
 
     metadata_folder = os.path.dirname(metadata_path)
-    print(f"metadata_folder: {metadata_folder}")
     return os.path.join(metadata_folder, registry_name)
 
 
@@ -213,6 +212,7 @@ def persist_registry_entry_to_json(
     registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
+    HACKS.write_registry_to_overrode_file_paths(registry_entry, registry_name, metadata_entry, registry_directory_manager)
     return file_handle
 
 
@@ -240,6 +240,7 @@ def generate_and_persist_registry_entry(
     registry_model = ConnectorModel.parse_obj(registry_entry_with_spec)
 
     file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_entry, metadata_directory_manager)
+
     return file_handle.public_url
 
 
