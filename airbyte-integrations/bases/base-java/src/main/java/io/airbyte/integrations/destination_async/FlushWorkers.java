@@ -99,7 +99,8 @@ public class FlushWorkers implements AutoCloseable {
 
   private void retrieveWork() {
     try {
-      // This will put a new log line every second which is too much, sampling it doesn't bring much value so it is set to debug
+      // This will put a new log line every second which is too much, sampling it doesn't bring much value
+      // so it is set to debug
       log.debug("Retrieve Work -- Finding queues to flush");
       final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
       int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
