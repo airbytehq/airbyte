@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""This module exposes a """
+"""This module execute the airbyte-ci-internal CLI wrapped in a dagger run command to use the Dagger Terminal UI."""
+
 import logging
 import os
 import re
