@@ -25,6 +25,9 @@ class SourceRepository:
         if spec:
             manifest_path = self._manifest_path(source_name)
             yaml = ruamel.yaml.YAML()
+            yaml.preserve_quotes = True
+            yaml.indent(mapping=2, sequence=4, offset=2)
+            yaml.width = 4096
             yaml.representer.add_multi_representer(Enum, lambda dumper, enum: dumper.represent_data(enum.value))
             with open(os.path.join(manifest_path)) as f:
                 manifest = yaml.load(f.read())
@@ -50,7 +53,8 @@ class SourceRepository:
                 return self._assemble_spec(json.load(json_file))
         elif yaml_spec_path and os.path.exists(yaml_spec_path):
             with open(yaml_spec_path) as yaml_file:
-                return self._assemble_spec(ruamel.yaml.load(yaml_file.read(), Loader=ruamel.yaml.RoundTripLoader))
+                yaml = ruamel.yaml.YAML()
+                return self._assemble_spec(yaml.load(yaml_file.read()))
         else:
             return None
 
