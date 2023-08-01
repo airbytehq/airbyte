@@ -1,20 +1,24 @@
 data:
+  allowedHosts:
+    hosts:
+      - https://api.short.io
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.1.3
+  definitionId: 1cdcd5ef-a90a-4b91-a215-9db9fd769048
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
-  icon: short.svg
+  icon: shortio.svg
   license: MIT
-  name: Short.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  name: Shortio
+  releaseDate: TODO
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/shortio
   tags:
-    - language:python
+    - language:lowcode
 metadataSpecVersion: "1.0"

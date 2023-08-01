@@ -1,5 +1,16 @@
+[
+  {
+  "type": "STREAM",
+  "stream": {
+    "stream_state": { "createdAt": "2023-07-31T03:43:59.244Z" },
+    "stream_descriptor": { "name": "links" }
+  }
+},
 {
-  "clicks": {
-    "dt": "2052-07-17 14:03:43.449925"
+  "type": "STREAM",
+  "stream": {
+    "stream_state": { "createdAt": "9598826148" },
+    "stream_descriptor": { "name": "clicks" }
   }
 }
+]

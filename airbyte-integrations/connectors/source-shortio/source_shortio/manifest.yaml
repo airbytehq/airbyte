@@ -1,0 +1,74 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.extractor_path }}"]
+
+  v1_api_requester:
+    type: HttpRequester
+    url_base: "https://api.short.io/api/"
+    http_method: "GET"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "Authorization"
+      api_token: "{{ config['secret_key'] }}"
+    request_parameters:
+      domain_id: "{{ config['domain_id'] }}"
+
+  v2_api_requester:
+    type: HttpRequester
+    url_base: "https://api-v2.short.cm/statistics/"
+    http_method: "GET"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "Authorization"
+      api_token: "{{ config['secret_key'] }}"
+
+  v1_base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/v1_api_requester"
+
+  v2_base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/v2_api_requester"
+
+  links_stream:
+    $ref: "#/definitions/v1_base_stream"
+    name: "links"
+    primary_key: "id"
+    $parameters:
+      extractor_path: "links"
+      path: "links"
+
+  clicks_stream:
+    $ref: "#/definitions/v2_base_stream"
+    name: "clicks"
+    $parameters:
+      path: "domain/{{ config['domain_id'] }}/link_clicks"
+
+streams:
+  - "#/definitions/links_stream"
+  - "#/definitions/clicks_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "links"
+    - "clicks"
