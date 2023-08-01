@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from click.testing import CliRunner
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.commands.groups import connectors
 
 
@@ -32,6 +33,36 @@ def click_context_obj():
         "ci_gcs_credentials": None,
         "execute_timeout": 0,
     }
+
+
+@pytest.mark.parametrize(
+    "all_connectors,names,release_stage,language,expected_selected_connectors_names",
+    [
+        (
+            {
+                MagicMock(technical_name="source-alpha-python", release_stage="alpha", language=ConnectorLanguage.PYTHON),
+                MagicMock(technical_name="source-ga-java", release_stage="generally_available", language=ConnectorLanguage.JAVA),
+                MagicMock(technical_name="source-ga-python", release_stage="alpha", language=ConnectorLanguage.PYTHON),
+            },
+            ("source-alpha-python", "source-ga-python"),
+            (),
+            (),
+            {"source-alpha-python", "source-ga-python"},
+        ),
+    ],
+)
+def test_get_selected_connectors(
+    mocker,
+    all_connectors: set[MagicMock],
+    names: tuple[str],
+    release_stage: tuple[str],
+    language: tuple[ConnectorLanguage],
+    expected_selected_connectors_names: set[str],
+):
+    """Test that the selected connectors are returned."""
+    mocker.patch.object(connectors, "get_all_connectors_in_repo", return_value=all_connectors)
+    selected_connectors = connectors.get_selected_connectors(names, release_stage, language)
+    assert {c.technical_name for c in selected_connectors} == expected_selected_connectors_names
 
 
 def test_test_command_select_modified_connectors(mocker, runner: CliRunner, click_context_obj: dict, new_connector: Connector):
