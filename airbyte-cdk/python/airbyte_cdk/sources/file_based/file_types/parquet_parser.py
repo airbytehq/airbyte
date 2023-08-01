@@ -4,7 +4,7 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping
 
 import pyarrow as pa
 import pyarrow.parquet as pq

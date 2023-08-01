@@ -12,8 +12,6 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -93,7 +91,7 @@ class CsvParser(FileTypeParser):
                 yield from self._read_and_cast_types(reader, schema, config_format, logger)
         else:
             with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
-                #self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+                # self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
                 reader = csv.DictReader(fp)  # type: ignore
                 yield from self._read_and_cast_types(reader, schema, CsvFormat(), logger)
 
@@ -104,7 +102,7 @@ class CsvParser(FileTypeParser):
     @staticmethod
     def _read_and_cast_types(
         reader: csv.DictReader, schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger  # type: ignore
-    ) -> Iterable[Optional[Dict[str, Any]]]:
+    ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
 
@@ -130,7 +128,7 @@ class CsvParser(FileTypeParser):
                 yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
 
     @staticmethod
-    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Optional[Dict[str, Optional[str]]]:
+    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Dict[str, Optional[str]]:
         nullable = row | {k: None if v in null_values else v for k, v in row.items()}
         return nullable
 

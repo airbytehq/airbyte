@@ -4,7 +4,7 @@
 
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError, StopSyncPerValidationPolicy
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, StopSyncPerValidationPolicy
 from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 
