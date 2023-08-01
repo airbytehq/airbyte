@@ -17,6 +17,10 @@ import requests
 LOGGER = logging.getLogger(__name__)
 BIN_DIR = Path.home() / "bin"
 BIN_DIR.mkdir(exist_ok=True)
+DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE = (
+    "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN",
+    "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k",
+)
 
 
 def get_dagger_path() -> Optional[str]:
@@ -80,10 +84,24 @@ def check_dagger_cli_install() -> None:
 
 def main():
     check_dagger_cli_install()
+    os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
+    exit_code = 0
+    if sys.argv[1] == "--no-tui":
+        command = ["airbyte-ci-internal"] + sys.argv[2:]
+    else:
+        command = ["dagger", "run", "airbyte-ci-internal"] + sys.argv[1:]
     try:
-        subprocess.run(["dagger", "run", "airbyte-ci-bare"] + sys.argv[1:], check=True)
+        try:
+            subprocess.run(command, check=True)
+        except KeyboardInterrupt:
+            LOGGER.info("Keyboard interrupt detected. Exiting...")
+            exit_code = 1
     except subprocess.CalledProcessError as e:
-        sys.exit(e.returncode)
+        exit_code = e.returncode
+    finally:
+        if DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0] in os.environ:
+            os.unsetenv(DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0])
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
