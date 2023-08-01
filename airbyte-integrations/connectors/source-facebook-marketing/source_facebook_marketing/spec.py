@@ -65,7 +65,7 @@ class InsightConfig(BaseModel):
     action_report_time: str = Field(
         title="Action Report Time",
         description=(
-            "This value determines the timing used to report action statistics. If a user sees an ad on Jan 1st "
+            "This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st "
             "but converts on Jan 2nd, this value will determine how the action is reported. "
             "When set to impression, you see a conversion on Jan 1st. "
             "When set to conversion, you see a conversion on Jan 2nd. "
