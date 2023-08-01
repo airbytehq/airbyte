@@ -26,6 +26,7 @@ class StageStatus(str, Enum):
 
 
 class PublishConnectorLifecycleStage(str, Enum):
+    METADATA_SENSOR = "metadata_sensor"
     METADATA_VALIDATION = "metadata_validation"
     REGISTRY_ENTRY_GENERATION = "registry_entry_generation"
     REGISTRY_GENERATION = "registry_generation"
