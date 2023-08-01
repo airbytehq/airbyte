@@ -41,7 +41,7 @@ async def run_test(airbyte_ci_package_path: str):
                 dagger_client.container()
                 .from_("python:3.10-slim")
                 .with_exec(["apt-get", "update"])
-                .with_exec(["apt-get", "install", "-y", "bash", "git"])
+                .with_exec(["apt-get", "install", "-y", "bash", "git", "curl"])
                 .with_env_variable("VERSION", "24.0.2")
                 .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
                 .with_exec(["pip", "install", "pipx"])
