@@ -134,7 +134,6 @@ definitions:
       extractorPath: "greetings"
     $ref: "#/definitions/base_stream_without_pagination"
     name: "call_record_settings"
-  
   greetings_stream:
     $parameters:
       path: "/dictionary/greeting"
@@ -192,3 +191,33 @@ check:
     - "greetings"
     - "ivr_prompts"
     - "fax_cover"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: RingCentral Spec
+    type: object
+    additionalProperties: true
+    required:
+      - auth_token
+      - account_id
+      - extension_id
+    properties:
+      auth_token:
+        title: Auth Token
+        type: string
+        description: Token could be recieved by following instructions at https://developers.ringcentral.com/api-reference/authentication
+        airbyte_secret: true
+      account_id:
+        title: Account Id
+        type: string
+        description: >
+          Could be seen at response to basic api call to an endpoint with ~ operator.  Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+        airbyte_secret: true
+      extension_id:
+        title: Extension Id
+        type: string
+        description: >
+          Could be seen at response to basic api call to an endpoint with ~ operator.  Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/ringcentral

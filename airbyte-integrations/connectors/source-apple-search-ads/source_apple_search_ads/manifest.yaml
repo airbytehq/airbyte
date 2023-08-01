@@ -15,7 +15,7 @@ definitions:
       X-AP-Context: orgId={{ config.org_id }}
     error_handler:
       response_filters:
-        - http_codes: [ 500, 429 ]
+        - http_codes: [500, 429]
           action: RETRY
       backoff_strategies:
         - type: "ExponentialBackoffStrategy"
@@ -80,7 +80,7 @@ definitions:
         parent_stream_configs:
           - stream: "#/definitions/adgroups_stream"
             parent_key: "id"
-            partition_field: "adgroup_id"      
+            partition_field: "adgroup_id"
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "/campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{ stream_slice.adgroup_id }}/targetingkeywords"
@@ -115,14 +115,7 @@ definitions:
           endTime: "{{ stream_slice.end_time }}"
           timeZone: "UTC"
           granularity: "{{ parameters.granularity }}"
-          selector: '{
-            "orderBy": [
-              {
-                "field": "countryOrRegion",
-                "sortOrder": "ASCENDING"
-              }
-            ]
-          }'
+          selector: '{ "orderBy": [ { "field": "countryOrRegion", "sortOrder": "ASCENDING" } ] }'
           groupBy: "[ 'countryOrRegion' ]"
 
   campaigns_report_daily_stream:
@@ -139,9 +132,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "campaignId" ]
+          - path: ["campaignId"]
             value: "{{ record.metadata.campaignId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
 
   adgroups_report_daily_stream:
@@ -164,9 +157,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "adGroupId" ]
+          - path: ["adGroupId"]
             value: "{{ record.metadata.adGroupId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
 
   keywords_report_daily_stream:
@@ -191,16 +184,16 @@ definitions:
           response_filters:
             - predicate: "{{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in response.error.errors[0].message }}"
               action: IGNORE
-            - http_codes: [ 500, 429 ]
+            - http_codes: [500, 429]
               action: RETRY
           backoff_strategies:
             - type: "ExponentialBackoffStrategy"
     transformations:
       - type: AddFields
         fields:
-          - path: [ "keywordId" ]
+          - path: ["keywordId"]
             value: "{{ record.metadata.keywordId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
 
 
@@ -215,3 +208,50 @@ streams:
 check:
   stream_names:
     - "campaigns"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Apple Search Ads Spec
+    type: object
+    required:
+      - org_id
+      - client_id
+      - client_secret
+      - start_date
+    additionalProperties: true
+    properties:
+      org_id:
+        type: integer
+        title: Org Id
+        description: >-
+          The identifier of the organization that owns the campaign. Your Org Id is the same as your account in the Apple Search Ads UI.
+      client_id:
+        type: string
+        title: Client Id
+        description: >-
+          A user identifier for the token request. See <a
+          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        airbyte_secret: true
+      client_secret:
+        type: string
+        title: Client Secret
+        description: >-
+          A string that authenticates the user’s setup request. See <a
+          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description: Start getting data from that date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - '2020-01-01'
+      end_date:
+        type: string
+        title: End Date
+        description: Data is retrieved until that date (included)
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - '2021-01-01'
+  documentation_url: https://docs.airbyte.io/integrations/sources/apple-search-ads

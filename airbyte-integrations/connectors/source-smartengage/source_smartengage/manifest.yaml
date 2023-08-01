@@ -88,3 +88,19 @@ streams:
 
 check:
   stream_names: ["tags"]
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: SmartEngage Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        title: API Key
+        type: string
+        description: API Key
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/smartengage

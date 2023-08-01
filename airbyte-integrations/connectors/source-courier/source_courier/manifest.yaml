@@ -150,3 +150,18 @@ streams:
 check:
   type: CheckStream
   stream_names: ["messages"]
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Courier Source Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: Courier API Key to retrieve your data.
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.io/integrations/sources/courier
