@@ -247,7 +247,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                     {
-                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
+                      "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fbe",
                       "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                       "_airbyte_data": {
                         "id1": 3,
@@ -259,7 +259,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                     {
-                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
+                      "_airbyte_raw_id": "84242b60-3a34-4531-ad75-a26702960a9a",
                       "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                       "_airbyte_data": {
                         "id1": 3,
