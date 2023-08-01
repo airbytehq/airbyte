@@ -385,6 +385,7 @@ const understandingAirbyte = {
     'understanding-airbyte/airbyte-protocol',
     'understanding-airbyte/airbyte-protocol-docker',
     'understanding-airbyte/basic-normalization',
+    'understanding-airbyte/typing-deduping',
     {
       type: 'category',
       label: 'Connections and Sync Modes',
