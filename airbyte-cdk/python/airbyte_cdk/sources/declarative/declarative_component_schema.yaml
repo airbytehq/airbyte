@@ -625,7 +625,7 @@ definitions:
           - "2020-01-1T00:00:00Z"
           - "{{ config['start_time'] }}"
       cursor_datetime_formats:
-        title: Cursor Datetime Format
+        title: Cursor Datetime Formats
         description: The possible formats for the cursor field
         type: array
         items:

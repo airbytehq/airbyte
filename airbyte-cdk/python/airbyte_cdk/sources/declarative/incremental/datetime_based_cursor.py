@@ -161,9 +161,6 @@ class DatetimeBasedCursor(Cursor):
     def _format_datetime(self, dt: datetime.datetime) -> str:
         return self._parser.format(dt, self.datetime_format)
 
-    def _format_cursor_datetime(self, dt: datetime.datetime) -> str:
-        return self._parser.format(dt, self.cursor_datetime_formats[0])
-
     def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
         start_field = self.partition_field_start.eval(self.config)
         end_field = self.partition_field_end.eval(self.config)
