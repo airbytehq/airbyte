@@ -86,16 +86,16 @@
     "apns_key_id": {
       "type": ["null", "integer"]
     },
-    "fcm_v1_service_account_json":{
+    "fcm_v1_service_account_json": {
       "type": ["null", "string"]
     },
     "apns_p8": {
       "type": ["null", "string"]
     },
-    "apns_bundle_id":{
+    "apns_bundle_id": {
       "type": ["null", "integer"]
     },
-    "apns_team_id":{
+    "apns_team_id": {
       "type": ["null", "integer"]
     }
   }
