@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 Schema = Dict[str, str]
@@ -43,5 +43,13 @@ class FileTypeParser(ABC):
     ) -> Iterable[Record]:
         """
         Parse and emit each record.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def file_read_mode(self) -> FileReadMode:
+        """
+        The mode in which the file should be opened for reading.
         """
         ...
