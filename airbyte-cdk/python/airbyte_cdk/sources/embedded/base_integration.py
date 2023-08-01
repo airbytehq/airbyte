@@ -6,18 +6,17 @@ from abc import ABC, abstractmethod
 from typing import Generic, Iterable, Optional, TypeVar
 
 from airbyte_cdk.connector import TConfig
-from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream
+from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream, get_stream_names
 from airbyte_cdk.sources.embedded.runner import SourceRunner
 from airbyte_cdk.sources.embedded.tools import get_defined_id
-from airbyte_cdk.sources.source import TState
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode, Type
 
 TOutput = TypeVar("TOutput")
 
 
-class BaseEmbeddedIntegration(ABC, Generic[TConfig, TState, TOutput]):
-    def __init__(self, source: SourceRunner[TConfig, TState], config: TConfig):
-        self.source = source
+class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
+    def __init__(self, runner: SourceRunner[TConfig], config: TConfig):
+        self.source = runner
         self.config = config
 
         self.last_state: Optional[AirbyteStateMessage] = None
@@ -29,11 +28,11 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TState, TOutput]):
         """
         pass
 
-    def _load_data(self, stream_name: str, state: Optional[TState]) -> Iterable[TOutput]:
+    def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage]) -> Iterable[TOutput]:
         catalog = self.source.discover(self.config)
         stream = get_stream(catalog, stream_name)
         if not stream:
-            raise ValueError(f"Stream {stream_name} not found")
+            raise ValueError(f"Stream {stream_name} not found, the following streams are available: {', '.join(get_stream_names(catalog))}")
         if not state or SyncMode.incremental not in stream.supported_sync_modes:
             configured_catalog = create_configured_catalog(stream, sync_mode=SyncMode.full_refresh)
         else:
