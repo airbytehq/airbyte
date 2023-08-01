@@ -47,7 +47,6 @@ public class MySqlInitialLoadHandler {
   private final MySqlInitialLoadSourceOperations sourceOperations;
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
-  // Map of pair to the primary key info (field name & data type) associated with it.
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   public MySqlInitialLoadHandler(final JsonNode config,

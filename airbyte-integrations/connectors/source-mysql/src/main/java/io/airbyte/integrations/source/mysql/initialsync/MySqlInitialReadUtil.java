@@ -208,7 +208,6 @@ public class MySqlInitialReadUtil {
     // For cursor-based syncs, we cannot always assume a primary key field exists. We need to handle the case where it does not exist when we support
     // cursor-based syncs.
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
-    //LOGGER.info()
     final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable
         .get(fullyQualifiedTableName);

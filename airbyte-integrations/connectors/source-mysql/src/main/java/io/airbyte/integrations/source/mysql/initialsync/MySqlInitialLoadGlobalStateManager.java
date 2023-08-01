@@ -31,7 +31,8 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
   private final CdcState cdcState;
 
-  // TODO : Why do we need this again here? Do we just emit one global state, which is fanned out into many entries in the DB by platform? [Confirm]
+  // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As a result, we need to keep track of streams that
+  // have completed the snapshot.
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
