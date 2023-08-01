@@ -5,9 +5,11 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+import static java.util.stream.Collectors.joining;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -18,6 +20,9 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
+import io.airbyte.integrations.destination.staging.NonStagingAsyncFlush;
+import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -27,11 +32,16 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +78,56 @@ public class JdbcBufferedConsumerFactory {
         onCloseFunction(),
         catalog,
         sqlOperations::isValidData);
+  }
+
+  public static AirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                              final JdbcDatabase database,
+                                              final SqlOperations sqlOperations,
+                                              final NamingConventionTransformer namingResolver,
+                                              final JsonNode config,
+                                              final ConfiguredAirbyteCatalog catalog) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
+    final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
+
+    return new AsyncStreamConsumer(
+            outputRecordCollector,
+            onStartFunction(database, sqlOperations, writeConfigs),
+            () -> onCloseFunction(),
+            new NonStagingAsyncFlush(
+                    streamDescToWriteConfig,
+                    sqlOperations,
+                    database,catalog,
+                    50 * 1024 * 1024
+            ),
+            catalog,
+            new BufferManager());
+  }
+
+  private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
+    final Set<WriteConfig> conflictingStreams = new HashSet<>();
+    final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig = new HashMap<>();
+    for (final WriteConfig config : writeConfigs) {
+      final StreamDescriptor streamIdentifier = toStreamDescriptor(config);
+      if (streamDescToWriteConfig.containsKey(streamIdentifier)) {
+        conflictingStreams.add(config);
+        final WriteConfig existingConfig = streamDescToWriteConfig.get(streamIdentifier);
+        // The first conflicting stream won't have any problems, so we need to explicitly add it here.
+        conflictingStreams.add(existingConfig);
+      } else {
+        streamDescToWriteConfig.put(streamIdentifier, config);
+      }
+    }
+    if (!conflictingStreams.isEmpty()) {
+      final String message = String.format(
+              "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+              conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
+      throw new ConfigErrorException(message);
+    }
+    return streamDescToWriteConfig;
+  }
+
+  private static StreamDescriptor toStreamDescriptor(final WriteConfig config) {
+    return new StreamDescriptor().withName(config.getStreamName()).withNamespace(config.getNamespace());
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
