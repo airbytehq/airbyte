@@ -18,6 +18,7 @@ data:
   name: Scaffold Source Python
   releaseDate: TODO
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-python
   tags:
     - language:python
