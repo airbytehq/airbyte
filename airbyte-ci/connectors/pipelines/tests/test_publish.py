@@ -6,30 +6,9 @@ import random
 from typing import List
 
 import anyio
-import dagger
 import pytest
-import requests
 from pipelines import publish
 from pipelines.bases import StepStatus
-
-
-@pytest.fixture(scope="module")
-def anyio_backend():
-    return "asyncio"
-
-
-@pytest.fixture(scope="module")
-async def dagger_client():
-    async with dagger.Connection() as client:
-        yield client
-
-
-@pytest.fixture(scope="module")
-def oss_registry():
-    response = requests.get("https://connectors.airbyte.com/files/registries/v0/oss_registry.json")
-    response.raise_for_status()
-    return response.json()
-
 
 pytestmark = [
     pytest.mark.anyio,
