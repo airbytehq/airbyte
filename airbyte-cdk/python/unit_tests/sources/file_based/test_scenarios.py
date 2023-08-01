@@ -271,7 +271,27 @@ spec_scenarios = [
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
 def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
-    assert spec(capsys, scenario) == scenario.expected_spec
+    assert compare_dicts_with_oneof(spec(capsys, scenario), scenario.expected_spec)
+
+
+def compare_dicts_with_oneof(dict1, dict2):
+    if not isinstance(dict1, dict) or not isinstance(dict2, dict):
+        return dict1 == dict2
+
+    if set(dict1.keys()) != set(dict2.keys()):
+        return False
+
+    for key in dict1:
+        if key == 'oneOf' and isinstance(dict1[key], list) and isinstance(dict2[key], list):
+            # If the key is 'oneOf', and the values are lists, then compare ignoring order
+            l1, l2 = sorted(dict1[key], key=lambda x: x["type"]), sorted(dict2[key], key=lambda x: x["type"])
+            if l1 != l2:
+                return all(compare_dicts_with_oneof(l1[i], l2[i]) for i in range(max(len(l1), len(l2))))
+        else:
+            if not compare_dicts_with_oneof(dict1[key], dict2[key]):
+                return False
+
+    return True
 
 
 check_scenarios = [
