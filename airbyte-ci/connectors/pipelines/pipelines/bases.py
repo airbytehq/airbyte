@@ -478,11 +478,11 @@ class Report:
             failures_group = Group(*sub_panels)
             to_render.append(failures_group)
 
-        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
-        console.print(main_panel)
-
         if self.pipeline_context.dagger_cloud_url:
             self.pipeline_context.logger.info(f"🔗 View commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
+
+        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
+        console.print(main_panel)
 
 
 @dataclass(frozen=True)
@@ -628,8 +628,8 @@ class ConnectorReport(Report):
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
         to_render = [step_results_table, details_instructions]
 
-        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
-        console.print(main_panel)
-
         if self.pipeline_context.dagger_cloud_url:
             self.pipeline_context.logger.info(f"🔗 View commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
+
+        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
+        console.print(main_panel)
