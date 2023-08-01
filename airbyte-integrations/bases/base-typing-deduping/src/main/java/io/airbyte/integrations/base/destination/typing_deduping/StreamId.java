@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+
 /**
  * In general, callers should not directly instantiate this class. Use
  * {@link SqlGenerator#buildStreamId(String, String, String)} instead.
@@ -48,6 +50,10 @@ public record StreamId(String finalNamespace,
 
   public String finalNamespace(final String quote) {
     return quote + finalNamespace + quote;
+  }
+
+  public AirbyteStreamNameNamespacePair asPair() {
+    return new AirbyteStreamNameNamespacePair(originalName, originalNamespace);
   }
 
   /**
