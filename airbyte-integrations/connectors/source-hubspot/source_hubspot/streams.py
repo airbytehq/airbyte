@@ -16,8 +16,8 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -192,14 +192,16 @@ class API:
             message = f"The authenticated user does not have permissions to access the URL {response.url}. Verify your permissions to access this endpoint."
             raise AirbyteTracedException(message, failure_type=FailureType.config_error)
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
-            message = f"The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
+            message = (
+                f"The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
+            )
             raise AirbyteTracedException(message, failure_type=FailureType.config_error)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After")
             raise AirbyteTracedException(
                 f"You have reached your Hubspot API limit. We will resume replication once after {retry_after} seconds."
                 " See https://developers.hubspot.com/docs/api/usage-details",
-                failure_type=FailureType.config_error
+                failure_type=FailureType.config_error,
             )
         elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
             raise HubspotTimeout(message, response=response)
