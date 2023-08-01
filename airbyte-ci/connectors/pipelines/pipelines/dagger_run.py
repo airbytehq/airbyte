@@ -50,11 +50,11 @@ def install_dagger_cli(dagger_version: str) -> None:
     subprocess.run([install_script_path], check=True)
 
 
-def get_dagger_cli_version() -> Optional[str]:
-    if not get_dagger_path():
+def get_dagger_cli_version(dagger_path: Optional[str]) -> Optional[str]:
+    if not dagger_path:
         return None
     version_output = (
-        subprocess.run(["dagger", "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
+        subprocess.run([dagger_path, "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
     )
     version_pattern = r"v(\d+\.\d+\.\d+)"
 
@@ -67,29 +67,32 @@ def get_dagger_cli_version() -> Optional[str]:
         raise Exception("Could not find dagger version in output: " + version_output)
 
 
-def check_dagger_cli_install() -> None:
+def check_dagger_cli_install() -> str:
     expected_dagger_cli_version = get_current_dagger_sdk_version()
-    if not get_dagger_path():
+    dagger_path = get_dagger_path()
+    if dagger_path is None:
         LOGGER.info(f"The Dagger CLI is not installed. Installing {expected_dagger_cli_version}...")
         install_dagger_cli(expected_dagger_cli_version)
+        dagger_path = get_dagger_path()
 
-    cli_version = get_dagger_cli_version()
+    cli_version = get_dagger_cli_version(dagger_path)
     if cli_version != expected_dagger_cli_version:
         LOGGER.warning(
             f"The Dagger CLI version '{cli_version}' does not match the expected version '{expected_dagger_cli_version}'. Installing Dagger CLI '{expected_dagger_cli_version}'..."
         )
         install_dagger_cli(expected_dagger_cli_version)
-        check_dagger_cli_install()
+        return check_dagger_cli_install()
+    return dagger_path
 
 
 def main():
-    check_dagger_cli_install()
+    dagger_path = check_dagger_cli_install()
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
     if sys.argv[1] == "--no-tui":
         command = ["airbyte-ci-internal"] + sys.argv[2:]
     else:
-        command = ["dagger", "run", "airbyte-ci-internal"] + sys.argv[1:]
+        command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]
     try:
         try:
             subprocess.run(command, check=True)
