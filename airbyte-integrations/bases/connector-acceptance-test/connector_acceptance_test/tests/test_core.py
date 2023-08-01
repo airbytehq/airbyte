@@ -46,7 +46,12 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
-from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from connector_acceptance_test.utils.json_schema_helper import (
+    JsonSchemaHelper,
+    get_expected_schema_structure,
+    get_object_structure,
+    get_paths_in_connector_config,
+)
 from jsonschema._utils import flatten
 
 
@@ -483,25 +488,31 @@ class TestSpec(BaseTest):
         """Check if connector has correct oauth flow parameters according to
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
-        if not actual_connector_spec.authSpecification:
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
             return
         spec_schema = actual_connector_spec.connectionSpecification
-        oauth_spec = actual_connector_spec.authSpecification.oauth2Specification
-        parameters: List[List[str]] = oauth_spec.oauthFlowInitParameters + oauth_spec.oauthFlowOutputParameters
-        root_object = oauth_spec.rootObject
-        if len(root_object) == 0:
-            params = {"/" + "/".join(p) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema))
-        elif len(root_object) == 1:
-            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema))
-        elif len(root_object) == 2:
-            params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
-        else:
-            pytest.fail("rootObject cannot have more than 2 elements")
+        paths_to_validate = set()
+        if advanced_auth.predicate_key:
+            paths_to_validate.add("/" + "/".join(advanced_auth.predicate_key))
+        oauth_config_specification = advanced_auth.oauth_config_specification
+        if oauth_config_specification:
+            if oauth_config_specification.oauth_user_input_from_connector_config_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(
+                        oauth_config_specification.oauth_user_input_from_connector_config_specification["properties"]
+                    )
+                )
+            if oauth_config_specification.complete_oauth_output_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_output_specification["properties"])
+                )
+            if oauth_config_specification.complete_oauth_server_output_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_server_output_specification["properties"])
+                )
 
-        diff = params - schema_path
+        diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
     @pytest.mark.default_timeout(60)

@@ -1,0 +1,33 @@
+name: Airbyte CI pipeline tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - airbyte-ci/**
+jobs:
+  run-airbyte-ci-tests:
+    name: Run Airbyte CI tests
+    runs-on: "conn-prod-xlarge-runner"
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Run pipelines tests
+        id: run-pipelines-tests
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "tests connectors/pipelines"

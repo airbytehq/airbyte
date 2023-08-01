@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.3
+Refactor test_oauth_flow_parameters to validate advanced_auth instead of the deprecated authSpecification
+
 ## 0.11.2
 Do not enforce spec.json/spec.yaml
 

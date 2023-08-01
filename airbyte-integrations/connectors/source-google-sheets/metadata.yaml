@@ -13,7 +13,6 @@ data:
   name: Google Sheets
   registries:
     cloud:
-      dockerImageTag: 0.2.21
       enabled: true
     oss:
       enabled: true

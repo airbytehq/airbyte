@@ -14,6 +14,8 @@ data:
   license: ELv2
   name: Zendesk Support
   registries:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseStage: generally_available

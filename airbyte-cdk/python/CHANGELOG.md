@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.47.4
+File-based CDK updates
+
+## 0.47.3
+Connector Builder: Ensure we return when there are no slices
+
 ## 0.47.2
 low-code: deduplicate query params if they are already encoded in the URL
 
