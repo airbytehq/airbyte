@@ -31,18 +31,22 @@ class DebeziumEventUtilsTest {
     final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("insert_change_event.json");
     final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json");
     final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+    final ChangeEventWithMetadata snapShotChangeEvent = mockChangeEvent("snapshot_change_event.json");
 
     final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
     final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
     final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage actualSnapshot = DebeziumEventUtils.toAirbyteMessage(snapShotChangeEvent, cdcMetadataInjector, emittedAt);
 
     final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
     final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
     final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "delete_message.json");
+    final AirbyteMessage expectedSnapshot = createAirbyteMessage(stream, emittedAt, "snapshot_message.json");
 
     deepCompare(expectedInsert, actualInsert);
     deepCompare(expectedUpdate, actualUpdate);
     deepCompare(expectedDelete, actualDelete);
+    deepCompare(expectedSnapshot, actualSnapshot);
   }
 
   private static ChangeEventWithMetadata mockChangeEvent(final String resourceName) throws IOException {
