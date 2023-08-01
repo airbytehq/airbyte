@@ -27,7 +27,7 @@ def test_update_state(patch_incremental_base_class):
 
     stream = IncrementalAvniStream(start_date="",auth_token="")
     stream.state = {"last_modified_at":"2000-06-27T04:18:36.914Z"}
-    stream.last_record = {"last_modified_at":"2001-06-27T04:18:36.914Z"}
+    stream.last_record = {"audit":{"Last modified at":"2001-06-27T04:18:36.914Z"}}
     expected_state = {"last_modified_at":"2001-06-27T04:18:36.914Z"}
     stream.update_state()
     assert stream.state == expected_state

@@ -62,7 +62,7 @@ class AvniStream(HttpStream, ABC):
     def update_state(self) -> None:
 
         if self.last_record:
-            updated_last_date = self.last_record["last_modified_at"]
+            updated_last_date = self.last_record["audit"]["Last modified at"]
             if updated_last_date>self.state["last_modified_at"]:
                 self.state = {self.cursor_field: updated_last_date}
         self.last_record = None
