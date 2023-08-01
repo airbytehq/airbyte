@@ -104,8 +104,105 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void insertFinalTableRecords(StreamId streamId, String suffix, List<JsonNode> records) {
+  protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws InterruptedException {
+    List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
+    String cdcDeletedAtDecl = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
+    String cdcDeletedAtName = includeCdcDeletedAt ? "`_ab_cdc_deleted_at`," : "";
+    String recordsText = records.stream()
+        // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
+        .map(record -> columnNames.stream()
+            .map(record::get)
+            .map(r -> {
+              if (r == null) {
+                return "NULL";
+              }
+              String stringContents;
+              if (r.isTextual()) {
+                stringContents = r.asText();
+              } else {
+                stringContents = r.toString();
+              }
+              return '"' + stringContents
+                  // Serialized json might contain backslashes and double quotes. Escape them.
+                  .replace("\\", "\\\\")
+                  .replace("\"", "\\\"") + '"';
+            })
+            .collect(joining(",")))
+        .map(row -> "(" + row + ")")
+        .collect(joining(","));
 
+    bq.query(QueryJobConfiguration.newBuilder(
+            new StringSubstitutor(Map.of(
+                "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
+                "cdc_deleted_at_name", cdcDeletedAtName,
+                "cdc_deleted_at_decl", cdcDeletedAtDecl,
+                "records", recordsText)).replace(
+                // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in parse_json().
+                """
+                    insert into ${raw_table_id} (
+                      _airbyte_raw_id,
+                      _airbyte_extracted_at,
+                      _airbyte_meta,
+                      `id`,
+                      `updated_at`,
+                      ${cdc_deleted_at_name}
+                      `struct`,
+                      `array`,
+                      `string`,
+                      `number`,
+                      `integer`,
+                      `boolean`,
+                      `timestamp_with_timezone`,
+                      `timestamp_without_timezone`,
+                      `time_with_timezone`,
+                      `time_without_timezone`,
+                      `date`,
+                      `unknown`
+                    )
+                    select
+                      _airbyte_raw_id,
+                      _airbyte_extracted_at,
+                      _airbyte_meta,
+                      `id`,
+                      `updated_at`,
+                      ${cdc_deleted_at_name}
+                      parse_json(`struct`),
+                      parse_json(`array`),
+                      `string`,
+                      `number`,
+                      `integer`,
+                      `boolean`,
+                      `timestamp_with_timezone`,
+                      `timestamp_without_timezone`,
+                      `time_with_timezone`,
+                      `time_without_timezone`,
+                      `date`,
+                      parse_json(`unknown`)
+                    from unnest([
+                      STRUCT<
+                        _airbyte_raw_id STRING,
+                        _airbyte_extracted_at TIMESTAMP,
+                        _airbyte_meta JSON,
+                        `id` INT64,
+                        `updated_at` TIMESTAMP,
+                        ${cdc_deleted_at_decl}
+                        `struct` JSON,
+                        `array` JSON,
+                        `string` STRING,
+                        `number` NUMERIC,
+                        `integer` INT64,
+                        `boolean` BOOL,
+                        `timestamp_with_timezone` TIMESTAMP,
+                        `timestamp_without_timezone` DATETIME,
+                        `time_with_timezone` STRING,
+                        `time_without_timezone` TIME,
+                        `date` DATE,
+                        `unknown` JSON
+                      >
+                      ${records}
+                    ])
+                    """))
+        .build());
   }
 
   @Override
@@ -141,9 +238,9 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                 // This is needed because you can't insert a string literal into a JSON column
                 // so we build a struct literal with a string field, and then parse the field when inserting to the table.
                 """
-                    insert into ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
-                    select _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, parse_json(_airbyte_data) from unnest([
-                      STRUCT<_airbyte_raw_id string, _airbyte_extracted_at timestamp, _airbyte_loaded_at timestamp, _airbyte_data string>
+                    INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
+                    SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, parse_json(_airbyte_data) FROM UNNEST([
+                      STRUCT<`_airbyte_raw_id` STRING, `_airbyte_extracted_at` TIMESTAMP, `_airbyte_loaded_at` TIMESTAMP, _airbyte_data STRING>
                       ${records}
                     ])
                     """))

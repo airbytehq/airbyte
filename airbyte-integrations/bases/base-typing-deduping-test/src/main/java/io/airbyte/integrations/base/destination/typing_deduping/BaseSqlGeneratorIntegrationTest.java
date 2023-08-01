@@ -1,8 +1,11 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -10,6 +13,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,32 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSqlGeneratorIntegrationTest.class);
+  protected static final List<String> FINAL_TABLE_COLUMN_NAMES = List.of(
+      "_airbyte_raw_id",
+      "_airbyte_extracted_at",
+      "_airbyte_meta",
+      "id",
+      "updated_at",
+      "struct",
+      "array",
+      "string",
+      "number",
+      "integer",
+      "boolean",
+      "timestamp_with_timezone",
+      "timestamp_without_timezone",
+      "time_with_timezone",
+      "time_without_timezone",
+      "date",
+      "unknown"
+  );
+  protected static final List<String> FINAL_TABLE_COLUMN_NAMES_CDC;
+  static {
+    FINAL_TABLE_COLUMN_NAMES_CDC = Streams.concat(
+        FINAL_TABLE_COLUMN_NAMES.stream(),
+        Stream.of("_ab_cdc_deleted_at")
+    ).toList();
+  }
 
   public static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
@@ -50,10 +80,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
   protected abstract void createNamespace(String namespace);
-  protected abstract void createRawTable(StreamId streamId) throws InterruptedException;
-  protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws InterruptedException;
-  protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws InterruptedException;
-  protected abstract void insertFinalTableRecords(StreamId streamId, String suffix, List<JsonNode> records);
+  protected abstract void createRawTable(StreamId streamId) throws Exception;
+  protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
+  protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception;
+  protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception;
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
   protected abstract List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception;
   protected abstract void teardownNamespace(String namespace);
@@ -126,7 +156,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   @Test
-  public void incrementalDedupInvalidPrimaryKey() throws InterruptedException {
+  public void incrementalDedupInvalidPrimaryKey() throws Exception {
     createRawTable(streamId);
     createFinalTable(false, streamId, "");
     insertRawTableRecords(
@@ -153,5 +183,94 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertThrows(
         Exception.class,
         () -> destinationHandler.execute(sql));
+  }
+
+  @Test
+  public void testFullUpdateAllTypes() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(false, streamId, "_foo");
+    // TODO insert raw records
+
+    String sql = generator.updateTable(incrementalDedupStream, "_foo");
+    destinationHandler.execute(sql);
+
+    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "_foo");
+    DIFFER.diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize(
+                """
+                {
+                  "id": 1,
+                  "updated_at": "2023-01-01T01:00:00Z",
+                  "array": ["foo"],
+                  "struct": {"foo": "bar"},
+                  "string": "foo",
+                  "number": 42.1,
+                  "integer": 42,
+                  "boolean": true,
+                  "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                  "timestamp_without_timezone": "2023-01-23T12:34:56",
+                  "time_with_timezone": "12:34:56Z",
+                  "time_without_timezone": "12:34:56",
+                  "date": "2023-01-23",
+                  "unknown": {},
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_meta": {"errors": []}
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "id": 2,
+                  "updated_at": "2023-01-01T01:00:00Z",
+                  "unknown": null,
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_meta": {"errors": []}
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "id": 3,
+                  "updated_at": "2023-01-01T01:00:00Z",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_meta": {"errors": []}
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "id": 4,
+                  "updated_at": "2023-01-01T01:00:00Z",
+                  "unknown": null,
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_meta": {
+                    "errors": [
+                      "Problem with `struct`",
+                      "Problem with `array`",
+                      "Problem with `string`",
+                      "Problem with `number`",
+                      "Problem with `integer`",
+                      "Problem with `boolean`",
+                      "Problem with `timestamp_with_timezone`",
+                      "Problem with `timestamp_without_timezone`",
+                      "Problem with `time_with_timezone`",
+                      "Problem with `time_without_timezone`",
+                      "Problem with `date`"
+                    ]
+                  }
+                }
+                """)),
+        actualFinalRecords);
+    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
+    assertAll(
+        () -> assertEquals(4, actualRawRecords.size()),
+        () -> assertEquals(
+            0,
+            actualRawRecords.stream()
+                .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
+                .count()
+        )
+    );
   }
 }
