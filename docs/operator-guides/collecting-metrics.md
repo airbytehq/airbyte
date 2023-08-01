@@ -43,30 +43,47 @@ dogstatsd_mapper_profiles:
         name: "airbyte.worker.attempt.$1"
       - match: "worker.activity_*"
         name: "airbyte.worker.activity.$1"
-      - match: "*"
-        name: "airbyte.$1"
+      - match: "worker.*"
+        name: "airbyte.worker.$1"
   - name: airbyte_cron
     prefix: "cron."
     mappings:
       - match: "cron.cron_jobs_run"
         name: "airbyte.cron.jobs_run"
-      - match: "*"
-        name: "airbyte.$1"
+      - match: "cron.*"
+        name: "airbyte.cron.$1"
   - name: airbyte_metrics_reporter
-    prefix: "metrics_reporter."
+    prefix: "metrics-reporter."
     mappings:
-      - match: '*'
-        name: 'airbyte.$1'
+      - match: "metrics-reporter.*"
+        name: "airbyte.metrics_reporter.$1"
   - name: airbyte_orchestrator
     prefix: "orchestrator."
     mappings:
-      - match: "*"
-        name: "airbyte.$1"
+      - match: "orchestrator.*"
+        name: "airbyte.orchestrator.$1"
   - name: airbyte_server
     prefix: "server."
     mappings:
-      - match: "*"
-        name: "airbyte.$1"
+      - match: "server.*"
+        name: "airbyte.server.$1"
+  - name: airbyte_general
+    prefix: "airbyte."
+    mappings:
+      - match: "airbyte.worker.temporal_workflow_*"
+        name: "airbyte.worker.temporal_workflow.$1"
+      - match: "airbyte.worker.worker_*"
+        name: "airbyte.worker.$1"
+      - match: "airbyte.worker.state_commit_*"
+        name: "airbyte.worker.state_commit.$1"
+      - match: "airbyte.worker.job_*"
+        name: "airbyte.worker.job.$1"
+      - match: "airbyte.worker.attempt_*"
+        name: "airbyte.worker.attempt.$1"
+      - match: "airbyte.worker.activity_*"
+        name: "airbyte.worker.activity.$1"
+      - match: "airbyte.cron.cron_jobs_run"
+        name: "airbyte.cron.jobs_run"
 ```
 
 2. **Add Datadog Agent and Mount Config:** If the Datadog Agent is not yet deployed to your instances running Airbyte, you can modify the provided  `docker-compose.yaml` file in the Airbyte repository to include the Datadog Agent. For the Datadog agent to submit metrics, you will need to add an [API key](https://docs.datadoghq.com/account_management/api-app-keys/#add-an-api-key-or-client-token). Then, be sure to properly mount your `datadog.yaml` file as a Docker volume:
