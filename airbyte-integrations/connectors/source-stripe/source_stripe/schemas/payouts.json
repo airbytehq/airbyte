@@ -123,6 +123,18 @@
     },
     "source_transaction": {
       "type": ["null", "string"]
+    },
+    "original_payout": {
+      "type": ["null", "string"]
+    },
+    "reconciliation_status": {
+      "type": ["null", "string"]
+    },
+    "source_balance": {
+      "type": ["null", "string"]
+    },
+    "reversed_by": {
+      "type": ["null", "string"]
     }
   },
   "type": ["null", "object"]
