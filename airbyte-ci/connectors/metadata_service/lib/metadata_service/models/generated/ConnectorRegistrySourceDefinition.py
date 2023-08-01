@@ -19,11 +19,11 @@ class ReleaseStage(BaseModel):
     )
 
 
-class ReleaseStage1(BaseModel):
+class SupportLevel(BaseModel):
     __root__: Literal["community", "certified"] = Field(
         ...,
         description="enum that describes a connector's release stage",
-        title="ReleaseStage",
+        title="SupportLevel",
     )
 
 
@@ -163,7 +163,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
-    supportLevel: Optional[ReleaseStage1] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",

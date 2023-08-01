@@ -7,9 +7,9 @@ from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
 
-class ReleaseStage(BaseModel):
+class SupportLevel(BaseModel):
     __root__: Literal["community", "certified"] = Field(
         ...,
         description="enum that describes a connector's release stage",
-        title="ReleaseStage",
+        title="SupportLevel",
     )

@@ -19,11 +19,11 @@ class ReleaseStage(BaseModel):
     )
 
 
-class ReleaseStage1(BaseModel):
+class SupportLevel(BaseModel):
     __root__: Literal["community", "certified"] = Field(
         ...,
         description="enum that describes a connector's release stage",
-        title="ReleaseStage",
+        title="SupportLevel",
     )
 
 
@@ -213,7 +213,7 @@ class Data(BaseModel):
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
     releaseStage: ReleaseStage
-    supportLevel: Optional[ReleaseStage1] = None
+    supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
