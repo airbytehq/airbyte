@@ -153,6 +153,9 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     ExecError to handle errors. This is offered as a convenience when the exit code
     value is actually needed.
 
+    If the container has a file at /exit_code, the exit code will be read from it.
+    See hacks.never_fail_exec for more details.
+
     Args:
         container (Container): The container to execute.
 
@@ -160,7 +163,11 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
         Tuple[int, str, str]: The exit_code, stdout and stderr of the container, respectively.
     """
     try:
-        return 0, *(await get_container_output(container))
+        exit_code = 0
+        in_file_exit_code = await get_file_contents(container, "/exit_code")
+        if in_file_exit_code:
+            exit_code = int(in_file_exit_code)
+        return exit_code, *(await get_container_output(container))
     except ExecError as e:
         return e.exit_code, e.stdout, e.stderr
 

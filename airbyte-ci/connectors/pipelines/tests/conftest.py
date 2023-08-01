@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import sys
 from pathlib import Path
 
 import dagger
@@ -18,7 +19,7 @@ def anyio_backend():
 
 @pytest.fixture(scope="session")
 async def dagger_client():
-    async with dagger.Connection() as client:
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
         yield client
 
 

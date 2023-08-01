@@ -4,7 +4,7 @@
 
 
 from pipelines.actions import environments
-from pipelines.bases import StepResult, StepStatus
+from pipelines.bases import StepResult
 from pipelines.gradle import GradleTask
 from pipelines.utils import get_exec_result
 
@@ -25,7 +25,7 @@ class FormatConnectorCode(GradleTask):
         exit_code, stdout, stderr = await get_exec_result(formatted)
         return StepResult(
             self,
-            StepStatus.from_exit_code(exit_code),
+            self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
             output_artifact=formatted.directory(str(self.context.connector.code_directory)),
