@@ -19,7 +19,7 @@ single_csv_scenario = (
                     "validation_policy": "emit_record",
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z",
+            "start_date": "2023-06-04T03:54:07.000Z",
         }
     )
     .set_files(
@@ -219,7 +219,8 @@ single_csv_scenario = (
                         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
                         "examples": ["2021-01-01T00:00:00Z"],
                         "format": "date-time",
-                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+                        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSZ",
                         "order": 1,
                         "type": "string",
                     },
@@ -1546,7 +1547,7 @@ earlier_csv_scenario = (
                     "validation_policy": "emit_record",
                 }
             ],
-            "start_date": "2023-06-10T03:54:07Z",
+            "start_date": "2023-06-10T03:54:07.000Z",
         }
     )
     .set_files(
@@ -1562,6 +1563,7 @@ earlier_csv_scenario = (
         }
     )
     .set_file_type("csv")
+    .set_expected_check_status("FAILED")
     .set_expected_catalog(
         {
             "streams": [

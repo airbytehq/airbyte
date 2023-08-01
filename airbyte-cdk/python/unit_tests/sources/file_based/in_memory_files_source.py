@@ -86,7 +86,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         globs: List[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
+        yield from self.filter_files_by_globs_and_start_date([
             RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
             for f, data in self.files.items()
         ], globs)
