@@ -4,6 +4,7 @@
 
 import logging
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
@@ -131,7 +132,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 for file in response["Contents"]:
                     if self._is_folder(file):
                         continue
-                    remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"])
+                    remote_file = RemoteFile(uri=file["Key"], last_modified=self._cast_to_utc(file["LastModified"]))
                     if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
                         seen.add(remote_file.uri)
                         yield remote_file
@@ -144,6 +145,20 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 logger.info(f"Finished listing objects from S3 for prefix={prefix}. Found {total_n_keys_for_prefix} objects.")
                 break
 
+    @staticmethod
+    def _cast_to_utc(timestamp) -> datetime:
+        """
+        Note: the file-based CDK requires timezone-naive timestamps.
+
+        If the timestamp is timezone-aware, cast it to UTC.
+
+        Otherwise, treat the timestamp as though it is UTC.
+        """
+        if timestamp.tzinfo is None:
+            return timestamp
+        timestamp = timestamp.astimezone(timezone.utc)
+        timestamp = timestamp.replace(tzinfo=None)
+        return timestamp
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
     """
