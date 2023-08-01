@@ -15,15 +15,15 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from connector_ops.utils import Connector
+from dagger import Client, Directory, Secret
+from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
 from pipelines.bases import CIContext, ConnectorReport, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
 from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
-from connector_ops.utils import Connector
-from dagger import Client, Directory, Secret
-from github import PullRequest
 
 
 class ContextState(Enum):
@@ -171,6 +171,18 @@ class PipelineContext:
     @property
     def should_send_slack_message(self) -> bool:
         return self.slack_webhook is not None and self.reporting_slack_channel is not None
+
+    @property
+    def is_dagger_cloud(self) -> bool:
+        return bool(os.getenv("_EXPERIMENTAL_DAGGER_CLOUD_TOKEN"))
+
+    @property
+    def dagger_cloud_url(self) -> str:
+        """Gets the link to the Dagger Cloud runs page for the current commit."""
+        if self.is_local or not self.is_dagger_cloud:
+            return None
+
+        return f"https://alpha.dagger.coud/changeByPipelines/dagger.io/git.ref:{self.git_revision}"
 
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
