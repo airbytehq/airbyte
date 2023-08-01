@@ -40,7 +40,7 @@ class FileTypeParser(ABC):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Iterable[Optional[Record]]:
+    ) -> Iterable[Record]:
         """
         Parse and emit each record.
         """

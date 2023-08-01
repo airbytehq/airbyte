@@ -52,7 +52,7 @@ class JsonlParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Iterable[Optional[Dict[str, Any]]]:
+    ) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file) as fp:
             for line in fp:
                 yield json.loads(line)
