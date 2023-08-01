@@ -1,6 +1,6 @@
 # Typing and Deduping
 
-This page refers to new functionality currently available in **early access**. Typing and deduping will become the new default method of transforming datasets after they've been replicated to your destination. This functionality is going live with [Destinations V2](https://github.com/airbytehq/airbyte/issues/26028), which is now in early access for BigQuery.
+This page refers to new functionality currently available in **early access**. Typing and deduping will become the new default method of transforming datasets within data warehouse and database destinations after they've been replicated. This functionality is going live with [Destinations V2](https://github.com/airbytehq/airbyte/issues/26028), which is now in early access for BigQuery.
 
 You will eventually be required to upgrade your connections to use the new destination versions.  We are building tools for you to copy your connector’s configuration to a new version to make testing new destinations easier. These will be available in the next few weeks.
 
@@ -8,9 +8,9 @@ You will eventually be required to upgrade your connections to use the new desti
 
 At launch, Airbyte Destinations V2 will provide:
 * One-to-one table mapping: Data in one stream will always be mapped to one table in your data warehouse. No more sub-tables.
-* Improved error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
-* Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your destination schema with raw data tables.
-* Incremental delivery for large syncs: Data will be incrementally delivered to your final tables. No more waiting hours to see the first rows in your destination table.
+* Improved per-row error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
+* Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your desired schema with raw data tables.
+* Incremental delivery for large syncs: Data will be incrementally delivered to your final tables when possible. No more waiting hours to see the first rows in your destination table.
 
 ## Destinations V2 Example
 
@@ -35,7 +35,7 @@ The data from one stream will now be mapped to one table in your schema as below
 | *(note, not in actual table)*                   	| _airbyte_raw_id 	| _airbyte_extracted_at    	| _airbyte_meta                                                            	| id 	| first_name 	| age  	| address                                     	|
 |-----------------------------------------------	|-----------------	|---------------------	|--------------------------------------------------------------------------	|----	|------------	|------	|---------------------------------------------	|
 | Successful typing and de-duping ⟶        	| xxx-xxx-xxx     	| 2022-01-01 12:00:00 	| {}                                                                       	| 1  	| sarah      	| 39   	| {   city: “San Francisco”,   zip: “94131” } 	|
-| Failed typing that didn’t break other rows ⟶  	| yyy-yyy-yyy     	| 2022-01-01 12:00:00 	| { errors: {   age:     “fish” is not a valid integer for column “age” }} 	| 2  	| evan       	| NULL 	| {   city: “Menlo Park”,   zip: “94002” }    	|
+| Failed typing that didn’t break other rows ⟶  	| yyy-yyy-yyy     	| 2022-01-01 12:00:00 	| { errors: {[“fish” is not a valid integer for column “age”]} 	| 2  	| evan       	| NULL 	| {   city: “Menlo Park”,   zip: “94002” }    	|
 | Not-yet-typed ⟶            	|                 	|                     	|                                                                          	|    	|            	|      	|                                             	|
 
 In legacy normalization, columns of [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
