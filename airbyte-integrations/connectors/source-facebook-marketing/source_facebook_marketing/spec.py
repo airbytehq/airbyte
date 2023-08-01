@@ -29,43 +29,52 @@ class InsightConfig(BaseModel):
 
     name: str = Field(
         title="Name",
-        description="The desired name of the custom insight. This will be used as the Airbyte stream name.",
+        description="The name of the custom insight. This will be used as the Airbyte stream name.",
         order=0
     )
 
-    level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
+    level: str = Field(
+        title="Level", 
+        description="The selected granularity level for data retrieval from the API.", 
+        default="ad", 
+        enum=["ad", "adset", "campaign", "account"],
+        order=1
+    )
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
         description="Choose from the dropdown menu to add fields to your custom insight. Each option you select from the dropdown will be added to your custom insight field list.",
         default=[],
-        order=1
+        order=2
     )
 
     breakdowns: Optional[List[ValidBreakdowns]] = Field(
         title="Breakdowns",
         description="Choose from the dropdown menu to add breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight breakdown list.",
         default=[],
-        order=2
+        order=3
     )
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="Choose from the dropdown menu to add action breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight action breakdown list.",
         default=[],
-        order=3
+        order=4
     )
 
     action_report_time: str = Field(
         title="Action Report Time",
         description=(
             "This value determines the timing used to report action statistics. If a user sees an ad on Jan 1st "
-            "but converts on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
-            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+            "but converts on Jan 2nd, this value will determine how the action is reported. "
+            "When you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd. "
+            "When you query the API with action_report_time=mixed, view-through actions are reported at the time of the impression "
+            "and click-through actions are reported at the time of conversion."
         ),
         default="mixed",
         enum=["conversion", "impression", "mixed"],
-        order=4
+        order=5
     )
 
     time_increment: Optional[PositiveInt] = Field(
@@ -76,15 +85,15 @@ class InsightConfig(BaseModel):
         ),
         exclusiveMaximum=90,
         default=1,
-        order=5
+        order=6
     )
 
     start_date: Optional[datetime] = Field(
         title="Start Date",
-        description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
+        description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. Leaving this field blank will replicate all data.",
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
-        order=6
+        order=7
     )
 
     end_date: Optional[datetime] = Field(
@@ -96,7 +105,7 @@ class InsightConfig(BaseModel):
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        order=7
+        order=8
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
@@ -104,7 +113,7 @@ class InsightConfig(BaseModel):
         maximum=28,
         mininum=1,
         default=28,
-        order=8
+        order=9
     )
 
 
