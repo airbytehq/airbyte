@@ -36,7 +36,7 @@ class ParquetParser(FileTypeParser):
         # Inferred non-partition schema
         schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type, parquet_format) for field in parquet_schema}
         # Inferred partition schema
-        partition_columns = {x.split("=")[0]: {"type": "string"} for x in self._extract_partitions(file.uri)}
+        partition_columns = {partition.split("=")[0]: {"type": "string"} for partition in self._extract_partitions(file.uri)}
 
         schema.update(partition_columns)
         return schema
@@ -63,7 +63,7 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:
-        return [unquote(x) for x in filepath.split(os.sep) if "=" in x]
+        return [unquote(partition) for partition in filepath.split(os.sep) if "=" in partition]
 
     @property
     def file_read_mode(self) -> FileReadMode:
