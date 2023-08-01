@@ -255,7 +255,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(suffix, BigQuerySqlGenerator.QUOTE)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 

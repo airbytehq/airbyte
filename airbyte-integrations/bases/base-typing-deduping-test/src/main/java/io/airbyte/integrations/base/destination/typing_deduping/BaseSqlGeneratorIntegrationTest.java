@@ -189,7 +189,97 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void testFullUpdateAllTypes() throws Exception {
     createRawTable(streamId);
     createFinalTable(false, streamId, "_foo");
-    // TODO insert raw records
+    insertRawTableRecords(
+        streamId,
+        List.of(
+            Jsons.deserialize(
+                """
+                    {
+                      "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_data": {
+                        "id1": 1,
+                        "id2": 100,
+                        "updated_at": "2023-01-01T01:00:00Z",
+                        "array": [
+                          "foo"
+                        ],
+                        "struct": {
+                          "foo": "bar"
+                        },
+                        "string": "foo",
+                        "number": 42.1,
+                        "integer": 42,
+                        "boolean": true,
+                        "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                        "timestamp_without_timezone": "2023-01-23T12:34:56",
+                        "time_with_timezone": "12:34:56Z",
+                        "time_without_timezone": "12:34:56",
+                        "date": "2023-01-23",
+                        "unknown": {}
+                      }
+                    }
+                    """),
+            Jsons.deserialize(
+                """
+                    {
+                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_data": {
+                        "id1": 2,
+                        "id2": 100,
+                        "updated_at": "2023-01-01T01:00:00Z",
+                        "array": null,
+                        "struct": null,
+                        "string": null,
+                        "number": null,
+                        "integer": null,
+                        "boolean": null,
+                        "timestamp_with_timezone": null,
+                        "timestamp_without_timezone": null,
+                        "time_with_timezone": null,
+                        "time_without_timezone": null,
+                        "date": null,
+                        "unknown": null
+                      }
+                    }
+                    """),
+            Jsons.deserialize(
+                """
+                    {
+                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_data": {
+                        "id1": 3,
+                        "id2": 100,
+                        "updated_at": "2023-01-01T01:00:00Z"
+                      }
+                    }
+                    """),
+            Jsons.deserialize(
+                """
+                    {
+                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_data": {
+                        "id1": 3,
+                        "id2": 100,
+                        "updated_at": "2023-01-01T01:00:00Z",
+                        "array": {},
+                        "struct": [],
+                        "string": {},
+                        "number": {},
+                        "integer": {},
+                        "boolean": {},
+                        "timestamp_with_timezone": {},
+                        "timestamp_without_timezone": {},
+                        "time_with_timezone": {},
+                        "time_without_timezone": {},
+                        "date": {},
+                        "unknown": null
+                      }
+                    }
+                    """)));
 
     String sql = generator.updateTable(incrementalDedupStream, "_foo");
     destinationHandler.execute(sql);
