@@ -4,19 +4,20 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCredential;
-import com.mongodb.ReadPreference;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoDriverInformation;
+import com.mongodb.ReadPreference;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 /**
  * Helper utility for building a {@link MongoClient}.
@@ -37,6 +38,10 @@ public class MongoConnectionUtils {
     final ConnectionString mongoConnectionString = new ConnectionString(connectionString + "?replicaSet=" +
         replicaSet + "&retryWrites=false&provider=airbyte&tls=true");
 
+    final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
+        .driverName("Airbyte")
+        .build();
+
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString)
         .readPreference(ReadPreference.secondaryPreferred());
@@ -47,7 +52,7 @@ public class MongoConnectionUtils {
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }
 
-    return MongoClients.create(mongoClientSettingsBuilder.build());
+    return MongoClients.create(mongoClientSettingsBuilder.build(), mongoDriverInformation);
   }
 
 }
