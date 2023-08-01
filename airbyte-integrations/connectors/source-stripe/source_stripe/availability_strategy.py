@@ -15,6 +15,7 @@ STRIPE_ERROR_CODES = {
     "Try to grant required permissions/scopes or re-authenticate",
     "account_invalid": "The card, or account the card is connected to, is invalid. You need to contact your card issuer "
     "to check that the card is working correctly.",
+    "oauth_not_supported": "Please use a different authentication method."
 }
 
 
