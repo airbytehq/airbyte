@@ -23,4 +23,7 @@ data:
   tags:
     - language:java
     - language:python
+  _ab_internal:
+    _sl: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

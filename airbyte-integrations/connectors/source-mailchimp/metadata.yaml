@@ -20,4 +20,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   tags:
     - language:python
+  _ab_internal:
+    _sl: 200
+  supportLevel: certified
 metadataSpecVersion: "1.0"

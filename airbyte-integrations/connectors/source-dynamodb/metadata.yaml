@@ -17,4 +17,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   tags:
     - language:java
+  _ab_internal:
+    _sl: 200
+  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -21,4 +21,7 @@ data:
   tags:
     - language:java
     - language:python
+  _ab_internal:
+    _sl: 100
+  supportLevel: community
 metadataSpecVersion: "1.0"
