@@ -236,8 +236,8 @@ single_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -317,9 +317,9 @@ multi_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -419,8 +419,8 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -514,8 +514,8 @@ invalid_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -583,8 +583,8 @@ csv_single_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -670,9 +670,9 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -686,7 +686,7 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -787,13 +787,13 @@ csv_custom_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -895,13 +895,13 @@ csv_legacy_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1021,13 +1021,13 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1043,7 +1043,7 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1139,8 +1139,8 @@ empty_schema_inference_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1339,7 +1339,7 @@ schemaless_csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1513,7 +1513,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },

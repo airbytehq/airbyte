@@ -176,7 +176,9 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
         value = record.get(column)
 
         if value is not None:
-            if expected_type == "object":
+            if isinstance(expected_type, list):
+                return any(is_equal_or_narrower_type(value, e) for e in expected_type)
+            elif expected_type == "object":
                 return isinstance(value, dict)
             elif expected_type == "array":
                 if not isinstance(value, list):
