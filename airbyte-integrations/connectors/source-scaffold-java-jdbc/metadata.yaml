@@ -18,6 +18,7 @@ data:
   name: Scaffold Java Jdbc
   releaseDate: TODO
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
   tags:
     - language:java
