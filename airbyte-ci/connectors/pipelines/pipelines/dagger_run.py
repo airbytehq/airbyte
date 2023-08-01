@@ -98,9 +98,6 @@ def main():
             exit_code = 1
     except subprocess.CalledProcessError as e:
         exit_code = e.returncode
-    finally:
-        if DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0] in os.environ:
-            os.unsetenv(DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0])
     sys.exit(exit_code)
 
 

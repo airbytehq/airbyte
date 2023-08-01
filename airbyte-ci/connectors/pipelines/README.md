@@ -96,12 +96,8 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 #### Options
 
 | Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
-<<<<<<< Updated upstream
-|-----------------------------------------|---------------------------------|-------------------------------|---------------------------------------------------------------------------------------------|
-=======
 | --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
 | `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
->>>>>>> Stashed changes
 | `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
 | `--git-revision`                        | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
