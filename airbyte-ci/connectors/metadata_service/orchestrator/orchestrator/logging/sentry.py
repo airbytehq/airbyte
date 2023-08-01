@@ -114,22 +114,11 @@ def capture_asset_op_context(func):
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)
         with sentry_sdk.configure_scope() as scope:
-            sentry_sdk.add_breadcrumb(
-                category="dagster",
-                message=f"{context.job_name} - {context.op_def.name}",
-                level="info",
-                data={
-                    "run_config": context.run_config,
-                    "job_name": context.job_name,
-                    "op_name": context.op_def.name,
-                    "run_id": context.run_id,
-                    "retry_number": context.retry_number,
-                },
-            )
             scope.set_transaction_name(context.job_name)
             scope.set_tag("job_name", context.job_name)
             scope.set_tag("op_name", context.op_def.name)
             scope.set_tag("run_id", context.run_id)
+            scope.set_tag("retry_number", context.run_id)
             return func(*args, **kwargs)
 
     return wrapped_fn
@@ -144,16 +133,6 @@ def capture_sensor_context(func):
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)
         with sentry_sdk.configure_scope() as scope:
-            sentry_sdk.add_breadcrumb(
-                category="dagster",
-                message=f"{context._sensor_name}",
-                level="info",
-                data={
-                    "sensor_name": context._sensor_name,
-                    "run_id": context.cursor,
-                },
-            )
-
             scope.set_transaction_name(context._sensor_name)
             scope.set_tag("sensor_name", context._sensor_name)
             scope.set_tag("run_id", context.cursor)
