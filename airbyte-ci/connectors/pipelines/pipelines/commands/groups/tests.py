@@ -24,14 +24,18 @@ def tests(
     Args:
         airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory
     """
-    anyio.run(run_test, airbyte_ci_package_path)
+    success = anyio.run(run_test, airbyte_ci_package_path)
+    if not success:
+        click.Abort()
 
 
-async def run_test(airbyte_ci_package_path: str):
+async def run_test(airbyte_ci_package_path: str) -> bool:
     """Runs the tests for the given airbyte-ci package in a Dagger container.
 
     Args:
         airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory.
+    Returns:
+        bool: True if the tests passed, False otherwise.
     """
     logger = logging.getLogger(f"{airbyte_ci_package_path}.tests")
     logger.info(f"Running tests for {airbyte_ci_package_path}")
@@ -57,8 +61,9 @@ async def run_test(airbyte_ci_package_path: str):
             ).stdout()
             logger.info("Successfully ran tests")
             logger.info(pytest_stdout)
+            return True
         except dagger.ExecError as e:
             logger.error("Tests failed")
             logger.error(e.stdout)
             logger.error(e.stderr)
-            sys.exit(1)
+            return False
