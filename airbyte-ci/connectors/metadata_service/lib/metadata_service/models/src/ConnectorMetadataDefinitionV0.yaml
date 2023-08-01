@@ -80,6 +80,11 @@ properties:
           - beta
           - generally_available
           - source
+      supportLevel:
+        type: string
+        enum:
+          - community
+          - certified
       tags:
         type: array
         description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
@@ -108,3 +113,5 @@ properties:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
+      _ab_internal:
+        "$ref": AirbyteInternal.yaml

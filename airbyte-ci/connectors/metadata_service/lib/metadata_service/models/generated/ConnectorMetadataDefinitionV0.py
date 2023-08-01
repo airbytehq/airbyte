@@ -92,6 +92,14 @@ class VersionBreakingChange(BaseModel):
     )
 
 
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    field_sl: Optional[Literal[100, 200, 300]] = Field(None, alias="_sl")
+    field_ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = Field(None, alias="_ql")
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -189,6 +197,7 @@ class Data(BaseModel):
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
     releaseStage: Literal["alpha", "beta", "generally_available", "source"]
+    supportLevel: Optional[Literal["community", "certified"]] = None
     tags: Optional[List[str]] = Field(
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
@@ -199,6 +208,7 @@ class Data(BaseModel):
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
+    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
