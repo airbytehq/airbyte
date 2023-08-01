@@ -11,6 +11,22 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
+class ReleaseStage(BaseModel):
+    __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="ReleaseStage",
+    )
+
+
+class ReleaseStage1(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="ReleaseStage",
+    )
+
+
 class AllowedHosts(BaseModel):
     class Config:
         extra = Extra.allow
@@ -196,8 +212,8 @@ class Data(BaseModel):
     connectorSubtype: Literal[
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
-    releaseStage: Literal["alpha", "beta", "generally_available", "source"]
-    supportLevel: Optional[Literal["community", "certified"]] = None
+    releaseStage: ReleaseStage
+    supportLevel: Optional[ReleaseStage1] = None
     tags: Optional[List[str]] = Field(
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",

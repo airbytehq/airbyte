@@ -13,3 +13,4 @@ from .RegistryOverrides import *
 from .ReleaseStage import *
 from .ResourceRequirements import *
 from .SuggestedStreams import *
+from .SupportLevel import *
