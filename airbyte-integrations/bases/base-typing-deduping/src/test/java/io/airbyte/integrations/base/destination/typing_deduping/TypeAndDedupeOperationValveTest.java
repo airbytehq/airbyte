@@ -36,8 +36,8 @@ public class TypeAndDedupeOperationValveTest {
   public void testAddStream() {
     final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
     valve.addStream(STREAM_A);
-    Assertions.assertEquals(0, valve.getIncrementInterval(STREAM_A));
-    Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
+    Assertions.assertEquals(-1, valve.getIncrementInterval(STREAM_A));
+    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     Assertions.assertEquals(valve.get(STREAM_A), 0l);
   }
 
