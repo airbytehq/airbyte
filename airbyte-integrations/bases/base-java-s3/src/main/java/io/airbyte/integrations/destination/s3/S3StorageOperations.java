@@ -178,7 +178,7 @@ public class S3StorageOperations extends BlobStorageOperations {
       blobDecorator.updateMetadata(metadata, getMetadataMapping());
     }
     final StreamTransferManager uploadManager = StreamTransferManagerFactory.create(bucket, fullObjectKey, s3Client)
-        .setPartSize(50L)
+        .setPartSize(100L)
         .setUserMetadata(metadata)
         .get()
         .checkIntegrity(s3Config.isCheckIntegrity())
