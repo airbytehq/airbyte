@@ -133,7 +133,7 @@ public class PostgresQueryUtils {
    * @param database the source db
    * @param streams streams to be synced
    * @param stateManager stream stateManager
-   * @return
+   * @return Map of streams to statuses
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
@@ -151,7 +151,6 @@ public class PostgresQueryUtils {
         }
 
         LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
-        cursorInfoOptional.ifPresent(cf -> LOGGER.info("*** {}", cf));
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
@@ -159,7 +158,6 @@ public class PostgresQueryUtils {
             cursorField,
             cursorField,
             name);
-        LOGGER.info("*** {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
