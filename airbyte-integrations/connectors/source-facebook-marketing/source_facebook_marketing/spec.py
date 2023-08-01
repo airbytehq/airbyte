@@ -191,7 +191,7 @@ class ConnectorConfig(BaseConfig):
         order=6,
         description=(
             "A list which contains custom ad statistics entries. Each entry must have a name and can contains fields, "
-            "breakdowns or action_breakdowns. Click on 'Add' to fill this field. "
+            "breakdowns and/or action_breakdowns. Click on 'Add' to fill this field. "
             "For more information on configuring custom insights, refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a>."
         ),
     )
