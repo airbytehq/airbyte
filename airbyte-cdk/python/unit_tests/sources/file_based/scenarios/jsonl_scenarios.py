@@ -42,16 +42,16 @@ single_jsonl_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -116,19 +116,19 @@ multi_jsonl_with_different_keys_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         }
                     },
@@ -197,15 +197,15 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             }, "col2": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         }
                     },
@@ -275,15 +275,15 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             }, "col2": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         }
                     },
@@ -346,13 +346,13 @@ invalid_jsonl_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         }
                     },
@@ -429,19 +429,19 @@ jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "integer"
+                                "type": ["null", "integer"]
                             },
                             "col2": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "number"
+                                "type": ["null", "number"]
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -455,13 +455,13 @@ jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "number"
+                                "type": ["null", "number"]
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -539,10 +539,10 @@ schemaless_jsonl_scenario = (
                                 "type": "object"
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         }
                     },
@@ -620,10 +620,10 @@ schemaless_jsonl_multi_stream_scenario = (
                                 "type": "object"
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -637,13 +637,13 @@ schemaless_jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "number"
+                                "type": ["null", "number"]
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -709,13 +709,13 @@ jsonl_user_input_schema_scenario = (
                                 "type": "integer"
                             },
                             "col2": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },

@@ -185,10 +185,10 @@ single_parquet_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "col2": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -233,13 +233,13 @@ multi_parquet_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "col2": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "col3": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -296,80 +296,80 @@ parquet_various_types_scenario = (
                         "type": "object",
                         "properties": {
                             "col_bool": {
-                                "type": "boolean"
+                                "type": ["null", "boolean"],
                             },
                             "col_int8": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_int16": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_int32": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_uint8": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_uint16": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_uint32": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_uint64": {
-                                "type": "integer"
+                                "type": ["null", "integer"],
                             },
                             "col_float32": {
-                                "type": "number"
+                                "type": ["null", "number"],
                             },
                             "col_float64": {
-                                "type": "number"
+                                "type": ["null", "number"],
                             },
                             "col_string": {
-                                "type": "string"
+                                "type": ["null", "string"],
                             },
                             "col_date32": {
-                                "type": "string",
+                                "type": ["null", "string"],
                                 "format": "date"
                             },
                             "col_date64": {
-                                "type": "string",
+                                "type": ["null", "string"],
                                 "format": "date"
                             },
                             "col_timestamp_without_tz": {
-                                "type": "string",
+                                "type": ["null", "string"],
                                 "format": "date-time"
                             },
                             "col_timestamp_with_tz": {
-                                "type": "string",
+                                "type": ["null", "string"],
                                 "format": "date-time"
                             },
                             "col_time32s": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col_time32ms": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col_time64us": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col_struct": {
-                                "type": "object",
+                                "type": ["null", "object"],
                             },
                             "col_list": {
-                                "type": "array",
+                                "type": ["null", "array"],
                             },
                             "col_duration": {
-                                "type": "integer",
+                                "type": ["null", "integer"],
                             },
                             "col_binary": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -443,7 +443,7 @@ parquet_file_with_decimal_no_config_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -500,7 +500,7 @@ parquet_file_with_decimal_as_string_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -557,7 +557,7 @@ parquet_file_with_decimal_as_float_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "number"
+                                "type": ["null", "number"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -611,7 +611,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "number"
+                                "type": ["null", "number"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"

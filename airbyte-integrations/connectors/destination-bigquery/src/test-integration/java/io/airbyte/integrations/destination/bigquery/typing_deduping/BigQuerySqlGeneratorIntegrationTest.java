@@ -304,12 +304,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
                       (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
                       (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                      (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                      (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z'),
+                      (JSON'{"id": 3, "string": "Charlie", "integer": 123}', '22af9e56-7ebb-4f5f-ae6b-6ba53360e41e', '2023-01-01T00:00:00Z'),
+                      (JSON'{"id": 3, "updated_at": "2023-01-01T04:00:00Z", "string": "Charlie", "integer": 456}', '0f2375ac-94c1-4be4-99d8-06db40a8ce3e', '2023-01-01T00:00:00Z');
 
                     INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `updated_at`, `string`, `struct`, `integer`) values
                       ('d7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T01:00:00Z', 'Alice', JSON'{"city": "San Francisco", "state": "CA"}', 42),
                       ('80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T02:00:00Z', 'Alice', JSON'{"city": "San Diego", "state": "CA"}', 84),
-                      ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah integer"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL);
+                      ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah integer"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL),
+                      -- cursor=NULL should be discarded in favor of cursor=<anything not null>
+                      ('22af9e56-7ebb-4f5f-ae6b-6ba53360e41e', '2023-01-01T00:00:00Z', JSON'{"errors": []}', 3, NULL, 'Charlie', NULL, 123),
+                      ('0f2375ac-94c1-4be4-99d8-06db40a8ce3e', '2023-01-01T00:00:00Z', JSON'{"errors": []}', 3, '2023-01-01T04:00:00Z', 'Charlie', NULL, 456);
                     """))
         .build());
 
@@ -339,6 +344,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
                       "string": "Bob",
                       "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                       "_airbyte_meta": {"errors":["blah blah integer"]}
+                    }
+                    """),
+            Jsons.deserialize(
+                """
+                    {
+                      "id": 3,
+                      "updated_at": "2023-01-01T04:00:00Z",
+                      "string": "Charlie",
+                      "integer": 456,
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_meta": {"errors":[]}
                     }
                     """)),
         toJsonRecords(result));

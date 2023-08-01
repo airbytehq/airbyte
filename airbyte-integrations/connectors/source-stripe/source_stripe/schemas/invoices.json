@@ -255,6 +255,364 @@
           "type": ["null", "integer"]
         }
       }
+    },
+    "post_payment_credit_notes_amount": {
+      "type": ["null", "integer"]
+    },
+    "paid_out_of_band": {
+      "type": ["null", "boolean"]
+    },
+    "total_discount_amounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": ["null", "integer"]
+          },
+          "discount": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "customer_name": {
+      "type": ["null", "string"]
+    },
+    "shipping_cost": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_subtotal": {
+          "type": ["null", "integer"]
+        },
+        "amount_tax": {
+          "type": ["null", "integer"]
+        },
+        "amount_total": {
+          "type": ["null", "integer"]
+        },
+        "shipping_rate": {
+          "type": ["null", "string"]
+        },
+        "taxes": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "transfer_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "integer"]
+        },
+        "destination": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "application_fee_amount": {
+      "type": ["null", "integer"]
+    },
+    "customer_shipping": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+          "address" : {
+            "type" : [
+              "null",
+              "object"
+            ],
+            "properties" : {
+              "city" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              },
+              "country" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              },
+              "line1" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              },
+              "line2" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              },
+              "postal_code" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              },
+              "state" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          "name" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          },
+          "phone" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          }
+        }
+    },
+    "application": {
+      "type": ["null", "string"]
+    },
+    "amount_shipping": {
+      "type": ["null", "integer"]
+    },
+    "from_invoice": {
+      "type": ["null", "object"],
+      "properties": {
+        "actions": {
+          "type": ["null", "string"]
+        },
+        "invoice": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "customer_tax_exempt": {
+      "type": ["null", "string"]
+    },
+    "total_tax_amounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": ["null", "integer"]
+          },
+          "inclusive": {
+            "type": ["null", "boolean"]
+          },
+          "tax_rate": {
+            "type": ["null", "string"]
+          },
+          "taxability_reason": {
+            "type": ["null", "string"]
+          },
+          "taxable_amount": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "footer": {
+      "type": ["null", "string"]
+    },
+    "test_clock": {
+      "type": ["null", "string"]
+    },
+    "automatic_tax": {
+      "type": ["null", "object"],
+      "properties": {
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "payment_settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "default_mandate": {
+          "type": ["null", "string"]
+        },
+        "payment_method_options": {
+          "type": ["null", "object"]
+        },
+        "payment_method_types": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "default_source": {
+      "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "default_payment_method": {
+      "type": ["null", "string"]
+    },
+    "shipping_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "collection_method": {
+      "type": ["null", "string"]
+    },
+    "effective_at": {
+      "type": ["null", "integer"]
+    },
+    "default_tax_rates": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "tax_rates.json"
+      }
+    },
+    "total_excluding_tax": {
+      "type": ["null", "integer"]
+    },
+    "subtotal_excluding_tax": {
+      "type": ["null", "integer"]
+    },
+    "last_finalization_error": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "code": {
+          "type": ["null", "string"]
+        },
+        "doc_url": {
+          "type": ["null", "string"]
+        },
+        "message": {
+          "type": ["null", "string"]
+        },
+        "param": {
+          "type": ["null", "string"]
+        },
+        "payment_method_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "latest_revision": {
+      "type": ["null", "string"]
+    },
+    "rendering_options": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_tax_display": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "quote": {
+      "type": ["null", "string"]
+    },
+    "pre_payment_credit_notes_amount": {
+      "type": ["null", "integer"]
+    },
+    "customer_phone": {
+      "type": ["null", "string"]
+    },
+    "on_behalf_of": {
+      "type": ["null", "string"]
+    },
+    "account_tax_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "customer_email": {
+      "type": ["null", "string"]
+    },
+    "customer_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "line1": {
+          "type": ["null", "string"]
+        },
+        "line2": {
+          "type": ["null", "string"]
+        },
+        "postal_code": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "account_name": {
+      "type": ["null", "string"]
+    },
+    "account_country": {
+      "type": ["null", "string"]
     }
   }
 }
