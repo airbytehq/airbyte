@@ -15,7 +15,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['user_auth_key'] }}"
     request_parameters:
-      app_id: "{{ config['applications', 0, 'app_id'] }}"
+      app_id: "{{ config['applications'][0]['app_id'] }}"
 
   rest_api_requester:
     type: HttpRequester
@@ -23,9 +23,9 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['applications', 0, 'app_api_key'] }}"
+      api_token: "{{ config['applications'][0]['app_api_key'] }}"
     request_parameters:
-      app_id: "{{ config['app_id'] }}"
+      app_id: "{{ config['applications'][0]['app_id'] }}"
 
   user_auth_base_stream:
     type: DeclarativeStream
@@ -94,7 +94,7 @@ definitions:
     primary_key: "id"
     $parameters:
       extractorPath: "outcomes"
-      path: "apps/{{ config['applications', 0, 'app_id'] }}/outcomes"
+      path: "apps/{{ config['applications'][0]['app_id'] }}/outcomes"
 
 streams:
   - "#/definitions/apps_stream"
