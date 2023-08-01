@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_OP;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
 import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
@@ -147,6 +148,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_OP, stringType);
 
     return stream;
   }
