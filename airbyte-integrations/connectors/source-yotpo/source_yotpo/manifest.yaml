@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   yotpo_extractor:
@@ -8,23 +8,23 @@ definitions:
   yotpo_stream_requester:
     type: HttpRequester
     url_base: "{{ parameters['requesterUrl'] }}"
-    http_method: "GET"
+    http_method: GET
     request_parameters:
       utoken: "{{ config['access_token'] }}"
 
   yotpo_paginator:
-    type: "DefaultPaginator"
+    type: DefaultPaginator
     page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "count"
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
     pagination_strategy:
-      type: "OffsetIncrement"
+      type: OffsetIncrement
       page_size: 1
     page_token_option:
-      type: "RequestOption"
-      field_name: "page"
-      inject_into: "request_parameter"
+      type: RequestOption
+      field_name: page
+      inject_into: request_parameter
 
   yotpo_base:
     type: DeclarativeStream
@@ -33,11 +33,11 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          $ref: "#/definitions/yotpo_extractor"
+          $ref: '#/definitions/yotpo_extractor'
       paginator:
-        $ref: "#/definitions/yotpo_paginator"
+        $ref: '#/definitions/yotpo_paginator'
       requester:
-        $ref: "#/definitions/yotpo_stream_requester"
+        $ref: '#/definitions/yotpo_stream_requester'
 
   yotpo_base_without_pagination:
     type: DeclarativeStream
@@ -46,91 +46,129 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          $ref: "#/definitions/yotpo_extractor"
+          $ref: '#/definitions/yotpo_extractor'
       paginator:
         type: NoPagination
       requester:
-        $ref: "#/definitions/yotpo_stream_requester"
+        $ref: '#/definitions/yotpo_stream_requester'
 
   reviews_stream:
     $parameters:
-      extractorPath: "reviews"
-      path: "/apps/{{ config['app_key'] }}/reviews"
-      requesterUrl: "https://api.yotpo.com/v1"
-    $ref: "#/definitions/yotpo_base"
+      extractorPath: reviews
+      path: /apps/{{ config['app_key'] }}/reviews
+      requesterUrl: https://api.yotpo.com/v1
+    $ref: '#/definitions/yotpo_base'
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "created_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      cursor_granularity: "PT0.000001S"
-      lookback_window: "P31D"
+      cursor_field: created_at
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      cursor_granularity: PT0.000001S
+      lookback_window: P31D
       start_datetime:
         datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
       end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
-    name: "reviews"
-    primary_key: "id"
+        datetime: '{{ today_utc() }}'
+        datetime_format: '%Y-%m-%d'
+      step: P1M
+    name: reviews
+    primary_key: id
 
   email_analytics_stream:
     $parameters:
-      extractorPath: "date_series_points"
-      path: "/emails/{{ config['app_key'] }}/emails_sent"
-      requesterUrl: "https://api.yotpo.com/analytics/v1"
-    $ref: "#/definitions/yotpo_base_without_pagination"
-    name: "email_analytics"
+      extractorPath: date_series_points
+      path: /emails/{{ config['app_key'] }}/emails_sent
+      requesterUrl: https://api.yotpo.com/analytics/v1
+    $ref: '#/definitions/yotpo_base_without_pagination'
+    name: email_analytics
 
   raw_data_stream:
     $parameters:
-      extractorPath: "records"
-      path: "/emails/{{ config['app_key'] }}/export/raw_data"
-      requesterUrl: "https://api.yotpo.com/analytics/v1"
-    $ref: "#/definitions/yotpo_base_without_pagination"
-    name: "raw_data"
+      extractorPath: records
+      path: /emails/{{ config['app_key'] }}/export/raw_data
+      requesterUrl: https://api.yotpo.com/analytics/v1
+    $ref: '#/definitions/yotpo_base_without_pagination'
+    name: raw_data
 
   unsubscribers_stream:
     $parameters:
       extractorPath: |
         "response", "unsubscribers"
-      requesterUrl: "https://api.yotpo.com"
-      path: "/apps/{{ config['app_key'] }}/unsubscribers"
-    $ref: "#/definitions/yotpo_base"
-    name: "unsubscribers"
+      requesterUrl: https://api.yotpo.com
+      path: /apps/{{ config['app_key'] }}/unsubscribers
+    $ref: '#/definitions/yotpo_base'
+    name: unsubscribers
 
   webhook_events_stream:
     $parameters:
       extractorPath: |
         "response", "webhook_events"
-      requesterUrl: "https://api.yotpo.com"
-      path: "/webhook_events"
-    $ref: "#/definitions/yotpo_base_without_pagination"
-    name: "webhook_events"
+      requesterUrl: https://api.yotpo.com
+      path: /webhook_events
+    $ref: '#/definitions/yotpo_base_without_pagination'
+    name: webhook_events
 
   webhooks_stream:
     $parameters:
       extractorPath: |
         "response", "webhooks"
-      requesterUrl: "https://api.yotpo.com"
-      path: "/apps/{{ config['app_key'] }}/webhooks"
-    $ref: "#/definitions/yotpo_base_without_pagination"
-    name: "webhooks"
+      requesterUrl: https://api.yotpo.com
+      path: /apps/{{ config['app_key'] }}/webhooks
+    $ref: '#/definitions/yotpo_base_without_pagination'
+    name: webhooks
 
 streams:
-  - "#/definitions/email_analytics_stream"
-  - "#/definitions/raw_data_stream"
-  - "#/definitions/reviews_stream"
-  - "#/definitions/webhooks_stream"
-  - "#/definitions/unsubscribers_stream"
-  - "#/definitions/webhook_events_stream"
+- '#/definitions/email_analytics_stream'
+- '#/definitions/raw_data_stream'
+- '#/definitions/reviews_stream'
+- '#/definitions/webhooks_stream'
+- '#/definitions/unsubscribers_stream'
+- '#/definitions/webhook_events_stream'
 
 check:
   type: CheckStream
   stream_names:
-    - "email_analytics"
-    - "raw_data"
-    - "reviews"
-    - "unsubscribers"
-    - "webhooks"
-    - "webhook_events"
+  - email_analytics
+  - raw_data
+  - reviews
+  - unsubscribers
+  - webhooks
+  - webhook_events
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Yotpo Spec
+    type: object
+    additionalProperties: true
+    required:
+    - access_token
+    - app_key
+    - start_date
+    - email
+    properties:
+      access_token:
+        title: Access Token
+        type: string
+        description: Access token recieved as a result of API call to https://api.yotpo.com/oauth/token
+          (Ref- https://apidocs.yotpo.com/reference/yotpo-authentication)
+        airbyte_secret: true
+      app_key:
+        title: App Key
+        type: string
+        description: App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)
+      start_date:
+        title: Date-From Filter
+        type: string
+        description: Date time filter for incremental filter, Specify which date to
+          extract from.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+        - '2022-03-01T00:00:00.000Z'
+        format: date-time
+      email:
+        title: Registered email address
+        type: string
+        description: Email address registered with yotpo.
+        default: example@gmail.com
+  documentation_url: https://docs.airbyte.com/integrations/sources/yotpo

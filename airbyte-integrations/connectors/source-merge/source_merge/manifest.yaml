@@ -1,16 +1,16 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["results"]
+      field_path: [results]
 
   requester:
     type: HttpRequester
-    url_base: "https://api.merge.dev/api/ats/v1"
-    http_method: "GET"
+    url_base: https://api.merge.dev/api/ats/v1
+    http_method: GET
     request_headers:
       X-Account-Token: "{{ config['account_token'] }}"
     authenticator:
@@ -20,24 +20,24 @@ definitions:
   selective_paginator:
     type: DefaultPaginator
     pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response.next }}"
+      type: CursorPagination
+      cursor_value: '{{ response.next }}'
     page_token_option:
       type: RequestPath
 
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
-      $ref: "#/definitions/selective_paginator"
+      $ref: '#/definitions/selective_paginator'
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
 
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
 
   account_details_stream:
     type: DeclarativeStream
@@ -51,133 +51,166 @@ definitions:
       paginator:
         type: NoPagination
       requester:
-        $ref: "#/definitions/requester"
-    name: "account_details"
-    primary_key: "id"
+        $ref: '#/definitions/requester'
+    name: account_details
+    primary_key: id
     $parameters:
-      path: "/account-details"
+      path: /account-details
 
   activities_stream:
-    $ref: "#/definitions/base_stream"
-    name: "activities"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: activities
+    primary_key: id
     $parameters:
-      path: "/activities"
+      path: /activities
 
   applications_stream:
-    $ref: "#/definitions/base_stream"
-    name: "applications"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: applications
+    primary_key: id
     $parameters:
-      path: "/applications"
+      path: /applications
 
   attachments_stream:
-    $ref: "#/definitions/base_stream"
-    name: "attachments"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: attachments
+    primary_key: id
     $parameters:
-      path: "/attachments"
+      path: /attachments
 
   candidates_stream:
-    $ref: "#/definitions/base_stream"
-    name: "candidates"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: candidates
+    primary_key: id
     $parameters:
-      path: "/candidates"
+      path: /candidates
 
   departments_stream:
-    $ref: "#/definitions/base_stream"
-    name: "departments"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: departments
+    primary_key: id
     $parameters:
-      path: "/departments"
+      path: /departments
 
   eeocs_stream:
-    $ref: "#/definitions/base_stream"
-    name: "eeocs"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: eeocs
+    primary_key: id
     $parameters:
-      path: "/eeocs"
+      path: /eeocs
 
   interviews_stream:
-    $ref: "#/definitions/base_stream"
-    name: "interviews"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: interviews
+    primary_key: id
     $parameters:
-      path: "/interviews"
+      path: /interviews
 
   job-interview-stages_stream:
-    $ref: "#/definitions/base_stream"
-    name: "job_interview_stages"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: job_interview_stages
+    primary_key: id
     $parameters:
-      path: "/job-interview-stages"
+      path: /job-interview-stages
 
   jobs_stream:
-    $ref: "#/definitions/base_stream"
-    name: "jobs"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: jobs
+    primary_key: id
     $parameters:
-      path: "/jobs"
+      path: /jobs
 
   offices_stream:
-    $ref: "#/definitions/base_stream"
-    name: "offices"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: offices
+    primary_key: id
     $parameters:
-      path: "/offices"
+      path: /offices
 
   offers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "offers"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: offers
+    primary_key: id
     $parameters:
-      path: "/offers"
+      path: /offers
 
   sync_status_stream:
-    $ref: "#/definitions/base_stream"
-    name: "sync_status"
-    primary_key: "model_id"
+    $ref: '#/definitions/base_stream'
+    name: sync_status
+    primary_key: model_id
     $parameters:
-      path: "/sync-status"
+      path: /sync-status
 
   users_stream:
-    $ref: "#/definitions/base_stream"
-    name: "users"
-    primary_key: "id"
+    $ref: '#/definitions/base_stream'
+    name: users
+    primary_key: id
     $parameters:
-      path: "/users"
+      path: /users
 
 streams:
-  - "#/definitions/account_details_stream"
-  - "#/definitions/activities_stream"
-  - "#/definitions/applications_stream"
-  - "#/definitions/attachments_stream"
-  - "#/definitions/candidates_stream"
-  - "#/definitions/departments_stream"
-  - "#/definitions/eeocs_stream"
-  - "#/definitions/interviews_stream"
-  - "#/definitions/job-interview-stages_stream"
-  - "#/definitions/jobs_stream"
-  - "#/definitions/offers_stream"
-  - "#/definitions/offices_stream"
-  - "#/definitions/sync_status_stream"
-  - "#/definitions/users_stream"
+- '#/definitions/account_details_stream'
+- '#/definitions/activities_stream'
+- '#/definitions/applications_stream'
+- '#/definitions/attachments_stream'
+- '#/definitions/candidates_stream'
+- '#/definitions/departments_stream'
+- '#/definitions/eeocs_stream'
+- '#/definitions/interviews_stream'
+- '#/definitions/job-interview-stages_stream'
+- '#/definitions/jobs_stream'
+- '#/definitions/offers_stream'
+- '#/definitions/offices_stream'
+- '#/definitions/sync_status_stream'
+- '#/definitions/users_stream'
 
 check:
   type: CheckStream
   stream_names:
-    - "account_details"
-    - "activities"
-    - "applications"
-    - "attachments"
-    - "candidates"
-    - "departments"
-    - "eeocs"
-    - "interviews"
-    - "job-interview-stages"
-    - "jobs"
-    - "offers"
-    - "offices"
-    - "sync_status"
-    - "users"
+  - account_details
+  - activities
+  - applications
+  - attachments
+  - candidates
+  - departments
+  - eeocs
+  - interviews
+  - job-interview-stages
+  - jobs
+  - offers
+  - offices
+  - sync_status
+  - users
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Merge Spec
+    type: object
+    additionalProperties: true
+    required:
+    - account_token
+    - api_token
+    - start_date
+    properties:
+      account_token:
+        title: Account Token
+        type: string
+        description: Link your other integrations with account credentials on accounts
+          section to get account token (ref - https://app.merge.dev/linked-accounts/accounts)
+        airbyte_secret: true
+      api_token:
+        title: Api token
+        type: string
+        description: API token can be seen at  https://app.merge.dev/keys
+        airbyte_secret: true
+      start_date:
+        title: Date-From Filter
+        type: string
+        description: Date time filter for incremental filter, Specify which date to
+          extract from.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+        - '2022-03-01T00:00:00.000Z'
+        format: date-time
+  documentation_url: https://docs.airbyte.com/integrations/sources/merge

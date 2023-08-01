@@ -1,55 +1,116 @@
-version: "0.29.0"
+version: 0.29.0
 definitions:
   selector:
     extractor:
       field_path: []
   url_partition_router:
-    type: "ListPartitionRouter"
+    type: ListPartitionRouter
     values: "{{ config['urls'] }}"
     cursor_field: url
     request_option:
-      field_name: "url"
-      inject_into: "request_parameter"
+      field_name: url
+      inject_into: request_parameter
   strategy_partition_router:
-    type: "ListPartitionRouter"
+    type: ListPartitionRouter
     values: "{{ config['strategies'] }}"
     cursor_field: strategy
     request_option:
-      field_name: "strategy"
-      inject_into: "request_parameter"
+      field_name: strategy
+      inject_into: request_parameter
   requester:
-    url_base: "https://www.googleapis.com/pagespeedonline/v5/"
-    http_method: "GET"
+    url_base: https://www.googleapis.com/pagespeedonline/v5/
+    http_method: GET
     request_parameters:
       key: "{{ config['api_key'] }}"
       category: "{{ config['categories'] }}"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
     partition_router:
-      - "#/definitions/url_partition_router"
-      - "#/definitions/strategy_partition_router"
+    - '#/definitions/url_partition_router'
+    - '#/definitions/strategy_partition_router'
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   pagespeed_stream:
     transformations:
-      - type: AddFields
-        fields:
-          - path: ["strategy"]
-            value: "{{ stream_slice.strategy }}"
-    $ref: "#/definitions/base_stream"
+    - type: AddFields
+      fields:
+      - path: [strategy]
+        value: '{{ stream_slice.strategy }}'
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "pagespeed"
-      path: "/runPagespeed"
+      name: pagespeed
+      path: /runPagespeed
 
 streams:
-  - "#/definitions/pagespeed_stream"
+- '#/definitions/pagespeed_stream'
 
 check:
   stream_names:
-    - "pagespeed"
+  - pagespeed
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Google PageSpeed Insights Spec
+    type: object
+    required:
+    - urls
+    - strategies
+    - categories
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Google PageSpeed API Key. See <a
+          href="https://developers.google.com/speed/docs/insights/v5/get-started#APIKey">here</a>.
+          The key is optional - however the API is heavily rate limited when using
+          without API Key.
+          Creating and using the API key therefore is recommended.
+          The key is case sensitive.
+        airbyte_secret: true
+      urls:
+        type: array
+        items:
+          type: string
+          pattern: 
+            ^(?:origin:)?(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#\[\]@!\$&'\(\)\*\+,;=.]+$
+        title: URLs to analyse
+        description: >-
+          The URLs to retrieve pagespeed information from. The connector will attempt
+          to sync
+          PageSpeed reports for all the defined URLs.
+          Format: https://(www.)url.domain
+        example: https://example.com
+      strategies:
+        type: array
+        items:
+          type: string
+          enum:
+          - desktop
+          - mobile
+        title: Analyses Strategies
+        description: >-
+          The analyses strategy to use. Either "desktop" or "mobile".
+      categories:
+        type: array
+        items:
+          type: string
+          enum:
+          - accessibility
+          - best-practices
+          - performance
+          - pwa
+          - seo
+        title: Lighthouse Categories
+        description: >-
+          Defines which Lighthouse category to run. One or many of: "accessibility",
+          "best-practices", "performance", "pwa", "seo".
+  documentation_url: https://docs.airbyte.io/integrations/sources/google-pagespeed-insights

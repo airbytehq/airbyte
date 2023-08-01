@@ -1,71 +1,115 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
-      field_path: ["data"]
+      field_path: [data]
   requester:
-    url_base: "https://api.twitter.com/2/tweets"
-    http_method: "GET"
+    url_base: https://api.twitter.com/2/tweets
+    http_method: GET
     authenticator:
-      type: "BearerAuthenticator"
-      header: "apikey"
-      api_token: "{{ config.api_key }}"
+      type: BearerAuthenticator
+      header: apikey
+      api_token: '{{ config.api_key }}'
     request_parameters:
       query: "{{ config['query'] }}"
-      tweet.fields: "author_id,conversation_id,created_at,in_reply_to_user_id,lang"
+      tweet.fields: author_id,conversation_id,created_at,in_reply_to_user_id,lang
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: DefaultPaginator
       pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response.meta.next_token }}"
+        type: CursorPagination
+        cursor_value: '{{ response.meta.next_token }}'
         stop_condition: "{{ 'next_token' not in response['meta'] }}"
         page_size: 100
       page_size_option:
-        field_name: "max_results"
-        inject_into: "request_parameter"
+        field_name: max_results
+        inject_into: request_parameter
       page_token_option:
         type: RequestOption
-        field_name: "next_token"
-        inject_into: "request_parameter"
+        field_name: next_token
+        inject_into: request_parameter
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
 
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
     incremental_sync:
       type: DatetimeBasedCursor
-      datetime_format: "%Y-%m-%dT%H:%M:%S.000Z"
+      datetime_format: '%Y-%m-%dT%H:%M:%S.000Z'
       start_datetime:
-        datetime: "{{ config.start_date or (now_utc() - duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: "{{ config.start_date or (now_utc() - duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ')
+          }}"
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       end_datetime:
-        datetime: "{{ config.end_date or (now_utc() - duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_granularity: "PT0S"
-      step: "P7D"
+        datetime: "{{ config.end_date or (now_utc() - duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ')
+          }}"
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_granularity: PT0S
+      step: P7D
       start_time_option:
-        field_name: "start_time"
-        inject_into: "request_parameter"
+        field_name: start_time
+        inject_into: request_parameter
       end_time_option:
-        field_name: "end_time"
-        inject_into: "request_parameter"
+        field_name: end_time
+        inject_into: request_parameter
 
   tweets_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "tweets"
-      path: "/search/recent"
-      cursor_field: "created_at"
-      primary_key: "id"
+      name: tweets
+      path: /search/recent
+      cursor_field: created_at
+      primary_key: id
 
 streams:
-  - "#/definitions/tweets_stream"
+- '#/definitions/tweets_stream'
 
 check:
   stream_names:
-    - "tweets"
+  - tweets
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Twitter Spec
+    type: object
+    required:
+    - api_key
+    - query
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: Access Token
+        description: App only Bearer Token. See the <a 
+          href="https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens">docs</a>
+          for more information on how to obtain this token.
+        airbyte_secret: true
+        order: 0
+      query:
+        type: string
+        title: Search Query
+        description: Query for matching Tweets. You can learn how to build this query
+          by reading <a 
+          href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query">
+          build a query guide </a>.
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: The start date for retrieving tweets cannot be more than 7 days
+          in the past.
+        format: date-time
+        order: 2
+      end_date:
+        type: string
+        title: End Date
+        description: The end date for retrieving tweets must be a minimum of 10 seconds
+          prior to the request time.
+        format: date-time
+        order: 3
+  documentation_url: https://docs.airbyte.com/integrations/sources/twitter

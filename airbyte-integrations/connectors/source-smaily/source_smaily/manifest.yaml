@@ -1,12 +1,12 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
       field_path: []
   requester:
-    url_base: "https://{{config['api_subdomain']}}.sendsmaily.net/api"
-    http_method: "GET"
+    url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+    http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{config['api_username']}}"
@@ -14,86 +14,112 @@ definitions:
   increment_paginator:
     type: DefaultPaginator
     page_size_option:
-      inject_into: "request_parameter"
-      field_name: "limit"
+      inject_into: request_parameter
+      field_name: limit
     pagination_strategy:
       type: PageIncrement
       page_size: 250
     page_token_option:
       type: RequestOption
-      inject_into: "request_parameter"
-      field_name: "page"
+      inject_into: request_parameter
+      field_name: page
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   # API Docs: https://smaily.com/help/api/organizations/list-users-of-an-organization/
   users_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "users"
-      primary_key: "id"
-      path: "/organizations/users.php"
+      name: users
+      primary_key: id
+      path: /organizations/users.php
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
       paginator:
-        $ref: "#/definitions/increment_paginator"
+        $ref: '#/definitions/increment_paginator'
   # API Docs: https://smaily.com/help/api/segments/list-segments/
   segments_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "segments"
-      primary_key: "id"
-      path: "/list.php"
+      name: segments
+      primary_key: id
+      path: /list.php
   # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
   campaigns_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "campaigns"
-      primary_key: "id"
-      path: "/campaign.php"
+      name: campaigns
+      primary_key: id
+      path: /campaign.php
   # API Docs: https://smaily.com/help/api/templates-2/list-templates/
   templates_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "templates"
-      primary_key: "id"
-      path: "/templates.php"
+      name: templates
+      primary_key: id
+      path: /templates.php
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
       paginator:
-        $ref: "#/definitions/increment_paginator"
+        $ref: '#/definitions/increment_paginator'
         pagination_strategy:
           type: PageIncrement
           page_size: 1000
   # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
   automations_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "automations"
-      primary_key: "id"
-      path: "/autoresponder.php"
+      name: automations
+      primary_key: id
+      path: /autoresponder.php
   # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
   ab_tests_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "ab_tests"
-      primary_key: "id"
-      path: "/split.php"
+      name: ab_tests
+      primary_key: id
+      path: /split.php
 
 streams:
-  - "#/definitions/users_stream"
-  - "#/definitions/segments_stream"
-  - "#/definitions/campaigns_stream"
-  - "#/definitions/templates_stream"
-  - "#/definitions/automations_stream"
-  - "#/definitions/ab_tests_stream"
+- '#/definitions/users_stream'
+- '#/definitions/segments_stream'
+- '#/definitions/campaigns_stream'
+- '#/definitions/templates_stream'
+- '#/definitions/automations_stream'
+- '#/definitions/ab_tests_stream'
 
 check:
-  stream_names: ["users"]
+  stream_names: [users]
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Smaily Spec
+    type: object
+    required:
+    - api_subdomain
+    - api_username
+    - api_password
+    additionalProperties: true
+    properties:
+      api_subdomain:
+        type: string
+        title: API Subdomain
+        description: API Subdomain. See https://smaily.com/help/api/general/create-api-user/
+      api_username:
+        type: string
+        title: API User Username
+        description: API user username. See https://smaily.com/help/api/general/create-api-user/
+      api_password:
+        type: string
+        title: API User Password
+        description: API user password. See https://smaily.com/help/api/general/create-api-user/
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/smaily

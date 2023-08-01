@@ -1,12 +1,12 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
-      field_path: ["Data"]
+      field_path: [Data]
   requester:
-    url_base: "https://api.mailjet.com/v3/REST"
-    http_method: "GET"
+    url_base: https://api.mailjet.com/v3/REST
+    http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
@@ -14,98 +14,124 @@ definitions:
   offset_paginator:
     type: DefaultPaginator
     pagination_strategy:
-      type: "OffsetIncrement"
+      type: OffsetIncrement
       page_size: 100
     page_token_option:
       type: RequestOption
-      field_name: "offset"
-      inject_into: "request_parameter"
+      field_name: offset
+      inject_into: request_parameter
     page_size_option:
-      inject_into: "request_parameter"
-      field_name: "limit"
+      inject_into: request_parameter
+      field_name: limit
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   contactslist_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        $ref: "#/definitions/offset_paginator"
+        $ref: '#/definitions/offset_paginator'
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
     $parameters:
-      name: "contactslist"
-      primary_key: "ID"
-      path: "/contactslist"
+      name: contactslist
+      primary_key: ID
+      path: /contactslist
   contacts_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        $ref: "#/definitions/offset_paginator"
+        $ref: '#/definitions/offset_paginator'
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
     $parameters:
-      name: "contacts"
-      primary_key: "ID"
-      path: "/contact"
+      name: contacts
+      primary_key: ID
+      path: /contact
   stats_api_lifetime_message_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "stats_api_lifetime_message"
-      primary_key: "APIKeyID"
-      path: "/statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message"
+      name: stats_api_lifetime_message
+      primary_key: APIKeyID
+      path: 
+        /statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message
   campaign_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "campaign"
-      primary_key: "ID"
-      path: "/campaign"
+      name: campaign
+      primary_key: ID
+      path: /campaign
   message_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        $ref: "#/definitions/offset_paginator"
+        $ref: '#/definitions/offset_paginator'
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
     $parameters:
-      name: "message"
-      primary_key: "ID"
-      path: "/message"
+      name: message
+      primary_key: ID
+      path: /message
   listrecipient_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        $ref: "#/definitions/offset_paginator"
+        $ref: '#/definitions/offset_paginator'
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
     $parameters:
-      name: "listrecipient"
-      primary_key: "ID"
-      path: "/listrecipient"
+      name: listrecipient
+      primary_key: ID
+      path: /listrecipient
 
 streams:
-  - "#/definitions/contactslist_stream"
-  - "#/definitions/contacts_stream"
-  - "#/definitions/stats_api_lifetime_message_stream"
-  - "#/definitions/campaign_stream"
-  - "#/definitions/message_stream"
-  - "#/definitions/listrecipient_stream"
+- '#/definitions/contactslist_stream'
+- '#/definitions/contacts_stream'
+- '#/definitions/stats_api_lifetime_message_stream'
+- '#/definitions/campaign_stream'
+- '#/definitions/message_stream'
+- '#/definitions/listrecipient_stream'
 
 check:
   stream_names:
-    - "contactslist"
+  - contactslist
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Mailjet Mail Spec
+    type: object
+    required:
+    - api_key
+    - api_key_secret
+    additionalProperties: true
+    properties:
+      api_key:
+        title: API Key
+        type: string
+        description: >-
+          Your API Key. See <a
+          href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
+      api_key_secret:
+        title: API Secret Key
+        type: string
+        description: >-
+          Your API Secret Key. See <a
+          href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/mailjet-mail

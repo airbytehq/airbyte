@@ -1,92 +1,116 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
       field_path: []
   requester:
-    url_base: "https://www.mydatascope.com/api/external/"
-    http_method: "GET"
+    url_base: https://www.mydatascope.com/api/external/
+    http_method: GET
     authenticator:
       type: ApiKeyAuthenticator
-      header: "Authorization"
+      header: Authorization
       api_token: "{{ config['api_key'] }}"
   incremental_sync:
-    type: "DatetimeBasedCursor"
+    type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
-      datetime_format: "%d/%m/%Y %H:%M"
+      datetime_format: '%d/%m/%Y %H:%M'
     end_datetime:
       datetime: "{{ now_utc().strftime('%d/%m/%Y %H:%M') }}"
-      datetime_format: "%d/%m/%Y %H:%M"
-    step: "P1D"
-    datetime_format: "%d/%m/%Y %H:%M"
+      datetime_format: '%d/%m/%Y %H:%M'
+    step: P1D
+    datetime_format: '%d/%m/%Y %H:%M'
     # There is a discrepancy between the format of the cursor `created_at` and the granularity of the API hence "P1D"
     # here instead of "PT1M" if we were to check the datetime_format
-    cursor_granularity: "P1D"
-    cursor_field: "created_at"
+    cursor_granularity: P1D
+    cursor_field: created_at
     start_time_option:
-      field_name: "start"
-      inject_into: "request_parameter"
+      field_name: start
+      inject_into: request_parameter
     end_time_option:
-      field_name: "end"
-      inject_into: "request_parameter"
+      field_name: end
+      inject_into: request_parameter
 
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: DefaultPaginator
       page_size_option:
-        inject_into: "request_parameter"
-        field_name: "limit"
+        inject_into: request_parameter
+        field_name: limit
       pagination_strategy:
-        type: "OffsetIncrement"
+        type: OffsetIncrement
         page_size: 200
       page_token_option:
         type: RequestOption
-        inject_into: "request_parameter"
-        field_name: "offset"
+        inject_into: request_parameter
+        field_name: offset
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
 
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   location_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "locations"
-      primary_key: "id"
-      path: "/locations"
+      name: locations
+      primary_key: id
+      path: /locations
   answers_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: '#/definitions/incremental_sync'
     $parameters:
-      name: "answers"
-      primary_key: "form_answer_id"
-      path: "/v2/answers"
+      name: answers
+      primary_key: form_answer_id
+      path: /v2/answers
   lists_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "lists"
-      primary_key: "id"
-      path: "/metadata_objects"
+      name: lists
+      primary_key: id
+      path: /metadata_objects
   notifications_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: '#/definitions/incremental_sync'
     $parameters:
-      name: "notifications"
-      primary_key: "id"
-      path: "/notifications"
+      name: notifications
+      primary_key: id
+      path: /notifications
 streams:
-  - "#/definitions/location_stream"
-  - "#/definitions/answers_stream"
-  - "#/definitions/lists_stream"
-  - "#/definitions/notifications_stream"
+- '#/definitions/location_stream'
+- '#/definitions/answers_stream'
+- '#/definitions/lists_stream'
+- '#/definitions/notifications_stream'
 
 check:
   stream_names:
-    - "locations"
+  - locations
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Datascope Spec
+    type: object
+    required:
+    - api_key
+    - start_date
+    additionalProperties: true
+    properties:
+      start_date:
+        title: Start Date
+        type: string
+        description: Start date for the data to be replicated
+        examples:
+        - dd/mm/YYYY HH:MM
+        pattern: ^[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}$
+      api_key:
+        title: Authorization
+        type: string
+        description: API Key
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/datascope

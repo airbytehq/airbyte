@@ -1,68 +1,88 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
+    file_path: ./source_secoda/schemas/{{ parameters.name }}.json
   selector:
     extractor:
-      field_path: ["results"]
+      field_path: [results]
   requester:
-    url_base: "https://api.secoda.co"
-    http_method: "GET"
+    url_base: https://api.secoda.co
+    http_method: GET
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
     error_handler:
       response_filters:
-        - http_codes: [500]
-          action: FAIL
+      - http_codes: [500]
+        action: FAIL
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
       type: RequestPath
     page_size_option:
       inject_into: body_data
-      field_name: "page_size"
+      field_name: page_size
     pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response.links.next }}"
-      stop_condition: "{{ response.links.next is none}}"
+      type: CursorPagination
+      cursor_value: '{{ response.links.next }}'
+      stop_condition: '{{ response.links.next is none}}'
       page_size: 1
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
-      $ref: "#/definitions/cursor_paginator"
+      $ref: '#/definitions/cursor_paginator'
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   tables_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "tables"
-      primary_key: "id"
-      path: "/table/tables/"
+      name: tables
+      primary_key: id
+      path: /table/tables/
   terms_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "terms"
-      primary_key: "id"
-      path: "/dictionary/terms/"
+      name: terms
+      primary_key: id
+      path: /dictionary/terms/
   collections_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "collections"
-      primary_key: "id"
-      path: "/collection/collections/"
+      name: collections
+      primary_key: id
+      path: /collection/collections/
 
 streams:
-  - "#/definitions/tables_stream"
-  - "#/definitions/terms_stream"
-  - "#/definitions/collections_stream"
+- '#/definitions/tables_stream'
+- '#/definitions/terms_stream'
+- '#/definitions/collections_stream'
 
 check:
   stream_names:
-    - "tables"
+  - tables
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Secoda Spec
+    type: object
+    required:
+    - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        title: Api Key
+        type: string
+        description: >-
+          Your API Access Key. See <a
+          href="https://docs.secoda.co/secoda-api/authentication">here</a>. The key
+          is
+          case sensitive.
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/secoda

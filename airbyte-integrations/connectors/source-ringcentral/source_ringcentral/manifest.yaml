@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   ringcentral_extractor:
@@ -8,12 +8,12 @@ definitions:
   selector:
     type: RecordSelector
     extractor:
-      $ref: "#/definitions/ringcentral_extractor"
+      $ref: '#/definitions/ringcentral_extractor'
 
   requester:
     type: HttpRequester
-    url_base: "https://platform.devtest.ringcentral.com/restapi/v1.0"
-    http_method: "GET"
+    url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+    http_method: GET
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['auth_token'] }}"
@@ -23,172 +23,209 @@ definitions:
     retriever:
       type: SimpleRetriever
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        type: "DefaultPaginator"
+        type: DefaultPaginator
         page_size_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "perPage"
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
         pagination_strategy:
-          type: "PageIncrement"
+          type: PageIncrement
           page_size: 100
         page_token_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "page"
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
 
   base_stream_without_pagination:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
-        type: "NoPagination"
+        type: NoPagination
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
 
   user_business_hours_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/business-hours"
-      extractorPath: "schedule"
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "user_business_hours"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/business-hours
+      extractorPath: schedule
+    $ref: '#/definitions/base_stream_without_pagination'
+    name: user_business_hours
 
   company_business_hours_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/business-hours"
-      extractorPath: "schedule"
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "company_business_hours"
+      path: /account/{{ config['account_id'] }}/business-hours
+      extractorPath: schedule
+    $ref: '#/definitions/base_stream_without_pagination'
+    name: company_business_hours
 
   callblock_settings_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking"
-      extractorPath: "greetings"
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "callblock_settings"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/caller-blocking
+      extractorPath: greetings
+    $ref: '#/definitions/base_stream_without_pagination'
+    name: callblock_settings
 
   blocked_allowed_phonenumbers_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking/phone-numbers"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream_without_pagination"
-    primary_key: "id"
-    name: "blocked_allowed_phonenumbers"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/caller-blocking/phone-numbers
+      extractorPath: records
+    $ref: '#/definitions/base_stream_without_pagination'
+    primary_key: id
+    name: blocked_allowed_phonenumbers
 
   forwarding_numbers_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/forwarding-number"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "forwarding_numbers"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/forwarding-number
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: forwarding_numbers
 
   company_call_handling_rules_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/answering-rule"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "company_call_handling_rules"
+      path: /account/{{ config['account_id'] }}/answering-rule
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: company_call_handling_rules
 
   user_call_records_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/call-log"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "user_call_records"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/call-log
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: user_call_records
 
   user_active_calls_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/active-calls"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "user_active_calls"
+      path: /account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/active-calls
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: user_active_calls
 
   call_monitoring_groups_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/call-monitoring-groups"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "call_monitoring_groups"
+      path: /account/{{ config['account_id'] }}/call-monitoring-groups
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: call_monitoring_groups
 
   call_queues_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/call-queues"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "call_queues"
+      path: /account/{{ config['account_id'] }}/call-queues
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: call_queues
 
   call_record_settings_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/call-recording"
-      extractorPath: "greetings"
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "call_record_settings"
-  
+      path: /account/{{ config['account_id'] }}/call-recording
+      extractorPath: greetings
+    $ref: '#/definitions/base_stream_without_pagination'
+    name: call_record_settings
   greetings_stream:
     $parameters:
-      path: "/dictionary/greeting"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "greetings"
+      path: /dictionary/greeting
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: greetings
 
   ivr_prompts_stream:
     $parameters:
-      path: "/dictionary/greeting"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "ivr_prompts"
+      path: /dictionary/greeting
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: ivr_prompts
 
   fax_cover_stream:
     $parameters:
-      path: "/dictionary/fax-cover-page"
-      extractorPath: "records"
-    $ref: "#/definitions/base_stream"
-    primary_key: "id"
-    name: "fax_cover"
+      path: /dictionary/fax-cover-page
+      extractorPath: records
+    $ref: '#/definitions/base_stream'
+    primary_key: id
+    name: fax_cover
 
 streams:
-  - "#/definitions/user_business_hours_stream"
-  - "#/definitions/company_business_hours_stream"
-  - "#/definitions/callblock_settings_stream"
-  - "#/definitions/blocked_allowed_phonenumbers_stream"
-  - "#/definitions/forwarding_numbers_stream"
-  - "#/definitions/company_call_handling_rules_stream"
-  - "#/definitions/user_call_records_stream"
-  - "#/definitions/user_active_calls_stream"
-  - "#/definitions/call_monitoring_groups_stream"
-  - "#/definitions/call_queues_stream"
-  - "#/definitions/call_record_settings_stream"
-  - "#/definitions/greetings_stream"
-  - "#/definitions/ivr_prompts_stream"
-  - "#/definitions/fax_cover_stream"
+- '#/definitions/user_business_hours_stream'
+- '#/definitions/company_business_hours_stream'
+- '#/definitions/callblock_settings_stream'
+- '#/definitions/blocked_allowed_phonenumbers_stream'
+- '#/definitions/forwarding_numbers_stream'
+- '#/definitions/company_call_handling_rules_stream'
+- '#/definitions/user_call_records_stream'
+- '#/definitions/user_active_calls_stream'
+- '#/definitions/call_monitoring_groups_stream'
+- '#/definitions/call_queues_stream'
+- '#/definitions/call_record_settings_stream'
+- '#/definitions/greetings_stream'
+- '#/definitions/ivr_prompts_stream'
+- '#/definitions/fax_cover_stream'
 
 check:
   type: CheckStream
   stream_names:
-    - "user_business_hours"
-    - "company_business_hours"
-    - "callblock_settings"
-    - "blocked_allowed_phonenumbers"
-    - "forwarding_numbers"
-    - "company_call_handling_rules"
-    - "user_call_records"
-    - "user_active_calls"
-    - "call_monitoring_groups"
-    - "call_queues"
-    - "call_record_settings"
-    - "greetings"
-    - "ivr_prompts"
-    - "fax_cover"
+  - user_business_hours
+  - company_business_hours
+  - callblock_settings
+  - blocked_allowed_phonenumbers
+  - forwarding_numbers
+  - company_call_handling_rules
+  - user_call_records
+  - user_active_calls
+  - call_monitoring_groups
+  - call_queues
+  - call_record_settings
+  - greetings
+  - ivr_prompts
+  - fax_cover
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: RingCentral Spec
+    type: object
+    additionalProperties: true
+    required:
+    - auth_token
+    - account_id
+    - extension_id
+    properties:
+      auth_token:
+        title: Auth Token
+        type: string
+        description: Token could be recieved by following instructions at https://developers.ringcentral.com/api-reference/authentication
+        airbyte_secret: true
+      account_id:
+        title: Account Id
+        type: string
+        description: >
+          Could be seen at response to basic api call to an endpoint with ~ operator.  Example-
+          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+        airbyte_secret: true
+      extension_id:
+        title: Extension Id
+        type: string
+        description: >
+          Could be seen at response to basic api call to an endpoint with ~ operator.  Example-
+          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/ringcentral

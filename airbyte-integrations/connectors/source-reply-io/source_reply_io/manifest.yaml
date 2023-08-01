@@ -1,88 +1,104 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
       field_path: []
   requester:
-    url_base: "https://api.reply.io/v1/"
-    http_method: "GET"
+    url_base: https://api.reply.io/v1/
+    http_method: GET
     request_headers:
       x-api-key: "{{ config['api_key'] }}"
     error_handler:
-      type: "CompositeErrorHandler"
+      type: CompositeErrorHandler
       error_handlers:
-        - response_filters:
-            - predicate: "{{ 'Too much requests' in response }}"
-              action: RETRY
-          backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 15
+      - response_filters:
+        - predicate: "{{ 'Too much requests' in response }}"
+          action: RETRY
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 15
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
 
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   paginated_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
       record_selector:
         extractor:
-          field_path: ["{{ parameters.name }}"]
+          field_path: ['{{ parameters.name }}']
       paginator:
-        type: "DefaultPaginator"
+        type: DefaultPaginator
         page_size_option:
-          inject_into: "request_parameter"
-          field_name: "limit"
+          inject_into: request_parameter
+          field_name: limit
         pagination_strategy:
-          type: "PageIncrement"
+          type: PageIncrement
           page_size: 1000
         page_token_option:
           type: RequestOption
-          inject_into: "request_parameter"
-          field_name: "page"
+          inject_into: request_parameter
+          field_name: page
 
   campaigns_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "campaigns"
-      primary_key: "id"
-      path: "/campaigns"
+      name: campaigns
+      primary_key: id
+      path: /campaigns
   email_accounts_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "email_accounts"
-      primary_key: "id"
-      path: "/emailAccounts"
+      name: email_accounts
+      primary_key: id
+      path: /emailAccounts
   people_stream:
-    $ref: "#/definitions/paginated_stream"
+    $ref: '#/definitions/paginated_stream'
     $parameters:
-      name: "people"
-      primary_key: "id"
-      path: "/people"
+      name: people
+      primary_key: id
+      path: /people
   templates_stream:
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: '#/definitions/base_stream/retriever'
       record_selector:
         extractor:
-          field_path: ["userTemplates"]
+          field_path: [userTemplates]
     $parameters:
-      name: "templates"
-      primary_key: "id"
-      path: "/templates"
+      name: templates
+      primary_key: id
+      path: /templates
 
 streams:
-  - "#/definitions/campaigns_stream"
-  - "#/definitions/email_accounts_stream"
-  - "#/definitions/people_stream"
-  - "#/definitions/templates_stream"
+- '#/definitions/campaigns_stream'
+- '#/definitions/email_accounts_stream'
+- '#/definitions/people_stream'
+- '#/definitions/templates_stream'
 
 check:
   stream_names:
-    - "campaigns"
+  - campaigns
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Reply Io Spec
+    type: object
+    required:
+    - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Token
+        description: The API Token for Reply
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/reply-io

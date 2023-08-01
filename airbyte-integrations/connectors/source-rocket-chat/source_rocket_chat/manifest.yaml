@@ -1,20 +1,20 @@
-version: "0.29.0"
+version: 0.29.0
 
 definitions:
   selector:
     extractor:
       field_path:
-        - "{{ parameters['name'] }}"
+      - "{{ parameters['name'] }}"
   update_selector:
     extractor:
       field_path:
-        - "update"
+      - update
   requester:
     url_base: "{{ config['endpoint'] }}/api/v1"
-    http_method: "GET"
+    http_method: GET
     authenticator:
       type: ApiKeyAuthenticator
-      header: "X-Auth-Token"
+      header: X-Auth-Token
       api_token: "{{ config['token'] }}"
     request_headers:
       X-User-Id: "{{ config['user_id'] }}"
@@ -23,87 +23,120 @@ definitions:
     $parameters:
       page_size: 1
     page_size_option:
-      inject_into: "request_parameter"
-      field_name: "count"
+      inject_into: request_parameter
+      field_name: count
     page_token_option:
       type: RequestOption
-      inject_into: "request_parameter"
-      field_name: "offset"
+      inject_into: request_parameter
+      field_name: offset
     pagination_strategy:
-      type: "OffsetIncrement"
+      type: OffsetIncrement
   custom_retriever:
     record_selector:
-      $ref: "#/definitions/update_selector"
+      $ref: '#/definitions/update_selector'
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: '#/definitions/selector'
     paginator:
-      $ref: "#/definitions/offset_paginator"
+      $ref: '#/definitions/offset_paginator'
     requester:
-      $ref: "#/definitions/requester"
+      $ref: '#/definitions/requester'
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: '#/definitions/retriever'
   teams_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "teams"
-      primary_key: "_id"
-      path: "/teams.list"
+      name: teams
+      primary_key: _id
+      path: /teams.list
   rooms_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
-      $ref: "#/definitions/custom_retriever"
+      $ref: '#/definitions/custom_retriever'
     $parameters:
-      name: "rooms"
-      primary_key: "_id"
-      path: "/rooms.get"
+      name: rooms
+      primary_key: _id
+      path: /rooms.get
   channels_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "channels"
-      primary_key: "_id"
-      path: "/channels.list"
+      name: channels
+      primary_key: _id
+      path: /channels.list
   roles_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: '#/definitions/selector'
       paginator:
         type: NoPagination
       requester:
-        $ref: "#/definitions/requester"
+        $ref: '#/definitions/requester'
     $parameters:
-      name: "roles"
-      primary_key: "_id"
-      path: "/roles.list"
+      name: roles
+      primary_key: _id
+      path: /roles.list
   subscriptions_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     retriever:
-      $ref: "#/definitions/custom_retriever"
+      $ref: '#/definitions/custom_retriever'
     $parameters:
-      name: "subscriptions"
-      primary_key: "_id"
-      path: "/subscriptions.get"
+      name: subscriptions
+      primary_key: _id
+      path: /subscriptions.get
   users_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: '#/definitions/base_stream'
     $parameters:
-      name: "users"
-      primary_key: "_id"
-      path: "/users.list"
+      name: users
+      primary_key: _id
+      path: /users.list
 
 streams:
-  - "#/definitions/teams_stream"
-  - "#/definitions/rooms_stream"
-  - "#/definitions/channels_stream"
-  - "#/definitions/roles_stream"
-  - "#/definitions/subscriptions_stream"
-  - "#/definitions/users_stream"
+- '#/definitions/teams_stream'
+- '#/definitions/rooms_stream'
+- '#/definitions/channels_stream'
+- '#/definitions/roles_stream'
+- '#/definitions/subscriptions_stream'
+- '#/definitions/users_stream'
 
 check:
   stream_names:
-    - "teams"
+  - teams
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Rocket Chat Spec
+    type: object
+    required:
+    - token
+    - user_id
+    - endpoint
+    additionalProperties: true
+    properties:
+      endpoint:
+        title: Endpoint
+        type: string
+        description: Your rocket.chat instance URL.
+        examples:
+        - https://airbyte-connector-poc.rocket.chat
+        - https://hey.yoursite.com
+      token:
+        title: Token
+        type: string
+        description: >-
+          Your API Token. See <a
+          href="https://developer.rocket.chat/reference/api/rest-api/endpoints/other-important-endpoints/access-tokens-endpoints">here</a>.
+          The token is
+          case sensitive.
+        airbyte_secret: true
+      user_id:
+        title: User ID.
+        type: string
+        description: Your User Id.
+  documentation_url: https://docs.airbyte.com/integrations/sources/rocket-chat
