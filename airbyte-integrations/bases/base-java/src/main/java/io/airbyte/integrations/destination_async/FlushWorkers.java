@@ -86,6 +86,7 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   public void start() {
+    log.info("Start async buffer supervisor");
     supervisorThread.scheduleAtFixedRate(this::retrieveWork,
         SUPERVISOR_INITIAL_DELAY_SECS,
         SUPERVISOR_PERIOD_SECS,
@@ -98,7 +99,9 @@ public class FlushWorkers implements AutoCloseable {
 
   private void retrieveWork() {
     try {
-      log.info("Retrieve Work -- Finding queues to flush");
+      // This will put a new log line every second which is too much, sampling it doesn't bring much value
+      // so it is set to debug
+      log.debug("Retrieve Work -- Finding queues to flush");
       final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
       int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
