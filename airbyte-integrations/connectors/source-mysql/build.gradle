@@ -6,9 +6,6 @@ plugins {
     id 'airbyte-connector-acceptance-test'
 }
 
-repositories {
-    mavenLocal()
-}
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
@@ -40,37 +37,7 @@ dependencies {
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
 
-    // TODO: remove this once the code has migrated to the CDK
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-}
-
-task buildCDK(type: Exec) {
-    doFirst {
-        def isSnapshotCDKVersion = false
-        configurations.compileClasspath.incoming.resolutionResult.allDependencies.each { dep ->
-            if (dep.requested instanceof ModuleComponentSelector) {
-                if (dep.requested.group == 'io.airbyte' && dep.requested.module == 'airbyte-cdk') {
-                    if (dep.requested.version.endsWith('-SNAPSHOT')) {
-                        isSnapshotCDKVersion = true
-                    }
-                }
-            }
-        }
-        if (isSnapshotCDKVersion) {
-            workingDir "${rootProject.rootDir}"
-            commandLine 'sh', '-c', './gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal'
-        } else {
-            logger.lifecycle("Not building airbyte-cdk, no snapshot version found.")
-        }
-    }
-}
-
-tasks.named('build').configure {
-    dependsOn(buildCDK)
-}
-
-tasks.named('test').configure {
-    dependsOn(buildCDK)
 }
