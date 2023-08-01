@@ -4,10 +4,26 @@ connectionSpecification:
   title: Zoom Spec
   type: object
   required:
-    - jwt_token
+    - account_id
+    - client_id
+    - client_secret
+    - authorization_endpoint
   additionalProperties: true
   properties:
-    jwt_token:
+    account_id:
       type: string
-      description: JWT Token
+      order: 0
+      description: "The account ID for your Zoom account. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
+    client_id:
+      type: string
+      order: 1
+      description: "The client ID for your Zoom app. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
+    client_secret:
+      type: string
+      order: 2
+      description: "The client secret for your Zoom app. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
       airbyte_secret: true
+    authorization_endpoint:
+      type: string
+      order: 3
+      default: "https://zoom.us/oauth/token"
