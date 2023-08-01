@@ -377,6 +377,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                    |
 | 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
 | 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                    |
 | 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package. |
