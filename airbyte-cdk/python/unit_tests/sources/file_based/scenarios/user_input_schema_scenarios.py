@@ -319,7 +319,7 @@ _base_multi_stream_user_input_schema_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -515,7 +515,7 @@ multi_stream_user_input_schema_scenario_emit_nonconforming_records = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
@@ -654,7 +654,7 @@ multi_stream_user_input_schema_scenario_skip_nonconforming_records = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"

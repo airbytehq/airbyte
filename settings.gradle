@@ -1,3 +1,6 @@
+import com.gradle.scan.plugin.PublishedBuildScan
+
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -28,8 +31,13 @@ gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        buildScanPublished { PublishedBuildScan scan ->
+            file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
+        }
     }
 }
+
+
 
 ext.isCiServer = System.getenv().containsKey("CI")
 
