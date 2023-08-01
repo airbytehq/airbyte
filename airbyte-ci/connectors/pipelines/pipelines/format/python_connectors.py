@@ -4,7 +4,7 @@
 
 import asyncer
 from pipelines.actions import environments
-from pipelines.bases import Step, StepResult, StepStatus
+from pipelines.bases import Step, StepResult
 from pipelines.utils import with_exit_code, with_stderr, with_stdout
 
 
@@ -50,7 +50,7 @@ class FormatConnectorCode(Step):
 
         return StepResult(
             self,
-            StepStatus.from_exit_code(soon_exit_code.value),
+            self.get_step_status_from_exit_code(await soon_exit_code),
             stderr=soon_stderr.value,
             stdout=soon_stdout.value,
             output_artifact=formatted.directory("/connector_code"),
