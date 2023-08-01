@@ -1,0 +1,98 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.extractorPath }}"]
+
+  user_auth_requester:
+    type: HttpRequester
+    url_base: "https://onesignal.com/api/v1/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['user_auth_key'] }}"
+    request_parameters:
+      app_id: "{{ config['applications']['app_id'] }}"
+
+  rest_api_requester:
+    type: HttpRequester
+    url_base: "https://onesignal.com/api/v1"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['app_api_key'] }}"
+    request_parameters:
+      app_id: "{{ config['applications']['app_id'] }}"
+
+  user_auth_base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/user_auth_requester"
+  
+  rest_api_key_auth_base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/rest_api_requester"
+
+  apps_stream:
+    $ref: "#/definitions/user_auth_base_stream"
+    name: "apps"
+    primary_key: "id"
+    $parameters:
+      path: "apps"
+
+  devices_stream:
+    $ref: "#/definitions/rest_api_key_auth_base_stream"
+    name: "devices"
+    primary_key: "id"
+    $parameters:
+      extractorPath: "players"
+      path: "players"
+
+  notifications_stream:
+    $ref: "#/definitions/rest_api_key_auth_base_stream"
+    name: "notifications"
+    primary_key: "id"
+    $parameters:
+      extractorPath: "notifications"
+      path: "notifications"
+
+  outcomes_stream:
+    $ref: "#/definitions/rest_api_key_auth_base_stream"
+    name: "outcomes"
+    primary_key: "id"
+    $parameters:
+      extractorPath: "outcomes"
+      path: "apps/{{ config['app_id'] }}/outcomes"
+
+streams:
+  - "#/definitions/apps_stream"
+  - "#/definitions/devices_stream"
+  - "#/definitions/notifications_stream"
+  - "#/definitions/outcomes_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "apps"
+    - "devices"
+    - "notifications"
+    - "outcomes"

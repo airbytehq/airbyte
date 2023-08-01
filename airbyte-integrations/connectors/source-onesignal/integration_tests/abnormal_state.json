@@ -2,14 +2,28 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "8d466489-38af-4067-a6b8-2645ad83f4c2": { "last_active": 2598826148 }},
+      "stream_state": { "last_active": "9990999999" },
       "stream_descriptor": { "name": "devices" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "8d466489-38af-4067-a6b8-2645ad83f4c2": { "last_active": 2598826148 }},
+      "stream_state": { "74fb261c-bcab-4645-b843-a33d5c0d00d7": { "last_active": 2598826148 }},
+      "stream_descriptor": { "name": "devices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "last_active": "9990999999" },
+      "stream_descriptor": { "name": "notifications" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "74fb261c-bcab-4645-b843-a33d5c0d00d7": { "last_active": 2598826148 }},
       "stream_descriptor": { "name": "notifications" }
     }
   }
