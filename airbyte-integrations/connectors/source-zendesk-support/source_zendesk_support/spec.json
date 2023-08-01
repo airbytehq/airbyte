@@ -28,7 +28,7 @@
           {
             "title": "OAuth2.0",
             "type": "object",
-            "required": ["access_token", "client_id", "client_secret"],
+            "required": ["access_token"],
             "additionalProperties": true,
             "properties": {
               "credentials": {
