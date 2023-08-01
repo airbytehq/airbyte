@@ -11,17 +11,14 @@ import org.junit.jupiter.api.Test;
 class CDKVersionTest {
 
   /**
-   * This test ensures that the CDK version number matches a valid semantic versioning (SemVer)
-   * format.
+   * This test ensures that the CDK is able to be imported and that its version number matches the expected pinned version.
    *
-   * If the CDK version number includes a '-SNAPSHOT' suffix, this is removed before testing.
-   *
-   * Fails if the CDK version number does not match a valid SemVer format.
+   * This test can be removed once pinned CDK version reaches v0.1, at which point the CDK will be used for base-java imports,
+   * and this test will no longer be necessary.
    */
   @Test
-  void cdkVersionShouldMatchSemVer() {
-    String cdkVersion = CDKConstants.VERSION.replace("-SNAPSHOT", "");
-    assertTrue(cdkVersion.length() > 0);
+  void cdkVersionShouldMatch() {
+    assertEquals(CDKConstants.VERSION, "v0.0.1-SNAPSHOT");
   }
 
 }
