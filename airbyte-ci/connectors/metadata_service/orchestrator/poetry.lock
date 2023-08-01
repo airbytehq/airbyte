@@ -2251,6 +2251,7 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
@@ -2432,6 +2433,7 @@ crashtest = ">=0.4.1,<0.5.0"
 dulwich = ">=0.21.2,<0.22.0"
 filelock = ">=3.8.0,<4.0.0"
 html5lib = ">=1.0,<2.0"
+importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
 installer = ">=0.7.0,<0.8.0"
 jsonschema = ">=4.10.0,<5.0.0"
 keyring = ">=23.9.0,<24.0.0"
@@ -3488,6 +3490,7 @@ files = [
 
 [package.dependencies]
 anyio = ">=3.4.0,<5"
+typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
