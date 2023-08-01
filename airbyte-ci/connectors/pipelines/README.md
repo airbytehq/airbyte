@@ -377,7 +377,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.2.1   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
+| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
+| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                    |
 | 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package. |
 | 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                              |
 | 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available.   |
