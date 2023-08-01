@@ -6,17 +6,17 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDbSource implements Source, AutoCloseable {
+public class MongoDbSource extends BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
@@ -40,11 +40,6 @@ public class MongoDbSource implements Source, AutoCloseable {
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) throws Exception {
-    return null;
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws Exception {
     return null;
   }
 
