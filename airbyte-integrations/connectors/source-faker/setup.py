@@ -14,7 +14,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_faker",
-    description="Source implementation for fake but realistic looking data!",
+    description="Source implementation for fake but realistic looking data.",
     author="Airbyte",
     author_email="evan@airbyte.io",
     packages=find_packages(),
