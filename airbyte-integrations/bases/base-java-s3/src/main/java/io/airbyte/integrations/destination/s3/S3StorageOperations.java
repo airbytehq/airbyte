@@ -182,7 +182,7 @@ public class S3StorageOperations extends BlobStorageOperations {
         .setUserMetadata(metadata)
         .get()
         .checkIntegrity(s3Config.isCheckIntegrity())
-        .numUploadThreads(1)
+        .numUploadThreads(s3Config.getUploadThreadsCount())
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
 
