@@ -12,6 +12,7 @@ import pytest
 import yaml
 from airbyte_cdk.connector_builder.migrator.schema import SchemaResolver
 from airbyte_cdk.connector_builder.migrator.source import SourceRepository
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from pyfakefs.fake_filesystem_unittest import TestCase
 from pytest_mock.plugin import MockerFixture
 from unit_tests.unit_test_tooling.manifest import ManifestBuilder, ManifestStreamBuilder
@@ -400,8 +401,8 @@ class SourceRepositoryTestCase(TestCase):
         else:
             source_patch.return_value.streams.return_value = [self._a_stream(STREAM_NAME)]
 
-    def _a_stream(self, stream_name):
-        stream = Mock()
+    def _a_stream(self, stream_name: str) -> DeclarativeStream:
+        stream = Mock(spec=DeclarativeStream)
         stream.name = stream_name
         return stream
 

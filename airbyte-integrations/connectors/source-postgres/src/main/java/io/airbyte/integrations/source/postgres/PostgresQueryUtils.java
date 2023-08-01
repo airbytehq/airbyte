@@ -73,7 +73,7 @@ public class PostgresQueryUtils {
       """;
   public static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+        SELECT "%s" FROM %s WHERE "%s" = (SELECT MAX("%s") FROM %s);
       """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
@@ -133,7 +133,7 @@ public class PostgresQueryUtils {
    * @param database the source db
    * @param streams streams to be synced
    * @param stateManager stream stateManager
-   * @return
+   * @return Map of streams to statuses
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
@@ -245,7 +245,7 @@ public class PostgresQueryUtils {
         }
       } catch (final Exception e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
-        LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
+        LOGGER.warn("Failed to fetch vacuum for table {} info", fullTableName, e);
         failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });

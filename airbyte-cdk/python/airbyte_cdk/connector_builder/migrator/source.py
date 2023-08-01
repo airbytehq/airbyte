@@ -7,18 +7,14 @@ import logging
 import os
 import shutil
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-import yaml
-import yaml.emitter
-import yaml.representer
-import yaml.resolver
-import yaml.serializer
-from airbyte_cdk.connector_builder.migrator.schema import SchemaResolver
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+import ruamel.yaml
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow, Spec
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.connector_builder.migrator.schema import SchemaResolver
 
 _NO_CONFIG: Mapping[str, Any] = {}
 
@@ -33,12 +29,18 @@ class SourceRepository:
         self._base_path = os.path.abspath(base_path)
         self._schema_resolver = schema_resolver if schema_resolver is not None else SchemaResolver()
 
+        self._yaml_assembler = ruamel.yaml.YAML()
+        self._yaml_assembler.preserve_quotes = True
+        self._yaml_assembler.indent(mapping=2, sequence=4, offset=2)
+        self._yaml_assembler.width = 4096
+        self._yaml_assembler.representer.add_multi_representer(Enum, lambda dumper, enum: dumper.represent_data(enum.value))
+
     def merge_spec_inside_manifest(self, source_name: str) -> None:
         spec = self._fetch_spec_outside_manifest(source_name)
         if spec:
             manifest_path = self._manifest_path(source_name)
             with open(os.path.join(manifest_path)) as f:
-                manifest = yaml.safe_load(f.read())
+                manifest = self._yaml_assembler.load(f.read())
             if "spec" in manifest:
                 # It should be fine to ignore since the CATs test `test_match_expected` ensure that both are the same
                 logger.info(
@@ -48,21 +50,20 @@ class SourceRepository:
                 manifest["spec"] = spec.dict(exclude_none=True)
 
             with open(manifest_path, 'w') as outfile:
-                yaml.dump(manifest, outfile, sort_keys=False, Dumper=_ManifestDumper)
+                self._yaml_assembler.dump(manifest, outfile)
             self._delete_spec_outside_manifest(source_name)
         else:
             logger.debug(f"Source {source_name} does not have a spec outside the manifest.yaml")
 
     def _fetch_spec_outside_manifest(self, source_name: str) -> Optional[Spec]:
-        json_spec_path = os.path.join(self._python_package_path(source_name), "spec.json")
-        yaml_spec_path = os.path.join(self._python_package_path(source_name), "spec.yaml")
+        json_spec_path, yaml_spec_path = self._get_spec_path(source_name)
 
-        if os.path.exists(json_spec_path):
+        if json_spec_path and os.path.exists(json_spec_path):
             with open(json_spec_path) as json_file:
                 return self._assemble_spec(json.load(json_file))
-        elif os.path.exists(yaml_spec_path):
+        elif yaml_spec_path and os.path.exists(yaml_spec_path):
             with open(yaml_spec_path) as yaml_file:
-                return self._assemble_spec(yaml.safe_load(yaml_file))
+                return self._assemble_spec(self._yaml_assembler.load(yaml_file.read()))
         else:
             return None
 
@@ -76,12 +77,11 @@ class SourceRepository:
         )
 
     def _delete_spec_outside_manifest(self, source_name: str) -> None:
-        json_spec_path = os.path.join(self._python_package_path(source_name), "spec.json")
-        yaml_spec_path = os.path.join(self._python_package_path(source_name), "spec.yaml")
+        json_spec_path, yaml_spec_path = self._get_spec_path(source_name)
 
-        if os.path.exists(json_spec_path):
+        if json_spec_path and os.path.exists(json_spec_path):
             os.remove(json_spec_path)
-        elif os.path.exists(yaml_spec_path):
+        elif yaml_spec_path and os.path.exists(yaml_spec_path):
             os.remove(yaml_spec_path)
 
     def fetch_no_code_sources(self) -> List[str]:
@@ -110,6 +110,15 @@ class SourceRepository:
             # `class_name`, it'll be a custom component
             return "class_name:" not in manifest_file.read()
 
+    def _get_spec_path(self, source_name: str) -> Tuple[Optional[str], Optional[str]]:
+        json_spec_path = os.path.join(self._python_package_path(source_name), "spec.json")
+        yaml_spec_path = os.path.join(self._python_package_path(source_name), "spec.yaml")
+
+        return (
+            json_spec_path if os.path.exists(json_spec_path) else None,
+            yaml_spec_path if os.path.exists(yaml_spec_path) else None
+        )
+
     def _manifest_path(self, source_name: str) -> str:
         return os.path.join(self._python_package_path(source_name), "manifest.yaml")
 
@@ -132,7 +141,7 @@ class SourceRepository:
         if os.path.exists(schemas_path):
             manifest_path = self._manifest_path(source_name)
             with open(manifest_path) as f:
-                manifest_model = yaml.safe_load(f.read())
+                manifest_model = self._yaml_assembler.load(f.read())
 
             source = YamlDeclarativeSource(manifest_path)
             for stream in source.streams(_NO_CONFIG):
@@ -156,7 +165,7 @@ class SourceRepository:
                 schema_loader_model["schema"] = resolved_schema
 
             with open(manifest_path, 'w') as outfile:
-                yaml.dump(manifest_model, outfile, sort_keys=False, Dumper=_ManifestDumper)
+                self._yaml_assembler.dump(manifest_model, outfile)
         else:
             logger.info(f"Skipping {source_name} as it does not have a schemas folder at {schemas_path}")
 
@@ -225,63 +234,3 @@ class SourceRepository:
         for k in keys:
             result = result[k]
         return result
-
-
-class _IndentingEmitter(yaml.emitter.Emitter):
-    def increase_indent(self, flow: bool = False, indentless: bool = False) -> None:
-        """Ensure that lists items are always indented."""
-        super().increase_indent(flow=False, indentless=False)  # type: ignore
-
-
-class _ManifestDumper(
-    _IndentingEmitter,
-    yaml.serializer.Serializer,
-    yaml.representer.Representer,
-    yaml.resolver.Resolver,
-):
-    def __init__(  # type: ignore
-        self,
-        stream,
-        default_style=None,
-        default_flow_style=False,
-        canonical=None,
-        indent=None,
-        width=None,
-        allow_unicode=None,
-        line_break=None,
-        encoding=None,
-        explicit_start=None,
-        explicit_end=None,
-        version=None,
-        tags=None,
-        sort_keys=True,
-    ) -> None:
-        _IndentingEmitter.__init__(
-            self,
-            stream,
-            canonical=canonical,
-            indent=indent,
-            width=width,
-            allow_unicode=allow_unicode,
-            line_break=line_break,
-        )
-        yaml.serializer.Serializer.__init__(
-            self,
-            encoding=encoding,
-            explicit_start=explicit_start,
-            explicit_end=explicit_end,
-            version=version,
-            tags=tags,
-        )
-        yaml.representer.Representer.__init__(
-            self,
-            default_style=default_style,
-            default_flow_style=default_flow_style,
-            sort_keys=sort_keys,
-        )
-        yaml.resolver.Resolver.__init__(self)
-
-    def represent_data(self, data: Any) -> yaml.Node:
-        if isinstance(data, Enum):
-            return self.represent_data(data.value)
-        return super().represent_data(data)
