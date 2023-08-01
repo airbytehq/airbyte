@@ -13,6 +13,8 @@ from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingB
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
@@ -48,7 +50,7 @@ class CsvParser(FileTypeParser):
                 doublequote=config_format.double_quote,
                 quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
             )
-            with stream_reader.open_file(file) as fp:
+            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
                 # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
                 #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
                 headers = self._get_headers(fp, config_format, dialect_name)
@@ -56,7 +58,7 @@ class CsvParser(FileTypeParser):
                 csv.unregister_dialect(dialect_name)
                 return schema
         else:
-            with stream_reader.open_file(file) as fp:
+            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
                 reader = csv.DictReader(fp)  # type: ignore
                 return {field.strip(): {"type": "string"} for field in next(reader)}
 
@@ -68,28 +70,36 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
-        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
-        if not isinstance(config_format, CsvFormat):
-            raise ValueError(f"Invalid format config: {config_format}")
-        # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
-        # We don't unregister the dialect because we are lazily parsing each csv file to generate records
-        dialect_name = config.name + DIALECT_NAME
-        csv.register_dialect(
-            dialect_name,
-            delimiter=config_format.delimiter,
-            quotechar=config_format.quote_char,
-            escapechar=config_format.escape_char,
-            doublequote=config_format.double_quote,
-            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
-        )
-        with stream_reader.open_file(file) as fp:
-            # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
-            #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-            self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-            field_names = self._auto_generate_headers(fp, config_format) if config_format.autogenerate_column_names else None
-            reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
+        config_format = config.format.get(config.file_type) if config.format else None
+        if config_format:
+            if not isinstance(config_format, CsvFormat):
+                raise ValueError(f"Invalid format config: {config_format}")
+            # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
+            # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
+            dialect_name = config.name + DIALECT_NAME
+            csv.register_dialect(
+                dialect_name,
+                delimiter=config_format.delimiter,
+                quotechar=config_format.quote_char,
+                escapechar=config_format.escape_char,
+                doublequote=config_format.double_quote,
+                quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+            )
+            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+                # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
+                #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
+                self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+                reader = csv.DictReader(fp, dialect=dialect_name)  # type: ignore
+                yield from self._read_and_cast_types(reader, schema, config_format, logger)
+        else:
+            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+                #self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+                reader = csv.DictReader(fp)  # type: ignore
+                yield from self._read_and_cast_types(reader, schema, CsvFormat(), logger)
 
-            yield from self._read_and_cast_types(reader, schema, config_format, logger)
+    @property
+    def file_read_mode(self) -> FileReadMode:
+        return FileReadMode.READ
 
     @staticmethod
     def _read_and_cast_types(
