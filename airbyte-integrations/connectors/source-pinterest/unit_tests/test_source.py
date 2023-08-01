@@ -44,7 +44,7 @@ def test_streams(test_config):
     setup_responses()
     source = SourcePinterest()
     streams = source.streams(test_config)
-    expected_streams_number = 13
+    expected_streams_number = 14
     assert len(streams) == expected_streams_number
 
 

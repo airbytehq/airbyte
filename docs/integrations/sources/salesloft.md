@@ -82,6 +82,12 @@ This connector outputs the following streams:
 * [CRM Users](https://developers.salesloft.com/api.html#!/Crm_Users/get_v2_crm_users_json)
 * [Groups](https://developers.salesloft.com/api.html#!/Groups/get_v2_groups_json)
 * [Successes](https://developers.salesloft.com/api.html#!/Successes/get_v2_successes_json)
+* [Call Data Records](https://developers.salesloft.com/api.html#!/Call_Data_Records/get_v2_call_data_records_json)
+* [Call Dispositions](https://developers.salesloft.com/api.html#!/Call_Dispositions/get_v2_call_dispositions_json)
+* [Call Sentiments](https://developers.salesloft.com/api.html#!/Call_Sentiments/get_v2_call_sentiments_json)
+* [Custom Fields](https://developers.salesloft.com/api.html#!/Custom_Fields/get_v2_custom_fields_json)
+* [Meetings](https://developers.salesloft.com/api.html#!/Meetings/get_v2_meetings_json)
+* [Searches](https://developers.salesloft.com/api.html#!/Searches/post_v2_searches_json)
 
 ## Performance considerations
 
@@ -91,6 +97,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.2.0   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
 | 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
 | 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
 | 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |

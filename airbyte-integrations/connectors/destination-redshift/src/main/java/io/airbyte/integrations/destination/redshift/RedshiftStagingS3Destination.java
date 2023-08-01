@@ -22,6 +22,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -159,7 +161,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
         config,
         catalog,
-        isPurgeStagingData(s3Options));
+        isPurgeStagingData(s3Options),
+        new TypeAndDedupeOperationValve(),
+        new NoopTyperDeduper(),
+        // The parsedcatalog is only used in v2 mode, so just pass null for now
+        null);
   }
 
   /**

@@ -9,7 +9,7 @@ from source_salesloft.source import SourceSalesloft
 def test_streams(config):
     source = SourceSalesloft()
     streams = source.streams(config)
-    expected_streams_number = 23
+    expected_streams_number = 29
     assert len(streams) == expected_streams_number
 
 

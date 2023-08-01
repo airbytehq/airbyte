@@ -4,233 +4,222 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.*;
+import static io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.fromJsonSchema;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class AirbyteTypeTest {
 
   @Test
   public void testStruct() {
-    final String structSchema = """
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "key1": {
-                                      "type": "boolean"
-                                    },
-                                    "key2": {
-                                      "type": "integer"
-                                    },
-                                    "key3": {
-                                      "type": "number",
-                                      "airbyte_type": "integer"
-                                    },
-                                    "key4": {
-                                      "type": "number"
-                                    },
-                                    "key5": {
-                                      "type": "string",
-                                      "format": "date"
-                                    },
-                                    "key6": {
-                                      "type": "string",
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key7": {
-                                      "type": "string",
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key8": {
-                                      "type": "string",
-                                      "format": "date-time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key9": {
-                                      "type": "string",
-                                      "format": ["date-time", "foo"],
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key10": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "key11": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                                """;
+    final List<String> structSchema = new ArrayList<>();
+    structSchema.add("""
+                     {
+                       "type": "object",
+                       "properties": {
+                         "key1": {
+                           "type": "boolean"
+                         },
+                         "key2": {
+                           "type": "integer"
+                         },
+                         "key3": {
+                           "type": "number",
+                           "airbyte_type": "integer"
+                         },
+                         "key4": {
+                           "type": "number"
+                         },
+                         "key5": {
+                           "type": "string",
+                           "format": "date"
+                         },
+                         "key6": {
+                           "type": "string",
+                           "format": "time",
+                           "airbyte_type": "time_without_timezone"
+                         },
+                         "key7": {
+                           "type": "string",
+                           "format": "time",
+                           "airbyte_type": "time_with_timezone"
+                         },
+                         "key8": {
+                           "type": "string",
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_without_timezone"
+                         },
+                         "key9": {
+                           "type": "string",
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_with_timezone"
+                         },
+                         "key10": {
+                           "type": "string",
+                           "format": "date-time"
+                         },
+                         "key11": {
+                           "type": "string"
+                         }
+                       }
+                     }
+                     """);
+    structSchema.add("""
+                     {
+                       "type": ["object"],
+                       "properties": {
+                         "key1": {
+                           "type": ["boolean"]
+                         },
+                         "key2": {
+                           "type": ["integer"]
+                         },
+                         "key3": {
+                           "type": ["number"],
+                           "airbyte_type": "integer"
+                         },
+                         "key4": {
+                           "type": ["number"]
+                         },
+                         "key5": {
+                           "type": ["string"],
+                           "format": "date"
+                         },
+                         "key6": {
+                           "type": ["string"],
+                           "format": "time",
+                           "airbyte_type": "time_without_timezone"
+                         },
+                         "key7": {
+                           "type": ["string"],
+                           "format": "time",
+                           "airbyte_type": "time_with_timezone"
+                         },
+                         "key8": {
+                           "type": ["string"],
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_without_timezone"
+                         },
+                         "key9": {
+                           "type": ["string"],
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_with_timezone"
+                         },
+                         "key10": {
+                           "type": ["string"],
+                           "format": "date-time"
+                         },
+                         "key11": {
+                           "type": ["string"]
+                         }
+                       }
+                     }
+                     """);
+    structSchema.add("""
+                     {
+                       "type": ["null", "object"],
+                       "properties": {
+                         "key1": {
+                           "type": ["null", "boolean"]
+                         },
+                         "key2": {
+                           "type": ["null", "integer"]
+                         },
+                         "key3": {
+                           "type": ["null", "number"],
+                           "airbyte_type": "integer"
+                         },
+                         "key4": {
+                           "type": ["null", "number"]
+                         },
+                         "key5": {
+                           "type": ["null", "string"],
+                           "format": "date"
+                         },
+                         "key6": {
+                           "type": ["null", "string"],
+                           "format": "time",
+                           "airbyte_type": "time_without_timezone"
+                         },
+                         "key7": {
+                           "type": ["null", "string"],
+                           "format": "time",
+                           "airbyte_type": "time_with_timezone"
+                         },
+                         "key8": {
+                           "type": ["null", "string"],
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_without_timezone"
+                         },
+                         "key9": {
+                           "type": ["null", "string"],
+                           "format": "date-time",
+                           "airbyte_type": "timestamp_with_timezone"
+                         },
+                         "key10": {
+                           "type": ["null", "string"],
+                           "format": "date-time"
+                         },
+                         "key11": {
+                           "type": ["null", "string"]
+                         }
+                       }
+                     }
+                     """);
 
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
-    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
-    propertiesMap.put("key5", AirbyteProtocolType.DATE);
-    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key11", AirbyteProtocolType.STRING);
+    propertiesMap.put("key1", BOOLEAN);
+    propertiesMap.put("key2", INTEGER);
+    propertiesMap.put("key3", INTEGER);
+    propertiesMap.put("key4", NUMBER);
+    propertiesMap.put("key5", DATE);
+    propertiesMap.put("key6", TIME_WITHOUT_TIMEZONE);
+    propertiesMap.put("key7", TIME_WITH_TIMEZONE);
+    propertiesMap.put("key8", TIMESTAMP_WITHOUT_TIMEZONE);
+    propertiesMap.put("key9", TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key10", TIMESTAMP_WITH_TIMEZONE);
+    propertiesMap.put("key11", STRING);
 
     final AirbyteType struct = new Struct(propertiesMap);
-    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+    for (final String schema : structSchema) {
+      assertEquals(struct, fromJsonSchema(Jsons.deserialize(schema)));
+    }
   }
 
   @Test
-  public void testStructSingletonListDecl() {
-    final String structSchema = """
-                                {
-                                  "type": ["object"],
-                                  "properties": {
-                                    "key1": {
-                                      "type": ["boolean"]
-                                    },
-                                    "key2": {
-                                      "type": ["integer"]
-                                    },
-                                    "key3": {
-                                      "type": ["number"],
-                                      "airbyte_type": "integer"
-                                    },
-                                    "key4": {
-                                      "type": ["number"]
-                                    },
-                                    "key5": {
-                                      "type": ["string"],
-                                      "format": "date"
-                                    },
-                                    "key6": {
-                                      "type": ["string"],
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key7": {
-                                      "type": ["string"],
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key8": {
-                                      "type": ["string"],
-                                      "format": "date-time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key9": {
-                                      "type": ["string"],
-                                      "format": ["date-time", "foo"],
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key10": {
-                                      "type": ["string"],
-                                      "format": "date-time"
-                                    },
-                                    "key11": {
-                                      "type": ["string"]
-                                    }
-                                  }
-                                }
-                                """;
+  public void testEmptyStruct() {
+    final List<String> structSchema = new ArrayList<>();
+    structSchema.add("""
+                     {
+                       "type": "object"
+                     }
+                     """);
+    structSchema.add("""
+                     {
+                       "type": ["object"]
+                     }
+                     """);
+    structSchema.add("""
+                     {
+                       "type": ["null", "object"]
+                     }
+                     """);
 
-    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
-    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
-    propertiesMap.put("key5", AirbyteProtocolType.DATE);
-    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key11", AirbyteProtocolType.STRING);
-
-    final AirbyteType struct = new Struct(propertiesMap);
-    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
-  }
-
-  @Test
-  public void testStructNullableSingletonListDecl() {
-    final String structSchema = """
-                                {
-                                  "type": ["null", "object"],
-                                  "properties": {
-                                    "key1": {
-                                      "type": ["null", "boolean"]
-                                    },
-                                    "key2": {
-                                      "type": ["null", "integer"]
-                                    },
-                                    "key3": {
-                                      "type": ["null", "number"],
-                                      "airbyte_type": "integer"
-                                    },
-                                    "key4": {
-                                      "type": ["null", "number"]
-                                    },
-                                    "key5": {
-                                      "type": ["null", "string"],
-                                      "format": "date"
-                                    },
-                                    "key6": {
-                                      "type": ["null", "string"],
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key7": {
-                                      "type": ["null", "string"],
-                                      "format": "time",
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key8": {
-                                      "type": ["null", "string"],
-                                      "format": "date-time",
-                                      "airbyte_type": "timestamp_without_timezone"
-                                    },
-                                    "key9": {
-                                      "type": ["null", "string"],
-                                      "format": ["date-time", "foo"],
-                                      "airbyte_type": "timestamp_with_timezone"
-                                    },
-                                    "key10": {
-                                      "type": ["null", "string"],
-                                      "format": "date-time"
-                                    },
-                                    "key11": {
-                                      "type": ["null", "string"]
-                                    }
-                                  }
-                                }
-                                """;
-
-    final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
-    propertiesMap.put("key2", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key3", AirbyteProtocolType.INTEGER);
-    propertiesMap.put("key4", AirbyteProtocolType.NUMBER);
-    propertiesMap.put("key5", AirbyteProtocolType.DATE);
-    propertiesMap.put("key6", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-    propertiesMap.put("key7", AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    propertiesMap.put("key8", AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-    propertiesMap.put("key9", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key10", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    propertiesMap.put("key11", AirbyteProtocolType.STRING);
-
-    final AirbyteType struct = new Struct(propertiesMap);
-    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+    final AirbyteType struct = new Struct(new LinkedHashMap<>());
+    for (final String schema : structSchema) {
+      assertEquals(struct, fromJsonSchema(Jsons.deserialize(schema)));
+    }
   }
 
   @Test
@@ -246,61 +235,76 @@ public class AirbyteTypeTest {
                                 """;
 
     final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-    propertiesMap.put("key1", AirbyteProtocolType.BOOLEAN);
+    propertiesMap.put("key1", BOOLEAN);
 
     final AirbyteType struct = new Struct(propertiesMap);
-    assertEquals(struct, AirbyteType.fromJsonSchema(Jsons.deserialize(structSchema)));
+    assertEquals(struct, fromJsonSchema(Jsons.deserialize(structSchema)));
   }
 
   @Test
   public void testArray() {
-    final String arraySchema = """
-                               {
-                                 "type": "array",
-                                 "items": {
-                                   "type": "string",
-                                   "format": "date-time",
-                                   "airbyte_type": "timestamp_with_timezone"
-                                 }
-                               }
-                               """;
+    final List<String> arraySchema = new ArrayList<>();
+    arraySchema.add("""
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "date-time",
+                        "airbyte_type": "timestamp_with_timezone"
+                      }
+                    }
+                    """);
+    arraySchema.add("""
+                    {
+                      "type": ["array"],
+                      "items": {
+                        "type": ["string"],
+                        "format": "date-time",
+                        "airbyte_type": "timestamp_with_timezone"
+                      }
+                    }
+                    """);
+    arraySchema.add("""
+                    {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"],
+                        "format": "date-time",
+                        "airbyte_type": "timestamp_with_timezone"
+                      }
+                    }
+                    """);
 
-    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+    final AirbyteType array = new Array(TIMESTAMP_WITH_TIMEZONE);
+    for (final String schema : arraySchema) {
+      assertEquals(array, fromJsonSchema(Jsons.deserialize(schema)));
+    }
   }
 
   @Test
-  public void testArraySingletonListDecl() {
-    final String arraySchema = """
-                               {
-                                 "type": ["array"],
-                                 "items": {
-                                   "type": ["string"],
-                                   "format": "date-time",
-                                   "airbyte_type": "timestamp_with_timezone"
-                                 }
-                               }
-                               """;
+  public void testEmptyArray() {
+    final List<String> arraySchema = new ArrayList<>();
+    arraySchema.add("""
+                    {
+                      "type": "array"
+                    }
+                    """);
+    arraySchema.add("""
+                    {
+                      "type": ["array"]
+                    }
+                    """);
 
-    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
-  }
+    arraySchema.add("""
+                    {
+                      "type": ["null", "array"]
+                    }
+                    """);
 
-  @Test
-  public void testArrayNullableSingletonListDecl() {
-    final String arraySchema = """
-                               {
-                                 "type": ["null", "array"],
-                                 "items": {
-                                   "type": ["null", "string"],
-                                   "format": "date-time",
-                                   "airbyte_type": "timestamp_with_timezone"
-                                 }
-                               }
-                               """;
-
-    final AirbyteType array = new Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    assertEquals(array, AirbyteType.fromJsonSchema(Jsons.deserialize(arraySchema)));
+    final AirbyteType array = new Array(UNKNOWN);
+    for (final String schema : arraySchema) {
+      assertEquals(array, fromJsonSchema(Jsons.deserialize(schema)));
+    }
   }
 
   @Test
@@ -312,34 +316,72 @@ public class AirbyteTypeTest {
                                           """;
 
     final List<AirbyteType> options = new ArrayList<>();
-    options.add(AirbyteProtocolType.NUMBER);
-    options.add(AirbyteProtocolType.STRING);
+    options.add(NUMBER);
+    options.add(STRING);
 
     final UnsupportedOneOf unsupportedOneOf = new UnsupportedOneOf(options);
-    assertEquals(unsupportedOneOf, AirbyteType.fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)));
+    assertEquals(unsupportedOneOf, fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)));
   }
 
   @Test
-  public void testOneOf() {
+  public void testUnion() {
 
-    final String oneOfSchema = """
+    final String unionSchema = """
                                {
                                  "type": ["string", "number"]
                                }
                                """;
 
     final List<AirbyteType> options = new ArrayList<>();
-    options.add(AirbyteProtocolType.STRING);
-    options.add(AirbyteProtocolType.NUMBER);
+    options.add(STRING);
+    options.add(NUMBER);
 
-    final OneOf oneOf = new OneOf(options);
-    assertEquals(oneOf, AirbyteType.fromJsonSchema(Jsons.deserialize(oneOfSchema)));
+    final Union union = new Union(options);
+    assertEquals(union, fromJsonSchema(Jsons.deserialize(unionSchema)));
   }
 
   @Test
-  public void testEmpty() {
-    final String emptySchema = "{}";
-    assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(emptySchema)));
+  public void testUnionComplex() {
+    final JsonNode schema = Jsons.deserialize("""
+                                              {
+                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
+                                                "properties": {
+                                                  "foo": {"type": "string"}
+                                                },
+                                                "items": {"type": "string"}
+                                              }
+                                              """);
+
+    final AirbyteType parsed = fromJsonSchema(schema);
+
+    final AirbyteType expected = new Union(List.of(
+        STRING,
+        new Struct(new LinkedHashMap<>() {
+
+          {
+            put("foo", STRING);
+          }
+
+        }),
+        new Array(STRING)));
+    assertEquals(expected, parsed);
+  }
+
+  @Test
+  public void testUnionUnderspecifiedNonPrimitives() {
+    final JsonNode schema = Jsons.deserialize("""
+                                              {
+                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
+                                              }
+                                              """);
+
+    final AirbyteType parsed = fromJsonSchema(schema);
+
+    final AirbyteType expected = new Union(List.of(
+        STRING,
+        new Struct(new LinkedHashMap<>()),
+        new Array(UNKNOWN)));
+    assertEquals(expected, parsed);
   }
 
   @Test
@@ -349,7 +391,7 @@ public class AirbyteTypeTest {
                                        "type": "foo"
                                      }
                                      """;
-    assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
+    assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
   }
 
   @Test
@@ -359,37 +401,102 @@ public class AirbyteTypeTest {
                                        "type": true
                                      }
                                      """;
-    assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
+    assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
   }
 
   @Test
-  public void testChooseOneOf() {
-    // test ordering
+  public void testInvalid() {
+    final List<String> invalidSchema = new ArrayList<>();
+    invalidSchema.add("");
+    invalidSchema.add("null");
+    invalidSchema.add("true");
+    invalidSchema.add("false");
+    invalidSchema.add("1");
+    invalidSchema.add("\"\"");
+    invalidSchema.add("[]");
+    invalidSchema.add("{}");
 
-    OneOf o = new OneOf(ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.DATE));
-    assertEquals(AirbyteProtocolType.DATE, AirbyteTypeUtils.chooseOneOfType(o));
+    for (final String schema : invalidSchema) {
+      assertEquals(UNKNOWN, fromJsonSchema(Jsons.deserialize(schema)));
+    }
+  }
 
-    final Array a = new Array(AirbyteProtocolType.TIME_WITH_TIMEZONE);
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE, a));
-    assertEquals(a, AirbyteTypeUtils.chooseOneOfType(o));
+  @Test
+  public void testChooseUnion() {
+    final Map<Union, AirbyteType> unionToType = new HashMap<>();
+
+    final Array a = new Array(BOOLEAN);
 
     final LinkedHashMap<String, AirbyteType> properties = new LinkedHashMap<>();
-    properties.put("key1", AirbyteProtocolType.UNKNOWN);
-    properties.put("key2", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    properties.put("key1", UNKNOWN);
+    properties.put("key2", INTEGER);
     final Struct s = new Struct(properties);
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE, s));
-    assertEquals(s, AirbyteTypeUtils.chooseOneOfType(o));
 
-    // test exclusion
+    unionToType.put(new Union(ImmutableList.of(s, a)), a);
+    unionToType.put(new Union(ImmutableList.of(NUMBER, a)), a);
+    unionToType.put(new Union(ImmutableList.of(INTEGER, s)), s);
+    unionToType.put(new Union(ImmutableList.of(NUMBER, DATE, BOOLEAN)), DATE);
+    unionToType.put(new Union(ImmutableList.of(INTEGER, BOOLEAN, NUMBER)), NUMBER);
+    unionToType.put(new Union(ImmutableList.of(BOOLEAN, INTEGER)), INTEGER);
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER));
-    assertEquals(AirbyteProtocolType.INTEGER, AirbyteTypeUtils.chooseOneOfType(o));
+    assertAll(
+        unionToType.entrySet().stream().map(e -> () -> assertEquals(e.getValue(), e.getKey().chooseType())));
+  }
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.INTEGER, AirbyteProtocolType.NUMBER, AirbyteProtocolType.DATE));
-    assertEquals(AirbyteProtocolType.NUMBER, AirbyteTypeUtils.chooseOneOfType(o));
+  @Test
+  public void testAsColumns() {
+    final Union u = new Union(List.of(
+        STRING,
+        new Struct(new LinkedHashMap<>() {
 
-    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER, AirbyteProtocolType.STRING));
-    assertEquals(AirbyteProtocolType.STRING, AirbyteTypeUtils.chooseOneOfType(o));
+          {
+            put("foo", STRING);
+          }
+
+        }),
+        new Array(STRING),
+        // This is bad behavior, but it matches current behavior so we'll test it.
+        // Ideally, we would recognize that the sub-unions are also objects.
+        new Union(List.of(new Struct(new LinkedHashMap<>()))),
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
+
+    final LinkedHashMap<String, AirbyteType> columns = u.asColumns();
+
+    assertEquals(
+        new LinkedHashMap<>() {
+
+          {
+            put("foo", STRING);
+          }
+
+        },
+        columns);
+  }
+
+  @Test
+  public void testAsColumnsMultipleObjects() {
+    final Union u = new Union(List.of(
+        new Struct(new LinkedHashMap<>()),
+        new Struct(new LinkedHashMap<>())));
+
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
+    assertEquals(new LinkedHashMap<>(), u.asColumns());
+  }
+
+  @Test
+  public void testAsColumnsNoObjects() {
+    final Union u = new Union(List.of(
+        STRING,
+        new Array(STRING),
+        new UnsupportedOneOf(new ArrayList<>()),
+        // Similar to testAsColumns(), this is bad behavior.
+        new Union(List.of(new Struct(new LinkedHashMap<>()))),
+        new UnsupportedOneOf(List.of(new Struct(new LinkedHashMap<>())))));
+
+    // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+    // warning for now.
+    assertEquals(new LinkedHashMap<>(), u.asColumns());
   }
 
 }

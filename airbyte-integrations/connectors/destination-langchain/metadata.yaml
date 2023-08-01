@@ -1,0 +1,21 @@
+data:
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
+  dockerImageTag: 0.0.5
+  dockerRepository: airbyte/destination-langchain
+  githubIssueLabel: destination-langchain
+  icon: langchain.svg
+  license: MIT
+  name: Vector Database (powered by LangChain)
+  releaseDate: 2023-07-15
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/langchain
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

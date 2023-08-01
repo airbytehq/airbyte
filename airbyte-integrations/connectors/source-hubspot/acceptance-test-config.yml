@@ -39,6 +39,8 @@ acceptance_tests:
             bypass_reason: Unable to populate
           - name: quotes
             bypass_reason: Unable to populate
+          - name: deals_archived
+            bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch
@@ -46,6 +48,8 @@ acceptance_tests:
           companies:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_was_imported
+              bypass_reason: attribute is not stable
           contacts:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
@@ -57,6 +61,12 @@ acceptance_tests:
               bypass_reason: Hubspot prediction changes
             - name: properties/lastmodifieddate
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_in_lead
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_in_opportunity
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_was_imported
+              bypass_reason: attribute is not stable
             - name: updatedAt
               bypass_reason: Hubspot time depend on current time
           deals:
@@ -91,7 +101,12 @@ acceptance_tests:
           goals:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
-        fail_on_extra_columns: false
+            - name: properties/hs_lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_kpi_value_last_calculated_at
+              bypass_reason: Hubspot time depend on current time
+            - name: updatedAt
+              bypass_reason: field changes too often
   full_refresh:
     tests:
       - config_path: secrets/config.json

@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
@@ -48,9 +49,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
                            final T writer,
                            final WriteDisposition syncMode,
                            final BigQuery bigQuery,
-                           final BigQueryRecordFormatter recordFormatter,
-                           final boolean use1s1t) {
-    this.use1s1t = use1s1t;
+                           final BigQueryRecordFormatter recordFormatter) {
+    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
@@ -107,13 +107,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
         LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
         uploadDataToTableFromTmpTable();
         LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
-      } else {
-        // Otherwise, we just need to ensure that this table exists.
-        // TODO alter an existing raw table?
-        final Table rawTable = bigQuery.getTable(table);
-        if (rawTable == null) {
-          bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
-        }
       }
 
       outputRecordCollector.accept(lastStateMessage);
@@ -123,6 +116,18 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       throw e;
     } finally {
       dropTmpTable();
+    }
+  }
+
+  public void createRawTable() {
+    // Ensure that this table exists.
+    // TODO alter an existing raw table?
+    final Table rawTable = bigQuery.getTable(table);
+    if (rawTable == null) {
+      LOGGER.info("Creating raw table {}.", table);
+      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
+    } else {
+      LOGGER.info("Found raw table {}.", rawTable.getTableId());
     }
   }
 

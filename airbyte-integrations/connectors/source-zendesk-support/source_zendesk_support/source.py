@@ -24,7 +24,10 @@ from .streams import (
     Macros,
     OrganizationMemberships,
     Organizations,
+    PostComments,
+    PostCommentVotes,
     Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -60,7 +63,7 @@ class SourceZendeskSupport(AbstractSource):
     """
 
     @classmethod
-    def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
+    def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
 
         # old authentication flow support
         auth_old = config.get("auth_method")
@@ -124,6 +127,9 @@ class SourceZendeskSupport(AbstractSource):
             Organizations(**args),
             OrganizationMemberships(**args),
             Posts(**args),
+            PostComments(**args),
+            PostCommentVotes(**args),
+            PostVotes(**args),
             SatisfactionRatings(**args),
             SlaPolicies(**args),
             Tags(**args),
