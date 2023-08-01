@@ -73,7 +73,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
     String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
-                "final_table_id", streamId.finalTableId(suffix, BigQuerySqlGenerator.QUOTE),
+                "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
                 "cdc_deleted_at", cdcDeletedAt)).replace(
                 """
                     CREATE TABLE ${final_table_id} (
@@ -255,7 +255,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
-    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(suffix, BigQuerySqlGenerator.QUOTE)));
+    TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 

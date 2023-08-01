@@ -433,7 +433,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable(incrementalDedupStreamConfig(), "_foo");
     destinationHandler.execute(sql);
 
-    final TableResult finalTable = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build());
+    final TableResult finalTable = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "_foo")).build());
     DIFFER.diffFinalTableRecords(
         List.of(
             Jsons.deserialize(
@@ -556,7 +556,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     destinationHandler.execute(sql);
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "_foo")).build()).getTotalRows();
     assertEquals(3, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, rawRows);
@@ -590,7 +590,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     destinationHandler.execute(sql);
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "_foo")).build()).getTotalRows();
     assertEquals(4, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, rawRows);
@@ -628,7 +628,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     destinationHandler.execute(sql);
 
     // TODO better asserts
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "")).build()).getTotalRows();
     assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(1, rawRows);
@@ -706,7 +706,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "")).build()).getTotalRows();
     assertEquals(5, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(6, rawRows); // we only keep the newest raw record for reach PK
@@ -750,7 +750,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "")).build()).getTotalRows();
     assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(1, rawRows);
@@ -797,7 +797,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable(cdcStreamConfig(), "");
     destinationHandler.execute(sql);
 
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "")).build()).getTotalRows();
     assertEquals(1, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(1, rawRows);
@@ -829,7 +829,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertTrue(
         finalTableDefinition.getSchema().getFields().stream().noneMatch(f -> f.getName().equals("weird_new_column")),
         "weird_new_column was expected to no longer exist after soft reset");
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE, "")).build()).getTotalRows();
     assertEquals(2, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
