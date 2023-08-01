@@ -178,12 +178,12 @@ public class S3StorageOperations extends BlobStorageOperations {
       blobDecorator.updateMetadata(metadata, getMetadataMapping());
     }
     final StreamTransferManager uploadManager = StreamTransferManagerFactory.create(bucket, fullObjectKey, s3Client)
-        .setPartSize(100L)
+        .setPartSize(partSize)
         .setUserMetadata(metadata)
         .get()
         .checkIntegrity(s3Config.isCheckIntegrity())
-        .numUploadThreads(1)
-        .queueCapacity(1);
+        .numUploadThreads(s3Config.getUploadThreadsCount())
+        .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
 
     // Wrap output stream in decorators
