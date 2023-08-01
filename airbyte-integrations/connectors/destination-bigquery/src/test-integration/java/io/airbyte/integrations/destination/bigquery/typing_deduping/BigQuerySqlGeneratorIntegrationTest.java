@@ -674,8 +674,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
     destinationHandler.execute(sql);
     destinationHandler.execute(sql);
 
+    // There were exactly two raw records, so there should be exactly two final records
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(2, finalRows);
+    // And the raw table should be untouched
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows); // we only keep the newest raw record for reach PK
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
