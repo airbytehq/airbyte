@@ -4,10 +4,18 @@
   "properties": {
     "date": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "length": {
-      "type": ["null", "number"]
+      "type": ["null", "object"],
+      "properties": {
+        "setId": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "number"]
+        }
+      }
     }
   }
 }

@@ -16,7 +16,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.1.24 # cursor field for stream events has been changed
+          # `average_session_length.length` has changed from `number` > `object` 
+          disable_for_version: 0.2.4
   basic_read:
     tests:
       - config_path: "secrets/config.json"
