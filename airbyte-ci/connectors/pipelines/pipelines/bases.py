@@ -26,6 +26,7 @@ from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
+from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
@@ -479,7 +480,7 @@ class Report:
             to_render.append(failures_group)
 
         if self.pipeline_context.dagger_cloud_url:
-            dagger_cloud_url = Text(f"☁️  View the run in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
+            dagger_cloud_url = Markdown(f"[🔗 View commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})")
             to_render.append(dagger_cloud_url)
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
@@ -559,7 +560,7 @@ class ConnectorReport(Report):
         markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
 
         if self.pipeline_context.dagger_cloud_url:
-            markdown_comment += f"☁️ [View the run in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
+            markdown_comment += f"☁️ [View commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
 
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
         markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/README.md) tool with the following command**\n"
@@ -629,7 +630,7 @@ class ConnectorReport(Report):
         to_render = [step_results_table]
 
         if self.pipeline_context.dagger_cloud_url:
-            dagger_cloud_url = Text(f"☁️  View the run in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
+            dagger_cloud_url = Markdown(f"[🔗 View commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})")
             to_render.append(dagger_cloud_url)
 
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
