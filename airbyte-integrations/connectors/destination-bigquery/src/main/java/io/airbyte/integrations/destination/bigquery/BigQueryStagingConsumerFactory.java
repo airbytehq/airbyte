@@ -18,7 +18,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
@@ -58,8 +57,7 @@ public class BigQueryStagingConsumerFactory {
       final Function<String, String> targetTableNameTransformer,
       final TyperDeduper typerDeduper,
       final ParsedCatalog parsedCatalog,
-      final String defaultNamespace,
-      final BigQueryV1V2Migrator bigQueryV1V2Migrator)
+      final String defaultNamespace)
       throws Exception {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
@@ -71,8 +69,6 @@ public class BigQueryStagingConsumerFactory {
 
     CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
-
-    parsedCatalog.streams().forEach(stream -> bigQueryV1V2Migrator.migrateIfNecessary(stream));
 
     return new BufferedStreamConsumer(
         outputRecordCollector,

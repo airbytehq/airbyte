@@ -48,8 +48,8 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         outputRecordCollector,
         "test-dataset-id",
         new NoopTyperDeduper(),
-        parsedCatalog,
-        migrator);
+        parsedCatalog
+    );
   }
 
   @Override

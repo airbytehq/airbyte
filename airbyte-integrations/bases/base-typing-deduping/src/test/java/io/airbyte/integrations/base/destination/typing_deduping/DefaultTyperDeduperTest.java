@@ -6,7 +6,15 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.ignoreStubs;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
@@ -18,12 +26,17 @@ public class DefaultTyperDeduperTest {
 
   private MockSqlGenerator sqlGenerator;
   private DestinationHandler<String> destinationHandler;
+
+  private MockDestinationV1V2Migrator migrator;
   private TyperDeduper typerDeduper;
 
   @BeforeEach
   void setup() {
     sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
+    migrator = new MockDestinationV1V2Migrator();
+    migrator.setShouldMigrateValue(false);
+
     ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
         new StreamConfig(
             new StreamId("overwrite_ns", "overwrite_stream", null, null, "overwrite_ns", "overwrite_stream"),
@@ -47,7 +60,7 @@ public class DefaultTyperDeduperTest {
             null,
             null)));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
   }
 
   /**

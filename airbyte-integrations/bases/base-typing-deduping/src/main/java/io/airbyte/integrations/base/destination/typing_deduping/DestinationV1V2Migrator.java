@@ -50,7 +50,7 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
     }
 
     /**
-     * Execute sql statements that converts a v1 raw table to a v2 raw table. Leaves the v1 raw table in tact
+     * Execute sql statements that converts a v1 raw table to a v2 raw table. Leaves the v1 raw table intact
      *
      * @param sqlGenerator       the class which generates dialect specific sql statements
      * @param destinationHandler the class which executes the sql statements

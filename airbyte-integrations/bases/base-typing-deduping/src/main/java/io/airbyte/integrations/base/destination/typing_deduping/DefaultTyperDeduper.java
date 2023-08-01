@@ -35,15 +35,19 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
   private final SqlGenerator<DialectTableDefinition> sqlGenerator;
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
+
+  private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
 
   public DefaultTyperDeduper(SqlGenerator<DialectTableDefinition> sqlGenerator,
-                             DestinationHandler<DialectTableDefinition> destinationHandler,
-                             ParsedCatalog parsedCatalog) {
+      DestinationHandler<DialectTableDefinition> destinationHandler,
+      ParsedCatalog parsedCatalog,
+      DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
+    this.v1V2Migrator = v1V2Migrator;
   }
 
   /**
@@ -63,6 +67,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
     // _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
+      // Migrate the Raw Tables if this is the first v2 sync
+      v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {
         // The table already exists. Decide whether we're writing to it directly, or using a tmp table.

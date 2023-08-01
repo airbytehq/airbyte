@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -127,7 +128,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
+      // TODO make a SnowflakeV1V2Migrator
+      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog,
+          migrator);
     } else {
       typerDeduper = new NoopTyperDeduper();
     }
@@ -154,7 +158,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
+      // TODO make a SnowflakeV1V2Migrator
+      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog,
+          migrator);
     } else {
       typerDeduper = new NoopTyperDeduper();
     }
