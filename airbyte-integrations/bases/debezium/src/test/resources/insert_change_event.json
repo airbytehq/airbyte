@@ -18,7 +18,7 @@
     "lsn": 23011544,
     "xmin": null
   },
-  "op": "r",
+  "op": "c",
   "ts_ms": 1616775642624,
   "transaction": null,
   "destination": "orders.public.names"
