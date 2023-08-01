@@ -23,7 +23,6 @@ Edges file contain information which is used for 'edges' creation, for example
   "*:account_id": "account:id"  # means, all streams with field 'account_id' depends on stream 'account' with field 'id'
 }
 ```
-"*:field_a" - means, all streams with 'field_a' will be linked to main_stream_name
 
 ## Usage
 ```bash
