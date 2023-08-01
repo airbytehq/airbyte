@@ -53,7 +53,7 @@ def write_registry_to_overrode_file_paths(
         by the platform when looking for a specific registry entry. In this case, for cloud, it would be
         gs://my-bucket/metadata/source-postgres-strict-encrypt/dev.123/cloud.json
 
-        Ideally we would not have to do this, but the combonation of prereleases and common overrides
+        Ideally we would not have to do this, but the combination of prereleases and common overrides
         make this nessesary.
 
     Args:
