@@ -27,6 +27,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'io.airbyte'
             artifactId = 'airbyte-cdk'
+            from components.java
         }
     }
     repositories {
