@@ -262,7 +262,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                       "_airbyte_raw_id": "84242b60-3a34-4531-ad75-a26702960a9a",
                       "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                       "_airbyte_data": {
-                        "id1": 3,
+                        "id1": 4,
                         "id2": 100,
                         "updated_at": "2023-01-01T01:00:00Z",
                         "array": {},
@@ -290,7 +290,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                 {
-                  "id": 1,
+                  "id1": 1,
+                  "id2": 100,
                   "updated_at": "2023-01-01T01:00:00Z",
                   "array": ["foo"],
                   "struct": {"foo": "bar"},
@@ -311,7 +312,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                 {
-                  "id": 2,
+                  "id1": 2,
+                  "id2": 100,
                   "updated_at": "2023-01-01T01:00:00Z",
                   "unknown": null,
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
@@ -321,7 +323,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                 {
-                  "id": 3,
+                  "id1": 3,
+                  "id2": 100,
                   "updated_at": "2023-01-01T01:00:00Z",
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                   "_airbyte_meta": {"errors": []}
@@ -330,7 +333,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             Jsons.deserialize(
                 """
                 {
-                  "id": 4,
+                  "id1": 4,
+                  "id2": 100,
                   "updated_at": "2023-01-01T01:00:00Z",
                   "unknown": null,
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
