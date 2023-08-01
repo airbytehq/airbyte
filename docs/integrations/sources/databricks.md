@@ -115,12 +115,13 @@ Follow [Configure a storage bucket and IAM role in AWS](https://docs.databricks.
 - `Databricks Catalog` - The name of the catalog
 ## Sync Mode
 
-| Feature | Support | Notes                                                                                |
-| :--- | :---: |:-------------------------------------------------------------------------------------|
-| Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured destination. |
-| Incremental - Append Sync | ✅ |                                                                                      |
+| Feature                       | Support | Notes                                                                                |
+|:------------------------------| :---: |:-------------------------------------------------------------------------------------|
+| Full Refresh - Overwrite Sync | ✅ | Warning: this mode deletes all previously synced data in the configured destination. |
+| Full Refresh - Append Sync    | ✅ |  |
+| Incremental - Append Sync     | ✅ |                                                                                      |
 | Incremental - Deduped History | ❌ |                                                                                      |
-| Namespaces | ❌ |                                                                                      |
+| Namespaces                    | ❌ |                                                                                      |
 
 ## Configuration
 
