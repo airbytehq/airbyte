@@ -877,10 +877,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
     return new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
+        // This is the only difference between this and cdcStreamConfig.
         DestinationSyncMode.APPEND,
         PRIMARY_KEY,
-        // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be
-        // exactly the same as this.
         Optional.of(CDC_CURSOR),
         CDC_COLUMNS);
   }
