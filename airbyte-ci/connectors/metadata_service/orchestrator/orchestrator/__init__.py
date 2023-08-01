@@ -147,13 +147,13 @@ SENSORS = [
         job=generate_oss_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_oss_registry_entries_file_blobs",
-        interval=30,
+        interval=60,
     ),
     new_gcs_blobs_sensor(
         job=generate_cloud_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_cloud_registry_entries_file_blobs",
-        interval=30,
+        interval=60,
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,
