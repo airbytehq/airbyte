@@ -1,0 +1,1082 @@
+<svg width="715" height="667" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0.00 0.00 1636.8616656802274 3380.7172607235375">
+<g id="graph0" class="graph" transform="translate(161.95867294054415,2953.8779422120797) scale(0.8467453123625288)">
+<title>SourceERD</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-3375.3 1633,-3375.3 1633,4 -4,4"/>
+<text text-anchor="middle" x="814.5" y="-3354.7" font-family="Helvetica,Arial,sans-serif" font-size="14.00">Stream relationship diagram</text>
+<!-- abandoned_checkouts -->
+<g id="node1" class="node">
+<title>abandoned_checkouts</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="836.5,-1188 685.5,-1188 685.5,-1052 836.5,-1052 836.5,-1188"/>
+<polygon fill="none" stroke="black" points="689,-1163 689,-1185 834,-1185 834,-1163 689,-1163"/>
+<text text-anchor="start" x="691.87" y="-1170.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">abandoned_checkouts  </text>
+<polygon fill="none" stroke="black" points="689,-1055 689,-1161 834,-1161 834,-1055 689,-1055"/>
+<text text-anchor="start" x="694" y="-1143.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="694" y="-1123.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="694" y="-1103.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="694" y="-1083.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- location_id </text>
+<text text-anchor="start" x="694" y="-1063.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="685.5,-1052 685.5,-1188 836.5,-1188 836.5,-1052 685.5,-1052"/>
+</g>
+<!-- locations -->
+<g id="node15" class="node">
+<title>locations</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="410,-1046 334,-1046 334,-950 410,-950 410,-1046"/>
+<polygon fill="none" stroke="black" points="337,-1021 337,-1043 407,-1043 407,-1021 337,-1021"/>
+<text text-anchor="start" x="342.06" y="-1028.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">locations  </text>
+<polygon fill="none" stroke="black" points="337,-953 337,-1019 407,-1019 407,-953 337,-953"/>
+<text text-anchor="start" x="342" y="-1001.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="341.67" y="-981.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="342" y="-961.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="334,-950 334,-1046 410,-1046 410,-950 334,-950"/>
+</g>
+<!-- abandoned_checkouts&#45;&gt;locations -->
+<g id="edge2" class="edge">
+<title>abandoned_checkouts:location_id-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M691,-1088C562.25,-1088 538.45,-1010.27 415.23,-1006.17"/>
+<polygon fill="black" stroke="black" points="415.06,-1002.66 405,-1006 414.94,-1009.66 415.06,-1002.66"/>
+</g>
+<!-- shop -->
+<g id="node38" class="node">
+<title>shop</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="76,-1878 0,-1878 0,-1782 76,-1782 76,-1878"/>
+<polygon fill="none" stroke="black" points="3,-1853 3,-1875 73,-1875 73,-1853 3,-1853"/>
+<text text-anchor="start" x="20.49" y="-1860.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">shop  </text>
+<polygon fill="none" stroke="black" points="3,-1785 3,-1851 73,-1851 73,-1785 3,-1785"/>
+<text text-anchor="start" x="8" y="-1833.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="7.67" y="-1813.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="8" y="-1793.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="0,-1782 0,-1878 76,-1878 76,-1782 0,-1782"/>
+</g>
+<!-- abandoned_checkouts&#45;&gt;shop -->
+<g id="edge1" class="edge">
+<title>abandoned_checkouts:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M691,-1108C602.12,-1108 362.01,-1081.24 292,-1136 43.72,-1330.19 382.21,-1807.6 81.04,-1817.83"/>
+<polygon fill="black" stroke="black" points="80.94,-1814.33 71,-1818 81.06,-1821.33 80.94,-1814.33"/>
+</g>
+<!-- articles -->
+<g id="node2" class="node">
+<title>articles</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="814,-3146 708,-3146 708,-3030 814,-3030 814,-3146"/>
+<polygon fill="none" stroke="black" points="711,-3121 711,-3143 811,-3143 811,-3121 711,-3121"/>
+<text text-anchor="start" x="735.73" y="-3128.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">articles  </text>
+<polygon fill="none" stroke="black" points="711,-3033 711,-3119 811,-3119 811,-3033 711,-3033"/>
+<text text-anchor="start" x="715.71" y="-3101.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="716" y="-3081.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="716" y="-3061.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- blog_id </text>
+<text text-anchor="start" x="716" y="-3041.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="708,-3030 708,-3146 814,-3146 814,-3030 708,-3030"/>
+</g>
+<!-- blogs -->
+<g id="node4" class="node">
+<title>blogs</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="425,-3010 319,-3010 319,-2914 425,-2914 425,-3010"/>
+<polygon fill="none" stroke="black" points="322,-2985 322,-3007 422,-3007 422,-2985 322,-2985"/>
+<text text-anchor="start" x="352.94" y="-2992.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">blogs  </text>
+<polygon fill="none" stroke="black" points="322,-2917 322,-2983 422,-2983 422,-2917 322,-2917"/>
+<text text-anchor="start" x="326.71" y="-2965.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="327" y="-2945.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="327" y="-2925.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="319,-2914 319,-3010 425,-3010 425,-2914 319,-2914"/>
+</g>
+<!-- articles&#45;&gt;blogs -->
+<g id="edge4" class="edge">
+<title>articles:blog_id-&gt;blogs:id</title>
+<path fill="none" stroke="black" d="M713,-3066C579.45,-3066 558.07,-2974.81 430.21,-2970.18"/>
+<polygon fill="black" stroke="black" points="430.06,-2966.68 420,-2970 429.94,-2973.68 430.06,-2966.68"/>
+</g>
+<!-- articles&#45;&gt;shop -->
+<g id="edge3" class="edge">
+<title>articles:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M713,-3086C665.63,-3086 325.9,-3052.09 292,-3019 -93.92,-2642.29 604.77,-1828.42 81.18,-1818.1"/>
+<polygon fill="black" stroke="black" points="81.03,-1814.6 71,-1818 80.97,-1821.6 81.03,-1814.6"/>
+</g>
+<!-- balance_transactions -->
+<g id="node3" class="node">
+<title>balance_transactions</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="444.5,-2228 299.5,-2228 299.5,-2132 444.5,-2132 444.5,-2228"/>
+<polygon fill="none" stroke="black" points="303,-2203 303,-2225 442,-2225 442,-2203 303,-2203"/>
+<text text-anchor="start" x="306" y="-2210.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">balance_transactions  </text>
+<polygon fill="none" stroke="black" points="303,-2135 303,-2201 442,-2201 442,-2135 303,-2135"/>
+<text text-anchor="start" x="308" y="-2183.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="308" y="-2163.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="308" y="-2143.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="299.5,-2132 299.5,-2228 444.5,-2228 444.5,-2132 299.5,-2132"/>
+</g>
+<!-- balance_transactions&#45;&gt;shop -->
+<g id="edge5" class="edge">
+<title>balance_transactions:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M305,-2168C121.35,-2168 253.03,-1830.87 81.08,-1818.36"/>
+<polygon fill="black" stroke="black" points="81.12,-1814.86 71,-1818 80.87,-1821.85 81.12,-1814.86"/>
+</g>
+<!-- blogs&#45;&gt;shop -->
+<g id="edge6" class="edge">
+<title>blogs:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M324,-2950C-188.13,-2950 576.32,-1832.87 81.03,-1818.15"/>
+<polygon fill="black" stroke="black" points="81.05,-1814.65 71,-1818 80.95,-1821.65 81.05,-1814.65"/>
+</g>
+<!-- collections -->
+<g id="node5" class="node">
+<title>collections</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-2076 305.5,-2076 305.5,-1960 438.5,-1960 438.5,-2076"/>
+<polygon fill="none" stroke="black" points="309,-2051 309,-2073 436,-2073 436,-2051 309,-2051"/>
+<text text-anchor="start" x="337.9" y="-2058.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">collections  </text>
+<polygon fill="none" stroke="black" points="309,-1963 309,-2049 436,-2049 436,-1963 309,-1963"/>
+<text text-anchor="start" x="314" y="-2031.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-2011.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-1991.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-1971.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-1960 305.5,-2076 438.5,-2076 438.5,-1960 305.5,-1960"/>
+</g>
+<!-- collections&#45;&gt;shop -->
+<g id="edge7" class="edge">
+<title>collections:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-1996C181.7,-1996 202.56,-1827.26 81.18,-1818.36"/>
+<polygon fill="black" stroke="black" points="81.12,-1814.86 71,-1818 80.87,-1821.86 81.12,-1814.86"/>
+</g>
+<!-- collects -->
+<g id="node6" class="node">
+<title>collects</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="814,-2186 708,-2186 708,-2050 814,-2050 814,-2186"/>
+<polygon fill="none" stroke="black" points="711,-2161 711,-2183 811,-2183 811,-2161 711,-2161"/>
+<text text-anchor="start" x="735.73" y="-2168.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">collects  </text>
+<polygon fill="none" stroke="black" points="711,-2053 711,-2159 811,-2159 811,-2053 711,-2053"/>
+<text text-anchor="start" x="715.71" y="-2141.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="716" y="-2121.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="716" y="-2101.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- product_id </text>
+<text text-anchor="start" x="716" y="-2081.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- collection_id </text>
+<text text-anchor="start" x="716" y="-2061.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="708,-2050 708,-2186 814,-2186 814,-2050 708,-2050"/>
+</g>
+<!-- collects&#45;&gt;collections -->
+<g id="edge10" class="edge">
+<title>collects:collection_id-&gt;collections:id</title>
+<path fill="none" stroke="black" d="M713,-2086C590.47,-2086 561.53,-2038.7 444.12,-2036.11"/>
+<polygon fill="black" stroke="black" points="444.04,-2032.61 434,-2036 443.96,-2039.61 444.04,-2032.61"/>
+</g>
+<!-- products -->
+<g id="node35" class="node">
+<title style="">products</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-2362 305.5,-2362 305.5,-2246 438.5,-2246 438.5,-2362"/>
+<polygon fill="none" stroke="black" points="309,-2337 309,-2359 436,-2359 436,-2337 309,-2337"/>
+<text text-anchor="start" x="342.55" y="-2344.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">products  </text>
+<polygon fill="none" stroke="black" points="309,-2249 309,-2335 436,-2335 436,-2249 309,-2249"/>
+<text text-anchor="start" x="314" y="-2317.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-2297.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-2277.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-2257.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-2246 305.5,-2362 438.5,-2362 438.5,-2246 305.5,-2246"/>
+</g>
+<!-- collects&#45;&gt;products -->
+<g id="edge9" class="edge">
+<title>collects:product_id-&gt;products:id</title>
+<path fill="none" stroke="black" d="M713,-2106C559.7,-2106 589.36,-2312.41 444.28,-2321.68"/>
+<polygon fill="black" stroke="black" points="443.89,-2318.19 434,-2322 444.1,-2325.19 443.89,-2318.19"/>
+</g>
+<!-- collects&#45;&gt;shop -->
+<g id="edge8" class="edge">
+<title>collects:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M713,-2126C619,-2126 375.02,-2129.09 292,-2085 159.01,-2014.37 222.04,-1826.69 81.05,-1818.29"/>
+<polygon fill="black" stroke="black" points="81.1,-1814.79 71,-1818 80.89,-1821.79 81.1,-1814.79"/>
+</g>
+<!-- custom_collections -->
+<g id="node7" class="node">
+<title>custom_collections</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-1484 305.5,-1484 305.5,-1368 438.5,-1368 438.5,-1484"/>
+<polygon fill="none" stroke="black" points="309,-1459 309,-1481 436,-1481 436,-1459 309,-1459"/>
+<text text-anchor="start" x="313.01" y="-1466.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">custom_collections  </text>
+<polygon fill="none" stroke="black" points="309,-1371 309,-1457 436,-1457 436,-1371 309,-1371"/>
+<text text-anchor="start" x="314" y="-1439.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-1419.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-1399.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-1379.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-1368 305.5,-1484 438.5,-1484 438.5,-1368 305.5,-1368"/>
+</g>
+<!-- custom_collections&#45;&gt;shop -->
+<g id="edge11" class="edge">
+<title>custom_collections:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-1404C101.85,-1404 277.64,-1804.37 81.27,-1817.66"/>
+<polygon fill="black" stroke="black" points="80.88,-1814.17 71,-1818 81.11,-1821.17 80.88,-1814.17"/>
+</g>
+<!-- customers -->
+<g id="node8" class="node">
+<title>customers</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1229,-348 1096,-348 1096,-212 1229,-212 1229,-348"/>
+<polygon fill="none" stroke="black" points="1099.5,-323 1099.5,-345 1226.5,-345 1226.5,-323 1099.5,-323"/>
+<text text-anchor="start" x="1129.18" y="-330.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">customers  </text>
+<polygon fill="none" stroke="black" points="1099.5,-215 1099.5,-321 1226.5,-321 1226.5,-215 1099.5,-215"/>
+<text text-anchor="start" x="1104.5" y="-303.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1104.3" y="-283.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1104.5" y="-263.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1104.5" y="-243.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- last_order_id </text>
+<text text-anchor="start" x="1104.5" y="-223.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1096,-212 1096,-348 1229,-348 1229,-212 1096,-212"/>
+</g>
+<!-- orders -->
+<g id="node31" class="node">
+<title>orders</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="827.5,-996 694.5,-996 694.5,-860 827.5,-860 827.5,-996"/>
+<polygon fill="none" stroke="black" points="698,-971 698,-993 825,-993 825,-971 698,-971"/>
+<text text-anchor="start" x="738.56" y="-978.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">orders  </text>
+<polygon fill="none" stroke="black" points="698,-863 698,-969 825,-969 825,-863 698,-863"/>
+<text text-anchor="start" x="703" y="-951.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702.8" y="-931.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="703" y="-911.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="703" y="-891.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- location_id </text>
+<text text-anchor="start" x="703" y="-871.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="694.5,-860 694.5,-996 827.5,-996 827.5,-860 694.5,-860"/>
+</g>
+<!-- customers&#45;&gt;orders -->
+<g id="edge13" class="edge">
+<title>customers:last_order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1101.5,-248C766.83,-248 1153.06,-941.55 833.17,-955.78"/>
+<polygon fill="black" stroke="black" points="832.92,-952.28 823,-956 833.07,-959.28 832.92,-952.28"/>
+</g>
+<!-- customers&#45;&gt;shop -->
+<g id="edge12" class="edge">
+<title>customers:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1101.5,-268C1056.37,-268 324.93,-304.15 292,-335 51.32,-560.45 396.97,-1792.37 81.03,-1817.61"/>
+<polygon fill="black" stroke="black" points="80.86,-1814.11 71,-1818 81.13,-1821.11 80.86,-1814.11"/>
+</g>
+<!-- discount_codes -->
+<g id="node9" class="node">
+<title>discount_codes</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-460 305.5,-460 305.5,-344 438.5,-344 438.5,-460"/>
+<polygon fill="none" stroke="black" points="309,-435 309,-457 436,-457 436,-435 309,-435"/>
+<text text-anchor="start" x="323.88" y="-442.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">discount_codes  </text>
+<polygon fill="none" stroke="black" points="309,-347 309,-433 436,-433 436,-347 309,-347"/>
+<text text-anchor="start" x="314" y="-415.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-395.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-375.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-355.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-344 305.5,-460 438.5,-460 438.5,-344 305.5,-344"/>
+</g>
+<!-- discount_codes&#45;&gt;shop -->
+<g id="edge14" class="edge">
+<title>discount_codes:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-380C-333.47,-380 707.66,-1802.59 81.29,-1817.88"/>
+<polygon fill="black" stroke="black" points="80.96,-1814.38 71,-1818 81.04,-1821.38 80.96,-1814.38"/>
+</g>
+<!-- draft_orders -->
+<g id="node10" class="node">
+<title>draft_orders</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1229,-1484 1096,-1484 1096,-1348 1229,-1348 1229,-1484"/>
+<polygon fill="none" stroke="black" points="1099.5,-1459 1099.5,-1481 1226.5,-1481 1226.5,-1459 1099.5,-1459"/>
+<text text-anchor="start" x="1121.4" y="-1466.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">draft_orders  </text>
+<polygon fill="none" stroke="black" points="1099.5,-1351 1099.5,-1457 1226.5,-1457 1226.5,-1351 1099.5,-1351"/>
+<text text-anchor="start" x="1104.5" y="-1439.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1104.3" y="-1419.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1104.5" y="-1399.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1104.5" y="-1379.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1104.5" y="-1359.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1096,-1348 1096,-1484 1229,-1484 1229,-1348 1096,-1348"/>
+</g>
+<!-- draft_orders&#45;&gt;orders -->
+<g id="edge16" class="edge">
+<title>draft_orders:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1101.5,-1384C877.99,-1384 1044.73,-968.86 833.03,-956.29"/>
+<polygon fill="black" stroke="black" points="833.1,-952.79 823,-956 832.89,-959.79 833.1,-952.79"/>
+</g>
+<!-- draft_orders&#45;&gt;shop -->
+<g id="edge15" class="edge">
+<title>draft_orders:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1101.5,-1404C918.17,-1404 443.17,-1141.28 292,-1245 69.79,-1397.46 337,-1807.41 81.13,-1817.8"/>
+<polygon fill="black" stroke="black" points="80.93,-1814.3 71,-1818 81.07,-1821.3 80.93,-1814.3"/>
+</g>
+<!-- fulfillment_orders -->
+<g id="node11" class="node">
+<title>fulfillment_orders</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1226,-1910 1099,-1910 1099,-1774 1226,-1774 1226,-1910"/>
+<polygon fill="none" stroke="black" points="1102.5,-1885 1102.5,-1907 1223.5,-1907 1223.5,-1885 1102.5,-1885"/>
+<text text-anchor="start" x="1105.07" y="-1892.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">fulfillment_orders  </text>
+<polygon fill="none" stroke="black" points="1102.5,-1777 1102.5,-1883 1223.5,-1883 1223.5,-1777 1102.5,-1777"/>
+<text text-anchor="start" x="1107.5" y="-1865.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="1107.5" y="-1845.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_id </text>
+<text text-anchor="start" x="1107.5" y="-1825.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1107.5" y="-1805.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1107.5" y="-1785.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1099,-1774 1099,-1910 1226,-1910 1226,-1774 1099,-1774"/>
+</g>
+<!-- fulfillment_orders&#45;&gt;orders -->
+<g id="edge19" class="edge">
+<title>fulfillment_orders:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1104.5,-1810C708.27,-1810 1213.86,-970.53 833.04,-956.19"/>
+<polygon fill="black" stroke="black" points="833.06,-952.69 823,-956 832.93,-959.68 833.06,-952.69"/>
+</g>
+<!-- fulfillment_orders&#45;&gt;shop -->
+<g id="edge17" class="edge">
+<title>fulfillment_orders:shop_id-&gt;shop:id</title>
+<path fill="none" stroke="black" d="M1104.5,-1850C446.57,-1850 1357.05,-2884.96 854,-3309 757.42,-3390.41 365.42,-3322.63 292,-3249 70.31,-3026.67 381.56,-1863.38 81.01,-1838.41"/>
+<polygon fill="black" stroke="black" points="81.13,-1834.91 71,-1838 80.85,-1841.9 81.13,-1834.91"/>
+</g>
+<!-- fulfillment_orders&#45;&gt;shop -->
+<g id="edge18" class="edge">
+<title>fulfillment_orders:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1104.5,-1830C743.37,-1830 653.09,-1827.05 292,-1822 197.22,-1820.68 171.05,-1818.18 81.09,-1818.01"/>
+<polygon fill="black" stroke="black" points="81,-1814.51 71,-1818 81,-1821.51 81,-1814.51"/>
+</g>
+<!-- fulfillments -->
+<g id="node12" class="node">
+<title>fulfillments</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1229,-1176 1096,-1176 1096,-1020 1229,-1020 1229,-1176"/>
+<polygon fill="none" stroke="black" points="1099.5,-1151 1099.5,-1173 1226.5,-1173 1226.5,-1151 1099.5,-1151"/>
+<text text-anchor="start" x="1125.28" y="-1158.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">fulfillments  </text>
+<polygon fill="none" stroke="black" points="1099.5,-1023 1099.5,-1149 1226.5,-1149 1226.5,-1023 1099.5,-1023"/>
+<text text-anchor="start" x="1104.5" y="-1131.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1104.3" y="-1111.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1104.5" y="-1091.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1104.5" y="-1071.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1104.5" y="-1051.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- location_id </text>
+<text text-anchor="start" x="1104.5" y="-1031.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1096,-1020 1096,-1176 1229,-1176 1229,-1020 1096,-1020"/>
+</g>
+<!-- fulfillments&#45;&gt;locations -->
+<g id="edge22" class="edge">
+<title>fulfillments:location_id-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M1101.5,-1056C949.66,-1056 576.66,-1008.13 415.32,-1006.07"/>
+<polygon fill="black" stroke="black" points="415.02,-1002.57 405,-1006 414.98,-1009.57 415.02,-1002.57"/>
+</g>
+<!-- fulfillments&#45;&gt;orders -->
+<g id="edge21" class="edge">
+<title>fulfillments:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1101.5,-1076C970.14,-1076 958.31,-962.02 833.03,-956.23"/>
+<polygon fill="black" stroke="black" points="833.08,-952.73 823,-956 832.92,-959.73 833.08,-952.73"/>
+</g>
+<!-- fulfillments&#45;&gt;shop -->
+<g id="edge20" class="edge">
+<title>fulfillments:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1101.5,-1096C982.69,-1096 970.58,-1174.13 854,-1197 678.67,-1231.4 630.67,-1194.65 452,-1193 380.89,-1192.34 350.06,-1151.95 292,-1193 54.25,-1361.11 358.34,-1807.38 81.11,-1817.81"/>
+<polygon fill="black" stroke="black" points="80.93,-1814.32 71,-1818 81.06,-1821.32 80.93,-1814.32"/>
+</g>
+<!-- inventory_items -->
+<g id="node13" class="node">
+<title style="">inventory_items</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-1790 305.5,-1790 305.5,-1674 438.5,-1674 438.5,-1790"/>
+<polygon fill="none" stroke="black" points="309,-1765 309,-1787 436,-1787 436,-1765 309,-1765"/>
+<text text-anchor="start" x="320.79" y="-1772.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">inventory_items  </text>
+<polygon fill="none" stroke="black" points="309,-1677 309,-1763 436,-1763 436,-1677 309,-1677"/>
+<text text-anchor="start" x="314" y="-1745.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-1725.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-1705.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-1685.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-1674 305.5,-1790 438.5,-1790 438.5,-1674 305.5,-1674"/>
+<rect x="318.5" y="-2216" width="138.937744140625" height="116" stroke="black" fill="transparent" opacity="0.5" stroke-dasharray="6.376705206204125" stroke-width="6.376705206204125"/></g>
+<!-- inventory_items&#45;&gt;shop -->
+<g id="edge23" class="edge">
+<title>inventory_items:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-1710C197.46,-1710 188.42,-1811.76 81,-1817.73"/>
+<polygon fill="black" stroke="black" points="80.9,-1814.23 71,-1818 81.09,-1821.23 80.9,-1814.23"/>
+</g>
+<!-- inventory_levels -->
+<g id="node14" class="node">
+<title>inventory_levels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="827.5,-1802 694.5,-1802 694.5,-1646 827.5,-1646 827.5,-1802"/>
+<polygon fill="none" stroke="black" points="698,-1777 698,-1799 825,-1799 825,-1777 698,-1777"/>
+<text text-anchor="start" x="709.4" y="-1784.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">inventory_levels  </text>
+<polygon fill="none" stroke="black" points="698,-1649 698,-1775 825,-1775 825,-1649 698,-1649"/>
+<text text-anchor="start" x="703" y="-1757.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702.8" y="-1737.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="703" y="-1717.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="703" y="-1697.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- location_id </text>
+<text text-anchor="start" x="703" y="-1677.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- inventory_item_id </text>
+<text text-anchor="start" x="703" y="-1657.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="694.5,-1646 694.5,-1802 827.5,-1802 827.5,-1646 694.5,-1646"/>
+</g>
+<!-- inventory_levels&#45;&gt;inventory_items -->
+<g id="edge26" class="edge">
+<title>inventory_levels:inventory_item_id-&gt;inventory_items:id</title>
+<path fill="none" stroke="black" d="M700,-1682C581.43,-1682 557.35,-1746.2 444.13,-1749.84"/>
+<polygon fill="black" stroke="black" points="443.94,-1746.34 434,-1750 444.05,-1753.34 443.94,-1746.34"/>
+</g>
+<!-- inventory_levels&#45;&gt;locations -->
+<g id="edge25" class="edge">
+<title>inventory_levels:location_id-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M700,-1702C367.47,-1702 733.32,-1020.2 415.11,-1006.22"/>
+<polygon fill="black" stroke="black" points="415.07,-1002.72 405,-1006 414.92,-1009.71 415.07,-1002.72"/>
+</g>
+<!-- inventory_levels&#45;&gt;shop -->
+<g id="edge24" class="edge">
+<title>inventory_levels:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M700,-1722C584.59,-1722 565.64,-1778.86 452,-1799 288.48,-1827.99 242.42,-1818.42 81.28,-1818.01"/>
+<polygon fill="black" stroke="black" points="81,-1814.51 71,-1818 81,-1821.51 81,-1814.51"/>
+</g>
+<!-- locations&#45;&gt;shop -->
+<g id="edge27" class="edge">
+<title>locations:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M339,-986C-46.07,-986 450.61,-1803.44 81.04,-1817.81"/>
+<polygon fill="black" stroke="black" points="80.93,-1814.31 71,-1818 81.07,-1821.31 80.93,-1814.31"/>
+</g>
+<!-- metafield_articles -->
+<g id="node16" class="node">
+<title>metafield_articles</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1229,-3067 1096,-3067 1096,-2931 1229,-2931 1229,-3067"/>
+<polygon fill="none" stroke="black" points="1099.5,-3042 1099.5,-3064 1226.5,-3064 1226.5,-3042 1099.5,-3042"/>
+<text text-anchor="start" x="1106.24" y="-3049.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_articles  </text>
+<polygon fill="none" stroke="black" points="1099.5,-2934 1099.5,-3040 1226.5,-3040 1226.5,-2934 1099.5,-2934"/>
+<text text-anchor="start" x="1104.5" y="-3022.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1104.3" y="-3002.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1104.5" y="-2982.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1104.5" y="-2962.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1096,-2931 1096,-3067 1229,-3067 1229,-2931 1096,-2931"/><text text-anchor="start" x="1104.5" y="-2942.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_articles&#45;&gt;shop -->
+<g id="edge28" class="edge">
+<title>metafield_articles:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1101.5,-2987C979.25,-2987 971.84,-2899.51 854,-2867 733.15,-2833.66 386.24,-2900.67 292,-2818 -47.57,-2520.1 517.5,-1828.57 81.16,-1818.12"/>
+<polygon fill="black" stroke="black" points="81.04,-1814.62 71,-1818 80.96,-1821.62 81.04,-1814.62"/>
+</g><g id="edge29" class="edge">
+<title style="">metafield_articles:owner_resource-&gt;articles:id</title>
+<path fill="none" stroke="black" d="M1101.5,-2967C961.08,-2967 953.24,-3099.3 819.3,-3105.76" style=""/>
+<polygon fill="black" stroke="black" points="818.91,-3102.26 809,-3106 819.08,-3109.26 818.91,-3102.26" style=""/>
+</g>
+<!-- metafield_blogs -->
+<g id="node17" class="node">
+<title>metafield_blogs</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="827.5,-3012 694.5,-3012 694.5,-2876 827.5,-2876 827.5,-3012"/>
+<polygon fill="none" stroke="black" points="698,-2987 698,-3009 825,-3009 825,-2987 698,-2987"/>
+<text text-anchor="start" x="710.95" y="-2994.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_blogs  </text>
+<polygon fill="none" stroke="black" points="698,-2879 698,-2985 825,-2985 825,-2879 698,-2879"/>
+<text text-anchor="start" x="703" y="-2967.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702.8" y="-2947.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="703" y="-2927.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="703" y="-2907.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="694.5,-2876 694.5,-3012 827.5,-3012 827.5,-2876 694.5,-2876"/><text text-anchor="start" x="703" y="-2887.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_blogs&#45;&gt;shop -->
+<g id="edge30" class="edge">
+<title>metafield_blogs:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M700,-2932C654,-2932 325.15,-2893.89 292,-2862 -47.29,-2535.59 536.62,-1828.46 81.25,-1818.11"/>
+<polygon fill="black" stroke="black" points="81.04,-1814.61 71,-1818 80.96,-1821.61 81.04,-1814.61"/>
+</g>
+<!-- metafield_collections -->
+<g id="node18" class="node">
+<title>metafield_collections</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="833,-2032 689,-2032 689,-1896 833,-1896 833,-2032"/>
+<polygon fill="none" stroke="black" points="692,-2007 692,-2029 830,-2029 830,-2007 692,-2007"/>
+<text text-anchor="start" x="694.91" y="-2014.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_collections  </text>
+<polygon fill="none" stroke="black" points="692,-1899 692,-2005 830,-2005 830,-1899 692,-1899"/>
+<text text-anchor="start" x="697" y="-1987.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="697" y="-1967.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="697" y="-1947.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="697" y="-1927.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="689,-1896 689,-2032 833,-2032 833,-1896 689,-1896"/><text text-anchor="start" x="697" y="-1907.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g><g id="edge31" class="edge">
+<title style="">metafield_blogs:owner_resource-&gt;blogs:id</title>
+<path fill="none" stroke="black" d="M700,-2912C576.39,-2912 548.57,-2966.87 430.2,-2969.87" style=""/>
+<polygon fill="black" stroke="black" points="429.96,-2966.37 420,-2970 430.04,-2973.37 429.96,-2966.37" style=""/>
+</g>
+<!-- metafield_collections&#45;&gt;shop -->
+<g id="edge32" class="edge">
+<title>metafield_collections:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M694,-1952C514.27,-1952 466.24,-1952.1 292,-1908 192.6,-1882.84 177.96,-1822.21 81.26,-1818.21"/>
+<polygon fill="black" stroke="black" points="81.07,-1814.7 71,-1818 80.93,-1821.7 81.07,-1814.7"/>
+</g>
+<!-- metafield_customers -->
+<g id="node19" class="node">
+<title>metafield_customers</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1621,-438 1479,-438 1479,-302 1621,-302 1621,-438"/>
+<polygon fill="none" stroke="black" points="1482,-413 1482,-435 1618,-435 1618,-413 1482,-413"/>
+<text text-anchor="start" x="1484.69" y="-420.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_customers  </text>
+<polygon fill="none" stroke="black" points="1482,-305 1482,-411 1618,-411 1618,-305 1482,-305"/>
+<text text-anchor="start" x="1487" y="-393.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1487" y="-373.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1487" y="-353.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1487" y="-333.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1479,-302 1479,-438 1621,-438 1621,-302 1479,-302"/><text text-anchor="start" x="1487" y="-313.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_customers&#45;&gt;shop -->
+<g id="edge34" class="edge">
+<title>metafield_customers:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1484,-358C1299.27,-358 1253.48,-373.49 1070,-395 1026.62,-400.08 323.23,-477.47 292,-508 83.34,-711.93 359.6,-1792.26 81.14,-1817.55"/>
+<polygon fill="black" stroke="black" points="80.83,-1814.06 71,-1818 81.15,-1821.05 80.83,-1814.06"/>
+</g><g id="edge33" class="edge">
+<title style="">metafield_collections:owner_resource-&gt;collections:id</title>
+<path fill="none" stroke="black" d="M694,-1932C573.07,-1932 559.18,-2030.19 444.31,-2035.75" style=""/>
+<polygon fill="black" stroke="black" points="443.91,-2032.26 434,-2036 444.08,-2039.26 443.91,-2032.26" style=""/>
+</g>
+<!-- metafield_draft_orders -->
+<g id="node20" class="node">
+<title>metafield_draft_orders</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1629,-1568 1471,-1568 1471,-1432 1629,-1432 1629,-1568"/>
+<polygon fill="none" stroke="black" points="1474,-1543 1474,-1565 1626,-1565 1626,-1543 1474,-1543"/>
+<text text-anchor="start" x="1476.91" y="-1550.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_draft_orders  </text>
+<polygon fill="none" stroke="black" points="1474,-1435 1474,-1541 1626,-1541 1626,-1435 1474,-1435"/>
+<text text-anchor="start" x="1479" y="-1523.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1479" y="-1503.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1479" y="-1483.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1479" y="-1463.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1471,-1432 1471,-1568 1629,-1568 1629,-1432 1471,-1432"/><text text-anchor="start" x="1479" y="-1443.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_draft_orders&#45;&gt;shop -->
+<g id="edge36" class="edge">
+<title>metafield_draft_orders:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1476,-1488C1443.09,-1488 321.26,-1515.94 292,-1531 151.94,-1603.11 228.52,-1808.9 81.04,-1817.71"/>
+<polygon fill="black" stroke="black" points="80.89,-1814.21 71,-1818 81.1,-1821.21 80.89,-1814.21"/>
+</g>
+<!-- metafield_locations -->
+<g id="node21" class="node">
+<title>metafield_locations</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="828,-804 694,-804 694,-668 828,-668 828,-804"/>
+<polygon fill="none" stroke="black" points="697,-779 697,-801 825,-801 825,-779 697,-779"/>
+<text text-anchor="start" x="699.57" y="-786.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_locations  </text>
+<polygon fill="none" stroke="black" points="697,-671 697,-777 825,-777 825,-671 697,-671"/>
+<text text-anchor="start" x="702" y="-759.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702" y="-739.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="702" y="-719.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="702" y="-699.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="694,-668 694,-804 828,-804 828,-668 694,-668"/><text text-anchor="start" x="702" y="-679.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g><g id="edge35" class="edge">
+<title style="">metafield_customers:owner_resource-&gt;customers:id</title>
+<path fill="none" stroke="black" d="M1484,-338C1371.41,-338 1342.34,-309.79 1234.81,-308.08" style=""/>
+<polygon fill="black" stroke="black" points="1234.53,-304.58 1224.5,-308 1234.47,-311.58 1234.53,-304.58" style=""/>
+</g>
+<!-- metafield_locations&#45;&gt;shop -->
+<g id="edge38" class="edge">
+<title>metafield_locations:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M699,-724C494.01,-724 418.32,-779.55 292,-941 46.43,-1254.88 465.69,-1808.44 81.12,-1817.88"/>
+<polygon fill="black" stroke="black" points="80.96,-1814.38 71,-1818 81.04,-1821.38 80.96,-1814.38"/>
+</g>
+<!-- metafield_orders -->
+<g id="node22" class="node">
+<title>metafield_orders</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1229,-1330 1096,-1330 1096,-1194 1229,-1194 1229,-1330"/>
+<polygon fill="none" stroke="black" points="1099.5,-1305 1099.5,-1327 1226.5,-1327 1226.5,-1305 1099.5,-1305"/>
+<text text-anchor="start" x="1108.57" y="-1312.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_orders  </text>
+<polygon fill="none" stroke="black" points="1099.5,-1197 1099.5,-1303 1226.5,-1303 1226.5,-1197 1099.5,-1197"/>
+<text text-anchor="start" x="1104.5" y="-1285.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1104.3" y="-1265.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1104.5" y="-1245.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1104.5" y="-1225.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1096,-1194 1096,-1330 1229,-1330 1229,-1194 1096,-1194"/><text text-anchor="start" x="1104.5" y="-1205.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_orders&#45;&gt;shop -->
+<g id="edge40" class="edge">
+<title>metafield_orders:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1101.5,-1250C908.63,-1250 860.58,-1240.68 668,-1230 571.95,-1224.67 548.15,-1219.11 452,-1216 380.93,-1213.7 350.31,-1175.29 292,-1216 61.16,-1377.16 348.83,-1807.33 81.18,-1817.81"/>
+<polygon fill="black" stroke="black" points="80.93,-1814.31 71,-1818 81.07,-1821.31 80.93,-1814.31"/>
+</g><g id="edge37" class="edge">
+<title style="">metafield_draft_orders:owner_resource-&gt;draft_orders:id</title>
+<path fill="none" stroke="black" d="M1476,-1468C1367.22,-1468 1338.55,-1445.48 1234.78,-1444.07" style=""/>
+<polygon fill="black" stroke="black" points="1234.52,-1440.57 1224.5,-1444 1234.48,-1447.57 1234.52,-1440.57" style=""/>
+</g>
+<!-- metafield_pages -->
+<g id="node23" class="node">
+<title>metafield_pages</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="827.5,-3300 694.5,-3300 694.5,-3164 827.5,-3164 827.5,-3300"/>
+<polygon fill="none" stroke="black" points="698,-3275 698,-3297 825,-3297 825,-3275 698,-3275"/>
+<text text-anchor="start" x="709.79" y="-3282.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_pages  </text>
+<polygon fill="none" stroke="black" points="698,-3167 698,-3273 825,-3273 825,-3167 698,-3167"/>
+<text text-anchor="start" x="703" y="-3255.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702.8" y="-3235.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="703" y="-3215.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="703" y="-3195.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="694.5,-3164 694.5,-3300 827.5,-3300 827.5,-3164 694.5,-3164"/><text text-anchor="start" x="703" y="-3175.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_pages&#45;&gt;shop -->
+<g id="edge42" class="edge">
+<title>metafield_pages:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M700,-3220C576.57,-3220 567.18,-3139.36 452,-3095 383.18,-3068.49 341.72,-3105.47 292,-3051 106.71,-2848.02 343.21,-1843.95 81.35,-1818.49"/>
+<polygon fill="black" stroke="black" points="81.16,-1814.98 71,-1818 80.82,-1821.97 81.16,-1814.98"/>
+</g>
+<!-- metafield_product_images -->
+<g id="node24" class="node">
+<title>metafield_product_images</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1251,-2712 1074,-2712 1074,-2576 1251,-2576 1251,-2712"/>
+<polygon fill="none" stroke="black" points="1077.5,-2687 1077.5,-2709 1248.5,-2709 1248.5,-2687 1077.5,-2687"/>
+<text text-anchor="start" x="1080.18" y="-2694.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_product_images  </text>
+<polygon fill="none" stroke="black" points="1077.5,-2579 1077.5,-2685 1248.5,-2685 1248.5,-2579 1077.5,-2579"/>
+<text text-anchor="start" x="1082.5" y="-2667.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1082.5" y="-2647.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1082.5" y="-2627.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1082.5" y="-2607.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1074,-2576 1074,-2712 1251,-2712 1251,-2576 1074,-2576"/><text text-anchor="start" x="1082.5" y="-2587.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g><g id="edge39" class="edge">
+<title style="">metafield_locations:owner_resource-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M699,-704C515.15,-704 589.42,-994.9 415.15,-1005.69" style=""/>
+<polygon fill="black" stroke="black" points="414.89,-1002.2 405,-1006 415.1,-1009.2 414.89,-1002.2" style=""/>
+</g>
+<!-- metafield_product_images&#45;&gt;shop -->
+<g id="edge44" class="edge">
+<title>metafield_product_images:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1079.5,-2632C896.6,-2632 842.37,-2692.2 668,-2637 556.09,-2601.57 557.88,-2535.7 452,-2485 385.26,-2453.04 345.92,-2489.67 292,-2439 81.03,-2240.71 357.34,-1827.82 81.06,-1818.17"/>
+<polygon fill="black" stroke="black" points="81.06,-1814.67 71,-1818 80.94,-1821.67 81.06,-1814.67"/>
+</g>
+<!-- metafield_products -->
+<g id="node25" class="node">
+<title>metafield_products</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="828,-2494 694,-2494 694,-2358 828,-2358 828,-2494"/>
+<polygon fill="none" stroke="black" points="697,-2469 697,-2491 825,-2491 825,-2469 697,-2469"/>
+<text text-anchor="start" x="699.56" y="-2476.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_products  </text>
+<polygon fill="none" stroke="black" points="697,-2361 697,-2467 825,-2467 825,-2361 697,-2361"/>
+<text text-anchor="start" x="702" y="-2449.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="702" y="-2429.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="702" y="-2409.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="702" y="-2389.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="694,-2358 694,-2494 828,-2494 828,-2358 694,-2358"/><text text-anchor="start" x="702" y="-2369.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_products&#45;&gt;shop -->
+<g id="edge46" class="edge">
+<title>metafield_products:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M699,-2414C518,-2414 439.19,-2505.33 292,-2400 69.85,-2241.02 340.64,-1828.65 81.27,-1818.2"/>
+<polygon fill="black" stroke="black" points="81.07,-1814.7 71,-1818 80.93,-1821.7 81.07,-1814.7"/>
+</g><g id="edge41" class="edge">
+<title style="">metafield_orders:owner_resource-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1101.5,-1230C931.42,-1230 993.92,-967.12 833.38,-956.34" style=""/>
+<polygon fill="black" stroke="black" points="833.11,-952.83 823,-956 832.88,-959.83 833.11,-952.83" style=""/>
+</g>
+<!-- metafield_product_variants -->
+<g id="node26" class="node">
+<title>metafield_product_variants</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1255,-2232 1070,-2232 1070,-2096 1255,-2096 1255,-2232"/>
+<polygon fill="none" stroke="black" points="1073.5,-2207 1073.5,-2229 1252.5,-2229 1252.5,-2207 1073.5,-2207"/>
+<text text-anchor="start" x="1076.29" y="-2214.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_product_variants  </text>
+<polygon fill="none" stroke="black" points="1073.5,-2099 1073.5,-2205 1252.5,-2205 1252.5,-2099 1073.5,-2099"/>
+<text text-anchor="start" x="1078.5" y="-2187.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1078.5" y="-2167.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="1078.5" y="-2147.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1078.5" y="-2127.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="1070,-2096 1070,-2232 1255,-2232 1255,-2096 1070,-2096"/><text text-anchor="start" x="1078.5" y="-2107.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_product_variants&#45;&gt;shop -->
+<g id="edge48" class="edge">
+<title>metafield_product_variants:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1075.5,-2152C922,-2152 990.07,-1958.05 854,-1887 851.74,-1885.82 172.2,-1826.58 81.06,-1818.83"/>
+<polygon fill="black" stroke="black" points="81.25,-1815.34 71,-1818 80.68,-1822.31 81.25,-1815.34"/>
+</g>
+<!-- metafield_shops -->
+<g id="node27" class="node">
+<title>metafield_shops</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-136 305.5,-136 305.5,0 438.5,0 438.5,-136"/>
+<polygon fill="none" stroke="black" points="309,-111 309,-133 436,-133 436,-111 309,-111"/>
+<text text-anchor="start" x="320.78" y="-118.40000000000009" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_shops  </text>
+<polygon fill="none" stroke="black" points="309,-3 309,-109 436,-109 436,-3 309,-3"/>
+<text text-anchor="start" x="314" y="-91.40000000000009" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-71.40000000000009" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-51.40000000000009" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-31.40000000000009" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="305.5,0 305.5,-136 438.5,-136 438.5,0 305.5,0"/><text text-anchor="start" x="314" y="-11.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_shops&#45;&gt;shop -->
+<g id="edge50" class="edge">
+<title>metafield_shops:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-56C-80.7,-56 456.57,-1787.16 81.2,-1817.59"/>
+<polygon fill="black" stroke="black" points="80.85,-1814.11 71,-1818 81.13,-1821.1 80.85,-1814.11"/>
+</g><g id="edge43" class="edge">
+<title style="">metafield_pages:owner_resource-&gt;pages:id</title>
+<path fill="none" stroke="black" d="M700,-3200C585.24,-3200 554.03,-3200 444.17,-3200" style=""/>
+<polygon fill="black" stroke="black" points="444,-3196.5 434,-3200 444,-3203.5 444,-3196.5" style=""/>
+</g>
+<!-- metafield_smart_collections -->
+<g id="node28" class="node">
+<title>metafield_smart_collections</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="854,-2820 668,-2820 668,-2684 854,-2684 854,-2820"/>
+<polygon fill="none" stroke="black" points="671,-2795 671,-2817 851,-2817 851,-2795 671,-2795"/>
+<text text-anchor="start" x="673.91" y="-2802.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">metafield_smart_collections  </text>
+<polygon fill="none" stroke="black" points="671,-2687 671,-2793 851,-2793 851,-2687 671,-2687"/>
+<text text-anchor="start" x="676" y="-2775.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="676" y="-2755.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="676" y="-2735.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="676" y="-2715.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- owner_resource </text>
+<polygon fill="none" stroke="black" points="668,-2684 668,-2820 854,-2820 854,-2684 668,-2684"/><text text-anchor="start" x="676" y="-2695.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style=""> ... </text>
+
+</g>
+<!-- metafield_smart_collections&#45;&gt;shop -->
+<g id="edge52" class="edge">
+<title>metafield_smart_collections:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M673,-2740C568.08,-2740 552.35,-2687.63 452,-2657 382.09,-2635.66 344.6,-2669.74 292,-2619 28.67,-2364.99 432.68,-1828.08 81.08,-1818.14"/>
+<polygon fill="black" stroke="black" points="81.05,-1814.64 71,-1818 80.95,-1821.64 81.05,-1814.64"/>
+</g>
+<!-- order_refunds -->
+<g id="node29" class="node">
+<title>order_refunds</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1227,-828 1098,-828 1098,-692 1227,-692 1227,-828"/>
+<polygon fill="none" stroke="black" points="1101.5,-803 1101.5,-825 1224.5,-825 1224.5,-803 1101.5,-803"/>
+<text text-anchor="start" x="1116.34" y="-810.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">order_refunds  </text>
+<polygon fill="none" stroke="black" points="1101.5,-695 1101.5,-801 1224.5,-801 1224.5,-695 1101.5,-695"/>
+<text text-anchor="start" x="1106.5" y="-783.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1106.26" y="-763.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- created_at (cursor)</text>
+<text text-anchor="start" x="1106.5" y="-743.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1106.5" y="-723.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1106.5" y="-703.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1098,-692 1098,-828 1227,-828 1227,-692 1098,-692"/>
+</g>
+<!-- order_refunds&#45;&gt;orders -->
+<g id="edge55" class="edge">
+<title>order_refunds:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1103.5,-728C946.3,-728 981.99,-946.31 833.08,-955.69"/>
+<polygon fill="black" stroke="black" points="832.89,-952.19 823,-956 833.1,-959.19 832.89,-952.19"/>
+</g><g id="edge45" class="edge">
+<title style="">metafield_product_images:owner_resource-&gt;product_images:id</title>
+<path fill="none" stroke="black" d="M1079.5,-2612C964.06,-2612 933.68,-2589.39 823.22,-2588.06" style=""/>
+<polygon fill="black" stroke="black" points="823.02,-2584.56 813,-2588 822.98,-2591.56 823.02,-2584.56" style=""/>
+</g>
+<!-- order_refunds&#45;&gt;shop -->
+<g id="edge54" class="edge">
+<title>order_refunds:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1103.5,-748C982.31,-748 972.59,-662.98 854,-638 608.58,-586.3 474.46,-516.92 292,-689 -77.42,-1037.42 573.29,-1807.38 81.32,-1817.89"/>
+<polygon fill="black" stroke="black" points="80.96,-1814.39 71,-1818 81.04,-1821.39 80.96,-1814.39"/>
+</g>
+<!-- order_risks -->
+<g id="node30" class="node">
+<title>order_risks</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1215.5,-674 1109.5,-674 1109.5,-558 1215.5,-558 1215.5,-674"/>
+<polygon fill="none" stroke="black" points="1112.5,-649 1112.5,-671 1212.5,-671 1212.5,-649 1112.5,-649"/>
+<text text-anchor="start" x="1124.39" y="-656.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">order_risks  </text>
+<polygon fill="none" stroke="black" points="1112.5,-561 1112.5,-647 1212.5,-647 1212.5,-561 1112.5,-561"/>
+<text text-anchor="start" x="1117.21" y="-629.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="1117.5" y="-609.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1117.5" y="-589.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1117.5" y="-569.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1109.5,-558 1109.5,-674 1215.5,-674 1215.5,-558 1109.5,-558"/>
+</g>
+<!-- order_risks&#45;&gt;orders -->
+<g id="edge57" class="edge">
+<title>order_risks:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1114.5,-594C911.36,-594 1025.62,-944.08 833.02,-955.7"/>
+<polygon fill="black" stroke="black" points="832.89,-952.21 823,-956 833.1,-959.2 832.89,-952.21"/>
+</g><g id="edge47" class="edge">
+<title style="">metafield_products:owner_resource-&gt;products:id</title>
+<path fill="none" stroke="black" d="M699,-2394C580.41,-2394 557.31,-2326.02 444.13,-2322.17" style=""/>
+<polygon fill="black" stroke="black" points="444.06,-2318.67 434,-2322 443.94,-2325.67 444.06,-2318.67" style=""/>
+</g>
+<!-- order_risks&#45;&gt;shop -->
+<g id="edge56" class="edge">
+<title>order_risks:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1114.5,-614C931.63,-614 432.28,-470.68 292,-588 -131.46,-942.15 617.18,-1807.35 81.02,-1817.9"/>
+<polygon fill="black" stroke="black" points="80.97,-1814.4 71,-1818 81.03,-1821.4 80.97,-1814.4"/>
+</g>
+<!-- orders&#45;&gt;locations -->
+<g id="edge59" class="edge">
+<title>orders:location_id-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M700,-896C563.49,-896 545.74,-1000.69 415.03,-1005.81"/>
+<polygon fill="black" stroke="black" points="414.93,-1002.31 405,-1006 415.07,-1009.31 414.93,-1002.31"/>
+</g>
+<!-- orders&#45;&gt;shop -->
+<g id="edge58" class="edge">
+<title>orders:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M700,-916C573.65,-916 569.02,-1007.35 452,-1055 383.8,-1082.77 344.98,-1046.86 292,-1098 53.64,-1328.1 398.53,-1808.03 81.08,-1817.85"/>
+<polygon fill="black" stroke="black" points="80.95,-1814.35 71,-1818 81.05,-1821.35 80.95,-1814.35"/>
+</g>
+<!-- pages -->
+<g id="node32" class="node">
+<title>pages</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-3240 305.5,-3240 305.5,-3104 438.5,-3104 438.5,-3240"/>
+<polygon fill="none" stroke="black" points="309,-3215 309,-3237 436,-3237 436,-3215 309,-3215"/>
+<text text-anchor="start" x="352.28" y="-3222.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">pages  </text>
+<polygon fill="none" stroke="black" points="309,-3107 309,-3213 436,-3213 436,-3107 309,-3107"/>
+<text text-anchor="start" x="314" y="-3195.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-3175.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-3155.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_id </text>
+<text text-anchor="start" x="314" y="-3135.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-3115.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-3104 305.5,-3240 438.5,-3240 438.5,-3104 305.5,-3104"/>
+</g><g id="edge49" class="edge">
+<title style="">metafield_product_variants:owner_resource-&gt;product_variants:id</title>
+<path fill="none" stroke="black" d="M1075.5,-2132C943.77,-2132 956.41,-2291.58 832.01,-2299.68" style=""/>
+<polygon fill="black" stroke="black" points="831.88,-2296.18 822,-2300 832.11,-2303.18 831.88,-2296.18" style=""/>
+</g>
+<!-- pages&#45;&gt;shop -->
+<g id="edge60" class="edge">
+<title>pages:shop_id-&gt;shop:id</title>
+<path fill="none" stroke="black" d="M311,-3160C-282.66,-3160 657.03,-1853.45 81.34,-1838.14"/>
+<polygon fill="black" stroke="black" points="81.05,-1834.63 71,-1838 80.95,-1841.63 81.05,-1834.63"/>
+</g>
+<!-- pages&#45;&gt;shop -->
+<g id="edge61" class="edge">
+<title>pages:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-3140C-282.66,-3140 657.03,-1833.45 81.34,-1818.14"/>
+<polygon fill="black" stroke="black" points="81.05,-1814.63 71,-1818 80.95,-1821.63 81.05,-1814.63"/>
+</g>
+<!-- price_rules -->
+<g id="node33" class="node">
+<title>price_rules</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-1656 305.5,-1656 305.5,-1540 438.5,-1540 438.5,-1656"/>
+<polygon fill="none" stroke="black" points="309,-1631 309,-1653 436,-1653 436,-1631 309,-1631"/>
+<text text-anchor="start" x="335.57" y="-1638.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">price_rules  </text>
+<polygon fill="none" stroke="black" points="309,-1543 309,-1629 436,-1629 436,-1543 309,-1543"/>
+<text text-anchor="start" x="314" y="-1611.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-1591.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-1571.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-1551.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-1540 305.5,-1656 438.5,-1656 438.5,-1540 305.5,-1540"/>
+</g>
+<!-- price_rules&#45;&gt;shop -->
+<g id="edge62" class="edge">
+<title>price_rules:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-1576C163.07,-1576 219.65,-1806.79 81.3,-1817.61"/>
+<polygon fill="black" stroke="black" points="80.86,-1814.12 71,-1818 81.13,-1821.12 80.86,-1814.12"/>
+</g><g id="node45" class="node">
+<title style="">shops</title>
+<polygon fill="#f2f2f2" stroke="black" points="11,-18 11,-54 65,-54 65,-18 11,-18" style=""/>
+<text text-anchor="middle" x="38" y="-31.9" font-family="Helvetica,Arial,sans-serif" font-size="14.00" style="">shops</text>
+</g>
+<!-- product_images -->
+<g id="node34" class="node">
+<title>product_images</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="818,-2628 704,-2628 704,-2512 818,-2512 818,-2628"/>
+<polygon fill="none" stroke="black" points="707,-2603 707,-2625 815,-2625 815,-2603 707,-2603"/>
+<text text-anchor="start" x="709.67" y="-2610.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">product_images  </text>
+<polygon fill="none" stroke="black" points="707,-2515 707,-2601 815,-2601 815,-2515 707,-2515"/>
+<text text-anchor="start" x="712" y="-2583.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="712" y="-2563.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="712" y="-2543.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- product_id </text>
+<text text-anchor="start" x="712" y="-2523.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="704,-2512 704,-2628 818,-2628 818,-2512 704,-2512"/>
+</g><g id="edge51" class="edge">
+<title style="">metafield_shops:owner_resource-&gt;shops:id</title>
+<path fill="none" stroke="black" d="M311,-36C226.75,-36 127.88,-36 75.31,-36" style=""/>
+<polygon fill="black" stroke="black" points="75.12,-32.5 65.12,-36 75.12,-39.5 75.12,-32.5" style=""/>
+</g>
+<!-- product_images&#45;&gt;products -->
+<g id="edge64" class="edge">
+<title>product_images:product_id-&gt;products:id</title>
+<path fill="none" stroke="black" d="M709,-2548C554.35,-2548 590.44,-2332.04 444.36,-2322.34"/>
+<polygon fill="black" stroke="black" points="444.11,-2318.83 434,-2322 443.88,-2325.82 444.11,-2318.83"/>
+</g>
+<!-- product_images&#45;&gt;shop -->
+<g id="edge63" class="edge">
+<title>product_images:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M709,-2568C557.77,-2568 593.67,-2738.1 452,-2791 385.38,-2815.87 347.57,-2835.37 292,-2791 -51.86,-2516.49 505.62,-1828.85 81.21,-1818.13"/>
+<polygon fill="black" stroke="black" points="81.04,-1814.62 71,-1818 80.96,-1821.62 81.04,-1814.62"/>
+</g>
+<!-- products&#45;&gt;shop -->
+<g id="edge65" class="edge">
+<title>products:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-2282C82.34,-2282 296.49,-1831.94 81.23,-1818.32"/>
+<polygon fill="black" stroke="black" points="81.1,-1814.81 71,-1818 80.89,-1821.81 81.1,-1814.81"/>
+</g>
+<!-- products_graph_ql -->
+<g id="node36" class="node">
+<title>products_graph_ql</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-2782 305.5,-2782 305.5,-2666 438.5,-2666 438.5,-2782"/>
+<polygon fill="none" stroke="black" points="309,-2757 309,-2779 436,-2779 436,-2757 309,-2757"/>
+<text text-anchor="start" x="311.82" y="-2764.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">products_graph_ql  </text>
+<polygon fill="none" stroke="black" points="309,-2669 309,-2755 436,-2755 436,-2669 309,-2669"/>
+<text text-anchor="start" x="314" y="-2737.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="314" y="-2717.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updatedAt (cursor)</text>
+<text text-anchor="start" x="314" y="-2697.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-2677.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-2666 305.5,-2782 438.5,-2782 438.5,-2666 305.5,-2666"/>
+</g><g id="edge53" class="edge">
+<title style="">metafield_smart_collections:owner_resource-&gt;smart_collections:id</title>
+<path fill="none" stroke="black" d="M673,-2720C551.14,-2720 558.85,-2578.38 444.33,-2570.35" style=""/>
+<polygon fill="black" stroke="black" points="444.11,-2566.84 434,-2570 443.87,-2573.84 444.11,-2566.84" style=""/>
+</g>
+<!-- products_graph_ql&#45;&gt;shop -->
+<g id="edge66" class="edge">
+<title>products_graph_ql:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-2702C-92.63,-2702 468.37,-1833.04 81.22,-1818.19"/>
+<polygon fill="black" stroke="black" points="81.06,-1814.69 71,-1818 80.93,-1821.69 81.06,-1814.69"/>
+</g>
+<!-- product_variants -->
+<g id="node37" class="node">
+<title>product_variants</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="826.5,-2340 695.5,-2340 695.5,-2204 826.5,-2204 826.5,-2340"/>
+<polygon fill="none" stroke="black" points="699,-2315 699,-2337 824,-2337 824,-2315 699,-2315"/>
+<text text-anchor="start" x="706.28" y="-2322.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">product_variants  </text>
+<polygon fill="none" stroke="black" points="699,-2207 699,-2313 824,-2313 824,-2207 699,-2207"/>
+<text text-anchor="start" x="704" y="-2295.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="704" y="-2275.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="704" y="-2255.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- product_id </text>
+<text text-anchor="start" x="703.96" y="-2235.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- inventory_item_id </text>
+<text text-anchor="start" x="704" y="-2215.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="695.5,-2204 695.5,-2340 826.5,-2340 826.5,-2204 695.5,-2204"/>
+</g>
+<!-- product_variants&#45;&gt;inventory_items -->
+<g id="edge69" class="edge">
+<title>product_variants:inventory_item_id-&gt;inventory_items:id</title>
+<path fill="none" stroke="black" d="M701,-2240C456.5,-2240 675.62,-1763.78 444.25,-1750.29"/>
+<polygon fill="black" stroke="black" points="444.1,-1746.79 434,-1750 443.9,-1753.78 444.1,-1746.79"/>
+</g>
+<!-- product_variants&#45;&gt;products -->
+<g id="edge68" class="edge">
+<title>product_variants:product_id-&gt;products:id</title>
+<path fill="none" stroke="black" d="M701,-2260C582.63,-2260 557.23,-2318.54 444.12,-2321.85"/>
+<polygon fill="black" stroke="black" points="443.95,-2318.36 434,-2322 444.05,-2325.35 443.95,-2318.36"/>
+</g>
+<!-- product_variants&#45;&gt;shop -->
+<g id="edge67" class="edge">
+<title>product_variants:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M701,-2280C514.78,-2280 446.19,-2475.43 292,-2371 75.74,-2224.54 328.83,-1828.62 81.2,-1818.21"/>
+<polygon fill="black" stroke="black" points="81.07,-1814.71 71,-1818 80.93,-1821.7 81.07,-1814.71"/>
+</g>
+<!-- smart_collections -->
+<g id="node39" class="node">
+<title>smart_collections</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="438.5,-2610 305.5,-2610 305.5,-2494 438.5,-2494 438.5,-2610"/>
+<polygon fill="none" stroke="black" points="309,-2585 309,-2607 436,-2607 436,-2585 309,-2585"/>
+<text text-anchor="start" x="316.9" y="-2592.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">smart_collections  </text>
+<polygon fill="none" stroke="black" points="309,-2497 309,-2583 436,-2583 436,-2497 309,-2497"/>
+<text text-anchor="start" x="314" y="-2565.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="313.8" y="-2545.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- updated_at (cursor)</text>
+<text text-anchor="start" x="314" y="-2525.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="314" y="-2505.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="305.5,-2494 305.5,-2610 438.5,-2610 438.5,-2494 305.5,-2494"/>
+</g>
+<!-- smart_collections&#45;&gt;shop -->
+<g id="edge70" class="edge">
+<title>smart_collections:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M311,-2530C-19.51,-2530 396.24,-1832.53 81.03,-1818.22"/>
+<polygon fill="black" stroke="black" points="81.08,-1814.72 71,-1818 80.92,-1821.72 81.08,-1814.72"/>
+</g>
+<!-- tender_transactions -->
+<!-- tender_transactions -->
+<g id="node40" class="node">
+<title>tender_transactions</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1234.5,-540 1090.5,-540 1090.5,-404 1234.5,-404 1234.5,-540"/>
+<polygon fill="none" stroke="black" points="1093.5,-515 1093.5,-537 1231.5,-537 1231.5,-515 1093.5,-515"/>
+<text text-anchor="start" x="1099.51" y="-522.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">tender_transactions  </text>
+<polygon fill="none" stroke="black" points="1093.5,-407 1093.5,-513 1231.5,-513 1231.5,-407 1093.5,-407"/>
+<text text-anchor="start" x="1098.5" y="-495.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1098.36" y="-475.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- processed_at (cursor)</text>
+<text text-anchor="start" x="1098.5" y="-455.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1098.5" y="-435.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1098.5" y="-415.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1090.5,-404 1090.5,-540 1234.5,-540 1234.5,-404 1090.5,-404"/>
+</g>
+<!-- tender_transactions&#45;&gt;orders -->
+
+<!-- tender_transactions&#45;&gt;orders -->
+<g id="edge72" class="edge">
+<title>tender_transactions:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1095.5,-440C839.7,-440 1075.71,-941.99 833.36,-955.71"/>
+<polygon fill="black" stroke="black" points="832.9,-952.22 823,-956 833.09,-959.22 832.9,-952.22"/>
+</g>
+<!-- tender_transactions&#45;&gt;shop -->
+
+<!-- tender_transactions&#45;&gt;shop -->
+<g id="edge71" class="edge">
+<title>tender_transactions:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1095.5,-460C1050.64,-460 324.84,-509.44 292,-540 83.57,-733.94 352.5,-1791.72 81.3,-1817.52"/>
+<polygon fill="black" stroke="black" points="80.83,-1814.04 71,-1818 81.15,-1821.03 80.83,-1814.04"/>
+</g>
+<!-- transactions -->
+
+<!-- transactions -->
+<g id="node41" class="node">
+<title>transactions</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1227,-1002 1098,-1002 1098,-846 1227,-846 1227,-1002"/>
+<polygon fill="none" stroke="black" points="1101.5,-977 1101.5,-999 1224.5,-999 1224.5,-977 1101.5,-977"/>
+<text text-anchor="start" x="1122.94" y="-984.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">transactions  </text>
+<polygon fill="none" stroke="black" points="1101.5,-849 1101.5,-975 1224.5,-975 1224.5,-849 1101.5,-849"/>
+<text text-anchor="start" x="1106.5" y="-957.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="1106.26" y="-937.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- created_at (cursor)</text>
+<text text-anchor="start" x="1106.5" y="-917.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1106.5" y="-897.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- order_id </text>
+<text text-anchor="start" x="1106.5" y="-877.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- location_id </text>
+<text text-anchor="start" x="1106.5" y="-857.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1098,-846 1098,-1002 1227,-1002 1227,-846 1098,-846"/>
+</g>
+<!-- transactions&#45;&gt;locations -->
+
+<!-- transactions&#45;&gt;locations -->
+<g id="edge75" class="edge">
+<title>transactions:location_id-&gt;locations:id</title>
+<path fill="none" stroke="black" d="M1103.5,-882C909.45,-882 855.21,-799.94 668,-851 540.43,-885.8 540.58,-1000 415.07,-1005.77"/>
+<polygon fill="black" stroke="black" points="414.92,-1002.28 405,-1006 415.08,-1009.27 414.92,-1002.28"/>
+</g>
+<!-- transactions&#45;&gt;orders -->
+
+<!-- transactions&#45;&gt;orders -->
+<g id="edge74" class="edge">
+<title>transactions:order_id-&gt;orders:id</title>
+<path fill="none" stroke="black" d="M1103.5,-902C980.02,-902 951.48,-953.09 833.19,-955.88"/>
+<polygon fill="black" stroke="black" points="832.96,-952.38 823,-956 833.04,-959.38 832.96,-952.38"/>
+</g>
+<!-- transactions&#45;&gt;shop -->
+
+<!-- transactions&#45;&gt;shop -->
+<g id="edge73" class="edge">
+<title>transactions:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1103.5,-922C942.38,-922 1002.03,-722.61 854,-659 736.8,-608.63 377.93,-681.72 292,-776 -24.55,-1123.34 536.09,-1807.88 81.23,-1817.89"/>
+<polygon fill="black" stroke="black" points="80.96,-1814.39 71,-1818 81.04,-1821.39 80.96,-1814.39"/>
+</g>
+<!-- customer_saved_search -->
+
+<!-- customer_saved_search -->
+<g id="node42" class="node">
+<title>customer_saved_search</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="452,-1350 292,-1350 292,-1254 452,-1254 452,-1350"/>
+<polygon fill="none" stroke="black" points="295,-1325 295,-1347 449,-1347 449,-1325 295,-1325"/>
+<text text-anchor="start" x="297.74" y="-1332.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">customer_saved_search  </text>
+<polygon fill="none" stroke="black" points="295,-1257 295,-1323 449,-1323 449,-1257 295,-1257"/>
+<text text-anchor="start" x="300" y="-1305.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="300" y="-1285.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="300" y="-1265.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="292,-1254 292,-1350 452,-1350 452,-1254 292,-1254"/>
+</g>
+<!-- customer_saved_search&#45;&gt;shop -->
+
+<!-- customer_saved_search&#45;&gt;shop -->
+<g id="edge76" class="edge">
+<title>customer_saved_search:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M297,-1290C45.23,-1290 318.58,-1803.66 81.17,-1817.71"/>
+<polygon fill="black" stroke="black" points="80.89,-1814.21 71,-1818 81.1,-1821.21 80.89,-1814.21"/>
+</g>
+<!-- customer_address -->
+
+<!-- customer_address -->
+<g id="node43" class="node">
+<title>customer_address</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1613.5,-243 1486.5,-243 1486.5,-127 1613.5,-127 1613.5,-243"/>
+<polygon fill="none" stroke="black" points="1490,-218 1490,-240 1611,-240 1611,-218 1490,-218"/>
+<text text-anchor="start" x="1492.95" y="-225.39999999999998" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">customer_address  </text>
+<polygon fill="none" stroke="black" points="1490,-130 1490,-216 1611,-216 1611,-130 1490,-130"/>
+<text text-anchor="start" x="1495" y="-198.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key,cursor)</text>
+<text text-anchor="start" x="1495" y="-178.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="1495" y="-158.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer_id </text>
+<text text-anchor="start" x="1495" y="-138.39999999999998" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1486.5,-127 1486.5,-243 1613.5,-243 1613.5,-127 1486.5,-127"/>
+</g>
+<!-- customer_address&#45;&gt;customers -->
+
+<!-- customer_address&#45;&gt;customers -->
+<g id="edge78" class="edge">
+<title>customer_address:customer_id-&gt;customers:id</title>
+<path fill="none" stroke="black" d="M1492,-163C1360.2,-163 1359.67,-300.73 1234.54,-307.72"/>
+<polygon fill="black" stroke="black" points="1234.4,-304.23 1224.5,-308 1234.59,-311.22 1234.4,-304.23"/>
+</g>
+<!-- customer_address&#45;&gt;shop -->
+
+<!-- customer_address&#45;&gt;shop -->
+<g id="edge77" class="edge">
+<title>customer_address:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M1492,-183C1358.67,-183 392.4,-95.26 292,-183 18.49,-422.03 429.87,-1792.24 81,-1817.64"/>
+<polygon fill="black" stroke="black" points="80.87,-1814.14 71,-1818 81.12,-1821.14 80.87,-1814.14"/>
+</g>
+<!-- countries -->
+
+<!-- countries -->
+<g id="node44" class="node">
+<title>countries</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="410,-288 334,-288 334,-192 410,-192 410,-288"/>
+<polygon fill="none" stroke="black" points="337,-263 337,-285 407,-285 407,-263 337,-263"/>
+<text text-anchor="start" x="340.89" y="-270.4000000000001" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">countries  </text>
+<polygon fill="none" stroke="black" points="337,-195 337,-261 407,-261 407,-195 337,-195"/>
+<text text-anchor="start" x="342" y="-243.4000000000001" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- id (key)</text>
+<text text-anchor="start" x="341.67" y="-223.4000000000001" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- shop_url </text>
+<text text-anchor="start" x="342" y="-203.4000000000001" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="334,-192 334,-288 410,-288 410,-192 334,-192"/>
+</g>
+<!-- countries&#45;&gt;shop -->
+
+<!-- countries&#45;&gt;shop -->
+<g id="edge79" class="edge">
+<title>countries:shop_url-&gt;shop:shop_url</title>
+<path fill="none" stroke="black" d="M339,-228C-15.91,-228 420.85,-1787.87 81.02,-1817.57"/>
+<polygon fill="black" stroke="black" points="80.84,-1814.07 71,-1818 81.14,-1821.07 80.84,-1814.07"/>
+</g>
+
+</g>
+</svg>

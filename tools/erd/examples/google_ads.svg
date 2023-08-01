@@ -1,0 +1,542 @@
+<svg width="715" height="667" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0.00 0.00 1219 2822.8">
+<g id="graph0" class="graph" transform="translate(-207.7161450370495,2574.622255812331) scale(0.8246924442330607)">
+<title>SourceERD</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-2818.8 1215,-2818.8 1215,4 -4,4"/>
+<text text-anchor="middle" x="605.5" y="-2798.2" font-family="Helvetica,Arial,sans-serif" font-size="14.00">Stream relationship diagram</text>
+<!-- ad_group_ads -->
+<g id="node1" class="node">
+<title>ad_group_ads</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="205,-2300 0,-2300 0,-2184 205,-2184 205,-2300"/>
+<polygon fill="none" stroke="black" points="3.5,-2275 3.5,-2297 202.5,-2297 202.5,-2275 3.5,-2275"/>
+<text text-anchor="start" x="57.1" y="-2282.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_ads  </text>
+<polygon fill="none" stroke="black" points="3.5,-2187 3.5,-2273 202.5,-2273 202.5,-2187 3.5,-2187"/>
+<text text-anchor="start" x="8.5" y="-2255.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_ad.ad.id (key)</text>
+<text text-anchor="start" x="8.5" y="-2235.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="8.15" y="-2215.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_ad.ad.resource_name </text>
+<polygon fill="none" stroke="black" points="0,-2184 0,-2300 205,-2300 205,-2184 0,-2184"/><text text-anchor="start" x="8.5" y="-2195.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- ad_group_ad_labels -->
+<g id="node2" class="node">
+<title>ad_group_ad_labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1194,-2300 942,-2300 942,-2184 1194,-2184 1194,-2300"/>
+<polygon fill="none" stroke="black" points="945,-2275 945,-2297 1191,-2297 1191,-2275 945,-2275"/>
+<text text-anchor="start" x="1004.21" y="-2282.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_ad_labels  </text>
+<polygon fill="none" stroke="black" points="945,-2187 945,-2273 1191,-2273 1191,-2187 945,-2187"/>
+<text text-anchor="start" x="949.64" y="-2255.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_ad_label.resource_name (key)</text>
+<text text-anchor="start" x="950" y="-2235.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_ad.ad.resource_name </text>
+<polygon fill="none" stroke="black" points="942,-2184 942,-2300 1194,-2300 1194,-2184 942,-2184"/><text text-anchor="start" x="950" y="-2215.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- label.resource_name </text>
+<text text-anchor="start" x="950" y="-2195.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- ad_groups -->
+<g id="node3" class="node">
+<title>ad_groups</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="189.5,-1536 15.5,-1536 15.5,-1420 189.5,-1420 189.5,-1536"/>
+<polygon fill="none" stroke="black" points="18.5,-1511 18.5,-1533 186.5,-1533 186.5,-1511 18.5,-1511"/>
+<text text-anchor="start" x="67.49" y="-1518.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_groups  </text>
+<polygon fill="none" stroke="black" points="18.5,-1423 18.5,-1509 186.5,-1509 186.5,-1423 18.5,-1423"/>
+<text text-anchor="start" x="23.5" y="-1491.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id (key)</text>
+<text text-anchor="start" x="23.2" y="-1471.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="23.5" y="-1451.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.resource_name </text>
+<polygon fill="none" stroke="black" points="15.5,-1420 15.5,-1536 189.5,-1536 189.5,-1420 15.5,-1420"/><text text-anchor="start" x="23.5" y="-1431.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge1" class="edge">
+<title>ad_group_ad_labels:ad_group_ad.ad.resource_name-&gt;ad_group_ads:ad_group_ad.ad.resource_name</title>
+<path fill="none" stroke="black" d="M947,-2240C618.51,-2240 534.12,-2220.41 210.63,-2220.01"/>
+<polygon fill="black" stroke="black" points="210.5,-2216.51 200.5,-2220 210.5,-2223.51 210.5,-2216.51"/>
+</g>
+<!-- ad_group_bidding_strategies -->
+<g id="node4" class="node">
+<title>ad_group_bidding_strategies</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1164.5,-1918 971.5,-1918 971.5,-1802 1164.5,-1802 1164.5,-1918"/>
+<polygon fill="none" stroke="black" points="975,-1893 975,-1915 1162,-1915 1162,-1893 975,-1893"/>
+<text text-anchor="start" x="977.88" y="-1900.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_bidding_strategies  </text>
+<polygon fill="none" stroke="black" points="975,-1805 975,-1891 1162,-1891 1162,-1805 975,-1805"/>
+<text text-anchor="start" x="980" y="-1873.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id (key)</text>
+<text text-anchor="start" x="980" y="-1853.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- bidding_strategy.id (key)</text>
+<text text-anchor="start" x="980" y="-1833.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="980" y="-1813.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="971.5,-1802 971.5,-1918 1164.5,-1918 1164.5,-1802 971.5,-1802"/>
+</g>
+<!-- ad_group_criterions -->
+<g id="node5" class="node">
+<title>ad_group_criterions</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1184.5,-1784 951.5,-1784 951.5,-1688 1184.5,-1688 1184.5,-1784"/>
+<polygon fill="none" stroke="black" points="955,-1759 955,-1781 1182,-1781 1182,-1759 955,-1759"/>
+<text text-anchor="start" x="1003.95" y="-1766.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_criterions  </text>
+<polygon fill="none" stroke="black" points="955,-1691 955,-1757 1182,-1757 1182,-1691 955,-1691"/>
+<text text-anchor="start" x="960" y="-1739.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id (key)</text>
+<text text-anchor="start" x="959.85" y="-1719.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_criterion.criterion_id (key)</text>
+<text text-anchor="start" x="960" y="-1699.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="951.5,-1688 951.5,-1784 1184.5,-1784 1184.5,-1688 951.5,-1688"/>
+</g><g id="edge3" class="edge">
+<title>ad_group_bidding_strategies:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M977,-1878C589.43,-1878 575.72,-1502.69 194.72,-1496.09"/>
+<polygon fill="black" stroke="black" points="194.53,-1492.59 184.5,-1496 194.47,-1499.59 194.53,-1492.59"/>
+</g><g id="edge2" class="edge">
+<title>ad_group_ad_labels:label.resource_name-&gt;labels:label.resource_name</title>
+<path fill="none" stroke="black" d="M947,-2220C599.77,-2220 521.66,-2088.6 179.69,-2086.04"/>
+<polygon fill="black" stroke="black" points="179.51,-2082.54 169.5,-2086 179.49,-2089.54 179.51,-2082.54"/>
+</g>
+<!-- ad_group_criterion_labels -->
+<g id="node6" class="node">
+<title>ad_group_criterion_labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1211,-2394 925,-2394 925,-2318 1211,-2318 1211,-2394"/>
+<polygon fill="none" stroke="black" points="928,-2369 928,-2391 1208,-2391 1208,-2369 928,-2369"/>
+<text text-anchor="start" x="985.56" y="-2376.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_criterion_labels  </text>
+<polygon fill="none" stroke="black" points="928,-2321 928,-2367 1208,-2367 1208,-2321 928,-2321"/>
+<text text-anchor="start" x="932.53" y="-2349.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_criterion_label.resource_name (key)</text>
+<text text-anchor="start" x="933" y="-2329.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="925,-2318 925,-2394 1211,-2394 1211,-2318 925,-2318"/>
+</g>
+<!-- ad_group_labels -->
+<g id="node7" class="node">
+<title>ad_group_labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1184,-2166 952,-2166 952,-2050 1184,-2050 1184,-2166"/>
+<polygon fill="none" stroke="black" points="955,-2141 955,-2163 1181,-2163 1181,-2141 955,-2141"/>
+<text text-anchor="start" x="1015.1" y="-2148.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_labels  </text>
+<polygon fill="none" stroke="black" points="955,-2053 955,-2139 1181,-2139 1181,-2053 955,-2053"/>
+<text text-anchor="start" x="959.74" y="-2121.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_label.resource_name (key)</text>
+<text text-anchor="start" x="960" y="-2101.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.resource_name </text>
+<polygon fill="none" stroke="black" points="952,-2050 952,-2166 1184,-2166 1184,-2050 952,-2050"/><text text-anchor="start" x="960" y="-2081.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- label.resource_name </text>
+<text text-anchor="start" x="960" y="-2061.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge4" class="edge">
+<title>ad_group_criterions:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M957,-1744C599.84,-1744 546.1,-1500.7 194.72,-1496.07"/>
+<polygon fill="black" stroke="black" points="194.52,-1492.57 184.5,-1496 194.48,-1499.57 194.52,-1492.57"/>
+</g>
+<!-- ad_listing_group_criterions -->
+<g id="node8" class="node">
+<title>ad_listing_group_criterions</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1184.5,-1670 951.5,-1670 951.5,-1574 1184.5,-1574 1184.5,-1670"/>
+<polygon fill="none" stroke="black" points="955,-1645 955,-1667 1182,-1667 1182,-1645 955,-1645"/>
+<text text-anchor="start" x="982.17" y="-1652.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_listing_group_criterions  </text>
+<polygon fill="none" stroke="black" points="955,-1577 955,-1643 1182,-1643 1182,-1577 955,-1577"/>
+<text text-anchor="start" x="960" y="-1625.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id (key)</text>
+<text text-anchor="start" x="959.85" y="-1605.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_criterion.criterion_id (key)</text>
+<text text-anchor="start" x="960" y="-1585.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="951.5,-1574 951.5,-1670 1184.5,-1670 1184.5,-1574 951.5,-1574"/>
+</g>
+<!-- accounts -->
+<g id="node9" class="node">
+<title>accounts</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="189.5,-515 15.5,-515 15.5,-419 189.5,-419 189.5,-515"/>
+<polygon fill="none" stroke="black" points="18.5,-490 18.5,-512 186.5,-512 186.5,-490 18.5,-490"/>
+<text text-anchor="start" x="72.94" y="-497.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">accounts  </text>
+<polygon fill="none" stroke="black" points="18.5,-422 18.5,-488 186.5,-488 186.5,-422 18.5,-422"/>
+<text text-anchor="start" x="23.5" y="-470.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id (key)</text>
+<text text-anchor="start" x="23.2" y="-450.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="23.5" y="-430.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="15.5,-419 15.5,-515 189.5,-515 189.5,-419 15.5,-419"/>
+</g>
+<!-- account_labels -->
+<g id="node10" class="node">
+<title>account_labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1183,-96 953,-96 953,0 1183,0 1183,-96"/>
+<polygon fill="none" stroke="black" points="956,-71 956,-93 1180,-93 1180,-71 956,-71"/>
+<text text-anchor="start" x="1020.56" y="-78.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">account_labels  </text>
+<polygon fill="none" stroke="black" points="956,-3 956,-69 1180,-69 1180,-3 956,-3"/>
+<text text-anchor="start" x="960.52" y="-51.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer_label.resource_name (key)</text>
+<text text-anchor="start" x="961" y="-31.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<polygon fill="none" stroke="black" points="953,0 953,-96 1183,-96 1183,0 953,0"/><text text-anchor="start" x="961" y="-11.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- audience -->
+<g id="node11" class="node">
+<title>audience</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1128.5,-2488 1007.5,-2488 1007.5,-2412 1128.5,-2412 1128.5,-2488"/>
+<polygon fill="none" stroke="black" points="1011,-2463 1011,-2485 1126,-2485 1126,-2463 1011,-2463"/>
+<text text-anchor="start" x="1038.56" y="-2470.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">audience  </text>
+<polygon fill="none" stroke="black" points="1011,-2415 1011,-2461 1126,-2461 1126,-2415 1011,-2415"/>
+<text text-anchor="start" x="1015.83" y="-2443.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- audience.id (key)</text>
+<text text-anchor="start" x="1016" y="-2423.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="1007.5,-2412 1007.5,-2488 1128.5,-2488 1128.5,-2412 1007.5,-2412"/>
+</g><g id="edge7" class="edge">
+<title>ad_listing_group_criterions:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M957,-1630C611.94,-1630 534.46,-1498.6 194.63,-1496.04"/>
+<polygon fill="black" stroke="black" points="194.51,-1492.54 184.5,-1496 194.49,-1499.54 194.51,-1492.54"/>
+</g><g id="edge5" class="edge">
+<title>ad_group_labels:ad_group.resource_name-&gt;ad_groups:ad_group.resource_name</title>
+<path fill="none" stroke="black" d="M957,-2106C511.69,-2106 631.35,-1465.8 194.59,-1456.11"/>
+<polygon fill="black" stroke="black" points="194.54,-1452.61 184.5,-1456 194.46,-1459.61 194.54,-1452.61"/>
+</g>
+<!-- campaign_bidding_strategies -->
+<g id="node12" class="node">
+<title>campaign_bidding_strategies</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1165,-980 971,-980 971,-864 1165,-864 1165,-980"/>
+<polygon fill="none" stroke="black" points="974,-955 974,-977 1162,-977 1162,-955 974,-955"/>
+<text text-anchor="start" x="976.99" y="-962.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">campaign_bidding_strategies  </text>
+<polygon fill="none" stroke="black" points="974,-867 974,-953 1162,-953 1162,-867 974,-867"/>
+<text text-anchor="start" x="979" y="-935.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id (key)</text>
+<text text-anchor="start" x="979" y="-915.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- bidding_strategy.id (key)</text>
+<text text-anchor="start" x="979" y="-895.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="979" y="-875.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="971,-864 971,-980 1165,-980 1165,-864 971,-864"/>
+</g>
+<!-- campaign_budget -->
+<g id="node13" class="node">
+<title>campaign_budget</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1155,-2602 981,-2602 981,-2506 1155,-2506 1155,-2602"/>
+<polygon fill="none" stroke="black" points="984,-2577 984,-2599 1152,-2599 1152,-2577 984,-2577"/>
+<text text-anchor="start" x="1011.21" y="-2584.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">campaign_budget  </text>
+<polygon fill="none" stroke="black" points="984,-2509 984,-2575 1152,-2575 1152,-2509 984,-2509"/>
+<text text-anchor="start" x="989" y="-2557.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign_budget.id (key)</text>
+<text text-anchor="start" x="988.7" y="-2537.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="989" y="-2517.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="981,-2506 981,-2602 1155,-2602 1155,-2506 981,-2506"/>
+</g>
+<!-- campaign_labels -->
+<g id="node14" class="node">
+<title>campaign_labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1185,-1268 951,-1268 951,-1152 1185,-1152 1185,-1268"/>
+<polygon fill="none" stroke="black" points="954,-1243 954,-1265 1182,-1265 1182,-1243 954,-1243"/>
+<text text-anchor="start" x="1014.72" y="-1250.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">campaign_labels  </text>
+<polygon fill="none" stroke="black" points="954,-1155 954,-1241 1182,-1241 1182,-1155 954,-1155"/>
+<text text-anchor="start" x="958.97" y="-1223.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign_label.resource_name (key)</text>
+<text text-anchor="start" x="959" y="-1203.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.resource_name </text>
+<polygon fill="none" stroke="black" points="951,-1152 951,-1268 1185,-1268 1185,-1152 951,-1152"/><text text-anchor="start" x="959" y="-1183.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- label.resource_name </text>
+<text text-anchor="start" x="959" y="-1163.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge8" class="edge">
+<title>account_labels:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M958,-36C566.09,-36 579.52,-467.53 194.54,-474.9"/>
+<polygon fill="black" stroke="black" points="194.47,-471.4 184.5,-475 194.53,-478.4 194.47,-471.4"/>
+</g><g id="edge6" class="edge">
+<title>ad_group_labels:label.resource_name-&gt;labels:label.resource_name</title>
+<path fill="none" stroke="black" d="M957,-2086C610.42,-2086 521.23,-2086 179.68,-2086"/>
+<polygon fill="black" stroke="black" points="179.5,-2082.5 169.5,-2086 179.5,-2089.5 179.5,-2082.5"/>
+</g>
+<!-- click_view -->
+<g id="node15" class="node">
+<title>click_view</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1172.5,-846 963.5,-846 963.5,-670 1172.5,-670 1172.5,-846"/>
+<polygon fill="none" stroke="black" points="967,-821 967,-843 1170,-843 1170,-821 967,-821"/>
+<text text-anchor="start" x="1033.9" y="-828.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">click_view  </text>
+<polygon fill="none" stroke="black" points="967,-673 967,-819 1170,-819 1170,-673 967,-673"/>
+<text text-anchor="start" x="972" y="-801.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- click_view.gclid (key)</text>
+<text text-anchor="start" x="972" y="-781.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="971.5" y="-761.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.ad_network_type (key)</text>
+<text text-anchor="start" x="972" y="-741.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="963.5,-670 963.5,-846 1172.5,-846 1172.5,-670 963.5,-670"/><text text-anchor="start" x="972" y="-721.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<text text-anchor="start" x="972" y="-701.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="972" y="-681.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- labels -->
+<g id="node16" class="node">
+<title>labels</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="174,-2146 31,-2146 31,-2050 174,-2050 174,-2146"/>
+<polygon fill="none" stroke="black" points="34.5,-2121 34.5,-2143 171.5,-2143 171.5,-2121 34.5,-2121"/>
+<text text-anchor="start" x="82.39" y="-2128.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">labels  </text>
+<polygon fill="none" stroke="black" points="34.5,-2053 34.5,-2119 171.5,-2119 171.5,-2053 34.5,-2053"/>
+<text text-anchor="start" x="39.5" y="-2101.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- label.id (key)</text>
+<text text-anchor="start" x="39.45" y="-2081.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- label.resource_name </text>
+<polygon fill="none" stroke="black" points="31,-2050 31,-2146 174,-2146 174,-2050 31,-2050"/><text text-anchor="start" x="39.5" y="-2061.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- user_interest -->
+<g id="node17" class="node">
+<title>user_interest</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1178.5,-2696 957.5,-2696 957.5,-2620 1178.5,-2620 1178.5,-2696"/>
+<polygon fill="none" stroke="black" points="961,-2671 961,-2693 1176,-2693 1176,-2671 961,-2671"/>
+<text text-anchor="start" x="1026.12" y="-2678.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">user_interest  </text>
+<polygon fill="none" stroke="black" points="961,-2623 961,-2669 1176,-2669 1176,-2623 961,-2623"/>
+<text text-anchor="start" x="965.67" y="-2651.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- user_interest.user_interest_id (key)</text>
+<text text-anchor="start" x="966" y="-2631.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="957.5,-2620 957.5,-2696 1178.5,-2696 1178.5,-2620 957.5,-2620"/>
+</g><g id="edge9" class="edge">
+<title>campaign_bidding_strategies:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M976,-940C624.4,-940 541.06,-835.03 194.57,-833.03"/>
+<polygon fill="black" stroke="black" points="194.51,-829.53 184.5,-833 194.49,-836.53 194.51,-829.53"/>
+</g>
+<!-- campaigns -->
+<g id="node18" class="node">
+<title>campaigns</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="189.5,-873 15.5,-873 15.5,-737 189.5,-737 189.5,-873"/>
+<polygon fill="none" stroke="black" points="18.5,-848 18.5,-870 186.5,-870 186.5,-848 18.5,-848"/>
+<text text-anchor="start" x="67.11" y="-855.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">campaigns  </text>
+<polygon fill="none" stroke="black" points="18.5,-740 18.5,-846 186.5,-846 186.5,-740 18.5,-740"/>
+<text text-anchor="start" x="23.5" y="-828.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id (key)</text>
+<text text-anchor="start" x="23.2" y="-808.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (key,cursor)</text>
+<text text-anchor="start" x="23.5" y="-788.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.hour (key)</text>
+<text text-anchor="start" x="23.5" y="-768.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.resource_name </text>
+<polygon fill="none" stroke="black" points="15.5,-737 15.5,-873 189.5,-873 189.5,-737 15.5,-737"/><text text-anchor="start" x="23.5" y="-748.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- user_location_report -->
+<g id="node19" class="node">
+<title>user_location_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1143,-344 993,-344 993,-228 1143,-228 1143,-344"/>
+<polygon fill="none" stroke="black" points="996,-319 996,-341 1140,-341 1140,-319 996,-319"/>
+<text text-anchor="start" x="1001.9" y="-326.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">user_location_report  </text>
+<polygon fill="none" stroke="black" points="996,-231 996,-317 1140,-317 1140,-231 996,-231"/>
+<text text-anchor="start" x="1000.55" y="-299.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="1001" y="-279.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<polygon fill="none" stroke="black" points="993,-228 993,-344 1143,-344 1143,-228 993,-228"/><text text-anchor="start" x="1001" y="-259.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="1001" y="-239.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge12" class="edge">
+<title>click_view:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M969,-746C490.05,-746 664.35,-1485.42 194.65,-1495.89"/>
+<polygon fill="black" stroke="black" points="194.46,-1492.39 184.5,-1496 194.54,-1499.39 194.46,-1492.39"/>
+</g>
+<!-- account_performance_report -->
+<g id="node20" class="node">
+<title>account_performance_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1165,-210 971,-210 971,-114 1165,-114 1165,-210"/>
+<polygon fill="none" stroke="black" points="974,-185 974,-207 1162,-207 1162,-185 974,-185"/>
+<text text-anchor="start" x="976.64" y="-192.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">account_performance_report  </text>
+<polygon fill="none" stroke="black" points="974,-117 974,-183 1162,-183 1162,-117 974,-117"/>
+<text text-anchor="start" x="979" y="-165.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="979" y="-145.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<polygon fill="none" stroke="black" points="971,-114 971,-210 1165,-210 1165,-114 971,-114"/><text text-anchor="start" x="979" y="-125.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- display_topics_performance_report -->
+<g id="node21" class="node">
+<title>display_topics_performance_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1184,-652 952,-652 952,-516 1184,-516 1184,-652"/>
+<polygon fill="none" stroke="black" points="955,-627 955,-649 1181,-649 1181,-627 955,-627"/>
+<text text-anchor="start" x="957.57" y="-634.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">display_topics_performance_report  </text>
+<polygon fill="none" stroke="black" points="955,-519 955,-625 1181,-625 1181,-519 955,-519"/>
+<text text-anchor="start" x="960" y="-607.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="960" y="-587.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="952,-516 952,-652 1184,-652 1184,-516 952,-516"/><text text-anchor="start" x="960" y="-567.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<text text-anchor="start" x="960" y="-547.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="960" y="-527.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- display_keyword_performance_report -->
+<g id="node22" class="node">
+<title>display_keyword_performance_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1192.5,-498 943.5,-498 943.5,-362 1192.5,-362 1192.5,-498"/>
+<polygon fill="none" stroke="black" points="947,-473 947,-495 1190,-495 1190,-473 947,-473"/>
+<text text-anchor="start" x="949.52" y="-480.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">display_keyword_performance_report  </text>
+<polygon fill="none" stroke="black" points="947,-365 947,-471 1190,-471 1190,-365 947,-365"/>
+<text text-anchor="start" x="952" y="-453.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="952" y="-433.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="943.5,-362 943.5,-498 1192.5,-498 1192.5,-362 943.5,-362"/><text text-anchor="start" x="952" y="-413.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<text text-anchor="start" x="952" y="-393.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="952" y="-373.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge13" class="edge">
+<title>click_view:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M969,-726C620.54,-726 538,-830.92 194.73,-832.97"/>
+<polygon fill="black" stroke="black" points="194.49,-829.47 184.5,-833 194.51,-836.47 194.49,-829.47"/>
+</g>
+<!-- shopping_performance_report -->
+<!-- display_keyword_performance_report&#45;&gt;ad_groups -->
+<g id="edge21" class="edge">
+<title>display_keyword_performance_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M949,-438C372.26,-438 760.03,-1483.64 194.6,-1495.89"/>
+<polygon fill="black" stroke="black" points="194.46,-1492.39 184.5,-1496 194.54,-1499.39 194.46,-1492.39"/>
+</g><g id="edge16" class="edge">
+<title>user_location_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M998,-264C627.85,-264 559.25,-471.21 194.55,-474.95"/>
+<polygon fill="black" stroke="black" points="194.48,-471.45 184.5,-475 194.52,-478.45 194.48,-471.45"/>
+</g>
+<!-- shopping_performance_report -->
+<g id="node23" class="node">
+<title>shopping_performance_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1169,-1134 967,-1134 967,-998 1169,-998 1169,-1134"/>
+<polygon fill="none" stroke="black" points="970,-1109 970,-1131 1166,-1131 1166,-1109 970,-1109"/>
+<text text-anchor="start" x="972.73" y="-1116.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">shopping_performance_report  </text>
+<polygon fill="none" stroke="black" points="970,-1001 970,-1107 1166,-1107 1166,-1001 970,-1001"/>
+<text text-anchor="start" x="975" y="-1089.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="975" y="-1069.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="967,-998 967,-1134 1169,-1134 1169,-998 967,-998"/><text text-anchor="start" x="975" y="-1049.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<text text-anchor="start" x="975" y="-1029.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="975" y="-1009.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge14" class="edge">
+<title>click_view:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M969,-706C608.9,-706 549.06,-479.27 194.54,-475.06"/>
+<polygon fill="black" stroke="black" points="194.52,-471.56 184.5,-475 194.48,-478.56 194.52,-471.56"/>
+</g><g id="edge10" class="edge">
+<title>campaign_labels:campaign.resource_name-&gt;campaigns:campaign.resource_name</title>
+<path fill="none" stroke="black" d="M956,-1208C565.73,-1208 577.9,-780.4 194.5,-773.09"/>
+<polygon fill="black" stroke="black" points="194.53,-769.59 184.5,-773 194.47,-776.59 194.53,-769.59"/>
+</g>
+<!-- ad_group_ad_report -->
+
+<!-- shopping_performance_report&#45;&gt;ad_groups -->
+<g id="edge24" class="edge">
+<title>shopping_performance_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M972,-1074C578.31,-1074 581.5,-1488.82 194.59,-1495.91"/>
+<polygon fill="black" stroke="black" points="194.47,-1492.41 184.5,-1496 194.53,-1499.41 194.47,-1492.41"/>
+</g><g id="edge19" class="edge">
+<title>display_topics_performance_report:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M957,-572C597.96,-572 547.81,-828.18 194.51,-832.93"/>
+<polygon fill="black" stroke="black" points="194.48,-829.43 184.5,-833 194.52,-836.43 194.48,-829.43"/>
+</g>
+<!-- ad_group_ad_report -->
+<!-- ad_group_ad_report -->
+<g id="node24" class="node">
+<title>ad_group_ad_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1143,-1442 993,-1442 993,-1286 1143,-1286 1143,-1442"/>
+<polygon fill="none" stroke="black" points="996,-1417 996,-1439 1140,-1439 1140,-1417 996,-1417"/>
+<text text-anchor="start" x="1002.28" y="-1424.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">ad_group_ad_report  </text>
+<polygon fill="none" stroke="black" points="996,-1289 996,-1415 1140,-1415 1140,-1289 996,-1289"/>
+<text text-anchor="start" x="1000.55" y="-1397.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="1001" y="-1377.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="993,-1286 993,-1442 1143,-1442 1143,-1286 993,-1286"/><text text-anchor="start" x="1001" y="-1357.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- campaign.id </text>
+<text text-anchor="start" x="1001" y="-1337.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group_ad.ad.id </text>
+<text text-anchor="start" x="1001" y="-1317.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- customer.id </text>
+<text text-anchor="start" x="1001" y="-1297.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- geographic_report -->
+<g id="edge17" class="edge">
+<title>account_performance_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M976,-150C599.16,-150 565.37,-469.15 194.72,-474.92"/>
+<polygon fill="black" stroke="black" points="194.47,-471.42 184.5,-475 194.53,-478.42 194.47,-471.42"/>
+</g>
+<!-- ad_group_ad_report&#45;&gt;ad_groups -->
+<g id="edge29" class="edge">
+<title>ad_group_ad_report:ad_group_ad.ad.id-&gt;ad_group_ads:ad_group_ad.ad.id</title>
+<path fill="none" stroke="black" d="M998,-1342C460.97,-1342 737.39,-2248.38 210.69,-2259.89"/>
+<polygon fill="black" stroke="black" points="210.46,-2256.39 200.5,-2260 210.54,-2263.39 210.46,-2256.39"/>
+</g><g id="edge23" class="edge">
+<title>display_keyword_performance_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M949,-398C611,-398 527.7,-473.43 194.92,-474.98"/>
+<polygon fill="black" stroke="black" points="194.49,-471.48 184.5,-475 194.51,-478.48 194.49,-471.48"/>
+</g>
+<!-- ad_group_ad_report&#45;&gt;ad_groups -->
+<!-- ad_group_ad_report&#45;&gt;ad_groups -->
+<g id="edge27" class="edge">
+<title>ad_group_ad_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M998,-1382C636.3,-1382 551.16,-1493.89 194.59,-1495.97"/>
+<polygon fill="black" stroke="black" points="194.49,-1492.47 184.5,-1496 194.51,-1499.47 194.49,-1492.47"/>
+</g>
+<!-- geographic_report -->
+
+<!-- ad_group_ad_report&#45;&gt;accounts -->
+<g id="edge30" class="edge">
+<title>ad_group_ad_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M998,-1322C479.49,-1322 703.45,-486.13 194.72,-475.11"/>
+<polygon fill="black" stroke="black" points="194.54,-471.61 184.5,-475 194.46,-478.61 194.54,-471.61"/>
+</g>
+<!-- ad_group_ad_report&#45;&gt;campaigns -->
+<g id="edge28" class="edge">
+<title>ad_group_ad_report:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M998,-1362C570.09,-1362 615.04,-841.23 194.52,-833.1"/>
+<polygon fill="black" stroke="black" points="194.53,-829.6 184.5,-833 194.47,-836.6 194.53,-829.6"/>
+</g>
+<!-- ad_group_ad_report&#45;&gt;ad_groups -->
+
+<!-- geographic_report -->
+
+<!-- geographic_report -->
+<g id="node25" class="node">
+<title>geographic_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1143,-1556 993,-1556 993,-1460 1143,-1460 1143,-1556"/>
+<polygon fill="none" stroke="black" points="996,-1531 996,-1553 1140,-1553 1140,-1531 996,-1531"/>
+<text text-anchor="start" x="1008.9" y="-1538.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">geographic_report  </text>
+<polygon fill="none" stroke="black" points="996,-1463 996,-1529 1140,-1529 1140,-1463 996,-1463"/>
+<text text-anchor="start" x="1000.55" y="-1511.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="1001" y="-1491.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="993,-1460 993,-1556 1143,-1556 1143,-1460 993,-1460"/><text text-anchor="start" x="1001" y="-1471.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g>
+<!-- keyword_report -->
+<g id="edge22" class="edge">
+<title>display_keyword_performance_report:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M949,-418C565.79,-418 570.99,-825.74 194.6,-832.9"/>
+<polygon fill="black" stroke="black" points="194.47,-829.41 184.5,-833 194.53,-836.41 194.47,-829.41"/>
+</g>
+<!-- geographic_report&#45;&gt;ad_groups -->
+
+<!-- geographic_report&#45;&gt;ad_groups -->
+
+<!-- geographic_report&#45;&gt;ad_groups -->
+<g id="edge31" class="edge">
+<title>geographic_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M998,-1496C639.89,-1496 547.8,-1496 194.75,-1496"/>
+<polygon fill="black" stroke="black" points="194.5,-1492.5 184.5,-1496 194.5,-1499.5 194.5,-1492.5"/>
+</g><g id="edge20" class="edge">
+<title>display_topics_performance_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M957,-552C615.33,-552 531.17,-476.5 194.53,-475.02"/>
+<polygon fill="black" stroke="black" points="194.51,-471.52 184.5,-475 194.49,-478.52 194.51,-471.52"/>
+</g>
+<!-- keyword_report -->
+<g id="edge26" class="edge">
+<title>shopping_performance_report:customer.id-&gt;accounts:customer.id</title>
+<path fill="none" stroke="black" d="M972,-1034C546.24,-1034 612.6,-483.97 194.78,-475.11"/>
+<polygon fill="black" stroke="black" points="194.54,-471.61 184.5,-475 194.46,-478.61 194.54,-471.61"/>
+</g>
+<!-- keyword_report -->
+
+<!-- keyword_report -->
+<!-- keyword_report -->
+<!-- keyword_report -->
+<g id="node26" class="node">
+<title>keyword_report</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1143,-2032 993,-2032 993,-1936 1143,-1936 1143,-2032"/>
+<polygon fill="none" stroke="black" points="996,-2007 996,-2029 1140,-2029 1140,-2007 996,-2007"/>
+<text text-anchor="start" x="1015.9" y="-2014.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">keyword_report  </text>
+<polygon fill="none" stroke="black" points="996,-1939 996,-2005 1140,-2005 1140,-1939 996,-1939"/>
+<text text-anchor="start" x="1000.55" y="-1987.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="1001" y="-1967.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- ad_group.id </text>
+<polygon fill="none" stroke="black" points="993,-1936 993,-2032 1143,-2032 1143,-1936 993,-1936"/><text text-anchor="start" x="1001" y="-1947.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+
+</g><g id="edge18" class="edge">
+<title>display_topics_performance_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M957,-592C431.99,-592 709.28,-1484.12 194.85,-1495.88"/>
+<polygon fill="black" stroke="black" points="194.46,-1492.39 184.5,-1496 194.54,-1499.39 194.46,-1492.39"/>
+</g><g id="edge15" class="edge">
+<title>user_location_report:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M998,-284C565.22,-284 619.8,-824.46 194.63,-832.9"/>
+<polygon fill="black" stroke="black" points="194.46,-829.4 184.5,-833 194.53,-836.4 194.46,-829.4"/>
+</g><g id="edge11" class="edge">
+<title>campaign_labels:label.resource_name-&gt;labels:label.resource_name</title>
+<path fill="none" stroke="black" d="M956,-1188C428.82,-1188 696.59,-2074.64 179.51,-2085.89"/>
+<polygon fill="black" stroke="black" points="179.46,-2082.39 169.5,-2086 179.54,-2089.39 179.46,-2082.39"/>
+</g>
+<!-- custom_ga_query -->
+
+<!-- keyword_report&#45;&gt;ad_groups -->
+
+<!-- keyword_report&#45;&gt;ad_groups -->
+
+<!-- keyword_report&#45;&gt;ad_groups -->
+
+<!-- keyword_report&#45;&gt;ad_groups -->
+
+<!-- keyword_report&#45;&gt;ad_groups -->
+<g id="edge32" class="edge">
+<title>keyword_report:ad_group.id-&gt;ad_groups:ad_group.id</title>
+<path fill="none" stroke="black" d="M998,-1972C582.47,-1972 603.04,-1503.64 194.54,-1496.09"/>
+<polygon fill="black" stroke="black" points="194.53,-1492.59 184.5,-1496 194.47,-1499.59 194.53,-1492.59"/>
+</g><g id="edge25" class="edge">
+<title>shopping_performance_report:campaign.id-&gt;campaigns:campaign.id</title>
+<path fill="none" stroke="black" d="M972,-1054C611.85,-1054 549.17,-837.08 194.54,-833.06"/>
+<polygon fill="black" stroke="black" points="194.52,-829.56 184.5,-833 194.48,-836.56 194.52,-829.56"/>
+</g>
+<!-- custom_ga_query -->
+
+<!-- custom_ga_query -->
+
+<!-- custom_ga_query -->
+
+<!-- custom_ga_query -->
+
+<!-- custom_ga_query -->
+<g id="node27" class="node">
+<title>custom_ga_query</title>
+<polygon fill="#f2f2f2" stroke="transparent" points="1143,-2790 993,-2790 993,-2714 1143,-2714 1143,-2790"/>
+<polygon fill="none" stroke="black" points="996,-2765 996,-2787 1140,-2787 1140,-2765 996,-2765"/>
+<text text-anchor="start" x="1011.61" y="-2772.4" font-family="Helvetica,Arial,sans-serif" font-weight="bold" font-size="14.00">custom_ga_query  </text>
+<polygon fill="none" stroke="black" points="996,-2717 996,-2763 1140,-2763 1140,-2717 996,-2717"/>
+<text text-anchor="start" x="1000.55" y="-2745.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00">- segments.date (cursor)</text>
+<text text-anchor="start" x="1001" y="-2725.4" font-family="Helvetica,Arial,sans-serif" font-size="14.00"> ... </text>
+<polygon fill="none" stroke="black" points="993,-2714 993,-2790 1143,-2790 1143,-2714 993,-2714"/>
+</g>
+
+
+
+
+
+</g>
+</svg>
