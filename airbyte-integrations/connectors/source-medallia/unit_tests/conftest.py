@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
 import pytest
-from source_medallia.source import MedalliaOauth2Authenticator
+from source_medallia.authenticator import MedalliaOauth2Authenticator
+
 
 @pytest.fixture()
 def url_base():
@@ -36,20 +36,21 @@ def oauth_config():
         }
     }
 
+
 @pytest.fixture()
 def config():
     """
     Credentials for oauth2.0 authorization
     """
 
-    auth =MedalliaOauth2Authenticator(
+    auth = MedalliaOauth2Authenticator(
         token_endpoint="http://exampe",
         client_secret="test_client_secret",
         client_id="test_client_id"
 
     )
 
-    initialization_params = {"authenticator": auth, "url_base":"http://query-endpoint"}
+    initialization_params = {"authenticator": auth, "url_base": "http://query-endpoint"}
 
     return initialization_params
 

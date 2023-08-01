@@ -1,19 +1,10 @@
-from unittest.mock import MagicMock
-
-import json
-
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from source_medallia.authenticator import MedalliaOauth2Authenticator
+from source_medallia.source import Feedback, Fields, initialize_authenticator
 
-from source_medallia.source import (
-    MedalliaStream,
-    Fields,
-    FieldId,
-    Feedback,
-    SourceMedallia,
-    initialize_authenticator
-)
 
 class TestAuthentication:
     def test_init_oauth2_authentication_init(self, oauth_config):
@@ -26,11 +17,11 @@ class TestAuthentication:
         except Exception as e:
             assert e.args[0] == "Config validation error. `auth_type` not specified."
 
+
 class TestGraphQlQueries:
     def test_fields_request_body_json(self, config):
-
         stream = Fields(**config)
-        query_json = stream.request_body_json(stream_state={},stream_slice={})
+        query_json = stream.request_body_json(stream_state={}, stream_slice={})
         query = """
                 query
                 {
@@ -68,12 +59,11 @@ class TestGraphQlQueries:
                 }
                 }
         """
-        assert [c for c in query_json['query']  if c.isalpha()] == [c for c in query if c.isalpha()]
-
+        assert [c for c in query_json['query'] if c.isalpha()] == [c for c in query if c.isalpha()]
 
     def test_feedback_request_body_json(self, config):
         stream = Feedback(**config)
-        query_json = stream.request_body_json(stream_state={},stream_slice={})
+        query_json = stream.request_body_json(stream_state={}, stream_slice={})
         query = """
                 query {
                   feedback(first: 250, orderBy: [{direction: ASC, fieldId: "a_initial_finish_timestamp"}], filter: {fieldIds: ["a_initial_finish_timestamp"], gt: "0"}) {

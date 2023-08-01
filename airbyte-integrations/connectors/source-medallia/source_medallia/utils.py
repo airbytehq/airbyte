@@ -17,9 +17,7 @@ logger = logging.getLogger("airbyte")
 
 def initialize_authenticator(config: Dict) -> AuthBase:
     return MedalliaOauth2Authenticator(
-        token_endpoint=config.get("token-endpoint"),
-        client_secret=config.get("client-secret"),
-        client_id=config.get("client-id")
+        token_endpoint=config.get("token-endpoint"), client_secret=config.get("client-secret"), client_id=config.get("client-id")
     )
 
 

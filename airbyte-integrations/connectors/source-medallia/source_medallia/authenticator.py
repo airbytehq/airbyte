@@ -16,10 +16,6 @@ class MedalliaOauth2Authenticator(Oauth2Authenticator):
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
         if not self.get_refresh_token():
-            return {
-                "grant_type": "client_credentials",
-                "client_id": self.get_client_id(),
-                "client_secret": self.get_client_secret()
-            }
+            return {"grant_type": "client_credentials", "client_id": self.get_client_id(), "client_secret": self.get_client_secret()}
         else:
             return super().build_refresh_request_body()

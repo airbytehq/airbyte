@@ -3,31 +3,26 @@
 #
 
 import json
-from typing import Dict, Generator, Optional, Mapping, Any, Iterable, List, MutableMapping
-import requests
-
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-)
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources import AbstractSource
-from sgqlc.operation import Operation
-
-from .utils import initialize_authenticator
 from abc import ABC
-from .authenticator import MedalliaOauth2Authenticator
-from . import medallia_schema
+from typing import Any, Iterable, List, Mapping, Optional
+
+import requests
 import sgqlc.operation
-from .utils import read_full_refresh
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+
+from . import medallia_schema
+from .utils import initialize_authenticator, read_full_refresh
 
 _schema = medallia_schema
 _schema_root = _schema.medallia_schema
 
-METADATA_PREFIX_COLUMN = tuple(['a_', 'u_', 'e_', 'k_'])
-QUESTION_PREFIX_COLUMN = tuple(['q_'])
+METADATA_PREFIX_COLUMN = tuple(["a_", "u_", "e_", "k_"])
+QUESTION_PREFIX_COLUMN = tuple(["q_"])
+
 
 class MedalliaStream(HttpStream, ABC):
     limit = 100
@@ -39,13 +34,14 @@ class MedalliaStream(HttpStream, ABC):
     def __init__(self, url_base: str, fields: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api_endpoint = url_base
+
         self.fields = fields
 
         """Request Field data to use in subsequent queries"""
         if fields:
 
-            self.metadata_columns = fields['metadata_columns']
-            self.question_columns = fields['question_columns']
+            self.metadata_columns = fields["metadata_columns"]
+            self.question_columns = fields["question_columns"]
 
     @property
     def url_base(self) -> str:
@@ -55,12 +51,12 @@ class MedalliaStream(HttpStream, ABC):
         if response.status_code == 401:
             try:
                 self.header = self.auth.get_auth_header()
-            except:
-                return False
+            except Exception as e:
+                return False, e
         return response.status_code in [401, 408] or super().should_retry(response)
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return None
 
@@ -80,18 +76,18 @@ class MedalliaStream(HttpStream, ABC):
 
 
 class Fields(MedalliaStream):
-    entity = 'fields'
+    entity = "fields"
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            for r in record['data'][self.entity]['nodes']:
+            for r in record["data"][self.entity]["nodes"]:
                 yield r
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         op = sgqlc.operation.Operation(_schema_root.query_type)
         fields = op.fields(first=self.limit, after=next_page_token)
@@ -108,22 +104,22 @@ class Fields(MedalliaStream):
         fields.page_info.has_next_page()
         fields.page_info.end_cursor()
 
-        return {'query': str(op)}
+        return {"query": str(op)}
 
 
 class FieldId(MedalliaStream):
-    entity = 'fields'
+    entity = "fields"
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            for r in record['data'][self.entity]['nodes']:
+            for r in record["data"][self.entity]["nodes"]:
                 yield r
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         op = sgqlc.operation.Operation(_schema_root.query_type)
         fields = op.fields(first=10000, after=None)
@@ -133,16 +129,16 @@ class FieldId(MedalliaStream):
         fields.page_info.has_next_page()
         fields.page_info.end_cursor()
 
-        return {'query': str(op)}
+        return {"query": str(op)}
 
 
 class Feedback(MedalliaStream, IncrementalMixin):
     limit = 250
-    entity = 'feedback'
+    entity = "feedback"
     state_checkpoint_interval = 5000
     primary_key = "id"
 
-    cursor_field = 'a_initial_finish_timestamp'
+    cursor_field = "a_initial_finish_timestamp"
     _cursor_value = 0
 
     @property
@@ -157,18 +153,18 @@ class Feedback(MedalliaStream, IncrementalMixin):
 
         for record in super().read_records(*args, **kwargs):
 
-            for r in record['data'][self.entity]['nodes']:
-                for x in r['metaData']:
-                    if x['field']['id'] == self.cursor_field:
-                        r[self.cursor_field] = x['values'][0]
-                        self._cursor_value = max(int(self._cursor_value), int(x['values'][0]))
+            for r in record["data"][self.entity]["nodes"]:
+                for x in r["metaData"]:
+                    if x["field"]["id"] == self.cursor_field:
+                        r[self.cursor_field] = x["values"][0]
+                        self._cursor_value = max(int(self._cursor_value), int(x["values"][0]))
                 yield r
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         op = sgqlc.operation.Operation(_schema_root.query_type)
 
@@ -182,31 +178,27 @@ class Feedback(MedalliaStream, IncrementalMixin):
         feedback = op.feedback(first=self.limit, order_by=[var], filter=filter)
         feedback.nodes.id()
 
-        extend_field_data = sgqlc.operation.Fragment(_schema_root.FieldData, 'extendFieldData')
+        extend_field_data = sgqlc.operation.Fragment(_schema_root.FieldData, "extendFieldData")
 
         extend_field_data.__as__(_schema_root.EnumFieldData).options()
         extend_field_data.__as__(_schema_root.StringFieldData).values()
 
-        extend_field_data.__as__(_schema_root.CommentFieldData).rule_topic_taggings_page(__alias__='topics').nodes()
-        extend_field_data.__as__(_schema_root.CommentFieldData).data_topic_taggings_page(__alias__='themes').nodes()
-        extend_field_data.__as__(_schema_root.CommentFieldData).sentiment_taggings_page(__alias__='sentiment').nodes()
+        extend_field_data.__as__(_schema_root.CommentFieldData).rule_topic_taggings_page(__alias__="topics").nodes()
+        extend_field_data.__as__(_schema_root.CommentFieldData).data_topic_taggings_page(__alias__="themes").nodes()
+        extend_field_data.__as__(_schema_root.CommentFieldData).sentiment_taggings_page(__alias__="sentiment").nodes()
 
         extend_field_data.__as__(_schema_root.IntFieldData).values()
         extend_field_data.__as__(_schema_root.DateFieldData).values()
         extend_field_data.__as__(_schema_root.UnitFieldData).units().id()
 
-        meta_data = feedback.nodes.field_data_list(__alias__='metaData',
-                                                   filter_unanswered=True,
-                                                   field_ids=self.metadata_columns)
+        meta_data = feedback.nodes.field_data_list(__alias__="metaData", filter_unanswered=True, field_ids=self.metadata_columns)
 
         meta_data.field().id()
         meta_data.field().name()
 
         meta_data.__fragment__(extend_field_data)
 
-        question_data = feedback.nodes.field_data_list(__alias__='questionData',
-                                                       filter_unanswered=True,
-                                                       field_ids=self.question_columns)
+        question_data = feedback.nodes.field_data_list(__alias__="questionData", filter_unanswered=True, field_ids=self.question_columns)
 
         question_data.field().id()
         question_data.field().name()
@@ -217,11 +209,10 @@ class Feedback(MedalliaStream, IncrementalMixin):
         feedback.page_info.has_next_page()
         feedback.page_info.end_cursor()
 
-        return {'query': str(op)}
+        return {"query": str(op)}
 
 
 class SourceMedallia(AbstractSource):
-
     def get_fields(self, config: json):
 
         initialization_params = {"authenticator": initialize_authenticator(config), "url_base": config.get("query-endpoint")}
@@ -238,7 +229,7 @@ class SourceMedallia(AbstractSource):
         metadata_columns = list(filter(lambda x: x.startswith(METADATA_PREFIX_COLUMN), nodes))
         question_columns = list(filter(lambda x: x.startswith(QUESTION_PREFIX_COLUMN), nodes))
 
-        fields = {'metadata_columns': metadata_columns, 'question_columns': question_columns}
+        fields = {"metadata_columns": metadata_columns, "question_columns": question_columns}
 
         return fields
 
@@ -248,7 +239,7 @@ class SourceMedallia(AbstractSource):
         """
 
         try:
-            fields = self.get_fields(config)
+            self.get_fields(config)
             return True, None
 
         except Exception as e:
@@ -261,10 +252,10 @@ class SourceMedallia(AbstractSource):
 
         fields = self.get_fields(config)
 
-        initialization_params = {"authenticator": initialize_authenticator(config), "url_base": config.get("query-endpoint"),
-                                 "fields": fields}
+        initialization_params = {
+            "authenticator": initialize_authenticator(config),
+            "url_base": config.get("query-endpoint"),
+            "fields": fields,
+        }
 
-        return [
-            Fields(**initialization_params),
-            Feedback(**initialization_params)
-        ]
+        return [Fields(**initialization_params), Feedback(**initialization_params)]
