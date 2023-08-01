@@ -1,5 +1,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static java.util.stream.Collectors.joining;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.DatasetInfo;
@@ -7,6 +9,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
@@ -70,8 +73,8 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
     String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
-                "final_table_id", streamId.finalTableId(suffix, BigQuerySqlGenerator.QUOTE)),
-                "cdc_deleted_at", cdcDeletedAt).replace(
+                "final_table_id", streamId.finalTableId(suffix, BigQuerySqlGenerator.QUOTE),
+                "cdc_deleted_at", cdcDeletedAt)).replace(
                 """
                     CREATE TABLE ${final_table_id} (
                       _airbyte_raw_id STRING NOT NULL,
@@ -95,7 +98,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       `unknown` JSON
                     )
                     PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                    CLUSTER BY id, _airbyte_extracted_at;
+                    CLUSTER BY id1, id2, _airbyte_extracted_at;
                     """))
         .build());
   }
@@ -107,13 +110,42 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
 
   @Override
   protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws InterruptedException {
+    String recordsText = records.stream()
+        // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
+        .map(record -> JavaBaseConstants.V2_COLUMN_NAMES.stream()
+            .map(record::get)
+            .map(r -> {
+              if (r == null) {
+                return "NULL";
+              }
+              String stringContents;
+              if (r.isTextual()) {
+                stringContents = r.asText();
+              } else {
+                stringContents = r.toString();
+              }
+              return '"' + stringContents
+                  // Serialized json might contain backslashes and double quotes. Escape them.
+                  .replace("\\", "\\\\")
+                  .replace("\"", "\\\"") + '"';
+            })
+            .collect(joining(",")))
+        .map(row -> "(" + row + ")")
+        .collect(joining(","));
+
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
                 "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
-                "records", records.stream().map(Jsons::serialize).reduce((a, b) -> a + "," + b).orElse(""))).replace(
+                "records", recordsText)).replace(
+                    // Note the parse_json call, and that _airbyte_data is declared as a string.
+                // This is needed because you can't insert a string literal into a JSON column
+                // so we build a struct literal with a string field, and then parse the field when inserting to the table.
                 """
-                    INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_data, _airbyte_extracted_at, _airbyte_loaded_at)
-                    VALUES ${records};
+                    insert into ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
+                    select _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, parse_json(_airbyte_data) from unnest([
+                      STRUCT<_airbyte_raw_id string, _airbyte_extracted_at timestamp, _airbyte_loaded_at timestamp, _airbyte_data string>
+                      ${records}
+                    ])
                     """))
         .build());
   }
