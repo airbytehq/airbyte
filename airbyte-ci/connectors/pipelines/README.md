@@ -378,6 +378,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                |
 | 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI on local `airbyte-ci` execution                                |
 | 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                    |
 | 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
