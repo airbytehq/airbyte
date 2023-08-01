@@ -29,7 +29,7 @@ class InsightConfig(BaseModel):
 
     name: str = Field(
         title="Name",
-        description="The name value of insight",
+        description="The desired name of the custom insight. This will be used as the Airbyte stream name.",
         order=0
     )
 
@@ -37,21 +37,21 @@ class InsightConfig(BaseModel):
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
-        description="A list of chosen fields for fields parameter",
+        description="Choose from the dropdown menu to add fields to your custom insight. Each option you select from the dropdown will be added to your custom insight field list.",
         default=[],
         order=1
     )
 
     breakdowns: Optional[List[ValidBreakdowns]] = Field(
         title="Breakdowns",
-        description="A list of chosen breakdowns for breakdowns",
+        description="Choose from the dropdown menu to add breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight breakdown list.",
         default=[],
         order=2
     )
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
-        description="A list of chosen action_breakdowns for action_breakdowns",
+        description="Choose from the dropdown menu to add action breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight action breakdown list.",
         default=[],
         order=3
     )
@@ -59,8 +59,8 @@ class InsightConfig(BaseModel):
     action_report_time: str = Field(
         title="Action Report Time",
         description=(
-            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st "
-            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "This value determines the timing used to report action statistics. If a user sees an ad on Jan 1st "
+            "but converts on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
             "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
         ),
         default="mixed",
