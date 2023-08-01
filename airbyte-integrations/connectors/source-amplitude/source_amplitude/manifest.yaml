@@ -87,6 +87,11 @@ definitions:
         extractor:
           type: CustomRecordExtractor
           class_name: source_amplitude.components.AverageSessionLengthRecordExtractor
+    incremental_sync:
+      $ref: "#/definitions/datetime_incremental_sync"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
+        - "%Y-%m-%d"
     $parameters:
       name: "average_session_length"
       primary_key: "date"

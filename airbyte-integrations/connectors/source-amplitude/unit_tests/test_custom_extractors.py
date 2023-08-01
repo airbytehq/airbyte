@@ -39,7 +39,7 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
                 AverageSessionLengthRecordExtractor,
                 {
                     "xValues": ["2019-05-23", "2019-05-24"],
-                    "series": [[2, 6]],
+                    "series": [[{"setId": "", "value": 2.0}, {"setId": "", "value": 6.0}]],
                     "seriesCollapsed": [[0]],
                     "seriesLabels": [0],
                     "seriesMeta": [{"segmentIndex": 0}],

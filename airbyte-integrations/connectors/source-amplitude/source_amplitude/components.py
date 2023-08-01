@@ -34,7 +34,7 @@ class AverageSessionLengthRecordExtractor(RecordExtractor):
             series = response_data.get("series", [])
             if len(series) > 0:
                 series = series[0]  # get the nested list
-                return [{"date": date, "length": length} for date, length in zip(response_data["xValues"], series)]
+                return [{"date": date, "length": length["value"]} for date, length in zip(response_data["xValues"], series)]
         return []
 
 
