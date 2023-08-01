@@ -182,7 +182,7 @@ class PipelineContext:
         if self.is_local or not self.is_dagger_cloud:
             return None
 
-        return f"https://alpha.dagger.coud/changeByPipelines/dagger.io/git.ref:{self.git_revision}"
+        return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
 
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
