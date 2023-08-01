@@ -5,17 +5,11 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCommandException;
-import com.mongodb.MongoCredential;
-import com.mongodb.MongoDriverInformation;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
-import com.mongodb.ReadPreference;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
@@ -31,10 +25,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoDbSource extends BaseConnector implements Source, AutoCloseable {
 
@@ -72,8 +65,10 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
+      throws Exception {
     return null;
   }
 
@@ -92,16 +87,16 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
      */
     try {
       final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
-                      .append("authorizedCollections", true)
-                      .append("nameOnly", true))
-              .append("filter", "{ 'type': 'collection' }");
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
+          .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
-              .get("cursor").asDocument()
-              .getArray("firstBatch")
-              .stream()
-              .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-              .filter(this::isSupportedCollection)
-              .collect(Collectors.toSet());
+          .get("cursor").asDocument()
+          .getArray("firstBatch")
+          .stream()
+          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+          .filter(this::isSupportedCollection)
+          .collect(Collectors.toSet());
     } catch (final MongoSecurityException e) {
       final MongoCommandException exception = (MongoCommandException) e.getCause();
       throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
@@ -123,37 +118,36 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   }
 
   private List<Field> getFields(final MongoCollection collection) {
-    final Map<String,Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
-            "as", "each",
-            "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
+    final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
+        "as", "each",
+        "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
 
-    final Document mapFunction =  new Document("$map", fieldsMap);
+    final Document mapFunction = new Document("$map", fieldsMap);
     final Document arrayToObjectAggregation = new Document("$arrayToObject", mapFunction);
     final Document projection = new Document("$project", new Document("fields", arrayToObjectAggregation));
 
-    final Map<String,Object> groupMap = new HashMap<>();
+    final Map<String, Object> groupMap = new HashMap<>();
     groupMap.put("_id", null);
     groupMap.put("fields", Map.of("$addToSet", "$fields"));
 
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-            projection,
-            new Document("$unwind", "$fields"),
-            new Document("$group", groupMap)
-    ));
+        projection,
+        new Document("$unwind", "$fields"),
+        new Document("$group", groupMap)));
 
     final MongoCursor<Document> cursor = output.cursor();
     if (cursor.hasNext()) {
-      final Map<String,String> fields = ((List<Map<String,String>>) output.cursor().next().get("fields")).get(0);
+      final Map<String, String> fields = ((List<Map<String, String>>) output.cursor().next().get("fields")).get(0);
       return fields.entrySet().stream()
-              .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
-              .collect(Collectors.toList());
+          .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
+          .collect(Collectors.toList());
     } else {
       return List.of();
     }
   }
 
   private JsonSchemaType convertToSchemaType(final String type) {
-    return switch(type) {
+    return switch (type) {
       case "boolean" -> JsonSchemaType.BOOLEAN;
       case "int", "long", "double", "decimal" -> JsonSchemaType.NUMBER;
       case "array" -> JsonSchemaType.ARRAY;
@@ -165,4 +159,5 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   private boolean isSupportedCollection(final String collectionName) {
     return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
   }
+
 }
