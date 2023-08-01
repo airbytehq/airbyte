@@ -82,7 +82,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 8. Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 13. Click **Set up source** and wait for the tests to complete.
 
@@ -96,12 +96,6 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
-
-:::caution
-When using the Conversion Window feature, please be aware that it may result in duplicates during Incremental Sync. Due to the possibility of conversions happening within the specified window, the connector will extend the range of the sync, which could potentially result in duplicated data.
-
-To mitigate this, we recommend using the Incremental Sync - Deduped History sync mode. This mode ensures that the connector remembers the records it has previously synced and excludes duplicates during subsequent syncs. However, please be aware that data may still be resent multiple times within the specified window.
-:::
 
 ## Supported Streams
 
@@ -143,8 +137,6 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
-<!-- /env:oss -->
-
 ## Custom Query: Understanding Google Ads Query Language
 
 Additional streams for Google Ads can be dynamically created using custom queries.
@@ -171,7 +163,16 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
 
-<!-- env:oss -->
+## Note on Conversion Windows
+
+In digital advertising, a 'conversion' typically refers to a user undertaking a desired action after viewing or interacting with an ad. This could be anything from clicking through to the advertiser's website, signing up for a newsletter, making a purchase, and so on. The conversion window is the period of time after a user sees or clicks on an ad during which their actions can still be credited to that ad.
+
+For example, imagine an online shoe store runs an ad and sets a conversion window of 30 days. If you click on that ad today, any purchases you make on the shoe store's site within the next 30 days will be considered conversions resulting from that ad.
+The length of the conversion window can vary depending on the goals of the advertiser and the nature of the product or service. Some businesses might set a shorter conversion window if they're promoting a limited-time offer, while others might set a longer window if they're advertising a product that consumers typically take a while to think about before buying.
+
+In essence, the conversion window is a tool for measuring the effectiveness of an advertising campaign. By tracking the actions users take after viewing or interacting with an ad, businesses can gain insight into how well their ads are working and adjust their strategies accordingly.
+
+In the case of configuring the Google Ads source connector, each time a sync is run the connector will retrieve all conversions that were active within the specified conversion window. For example, if you set a conversion window of 30 days, each time a sync is run, the connector will pull all conversions that were active within the past 30 days. Due to this mechanism, it may seem like the same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data record accurately reflects the number of conversions for that particular resource at the time of extracting the data from the Google Ads API.
 
 ## Performance considerations
 
@@ -262,4 +263,3 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | `0.1.2`  | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                      |
 | `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fix `Bugfix: Correctly declare required parameters`                                                                                  |
 
-<!-- /env:oss -->
