@@ -2,21 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock,patch
 
 from source_avni.source import SourceAvni
 
 
-def test_check_connection(mocker):
 
-    mocker.patch('source_avni.source.SourceAvni.get_token').return_value = "Token"
-    mocker.patch('source_avni.source.requests.get').return_value.status_code = 200
-    source = SourceAvni()
-    logger_mock = MagicMock()
-    config_mock = {"username": "test_user", "password": "test_password","start_date": "2000-06-27T04:18:36.914Z"}
-    result, error = source.check_connection(logger_mock, config_mock)
-    assert result is True
-
+def test_check_connection_success(mocker):
+    with patch('source_avni.source.SourceAvni.get_client_id') as get_client_id_mock, \
+         patch('source_avni.source.SourceAvni.get_token') as get_token_mock, \
+         patch('source_avni.source.Subjects.read_records') as read_records_mock:
+        get_client_id_mock.return_value = "ClientID"
+        get_token_mock.return_value = "Token"
+        read_records_mock.return_value = iter(["record1", "record2"])
+        source = SourceAvni()
+        config_mock = {"username": "test_user", "password": "test_password", "start_date": "2000-06-27T04:18:36.914Z"}
+        result,msg = source.check_connection(None, config_mock)
+        assert result is True
 
 def test_streams(mocker):
 

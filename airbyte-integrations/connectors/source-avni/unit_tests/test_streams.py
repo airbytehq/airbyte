@@ -21,7 +21,7 @@ def test_request_params(mocker,patch_base_class):
 
     stream = AvniStream(start_date="",auth_token="")
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page":5}}
-    stream.state = {"Last modified at":"AnyDate"}
+    stream.state = {"last_modified_at":"AnyDate"}
     expected_params = {"lastModifiedDateTime":"AnyDate","page":5}
     assert stream.request_params(**inputs) == expected_params
 

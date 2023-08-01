@@ -73,6 +73,10 @@
       "type": ["null", "object"],
       "additionalProperties": true
     },
+    "last_modified_at":{
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
     "audit": {
       "type": ["null", "object"],
       "additionalProperties": true,

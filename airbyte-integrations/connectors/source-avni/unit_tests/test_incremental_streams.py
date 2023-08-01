@@ -19,16 +19,16 @@ def patch_incremental_base_class(mocker):
 def test_cursor_field(patch_incremental_base_class):
 
     stream = IncrementalAvniStream(start_date="",auth_token="")
-    expected_cursor_field = ["audit","Last modified at"]
+    expected_cursor_field = "last_modified_at"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_update_state(patch_incremental_base_class):
 
     stream = IncrementalAvniStream(start_date="",auth_token="")
-    stream.state = {"Last modified at":"OldDate"}
-    stream.last_record = {"audit": {"Last modified at":"NewDate"}}
-    expected_state = {"Last modified at":"NewDate"}
+    stream.state = {"last_modified_at":"2000-06-27T04:18:36.914Z"}
+    stream.last_record = {"last_modified_at":"2001-06-27T04:18:36.914Z"}
+    expected_state = {"last_modified_at":"2001-06-27T04:18:36.914Z"}
     stream.update_state()
     assert stream.state == expected_state
 

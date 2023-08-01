@@ -4,7 +4,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
+from airbyte_cdk.sources.streams.core import StreamData
 import boto3
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -31,7 +31,7 @@ class AvniStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        params = {"lastModifiedDateTime": self.state["Last modified at"]}
+        params = {"lastModifiedDateTime": self.state["last_modified_at"]}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -50,12 +50,21 @@ class AvniStream(HttpStream, ABC):
 
         yield from data
 
+    
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None,stream_slice: Mapping[str, Any] = None,stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+    
+        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        for record in records:
+            last_modified_at = record["audit"]["Last modified at"]
+            record["last_modified_at"] = last_modified_at
+            yield record
+
     def update_state(self) -> None:
 
         if self.last_record:
-            updated_last_date = self.last_record["audit"]["Last modified at"]
-            if updated_last_date>self.state[self.cursor_field[1]]:
-                self.state = {self.cursor_field[1]: updated_last_date}
+            updated_last_date = self.last_record["last_modified_at"]
+            if updated_last_date>self.state["last_modified_at"]:
+                self.state = {self.cursor_field: updated_last_date}
         self.last_record = None
 
         return None
@@ -81,20 +90,20 @@ class IncrementalAvniStream(AvniStream, IncrementalMixin, ABC):
     state_checkpoint_interval = None
 
     @property
-    def cursor_field(self) -> List[str]:
-        return ["audit", "Last modified at"]
+    def cursor_field(self) -> str:
+        return "last_modified_at"
 
     @property
     def state(self) -> Mapping[str, Any]:
 
         if self.cursor_value:
-            return {self.cursor_field[1]: self.cursor_value}
+            return {self.cursor_field: self.cursor_value}
         else:
-            return {self.cursor_field[1]: self.start_date}
+            return {self.cursor_field: self.start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self.cursor_value = value[self.cursor_field[1]]
+        self.cursor_value = value[self.cursor_field]
         self._state = value
 
 
@@ -154,7 +163,12 @@ class SourceAvni(AbstractSource):
         return client["cognito"]["clientId"]
 
     def get_token(self, username: str, password: str, app_client_id: str) -> str:
-
+        
+        """
+        Avni Api Authentication : https://avni.readme.io/docs/api-guide#authentication
+        AWS Cognito for authentication : https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cognito-idp/client/initiate_auth.html
+        """
+        
         client = boto3.client("cognito-idp", region_name="ap-south-1")
         response = client.initiate_auth(
             ClientId=app_client_id, AuthFlow="USER_PASSWORD_AUTH", AuthParameters={"USERNAME": username, "PASSWORD": password}
@@ -174,7 +188,7 @@ class SourceAvni(AbstractSource):
         try:
             auth_token = self.get_token(username, password, client_id)
             stream_kwargs = {"auth_token": auth_token, "start_date": config["start_date"]}
-            stream = Subjects(**stream_kwargs).read_records(SyncMode.full_refresh)
+            next(Subjects(**stream_kwargs).read_records(SyncMode.full_refresh))
             return True, None
         
         except Exception as error:
