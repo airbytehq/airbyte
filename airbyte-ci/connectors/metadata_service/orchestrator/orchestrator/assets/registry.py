@@ -120,13 +120,13 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
-def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
+def latest_cloud_registry(_context: OpExecutionContext, latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
-def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
+def latest_oss_registry(_context: OpExecutionContext, latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
 
 

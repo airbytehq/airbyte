@@ -2,9 +2,10 @@ import os
 import sentry_sdk
 import functools
 
-from dagster import OpExecutionContext, SensorEvaluationContext, get_dagster_logger
+from dagster import OpExecutionContext, SensorEvaluationContext, AssetExecutionContext, get_dagster_logger
 
 sentry_logger = get_dagster_logger("sentry")
+
 
 def setup_dagster_sentry():
     """
@@ -51,6 +52,35 @@ def setup_dagster_sentry():
         )
 
 
+def _is_context(context):
+    """
+    Check if the given object is a valid context object.
+    """
+    return (
+        isinstance(context, OpExecutionContext)
+        or isinstance(context, SensorEvaluationContext)
+        or isinstance(context, AssetExecutionContext)
+    )
+
+
+def _get_context_from_args_kwargs(args, kwargs):
+    """
+    Given args and kwargs from a function call, return the context object if it exists.
+    """
+    # if the first arg is a context object, return it
+    if len(args) > 0 and _is_context(args[0]):
+        return args[0]
+
+    # if the kwargs contain a context object, return it
+    if "context" in kwargs and _is_context(kwargs["context"]):
+        return kwargs["context"]
+
+    # otherwise raise an error
+    raise Exception(
+        f"No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument."
+    )
+
+
 def _log_asset_or_op_context(context: OpExecutionContext):
     """
     Capture Dagster OP context for Sentry Error handling
@@ -90,6 +120,7 @@ def _log_sensor_context(context: SensorEvaluationContext):
     sentry_sdk.set_tag("sensor_name", context._sensor_name)
     sentry_sdk.set_tag("run_id", context.cursor)
 
+
 def _with_sentry_op_asset_transaction(context: OpExecutionContext):
     """
     Start or continue a Sentry transaction for the Dagster Op/Asset
@@ -110,27 +141,33 @@ def _with_sentry_op_asset_transaction(context: OpExecutionContext):
             name=job_name,
         )
 
+
 # DECORATORS
+
 
 def capture_asset_op_context(func):
     """
     Capture Dagster OP context for Sentry Error handling
     """
+
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
-        context = kwargs["context"]
+        context = _get_context_from_args_kwargs(args, kwargs)
         _log_asset_or_op_context(context)
         return func(*args, **kwargs)
 
     return wrapped_fn
 
+
 def capture_sensor_context(func):
     """
     Capture Dagster Sensor context for Sentry Error handling
     """
+
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
-        _log_sensor_context(kwargs["context"])
+        context = _get_context_from_args_kwargs(args, kwargs)
+        _log_sensor_context(context)
         return func(*args, **kwargs)
 
     return wrapped_fn
@@ -168,24 +205,9 @@ def start_sentry_transaction(func):
     """
 
     def wrapped_fn(*args, **kwargs):
-        context = kwargs["context"]
+        context = _get_context_from_args_kwargs(args, kwargs)
         with _with_sentry_op_asset_transaction(context):
             return func(*args, **kwargs)
-
-    return wrapped_fn
-
-
-def ensure_context_arg(func):
-    """
-    Ensure that the Dagster Op/Asset has a context as the first argument.
-    """
-    @functools.wraps(func)
-    def wrapped_fn(*args, **kwargs):
-        if len(args) == 0:
-            raise Exception(
-                f"No context provided to Sentry Transaction for {func.__name__}. When using @instrument, ensure that the asset/op has a context as the first argument."
-            )
-        return func(*args, **kwargs)
 
     return wrapped_fn
 
@@ -205,7 +227,6 @@ def instrument_asset_op(func):
     """
 
     @functools.wraps(func)
-    @ensure_context_arg
     @start_sentry_transaction
     @capture_asset_op_context
     @capture_exceptions
@@ -213,6 +234,7 @@ def instrument_asset_op(func):
         return func(*args, **kwargs)
 
     return wrapped_fn
+
 
 def instrument_sensor(func):
     """
@@ -226,7 +248,6 @@ def instrument_sensor(func):
     before re-throwing them for Dagster.
 
     """
-
 
     @functools.wraps(func)
     @capture_sensor_context
