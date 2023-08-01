@@ -81,46 +81,6 @@ def _get_context_from_args_kwargs(args, kwargs):
     )
 
 
-def _log_asset_or_op_context(context: OpExecutionContext):
-    """
-    Capture Dagster OP context for Sentry Error handling
-    """
-    sentry_sdk.add_breadcrumb(
-        category="dagster",
-        message=f"{context.job_name} - {context.op_def.name}",
-        level="info",
-        data={
-            "run_config": context.run_config,
-            "job_name": context.job_name,
-            "op_name": context.op_def.name,
-            "run_id": context.run_id,
-            "retry_number": context.retry_number,
-        },
-    )
-
-    sentry_sdk.set_tag("job_name", context.job_name)
-    sentry_sdk.set_tag("op_name", context.op_def.name)
-    sentry_sdk.set_tag("run_id", context.run_id)
-
-
-def _log_sensor_context(context: SensorEvaluationContext):
-    """
-    Capture Dagster Sensor context for Sentry Error handling
-    """
-    sentry_sdk.add_breadcrumb(
-        category="dagster",
-        message=f"{context._sensor_name}",
-        level="info",
-        data={
-            "sensor_name": context._sensor_name,
-            "run_id": context.cursor,
-        },
-    )
-
-    sentry_sdk.set_tag("sensor_name", context._sensor_name)
-    sentry_sdk.set_tag("run_id", context.cursor)
-
-
 def _with_sentry_op_asset_transaction(context: OpExecutionContext):
     """
     Start or continue a Sentry transaction for the Dagster Op/Asset
@@ -130,7 +90,7 @@ def _with_sentry_op_asset_transaction(context: OpExecutionContext):
 
     sentry_logger.info(f"Initializing Sentry Transaction for Dagster Op/Asset {job_name} - {op_name}")
     transaction = sentry_sdk.Hub.current.scope.transaction
-
+    sentry_logger.info(f"Current Sentry Transaction: {transaction}")
     if transaction:
         return transaction.start_child(
             op=op_name,
@@ -153,8 +113,24 @@ def capture_asset_op_context(func):
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)
-        _log_asset_or_op_context(context)
-        return func(*args, **kwargs)
+        with sentry_sdk.configure_scope() as scope:
+            sentry_sdk.add_breadcrumb(
+                category="dagster",
+                message=f"{context.job_name} - {context.op_def.name}",
+                level="info",
+                data={
+                    "run_config": context.run_config,
+                    "job_name": context.job_name,
+                    "op_name": context.op_def.name,
+                    "run_id": context.run_id,
+                    "retry_number": context.retry_number,
+                },
+            )
+            scope.set_transaction_name(context.job_name)
+            scope.set_tag("job_name", context.job_name)
+            scope.set_tag("op_name", context.op_def.name)
+            scope.set_tag("run_id", context.run_id)
+            return func(*args, **kwargs)
 
     return wrapped_fn
 
@@ -167,8 +143,21 @@ def capture_sensor_context(func):
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)
-        _log_sensor_context(context)
-        return func(*args, **kwargs)
+        with sentry_sdk.configure_scope() as scope:
+            sentry_sdk.add_breadcrumb(
+                category="dagster",
+                message=f"{context._sensor_name}",
+                level="info",
+                data={
+                    "sensor_name": context._sensor_name,
+                    "run_id": context.cursor,
+                },
+            )
+
+            scope.set_transaction_name(context._sensor_name)
+            scope.set_tag("sensor_name", context._sensor_name)
+            scope.set_tag("run_id", context.cursor)
+            return func(*args, **kwargs)
 
     return wrapped_fn
 
