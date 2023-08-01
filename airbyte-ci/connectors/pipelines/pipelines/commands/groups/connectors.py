@@ -55,6 +55,38 @@ def validate_selected_connectors_exist(selected_connectors: Set[Connector], all_
     return selected_connectors
 
 
+def get_selected_connectors(
+    selected_names: Tuple[str], selected_release_stages: Tuple[str], selected_languages: Tuple[str]
+) -> Set[Connector]:
+    """Get the connectors that match the selected criteria.
+
+    Args:
+        selected_names (Tuple[str]): Selected connector names.
+        selected_release_stages (Tuple[str]): Selected connector release stages.
+        selected_languages (Tuple[str]): Selected connector languages.
+
+    Returns:
+        Set[Connector]: The connectors that match the selected criteria.
+    """
+    all_connectors = get_all_connectors_in_repo()
+    selected_connectors_by_name = validate_selected_connectors_exist(
+        {Connector(technical_name=name) for name in selected_names}, all_connectors
+    )
+    selected_connectors_by_release_stage = {connector for connector in all_connectors if connector.release_stage in selected_release_stages}
+    selected_connectors_by_language = {connector for connector in all_connectors if connector.language in selected_languages}
+    return set.intersection(
+        *(
+            connector_set
+            for connector_set in [
+                selected_connectors_by_name,
+                selected_connectors_by_release_stage,
+                selected_connectors_by_language,
+            ]
+            if connector_set
+        )
+    )
+
+
 # COMMANDS
 
 
@@ -95,33 +127,11 @@ def connectors(
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["selected_connectors_names"] = set(names) if names else set()
-    ctx.obj["selected_connectors_languages"] = set(languages) if languages else set()
-    ctx.obj["selected_connectors_release_stages"] = set(release_stages) if release_stages else set()
     ctx.obj["select_modified_connectors"] = modified
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["all_connectors"] = get_all_connectors_in_repo()
-    ctx.obj["selected_connectors_by_names"] = validate_selected_connectors_exist(
-        {Connector(technical_name=name) for name in names}, ctx.obj["all_connectors"]
-    )
-    ctx.obj["selected_connectors_by_languages"] = {connector for connector in ctx.obj["all_connectors"] if connector.language in languages}
-    ctx.obj["selected_connectors_by_release_stages"] = {
-        connector for connector in ctx.obj["all_connectors"] if connector.release_stage in release_stages
-    }
-
-    ctx.obj["selected_connectors"] = set.intersection(
-        *(
-            connector_set
-            for connector_set in [
-                ctx.obj["selected_connectors_by_names"],
-                ctx.obj["selected_connectors_by_languages"],
-                ctx.obj["selected_connectors_by_release_stages"],
-            ]
-            if connector_set
-        )
-    )
-
+    ctx.obj["selected_connectors"] = get_selected_connectors(names, release_stages, languages)
     ctx.obj["selected_connectors_and_files"] = {
         connector: get_connector_modified_files(connector, ctx.obj["modified_files"]) for connector in ctx.obj["selected_connectors"]
     }
