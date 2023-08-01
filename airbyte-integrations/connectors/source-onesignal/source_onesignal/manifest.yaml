@@ -61,19 +61,6 @@ definitions:
 
   devices_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
-    # incremental_sync:
-    #   type: DatetimeBasedCursor
-    #   cursor_field: "created_at"
-    #   datetime_format: "%s"
-    #   cursor_granularity: "PT0.000001S"
-    #   lookback_window: "P31D"
-    #   start_datetime:
-    #     datetime: "{{ config['start_date'] }}"
-    #     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    #   end_datetime:
-    #     datetime: "{{ today_utc() }}"
-    #     datetime_format: "%Y-%m-%d"
-    #   step: "PT1S"
     name: "devices"
     primary_key: "id"
     $parameters:
