@@ -35,7 +35,7 @@ class InsightConfig(BaseModel):
 
     level: str = Field(
         title="Level", 
-        description="The selected granularity level for data retrieval of the custom insight from the API.", 
+        description="The desired granularity level for data retrieval of the custom insight from the API.", 
         default="ad",
         enum=["ad", "adset", "campaign", "account"],
         order=1
