@@ -61,3 +61,4 @@ async def run_test(airbyte_ci_package_path: str):
             logger.error("Tests failed")
             logger.error(e.stdout)
             logger.error(e.stderr)
+            sys.exit(1)
