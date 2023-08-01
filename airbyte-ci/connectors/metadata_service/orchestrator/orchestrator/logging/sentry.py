@@ -118,7 +118,7 @@ def capture_asset_op_context(func):
             scope.set_tag("job_name", context.job_name)
             scope.set_tag("op_name", context.op_def.name)
             scope.set_tag("run_id", context.run_id)
-            scope.set_tag("retry_number", context.run_id)
+            scope.set_tag("retry_number", context.retry_number)
             return func(*args, **kwargs)
 
     return wrapped_fn
