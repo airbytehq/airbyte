@@ -602,7 +602,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String migrateFromV1toV2(StreamConfig stream, AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace) {
     return new StringSubstitutor(Map.of(
-        "v2_raw_table", stream.id().finalTableId(QUOTE),
+        "v2_raw_table", stream.id().rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(v1RawTableNameAndNamespace))
     ).replace(
         """

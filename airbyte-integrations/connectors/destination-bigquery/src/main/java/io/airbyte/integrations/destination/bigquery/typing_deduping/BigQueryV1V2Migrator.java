@@ -53,8 +53,8 @@ public class BigQueryV1V2Migrator implements DestinationV1V2Migrator<TableDefini
   @Override
   public AirbyteStreamNameNamespacePair convertToV1RawName(StreamConfig streamConfig) {
     return new AirbyteStreamNameNamespacePair(
-        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
-        this.nameTransformer.getRawTableName(streamConfig.id().originalName())
+        this.nameTransformer.getRawTableName(streamConfig.id().originalName()),
+        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace())
     );
   }
 }
