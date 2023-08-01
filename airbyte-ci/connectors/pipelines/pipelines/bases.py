@@ -26,7 +26,6 @@ from pipelines.actions import remote_storage
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from pipelines.utils import check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
-from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
@@ -480,7 +479,7 @@ class Report:
             to_render.append(failures_group)
 
         if self.pipeline_context.dagger_cloud_url:
-            dagger_cloud_url = Markdown(f"[🔗 View commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})")
+            dagger_cloud_url = Text(f"🔗 View commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}", no_wrap=True)
             to_render.append(dagger_cloud_url)
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
@@ -630,7 +629,7 @@ class ConnectorReport(Report):
         to_render = [step_results_table]
 
         if self.pipeline_context.dagger_cloud_url:
-            dagger_cloud_url = Markdown(f"[🔗 View commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})")
+            dagger_cloud_url = Text(f"🔗 View commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}", no_wrap=True)
             to_render.append(dagger_cloud_url)
 
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
