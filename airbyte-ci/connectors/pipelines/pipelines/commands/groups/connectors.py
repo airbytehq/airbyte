@@ -47,6 +47,14 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
         )
 
 
+def validate_selected_connectors_exist(selected_connectors: Set[Connector], all_connectors: Set[Connector]) -> Set[Connector]:
+    """Check if the selected connectors exist."""
+    for connector in selected_connectors:
+        if connector not in all_connectors:
+            raise click.UsageError(f"Connector {connector} does not exist.")
+    return selected_connectors
+
+
 # COMMANDS
 
 
@@ -94,16 +102,26 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["all_connectors"] = get_all_connectors_in_repo()
-    ctx.obj["selected_connectors_by_names"] = {Connector(technical_name=name) for name in names}
+    ctx.obj["selected_connectors_by_names"] = validate_selected_connectors_exist(
+        {Connector(technical_name=name) for name in names}, ctx.obj["all_connectors"]
+    )
     ctx.obj["selected_connectors_by_languages"] = {connector for connector in ctx.obj["all_connectors"] if connector.language in languages}
     ctx.obj["selected_connectors_by_release_stages"] = {
         connector for connector in ctx.obj["all_connectors"] if connector.release_stage in release_stages
     }
-    ctx.obj["selected_connectors"] = (
-        ctx.obj["selected_connectors_by_names"]
-        | ctx.obj["selected_connectors_by_languages"]
-        | ctx.obj["selected_connectors_by_release_stages"]
+
+    ctx.obj["selected_connectors"] = set.intersection(
+        *(
+            connector_set
+            for connector_set in [
+                ctx.obj["selected_connectors_by_names"],
+                ctx.obj["selected_connectors_by_languages"],
+                ctx.obj["selected_connectors_by_release_stages"],
+            ]
+            if connector_set
+        )
     )
+
     ctx.obj["selected_connectors_and_files"] = {
         connector: get_connector_modified_files(connector, ctx.obj["modified_files"]) for connector in ctx.obj["selected_connectors"]
     }
