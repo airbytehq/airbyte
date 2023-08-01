@@ -820,6 +820,11 @@ class DatetimeBasedCursor(BaseModel):
         examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
         title="Start Datetime",
     )
+    cursor_datetime_formats: Optional[List[str]] = Field(
+        None,
+        description="The possible formats for the cursor field",
+        title="Cursor Datetime Format",
+    )
     cursor_granularity: Optional[str] = Field(
         None,
         description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",

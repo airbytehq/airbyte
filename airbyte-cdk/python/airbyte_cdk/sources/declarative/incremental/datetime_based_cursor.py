@@ -4,7 +4,7 @@
 
 import datetime
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -52,7 +52,7 @@ class DatetimeBasedCursor(Cursor):
     datetime_format: str
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    _cursor: str = field(repr=False, default=None)  # tracks current datetime
+    _cursor: Optional[str] = field(repr=False, default=None)  # tracks current datetime
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -62,8 +62,9 @@ class DatetimeBasedCursor(Cursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
+    cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
             raise ValueError(
                 f"If step is defined, cursor_granularity should be as well and vice-versa. "
@@ -94,6 +95,9 @@ class DatetimeBasedCursor(Cursor):
             self.start_datetime.datetime_format = self.datetime_format
         if self.end_datetime and not self.end_datetime.datetime_format:
             self.end_datetime.datetime_format = self.datetime_format
+
+        if not self.cursor_datetime_formats:
+            self.cursor_datetime_formats = [self.datetime_format]
 
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
@@ -154,8 +158,13 @@ class DatetimeBasedCursor(Cursor):
             return self.parse_date(stream_state[self.cursor_field.eval(self.config)])
         return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
-    def _format_datetime(self, dt: datetime.datetime):
+    def _format_datetime(self, dt: datetime.datetime) -> str:
         return self._parser.format(dt, self.datetime_format)
+
+    def _format_slice_datetime(self, dt: datetime.datetime) -> str:
+        if not self.cursor_datetime_formats:
+            raise RuntimeError("DatetimeBasedCursor can't operate without cursor_datetime_formats")
+        return self._parser.format(dt, self.cursor_datetime_formats[0])
 
     def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
         start_field = self.partition_field_start.eval(self.config)
@@ -164,7 +173,7 @@ class DatetimeBasedCursor(Cursor):
         while start <= end:
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
-            dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
+            dates.append({start_field: self._format_slice_datetime(start), end_field: self._format_slice_datetime(end_date)})
             start = next_start
         return dates
 
@@ -184,7 +193,12 @@ class DatetimeBasedCursor(Cursor):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: str) -> datetime.datetime:
-        return self._parser.parse(date, self.datetime_format)
+        for datetime_format in self.cursor_datetime_formats:
+            try:
+                return self._parser.parse(date, datetime_format)
+            except ValueError:
+                pass
+        raise ValueError(f"No format in {self.cursor_datetime_formats} matching {date}")
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:

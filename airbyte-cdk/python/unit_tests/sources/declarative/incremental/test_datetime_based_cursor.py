@@ -508,7 +508,7 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         ("test_parse_date_number", "20210101", "%Y%m%d", "P1D", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
     ],
 )
-def test_parse_date(test_name, input_date, date_format, date_format_granularity, expected_output_date):
+def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(test_name, input_date, date_format, date_format_granularity, expected_output_date):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
@@ -522,6 +522,48 @@ def test_parse_date(test_name, input_date, date_format, date_format_granularity,
     )
     output_date = slicer.parse_date(input_date)
     assert expected_output_date == output_date
+
+
+@pytest.mark.parametrize(
+    "test_name, input_date, date_formats, expected_output_date",
+    [
+        (
+            "test_match_first_format",
+            "2021-01-01T00:00:00.000000+0000",
+            ["%Y-%m-%dT%H:%M:%S.%f%z", "%s"],
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            "test_match_second_format",
+            "1609459200",
+            ["%Y-%m-%dT%H:%M:%S.%f%z", "%s"],
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
+    ],
+)
+def test_parse_date(test_name, input_date, date_formats, expected_output_date):
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=date_formats,
+        config=config,
+        parameters={},
+    )
+    assert slicer.parse_date(input_date) == expected_output_date
+
+
+def test_given_unknown_format_when_parse_date_then_raise_error():
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=["%Y-%m-%d", "%s"],
+        config=config,
+        parameters={},
+    )
+    with pytest.raises(ValueError):
+        slicer.parse_date("2021-01-01T00:00:00.000000+0000")
 
 
 @pytest.mark.parametrize(
@@ -573,6 +615,20 @@ def test_cursor_granularity_but_no_step():
             config=config,
             parameters={},
         )
+
+
+def test_given_multiple_cursor_datetime_format_then_slice_using_first_format():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        end_datetime=MinMaxDatetime("2023-01-10", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"],
+        config=config,
+        parameters={},
+    )
+    stream_slices = cursor.stream_slices()
+    assert stream_slices == [{"start_time": "2021-01-01T00:00:00", "end_time": "2023-01-10T00:00:00"}]
 
 
 def test_no_cursor_granularity_and_no_step_then_only_return_one_slice():
