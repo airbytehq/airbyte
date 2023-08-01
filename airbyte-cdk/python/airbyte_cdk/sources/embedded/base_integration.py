@@ -28,7 +28,7 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
         """
         pass
 
-    def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage]) -> Iterable[TOutput]:
+    def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage] = None) -> Iterable[TOutput]:
         catalog = self.source.discover(self.config)
         stream = get_stream(catalog, stream_name)
         if not stream:
