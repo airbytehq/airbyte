@@ -239,12 +239,15 @@ class CsvParser(AbstractFileParser):
         schema = self._get_schema_dict_without_inference(file)
         schema.update(self._master_schema)
 
-        streaming_reader = pa_csv.open_csv(
-            file,
-            pa.csv.ReadOptions(**self._read_options()),
-            pa.csv.ParseOptions(**self._parse_options()),
-            pa.csv.ConvertOptions(**self._convert_options(schema)),
-        )
+        try:
+            streaming_reader = pa_csv.open_csv(
+                file,
+                pa.csv.ReadOptions(**self._read_options()),
+                pa.csv.ParseOptions(**self._parse_options()),
+                pa.csv.ConvertOptions(**self._convert_options(schema)),
+            )
+        except ArrowInvalid as e:
+            raise AirbyteTracedException(message=str(e), failure_type=FailureType.config_error) from e
         still_reading = True
         while still_reading:
             try:
