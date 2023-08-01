@@ -34,6 +34,9 @@ __pycache__
 .ipynb_checkpoints
 .pytest_
 
+# Java
+bin
+
 # Python unit test / coverage reports
 htmlcov/
 .tox/
