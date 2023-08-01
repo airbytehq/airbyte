@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mongodb.v3.MongoDbSource'
+    mainClass = 'io.airbyte.integrations.source.mongodb.internal.MongoDbSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mongodb.v3;
+package io.airbyte.integrations.source.mongodb.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;

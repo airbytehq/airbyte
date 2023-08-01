@@ -1,15 +1,15 @@
-# MongoDb Source (V3)
+# MongoDb Source (Internal POC)
 
 ## Documentation
 This is the repository for the MongoDb source connector in Java.
-For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mongodb-v3)
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mongodb-internal-poc)
 
 ## Local development
 
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:build
+./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:build
 ```
 
 ### Locally running the connector docker image
@@ -17,7 +17,7 @@ From the Airbyte repository root, run:
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -54,5 +54,5 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
 #### Acceptance Tests
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:integrationTest
+./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:integrationTest
 ```
