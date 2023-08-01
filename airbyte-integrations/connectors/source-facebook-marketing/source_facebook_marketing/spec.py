@@ -35,29 +35,29 @@ class InsightConfig(BaseModel):
 
     level: str = Field(
         title="Level", 
-        description="The selected granularity level for data retrieval from the API.", 
-        default="ad", 
+        description="The selected granularity level for data retrieval of the custom insight from the API.", 
+        default="ad",
         enum=["ad", "adset", "campaign", "account"],
         order=1
     )
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
-        description="Choose from the dropdown menu to add fields to your custom insight. Each option you select from the dropdown will be added to your custom insight field list.",
+        description="Use the dropdown menu to add the desired fields for your custom insight.",
         default=[],
         order=2
     )
 
     breakdowns: Optional[List[ValidBreakdowns]] = Field(
         title="Breakdowns",
-        description="Choose from the dropdown menu to add breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight breakdown list.",
+        description="Use the dropdown menu to add the desired breakdowns for your custom insight.",
         default=[],
         order=3
     )
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
-        description="Choose from the dropdown menu to add action breakdowns to your custom insight. Each option you select from the dropdown will be added to your custom insight action breakdown list.",
+        description="Use the dropdown menu to add the desired action breakdowns for your custom insight.",
         default=[],
         order=4
     )
@@ -67,10 +67,9 @@ class InsightConfig(BaseModel):
         description=(
             "This value determines the timing used to report action statistics. If a user sees an ad on Jan 1st "
             "but converts on Jan 2nd, this value will determine how the action is reported. "
-            "When you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
-            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd. "
-            "When you query the API with action_report_time=mixed, view-through actions are reported at the time of the impression "
-            "and click-through actions are reported at the time of conversion."
+            "When set to impression, you see a conversion on Jan 1st. "
+            "When set to conversion, you see a conversion on Jan 2nd. "
+            "When set to mixed, view-through actions are reported at the time of the impression and click-through actions are reported at the time of conversion."
         ),
         default="mixed",
         enum=["conversion", "impression", "mixed"],
@@ -80,7 +79,7 @@ class InsightConfig(BaseModel):
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description=(
-            "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
+            "The time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
             "For example, if you set this value to 7, then all statistics will be reported as 7-day aggregates by starting from the start_date. If the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only)."
         ),
         exclusiveMaximum=90,
@@ -109,7 +108,8 @@ class InsightConfig(BaseModel):
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
-        description="The attribution window",
+        description="Also known as the attribution window, this determines the period of days for which you wish to retrieve updated insights from Facebook. "
+        "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value.",
         maximum=28,
         mininum=1,
         default=28,
@@ -190,8 +190,9 @@ class ConnectorConfig(BaseConfig):
         title="Custom Insights",
         order=6,
         description=(
-            "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
-            'breakdowns or action_breakdowns. Click on "add" to fill this field.'
+            "A list which contains custom ad statistics entries. Each entry must have a name and can contains fields, "
+            "breakdowns or action_breakdowns. Click on 'Add' to fill this field. "
+            "For more information on configuring custom insights, refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a>."
         ),
     )
 
@@ -210,9 +211,9 @@ class ConnectorConfig(BaseConfig):
         order=8,
         description=(
             "The attribution window. Facebook freezes insight data 28 days after it was generated, "
-            "which means that all data from the past 28 days may have changed since we last emitted it, "
-            "so you can retrieve refreshed insights from the past by setting this parameter. "
-            "If you set a custom lookback window value in Facebook account, please provide the same value here."
+            "which means that all data from the past 28 days may be subject to change. "
+            "You can retrieve refreshed insights from the past by setting this parameter. "
+            "If you set a custom lookback window value in your Facebook account, please provide the same value here."
         ),
         maximum=28,
         mininum=1,
