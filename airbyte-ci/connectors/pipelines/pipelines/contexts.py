@@ -172,6 +172,18 @@ class PipelineContext:
     def should_send_slack_message(self) -> bool:
         return self.slack_webhook is not None and self.reporting_slack_channel is not None
 
+    @property
+    def has_dagger_cloud_token(self) -> bool:
+        return "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN" in os.environ
+
+    @property
+    def dagger_cloud_url(self) -> str:
+        """Gets the link to the Dagger Cloud runs page for the current commit."""
+        if self.is_local or not self.has_dagger_cloud_token:
+            return None
+
+        return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
