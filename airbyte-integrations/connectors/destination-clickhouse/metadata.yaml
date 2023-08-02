@@ -23,4 +23,8 @@ data:
   supportsDbt: false
   tags:
     - language:java
+  _ab_internal:
+    _sl: 200
+    _ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

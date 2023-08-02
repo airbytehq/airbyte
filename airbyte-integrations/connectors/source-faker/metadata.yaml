@@ -35,4 +35,8 @@ data:
       4.0.0:
         message: "This is a breaking change message"
         upgradeDeadline: "2023-07-19"
+  _ab_internal:
+    _sl: 200
+    _ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
