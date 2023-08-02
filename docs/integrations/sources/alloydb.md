@@ -321,8 +321,6 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                         |
-| 3.1.1   | 2023-07-31 | [28892](https://github.com/airbytehq/airbyte/pull/28892) | Fix an issue that prevented use of cursor columns with names containing uppercase letters                                                 |
 | 3.1.0   | 2023-07-25 | [28339](https://github.com/airbytehq/airbyte/pull/28339) | Checkpointing initial load for incremental syncs: enabled for xmin and cursor based only.                                                 |
 | 2.0.28  | 2023-04-26 | [25401](https://github.com/airbytehq/airbyte/pull/25401) | CDC : Upgrade Debezium to version 2.2.0                                                                                                   |
 | 2.0.23  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582) | CDC : Enable frequent state emission during incremental syncs + refactor for performance improvement                                      |

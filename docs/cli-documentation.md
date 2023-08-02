@@ -238,6 +238,7 @@ NAME                                  DOCKER REPOSITORY                         
 Azure Blob Storage                    airbyte/destination-azure-blob-storage            0.1.3             b4c5d105-31fd-4817-96b6-cb923bfc04cb
 Amazon SQS                            airbyte/destination-amazon-sqs                    0.1.0             0eeee7fb-518f-4045-bacc-9619e31c43ea
 BigQuery                              airbyte/destination-bigquery                      0.6.11            22f6c74f-5699-40ff-833c-4a879ea40133
+BigQuery (denormalized typed struct)  airbyte/destination-bigquery-denormalized         0.2.10            079d5540-f236-4294-ba7c-ade8fd918496
 ```
 
 #### `octavia list workspace sources`

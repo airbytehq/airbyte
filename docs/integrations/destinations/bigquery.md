@@ -14,6 +14,13 @@ This page guides you through setting up the BigQuery destination connector.
 
 - (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
+## Connector modes
+
+While setting up the connector, you can configure it in the following modes:
+
+- **BigQuery**: Produces a normalized output by storing the JSON blob data in `_airbyte_raw_*` tables and then transforming and normalizing the data into separate tables, potentially `exploding` nested streams into their own tables if basic normalization is configured.
+- **BigQuery (Denormalized)**: Leverages BigQuery capabilities with Structured and Repeated fields to produce a single "big" table per stream. Airbyte does not support normalization for this option at this time.
+
 ## Setup guide
 
 ### Step 1: Set up a data loading method
@@ -39,7 +46,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Destinations** and then click **+ New destination**.
-3. On the Set up the destination page, select **BigQuery** from the **Destination type**
+3. On the Set up the destination page, select **BigQuery** or **BigQuery (denormalized typed struct)** from the **Destination type** dropdown depending on whether you want to set up the connector in [BigQuery](#connector-modes) or [BigQuery (Denormalized)](#connector-modes) mode.
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
 6. For **Dataset Location**, select the location of your BigQuery dataset.
@@ -87,20 +94,20 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 
 ## Data type map
 
-| Airbyte type                        | BigQuery type |
-| :---------------------------------- | :------------ |
-| DATE                                | DATE          |
-| STRING (BASE64)                     | STRING        |
-| NUMBER                              | FLOAT         |
-| OBJECT                              | STRING        |
-| STRING                              | STRING        |
-| BOOLEAN                             | BOOLEAN       |
-| INTEGER                             | INTEGER       |
-| STRING (BIG_NUMBER)                 | STRING        |
-| STRING (BIG_INTEGER)                | STRING        |
-| ARRAY                               | REPEATED      |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     |
+| Airbyte type                        | BigQuery type | BigQuery denormalized type |
+| :---------------------------------- | :------------ | :------------------------- |
+| DATE                                | DATE          | DATE                       |
+| STRING (BASE64)                     | STRING        | STRING                     |
+| NUMBER                              | FLOAT         | NUMBER                     |
+| OBJECT                              | STRING        | RECORD                     |
+| STRING                              | STRING        | STRING                     |
+| BOOLEAN                             | BOOLEAN       | BOOLEAN                    |
+| INTEGER                             | INTEGER       | INTEGER                    |
+| STRING (BIG_NUMBER)                 | STRING        | STRING                     |
+| STRING (BIG_INTEGER)                | STRING        | STRING                     |
+| ARRAY                               | REPEATED      | REPEATED                   |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     | DATETIME                   |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     | DATETIME                   |
 
 ## Troubleshooting permission issues
 
@@ -128,9 +135,6 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.7.2   | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                     |
-| 1.7.1   | 2023-08-02 | [\#28959](https://github.com/airbytehq/airbyte/pull/28959) | Destinations v2: Fix CDC syncs in non-dedup mode                                                                         |
-| 1.7.0   | 2023-08-01 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Open up early access program opt-in                                                                     |
 | 1.6.0   | 2023-07-26 | [\#28723](https://github.com/airbytehq/airbyte/pull/28723) | Destinations v2: Change raw table dataset and naming convention                                                          |
 | 1.5.8   | 2023-07-25 | [\#28721](https://github.com/airbytehq/airbyte/pull/28721) | Destinations v2: Handle cursor change across syncs                                                                       |
 | 1.5.7   | 2023-07-24 | [\#28625](https://github.com/airbytehq/airbyte/pull/28625) | Destinations v2: Limit Clustering Columns to 4                                                                           |

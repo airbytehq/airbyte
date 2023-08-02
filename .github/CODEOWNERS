@@ -4,19 +4,15 @@
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
 # Protocol related items
-
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
 # Normalization
-
 /airbyte-integrations/bases/base-normalization/ @airbytehq/destinations
 
 # Java-based connectors
-
 /airbyte-integrations/bases/base-java/ @airbytehq/jdbc-connectors
 
 # Java-based source connectors
-
 /airbyte-integrations/bases/debezium-v1-4-2/ @airbytehq/dbsources
 /airbyte-integrations/bases/debezium-v1-9-6/ @airbytehq/dbsources
 /airbyte-integrations/connectors/source-jdbc/ @airbytehq/dbsources
@@ -34,11 +30,11 @@
 /airbyte-integrations/connectors/source-tidb/ @airbytehq/dbsources
 
 # Java-based destination connectors
-
 /airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
 /airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
 /airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery-denormalized/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
