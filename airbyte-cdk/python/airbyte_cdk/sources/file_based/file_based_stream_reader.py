@@ -4,13 +4,18 @@
 
 import logging
 from abc import ABC, abstractmethod
+from enum import Enum
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from wcmatch.glob import GLOBSTAR, globmatch
+
+
+class FileReadMode(Enum):
+    READ = "r"
+    READ_BINARY = "rb"
 
 
 class AbstractFileBasedStreamReader(ABC):

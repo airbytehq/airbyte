@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
 ## 0.47.3
 Connector Builder: Ensure we return when there are no slices
 

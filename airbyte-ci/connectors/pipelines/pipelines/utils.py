@@ -12,27 +12,26 @@ import os
 import re
 import sys
 import unicodedata
-
 from glob import glob
+from io import TextIOWrapper
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
-from io import TextIOWrapper
 
 import anyio
 import asyncer
 import click
 import git
-from pipelines import consts, main_logger, sentry_utils
-from pipelines.consts import GCS_PUBLIC_DOMAIN
 from connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
+from pipelines import consts, main_logger, sentry_utils
+from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 if TYPE_CHECKING:
-    from pipelines.contexts import ConnectorContext
     from github import PullRequest
+    from pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -152,6 +151,9 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     ExecError to handle errors. This is offered as a convenience when the exit code
     value is actually needed.
 
+    If the container has a file at /exit_code, the exit code will be read from it.
+    See hacks.never_fail_exec for more details.
+
     Args:
         container (Container): The container to execute.
 
@@ -159,7 +161,11 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
         Tuple[int, str, str]: The exit_code, stdout and stderr of the container, respectively.
     """
     try:
-        return 0, *(await get_container_output(container))
+        exit_code = 0
+        in_file_exit_code = await get_file_contents(container, "/exit_code")
+        if in_file_exit_code:
+            exit_code = int(in_file_exit_code)
+        return exit_code, *(await get_container_output(container))
     except ExecError as e:
         return e.exit_code, e.stdout, e.stderr
 

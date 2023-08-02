@@ -4,20 +4,14 @@
 
 import logging
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 Schema = Dict[str, str]
 Record = Dict[str, Any]
-
-
-class FileReadMode(Enum):
-    READ = "r"
-    READ_BINARY = "rb"
 
 
 class FileTypeParser(ABC):
