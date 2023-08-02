@@ -125,7 +125,8 @@ class FileBasedSource(AbstractSource, ABC, Generic[SpecType]):
         )
 
     def _get_spec_class(self) -> Type[SpecType]:
-        return self.__orig_bases__[0].__args__[0]
+        # Get the spec class from the generic SpecType
+        return self.__orig_bases__[0].__args__[0]  # type: ignore
 
     def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) -> AbstractSchemaValidationPolicy:
         if stream_config.validation_policy not in self.validation_policies:
