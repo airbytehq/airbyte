@@ -19,7 +19,9 @@ single_csv_scenario = (
                     "validation_policy": "emit_record",
                 }
             ],
-            "start_date": "2023-06-04T03:54:07Z",
+            "source_config": {
+                "start_date": "2023-06-04T03:54:07Z",
+            }
         }
     )
     .set_files(
