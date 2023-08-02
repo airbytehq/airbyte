@@ -30,11 +30,14 @@ from freezegun import freeze_time
             [datetime(2021, 1, 1),
              datetime(2021, 1, 1),
              datetime(2020, 12, 31)],
-            {"history": {
-                "a.csv": "2021-01-01T00:00:00.000000Z",
-                "b.csv": "2021-01-02T00:00:00.000000Z",
-                "c.csv": "2020-12-31T00:00:00.000000Z",
-            }, },
+            {
+                "history": {
+                    "a.csv": "2021-01-01T00:00:00.000000Z",
+                    "b.csv": "2021-01-02T00:00:00.000000Z",
+                    "c.csv": "2020-12-31T00:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2021-01-02T00:00:00.000000Z_b.csv",
+            },
             id="test_file_start_time_is_earliest_time_in_history"),
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -55,11 +58,14 @@ from freezegun import freeze_time
              datetime(2021, 1, 1),
              datetime(2021, 1, 1),
              datetime(2021, 1, 2)],
-            {"history": {
-                "b.csv": "2021-01-02T00:00:00.000000Z",
-                "c.csv": "2021-01-03T00:00:00.000000Z",
-                "d.csv": "2021-01-04T00:00:00.000000Z",
-            }, },
+            {
+                "history": {
+                    "b.csv": "2021-01-02T00:00:00.000000Z",
+                    "c.csv": "2021-01-03T00:00:00.000000Z",
+                    "d.csv": "2021-01-04T00:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2021-01-04T00:00:00.000000Z_d.csv",
+            },
             id="test_earliest_file_is_removed_from_history_if_history_is_full"),
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -85,11 +91,14 @@ from freezegun import freeze_time
              datetime(2021, 1, 2),
              datetime(2021, 1, 2),
              ],
-            {"history": {
-                "file_with_same_timestamp_as_b.csv": "2021-01-02T00:00:00.000000Z",
-                "c.csv": "2021-01-03T00:00:00.000000Z",
-                "d.csv": "2021-01-04T00:00:00.000000Z",
-            }, },
+            {
+                "history": {
+                    "file_with_same_timestamp_as_b.csv": "2021-01-02T00:00:00.000000Z",
+                    "c.csv": "2021-01-03T00:00:00.000000Z",
+                    "d.csv": "2021-01-04T00:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2021-01-04T00:00:00.000000Z_d.csv",
+            },
             id="test_files_are_sorted_by_timestamp_and_by_name"),
     ],
 )
