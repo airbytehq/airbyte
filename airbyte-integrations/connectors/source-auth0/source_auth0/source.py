@@ -79,6 +79,7 @@ class Auth0Stream(HttpStream, ABC):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        print(response)
         yield from response.json().get(self.resource_name)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -93,38 +94,40 @@ class Auth0Stream(HttpStream, ABC):
 
 class IncrementalAuth0Stream(Auth0Stream, IncrementalMixin):
     min_id = ""
+    cursor_field = "updated_at"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cursor_value = self.min_id
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> str:
-        pass
+        self._cursor_value = None
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value}
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.min_id}
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._cursor_value = value.get(self.cursor_field)
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        new_state_value = max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, self.min_id))
+        self._cursor_value = new_state_value
+        return {self.cursor_field: new_state_value}
+
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=self.state, next_page_token=next_page_token, **kwargs)
-        latest_entry = self.state.get(self.cursor_field)
-        filter_param = {"include_totals": "false", "sort": f"{self.cursor_field}:1", "q": f"{self.cursor_field}:{{{latest_entry} TO *]"}
+        filter_param = {"include_totals": "false", "sort": f"{self.cursor_field}:1"}
+        if self.state:
+            filter_param["q"] = self.cursor_field + ":{" + self.state.get(self.cursor_field) + " TO *]"
         params.update(filter_param)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         entities = response.json()
-        if entities:
-            last_item = entities[-1]
-            self.state = last_item
         yield from entities
 
 
