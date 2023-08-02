@@ -67,7 +67,7 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container.
 
     Example:
-        >>> container.with_(secret_host_variable(client, "MY_SECRET"))
+        container.with_(secret_host_variable(client, "MY_SECRET"))
 
     Args:
         client (Client): The dagger client.
@@ -323,36 +323,24 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
-def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
-    """Check if the file path starts with the connector dependency path."""
-    given_file_path_parts = given_file_path.parts
-    starts_with_path_parts = starts_with_path.parts
-
-    return given_file_path_parts[: len(starts_with_path_parts)] == starts_with_path_parts
-
-
-def _find_modified_connectors(file_path: Union[str, Path], dependency_scanning: bool = True) -> dict:
+def _find_modified_connectors(file_path: Union[str, Path], dependency_scanning: bool = True) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = {}
     for connector, connector_dependencies in ALL_CONNECTOR_DEPENDENCIES:
         if Path(file_path).is_relative_to(Path(connector.code_directory)):
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
-            modified_connectors.setdefault(connector, [])
-            modified_connectors[connector].append(file_path)
+            modified_connectors.add(connector)
 
         if dependency_scanning:
             for connector_dependency in connector_dependencies:
                 if Path(file_path).is_relative_to(Path(connector_dependency)):
                     # Add the connector to the modified connectors
-                    modified_connectors.setdefault(connector, [])
+                    modified_connectors.add(connector)
                     main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
-
     return modified_connectors
 
 
-def get_modified_connectors_and_files(
-    modified_files: Set[Union[str, Path]], metadata_modification_only: bool = False, dependency_scanning: bool = True
-) -> dict[Connector, Set[Union[str, Path]]]:
+def get_modified_connectors(modified_files: Set[Path], dependency_scanning: bool = True) -> Set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
     The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
@@ -360,23 +348,21 @@ def get_modified_connectors_and_files(
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-
     # Ignore files with certain extensions
     modified_files = [file for file in modified_files if not _is_ignored_file(file)]
-    if metadata_modification_only:
-        modified_files = get_modified_metadata_files(modified_files)
-        main_logger.info(f"Modified metadata files: {modified_files}")
     modified_connectors = {}
     for modified_file in modified_files:
         modified_connectors.update(_find_modified_connectors(modified_file, dependency_scanning))
     return modified_connectors
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Union[str, Path]]) -> Set[Union[str, Path]]:
+def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> Set[Path]:
+    connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
         if modified_file_path.is_relative_to(connector.code_directory):
-            yield modified_file
+            connector_modified_files.add(modified_file)
+    return connector_modified_files
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
@@ -627,3 +613,15 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     gcs_uri = f"gs://{bucket_name}/{object_name}"
     public_url = f"{GCS_PUBLIC_DOMAIN}/{bucket_name}/{object_name}"
     return gcs_uri, public_url
+
+
+def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
+    """Transform a list of string paths to a list of Path objects.
+
+    Args:
+        str_paths (List[str]): A list of string paths.
+
+    Returns:
+        List[Path]: A list of Path objects.
+    """
+    return [Path(str_path) for str_path in str_paths]

@@ -4,7 +4,6 @@
 from unittest import mock
 
 import pytest
-from connector_ops.utils import Connector
 from pipelines import utils
 
 
@@ -93,11 +92,3 @@ from pipelines import utils
 )
 def test_render_report_output_prefix(ctx, expected):
     assert utils.DaggerPipelineCommand.render_report_output_prefix(ctx) == expected
-
-
-def test_get_modified_connectors_and_files(new_connector: Connector):
-    modified_files = ["airbyte-integrations/connectors/source-pokeapi/source_pokeapi/spec.json", new_connector.code_directory / "setup.py"]
-    assert utils.get_modified_connectors_and_files(modified_files) == {
-        Connector("source-pokeapi"): [modified_files[0]],
-        new_connector: [modified_files[1]],
-    }
