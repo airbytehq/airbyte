@@ -43,7 +43,6 @@
       "type": ["null", "string"]
     },
     "end_date": {
-      "format": "date",
       "type": ["null", "string"]
     },
     "usage_unit": {
@@ -62,7 +61,6 @@
       "type": ["null", "number"]
     },
     "start_date": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "count_unit": {

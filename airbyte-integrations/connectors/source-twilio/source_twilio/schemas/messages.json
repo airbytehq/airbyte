@@ -10,15 +10,12 @@
       "type": ["null", "string"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_sent": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "direction": {

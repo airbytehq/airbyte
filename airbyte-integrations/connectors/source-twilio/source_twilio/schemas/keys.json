@@ -1,7 +1,6 @@
 {
   "properties": {
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {

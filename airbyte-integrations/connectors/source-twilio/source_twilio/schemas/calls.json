@@ -4,11 +4,9 @@
       "type": ["null", "string"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "parent_call_sid": {
@@ -36,7 +34,6 @@
       "type": ["null", "string"]
     },
     "start_time": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "end_time": {
