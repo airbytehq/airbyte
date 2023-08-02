@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Type, Union
 
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
@@ -13,7 +14,7 @@ from pydantic import BaseModel, Field, validator
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
 
-VALID_FILE_TYPES = {"csv": CsvFormat, "parquet": ParquetFormat, "jsonl": JsonlFormat}
+VALID_FILE_TYPES: Mapping[str, Type[BaseModel]] = {"avro": AvroFormat, "csv": CsvFormat, "jsonl": JsonlFormat, "parquet": ParquetFormat}
 
 
 class FileBasedStreamConfig(BaseModel):
@@ -39,7 +40,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Mapping[str, Union[CsvFormat, ParquetFormat, JsonlFormat]]] = Field(
+    format: Optional[Mapping[str, Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat]]] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )
@@ -78,23 +79,24 @@ class FileBasedStreamConfig(BaseModel):
     def _transform_legacy_config(cls, legacy_config: Mapping[str, Any], file_type: str) -> Mapping[str, Any]:
         if file_type.casefold() not in VALID_FILE_TYPES:
             raise ValueError(f"Format filetype {file_type} is not a supported file type")
-        if file_type.casefold() == "parquet":
-            legacy_config = cls._transform_legacy_parquet_config(legacy_config)
+        if file_type.casefold() == "parquet" or file_type.casefold() == "avro":
+            legacy_config = cls._transform_legacy_parquet_or_avro_config(legacy_config)
         return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in legacy_config.items()})}
 
     @classmethod
-    def _transform_legacy_parquet_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _transform_legacy_parquet_or_avro_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         The legacy parquet parser converts decimal fields to numbers. This isn't desirable because it can lead to precision loss.
         To avoid introducing a breaking change with the new default, we will set decimal_as_float to True in the legacy configs.
         """
-        if config.get("filetype") != "parquet":
+        filetype = config.get("filetype")
+        if filetype != "parquet" and filetype != "avro":
             raise ValueError(
-                f"Expected parquet format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
+                f"Expected {filetype} format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
             )
         if config.get("decimal_as_float"):
             raise ValueError(
-                "Received legacy parquet file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
+                f"Received legacy {filetype} file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
             )
         return {**config, **{"decimal_as_float": True}}
 

@@ -73,7 +73,7 @@ public class PostgresQueryUtils {
       """;
   public static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+        SELECT "%s" FROM %s WHERE "%s" = (SELECT MAX("%s") FROM %s);
       """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
@@ -133,17 +133,21 @@ public class PostgresQueryUtils {
    * @param database the source db
    * @param streams streams to be synced
    * @param stateManager stream stateManager
-   * @return
+   * @return Map of streams to statuses
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
-                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager,
+                                                                                                          final String quoteString) {
 
     final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
         final String name = stream.getStream().getName();
         final String namespace = stream.getStream().getNamespace();
+        final String fullTableName =
+            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+
         final Optional<CursorInfo> cursorInfoOptional =
             stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
         if (cursorInfoOptional.isEmpty()) {
@@ -154,10 +158,11 @@ public class PostgresQueryUtils {
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
-            name,
+            fullTableName,
             cursorField,
             cursorField,
-            name);
+            fullTableName);
+        LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
@@ -245,7 +250,7 @@ public class PostgresQueryUtils {
         }
       } catch (final Exception e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
-        LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
+        LOGGER.warn("Failed to fetch vacuum for table {} info", fullTableName, e);
         failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });

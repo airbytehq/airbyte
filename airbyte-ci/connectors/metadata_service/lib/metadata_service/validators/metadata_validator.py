@@ -104,7 +104,10 @@ def validate_major_version_bump_has_breaking_change_entry(metadata_definition: C
 
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
-        return False, f"When doing a major version bump ({image_tag}), there must be a 'releases' property that contains 'breakingChanges' entries."
+        return (
+            False,
+            f"When doing a major version bump ({image_tag}), there must be a 'releases' property that contains 'breakingChanges' entries.",
+        )
 
     breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
     if image_tag not in breaking_changes.keys():
