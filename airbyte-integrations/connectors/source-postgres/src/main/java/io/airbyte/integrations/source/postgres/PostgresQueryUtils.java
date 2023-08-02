@@ -137,13 +137,17 @@ public class PostgresQueryUtils {
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
-                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager,
+                                                                                                          final String quoteString) {
 
     final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
         final String name = stream.getStream().getName();
         final String namespace = stream.getStream().getNamespace();
+        final String fullTableName =
+            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+
         final Optional<CursorInfo> cursorInfoOptional =
             stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
         if (cursorInfoOptional.isEmpty()) {
@@ -154,10 +158,11 @@ public class PostgresQueryUtils {
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
-            name,
+            fullTableName,
             cursorField,
             cursorField,
-            name);
+            fullTableName);
+        LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
