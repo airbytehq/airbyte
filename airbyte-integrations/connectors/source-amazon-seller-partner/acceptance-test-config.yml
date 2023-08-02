@@ -120,7 +120,11 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: ListFinancialEvents
             bypass_reason: "no records"
+          - name: ListFinancialEventGroups
+            bypass_reason: "no records"
           - name: GET_FBA_REIMBURSEMENTS_DATA
+            bypass_reason: "no records"
+          - name: GET_XML_BROWSE_TREE_DATA
             bypass_reason: "no records"
   incremental:
     tests:
