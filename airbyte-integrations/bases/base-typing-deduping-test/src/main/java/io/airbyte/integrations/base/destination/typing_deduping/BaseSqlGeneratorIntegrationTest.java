@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,16 +77,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected DestinationHandler<DialectTableDefinition> destinationHandler;
   protected String namespace;
 
-  private JsonNode config;
-  private ColumnId id1;
-  private ColumnId id2;
-  private List<ColumnId> primaryKey;
-  private ColumnId cursor;
-  private LinkedHashMap<ColumnId, AirbyteType> columns;
-  private LinkedHashMap<ColumnId, AirbyteType> cdcColumns;
   private StreamId streamId;
-
-  protected abstract JsonNode generateConfig() throws Exception;
 
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
 
@@ -110,17 +100,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void teardownNamespace(String namespace);
 
   @BeforeEach
-  public void setup() throws Exception {
-    config = generateConfig();
-
+  public void setup() {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
-    id1 = generator.buildColumnId("id1");
-    id2 = generator.buildColumnId("id2");
-    primaryKey = List.of(id1, id2);
-    cursor = generator.buildColumnId("updated_at");
+    ColumnId id1 = generator.buildColumnId("id1");
+    ColumnId id2 = generator.buildColumnId("id2");
+    List<ColumnId> primaryKey = List.of(id1, id2);
+    ColumnId cursor = generator.buildColumnId("updated_at");
 
-    columns = new LinkedHashMap<>();
+    LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
     columns.put(id1, AirbyteProtocolType.INTEGER);
     columns.put(id2, AirbyteProtocolType.INTEGER);
     columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
@@ -137,7 +125,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     columns.put(generator.buildColumnId("date"), AirbyteProtocolType.DATE);
     columns.put(generator.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
 
-    cdcColumns = new LinkedHashMap<>(columns);
+    LinkedHashMap<ColumnId, AirbyteType> cdcColumns = new LinkedHashMap<>(columns);
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
     namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);

@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,14 +37,13 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest2.class);
 
-  private BigQuery bq;
+  private static BigQuery bq;
 
-  @Override
-  protected JsonNode generateConfig() throws Exception {
+  @BeforeAll
+  public static void setupBigquery() throws Exception {
     final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
     final JsonNode config = Jsons.deserialize(rawConfig);
     bq = BigQueryDestination.getBigQuery(config);
-    return config;
   }
 
   @Override

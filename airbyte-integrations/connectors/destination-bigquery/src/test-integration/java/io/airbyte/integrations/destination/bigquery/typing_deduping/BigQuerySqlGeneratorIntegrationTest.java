@@ -4,28 +4,18 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
@@ -34,7 +24,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.RecordDiffer;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
@@ -49,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,11 +58,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public static final List<ColumnId> PRIMARY_KEY = List.of(ID_COLUMN);
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
   public static final ColumnId CDC_CURSOR = GENERATOR.buildColumnId("_ab_cdc_lsn");
-  public static final RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
-      Pair.of("_ab_cdc_lsn", AirbyteProtocolType.INTEGER)
-  );
   public static final String QUOTE = "`";
   private static final LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
   private static final LinkedHashMap<ColumnId, AirbyteType> CDC_COLUMNS;
@@ -814,41 +797,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     ) PARTITION BY (
                       DATE_TRUNC(_airbyte_extracted_at, DAY)
                     ) CLUSTER BY _airbyte_loaded_at;
-                    """))
-        .build());
-  }
-
-  private void createFinalTable() throws InterruptedException {
-    createFinalTable("");
-  }
-
-  private void createFinalTable(final String suffix) throws InterruptedException {
-    bq.query(QueryJobConfiguration.newBuilder(
-            new StringSubstitutor(Map.of(
-                "dataset", testDataset,
-                "suffix", suffix)).replace(
-                """
-                    CREATE TABLE ${dataset}.users_final${suffix} (
-                      _airbyte_raw_id STRING NOT NULL,
-                      _airbyte_extracted_at TIMESTAMP NOT NULL,
-                      _airbyte_meta JSON NOT NULL,
-                      `id` INT64,
-                      `updated_at` TIMESTAMP,
-                      `struct` JSON,
-                      `array` JSON,
-                      `string` STRING,
-                      `number` NUMERIC,
-                      `integer` INT64,
-                      `boolean` BOOL,
-                      `timestamp_with_timezone` TIMESTAMP,
-                      `timestamp_without_timezone` DATETIME,
-                      `time_with_timezone` STRING,
-                      `time_without_timezone` TIME,
-                      `date` DATE,
-                      `unknown` JSON
-                    )
-                    PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                    CLUSTER BY id, _airbyte_extracted_at;
                     """))
         .build());
   }
