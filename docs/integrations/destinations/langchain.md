@@ -133,6 +133,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977)     | Validate pinecone index dimensions during check  |
 | 0.0.5   | 2023-07-25 | [#28605](https://github.com/airbytehq/airbyte/pull/28605)     | Add Chroma support  |
 | 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556)     | Correctly dedupe records with composite and nested primary keys  |
 | 0.0.3   | 2023-07-20 | [#28509](https://github.com/airbytehq/airbyte/pull/28509)     | Change the base image to python:3.9-slim to fix build  |
