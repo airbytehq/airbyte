@@ -59,11 +59,7 @@ async def run_connector_pypi_publish_pipeline(context: PublishConnectorContext, 
     """Run a publish pipeline for a single connector.
 
     1. Validate the metadata file.
-    2. Check if the connector image already exists.
-    3. Build the connector, with platform variants.
-    4. Push the connector to DockerHub, with platform variants.
-    5. Upload its spec to the spec cache bucket.
-    6. Upload its metadata file to the metadata service bucket.
+    2. Build and publish the connector to PyPI.
 
     Returns:
         ConnectorReport: The reports holding publish results.
