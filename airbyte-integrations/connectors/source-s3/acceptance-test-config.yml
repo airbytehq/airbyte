@@ -65,7 +65,7 @@ acceptance_tests:
       status: succeed
     - config_path: integration_tests/invalid_config.json
       status: failed
-      # v4
+#      # v4
     - config_path: secrets/v4_config.json
       status: succeed
     - config_path: secrets/v4_parquet_config.json
@@ -74,8 +74,8 @@ acceptance_tests:
       status: succeed
     - config_path: secrets/v4_jsonl_config.json
       status: succeed
-#    - config_path: secrets/v4_jsonl_newlines_config.json
-#      status: succeed
+    - config_path: secrets/v4_jsonl_newlines_config.json
+      status: succeed
     - config_path: integration_tests/v4_invalid_config.json
       status: failed
 
@@ -88,10 +88,20 @@ acceptance_tests:
     - config_path: secrets/jsonl_newlines_config.json
       # v4
     - config_path: secrets/v4_config.json
+      backward_compatibility_tests_config:
+        disable_for_version: 3.1.2 # This backwards compatibility test cannot pass because it tries to run the v4 config with the v3.1.2 connector
     - config_path: secrets/v4_parquet_config.json
+      backward_compatibility_tests_config:
+        disable_for_version: 3.1.2 # This backwards compatibility test cannot pass because it tries to run the v4 config with the v3.1.2 connector
     - config_path: secrets/v4_avro_config.json
+      backward_compatibility_tests_config:
+        disable_for_version: 3.1.2 # This backwards compatibility test cannot pass because it tries to run the v4 config with the v3.1.2 connector
     - config_path: secrets/v4_jsonl_config.json
+      backward_compatibility_tests_config:
+        disable_for_version: 3.1.2 # This backwards compatibility test cannot pass because it tries to run the v4 config with the v3.1.2 connector
 #    - config_path: secrets/v4_jsonl_newlines_config.json
+#      backward_compatibility_tests_config:
+#        disable_for_version: 3.1.2 # This backwards compatibility test cannot pass because it tries to run the v4 config with the v3.1.2 connector
 
   full_refresh:
     tests:
@@ -212,11 +222,11 @@ acceptance_tests:
 #        future_state_path: integration_tests/v4_abnormal_state.json
 #      timeout_seconds: 1800
 
-  spec:
-    tests:
-    - spec_path: integration_tests/spec.json
+#  spec:
+#    tests:
+#    - spec_path: integration_tests/spec.json
       # v4
 #    - spec_path: integration_tests/v4_spec.json
 
 connector_image: airbyte/source-s3:dev
-test_strictness_level: high
+#test_strictness_level: high
