@@ -624,6 +624,16 @@ definitions:
         examples:
           - "2020-01-1T00:00:00Z"
           - "{{ config['start_time'] }}"
+      cursor_datetime_formats:
+        title: Cursor Datetime Formats
+        description: The possible formats for the cursor field
+        type: array
+        items:
+          type: string
+          examples:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%d"
+            - "%s"
       cursor_granularity:
         title: Cursor Granularity
         description:
