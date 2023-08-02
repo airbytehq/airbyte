@@ -85,21 +85,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             try:
                 for record in parser.parse_records(self.config, file, self._stream_reader, self.logger):
                     line_no += 1
-                    if record is None:
-                        # We shouldn't hit this branch. Either unparseable records should be skipped or we should fail
-                        # Logging a warning as this is unexpected
-                        self.logger.warning(
-                            f"Tried to process an unparseable record in file {file.uri} at line {line_no}. This is probably due to a misconfiguration and a bug in the record validation policy."
-                        )
-                        yield AirbyteMessage(
-                            type=MessageType.LOG,
-                            log=AirbyteLogMessage(
-                                level=Level.ERROR,
-                                message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                                stack_trace=traceback.format_exc(),
-                            ),
-                        )
-                        return
                     if self.config.schemaless:
                         record = {"data": record}
                     elif not self.record_passes_validation_policy(record):

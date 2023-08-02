@@ -72,7 +72,8 @@ class CsvParser(FileTypeParser):
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
-        # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
+        # We don't unregister the dialect because we are lazily parsing each csv file to generate records
+        # This will potentially be a problem if we ever process multiple streams concurrently
         dialect_name = config.name + DIALECT_NAME
         csv.register_dialect(
             dialect_name,
