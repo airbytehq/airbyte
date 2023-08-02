@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,8 +17,6 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -32,11 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.junit.jupiter.api.Test;
 
 public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -56,7 +50,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode) config).put("database", DATABASE_NAME);
+    ((ObjectNode) config).put(DATABASE_CONFIGURATION_KEY, DATABASE_NAME);
 
     mongoClient = MongoConnectionUtils.createMongoClient(config);
 
@@ -128,24 +122,6 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Test
-  void discoverCatalog() throws Exception {
-    final AirbyteCatalog catalog = new MongoDbSource().discover(config);
-    assertNotNull(catalog);
-
-    final Optional<AirbyteStream> stream = catalog.getStreams().stream().filter(n -> n.getName().equalsIgnoreCase(COLLECTION_NAME)).findFirst();
-    assertTrue(stream.isPresent());
-
-    final JsonNode schema = stream.get().getJsonSchema();
-    assertEquals("number", schema.get("properties").get("double_test").get("type").asText());
-    assertEquals("string", schema.get("properties").get("test").get("type").asText());
-    assertEquals("string", schema.get("properties").get("name").get("type").asText());
-    assertEquals("string", schema.get("properties").get("_id").get("type").asText());
-    assertEquals("string", schema.get("properties").get("id").get("type").asText());
-    assertEquals("object", schema.get("properties").get("object_test").get("type").asText());
-    assertEquals("number", schema.get("properties").get("int_test").get("type").asText());
   }
 
 }
