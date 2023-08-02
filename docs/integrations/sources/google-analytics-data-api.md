@@ -4,17 +4,16 @@ This page contains the setup guide and reference information for the Google Anal
 
 :::note
 
-[Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4), uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012.
+The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4) utilizes the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012.
 
-Google Analytics 4 (GA4) connector is the latest version of Google Analytics, which was introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This new model allows for more flexible and customizable reporting, as well as more accurate measurement of user behavior across devices and platforms.
+The Google Analytics 4 (GA4) connector represents the latest version of Google Analytics, introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This updated model allows for more flexibility and customization in reporting, and provides more accurate measurement of user behavior across various devices and platforms.
 
 :::
 
 ## Prerequisites
 
-- JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702)
-- OAuth 2.0 credentials for the service account that has access to Google Analytics
-- Property ID
+- A Google Analytics account with access to the property you want to track
+- OAuth or JSON credentials for the service account that has access to Google Analytics.
 
 ## Step 1: Set up Source
 
@@ -40,14 +39,14 @@ Use the service account email address to [add a user](https://support.google.com
 
 **For Airbyte Cloud:**
 
-1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your account` by selecting Oauth or Service Account for Authentication.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
+4. Click **Authenticate your account** by selecting Oauth or Service Account for Authentication.
 5. Log in and Authorize the Google Analytics account.
-6. Enter the [**Property ID**](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) whose events are tracked.
+6. Enter the [**Property ID**](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) whose events are tracked. The property ID should be a numeric string
 7. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD. (Not applied to custom Cohort reports).
-8. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
+8. **Custom Reports (Optional)**: You may provide a JSON array describing the custom reports you want to sync from Google Analytics.
 9. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
 
 **For Airbyte Open Source:**
@@ -70,7 +69,7 @@ The Google Analytics source connector supports the following [sync modes](https:
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-## Supported Streams
+## Supported streams
 
 This connector outputs the following incremental streams:
 
@@ -87,16 +86,25 @@ This connector outputs the following incremental streams:
 
 ## Connector-specific features
 
-:::note
+Custom Reports allow for flexibility in the reporting dimensions and metrics to meet your specific use case. Use the [GA4 Query Explorer](https://ga-dev-tools.google/ga4/query-explorer/) to help build your report. To ensure your dimensions and metrics are compatible, you can also refer to the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/). Custom reports should be constructed in the following format: 
 
-- Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "cohortSpec": "<cohortSpec>", "pivots": "<pivots>"}]`
-- Both `pivots` and `cohortSpec` are optional. Detailed description of the `cohortSpec` and the `pivots` objects you can find [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
-- To enable Incremental sync for Custom reports, you need to include the `date` dimension (except for custom Cohort reports).
-  :::
+```json
+[
+  {
+    "name": "<report-name>", 
+    "dimensions": ["<dimension-name>", ...], 
+    "metrics": ["<metric-name>", ...], 
+    "cohortSpec": "<cohortSpec>", 
+    "pivots": "<pivots>"
+  }
+]
+```
+- Both `pivots` and `cohortSpec` are optional. For detailed descriptions of the `cohortSpec` and the `pivots` objects, refer to the official documentation [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
+- To enable Incremental sync for Custom reports, you must include the `date` dimension (except for custom Cohort reports).
 
 ## Performance Considerations
 
-[Google Analytics Data API Quotas docs](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas).
+The Google Analytics connector is subject to Google Analytics Data API Quotas. For more information on these quotas, please refer to [the official docs](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas).
 
 ## Data type map
 
