@@ -135,6 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.7.2   | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                     |
 | 1.7.1   | 2023-08-02 | [\#28959](https://github.com/airbytehq/airbyte/pull/28959) | Destinations v2: Fix CDC syncs in non-dedup mode                                                                         |
 | 1.7.0   | 2023-08-01 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Open up early access program opt-in                                                                     |
 | 1.6.0   | 2023-07-26 | [\#28723](https://github.com/airbytehq/airbyte/pull/28723) | Destinations v2: Change raw table dataset and naming convention                                                          |
