@@ -2,15 +2,16 @@ data:
   allowedHosts:
     hosts:
       - https://api.short.io
+      - https://api-v2.short.cm
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
-  definitionId: 1cdcd5ef-a90a-4b91-a215-9db9fd769048
-  dockerImageTag: 0.2.0
+  definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg
