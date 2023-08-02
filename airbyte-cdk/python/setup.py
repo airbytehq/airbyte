@@ -55,7 +55,7 @@ setup(
         "dpath~=2.0.1",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
-        "jsonref~=0.2",
+        "jsonref",
         "pendulum",
         "genson==1.2.2",
         "pydantic~=1.9.2",
