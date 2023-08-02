@@ -7,7 +7,12 @@ from typing import Any, Dict, List, Optional, Set
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+<<<<<<< HEAD
 from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
+=======
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+>>>>>>> master
 from botocore.stub import Stubber
 from pydantic import AnyUrl
 from source_s3.v4.config import Config

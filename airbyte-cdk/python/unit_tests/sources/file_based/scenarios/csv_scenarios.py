@@ -40,50 +40,70 @@ single_csv_scenario = (
             "documentationUrl": "https://docs.airbyte.com/integrations/sources/in_memory_files",
             "connectionSpecification": {
                 "title": "InMemorySpec",
-                "description": "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed when users configure a file-based source.",
                 "type": "object",
                 "properties": {
                     "streams": {
-                        "title": "The list of streams to sync",
-                        "description": 'Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
-                        "order": 10,
+                        "title": "Streams",
                         "type": "array",
                         "items": {
                             "title": "FileBasedStreamConfig",
                             "type": "object",
                             "properties": {
-                                "name": {"title": "Name", "description": "The name of the stream.", "type": "string"},
+                                "name": {
+                                    "title": "Name",
+                                    "description": "The name of the stream.",
+                                    "type": "string"
+                                },
                                 "file_type": {
                                     "title": "File Type",
                                     "description": "The data file type that is being extracted for a stream.",
-                                    "type": "string",
+                                    "type": "string"
                                 },
                                 "globs": {
                                     "title": "Globs",
-                                    "description": 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
+                                    "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
                                     "type": "array",
-                                    "items": {"type": "string"},
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "validation_policy": {
                                     "title": "Validation Policy",
                                     "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
-                                    "type": "string",
+                                    "type": "string"
                                 },
                                 "input_schema": {
                                     "title": "Input Schema",
                                     "description": "The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
-                                    "oneOf": [{"type": "object"}, {"type": "string"}],
+                                    "oneOf": [
+                                        {
+                                            "type": "object"
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
                                 },
                                 "primary_key": {
                                     "title": "Primary Key",
                                     "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
-                                    "oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}],
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
                                 },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",
                                     "description": "When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
                                     "default": 3,
-                                    "type": "integer",
+                                    "type": "integer"
                                 },
                                 "format": {
                                     "oneOf": [
@@ -100,16 +120,18 @@ single_csv_scenario = (
                                                             "filetype": {
                                                                 "title": "Filetype",
                                                                 "default": "avro",
-                                                                "enum": ["avro"],
-                                                                "type": "string",
+                                                                "enum": [
+                                                                    "avro"
+                                                                ],
+                                                                "type": "string"
                                                             },
                                                             "decimal_as_float": {
                                                                 "title": "Convert Decimal Fields to Floats",
                                                                 "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
                                                                 "default": False,
-                                                                "type": "boolean",
-                                                            },
-                                                        },
+                                                                "type": "boolean"
+                                                            }
+                                                        }
                                                     },
                                                     {
                                                         "title": "CsvFormat",
@@ -118,37 +140,39 @@ single_csv_scenario = (
                                                             "filetype": {
                                                                 "title": "Filetype",
                                                                 "default": "csv",
-                                                                "enum": ["csv"],
-                                                                "type": "string",
+                                                                "enum": [
+                                                                    "csv"
+                                                                ],
+                                                                "type": "string"
                                                             },
                                                             "delimiter": {
                                                                 "title": "Delimiter",
                                                                 "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
                                                                 "default": ",",
-                                                                "type": "string",
+                                                                "type": "string"
                                                             },
                                                             "quote_char": {
                                                                 "title": "Quote Character",
                                                                 "description": "The character used for quoting CSV values. To disallow quoting, make this field blank.",
-                                                                "default": '"',
-                                                                "type": "string",
+                                                                "default": "\"",
+                                                                "type": "string"
                                                             },
                                                             "escape_char": {
                                                                 "title": "Escape Character",
                                                                 "description": "The character used for escaping special characters. To disallow escaping, leave this field blank.",
-                                                                "type": "string",
+                                                                "type": "string"
                                                             },
                                                             "encoding": {
                                                                 "title": "Encoding",
-                                                                "description": 'The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
+                                                                "description": "The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a> for allowable options.",
                                                                 "default": "utf8",
-                                                                "type": "string",
+                                                                "type": "string"
                                                             },
                                                             "double_quote": {
                                                                 "title": "Double Quote",
                                                                 "description": "Whether two quotes in a quoted CSV value denote a single quote in the data.",
                                                                 "default": True,
-                                                                "type": "boolean",
+                                                                "type": "boolean"
                                                             },
                                                             "quoting_behavior": {
                                                                 "title": "Quoting Behavior",
@@ -158,10 +182,10 @@ single_csv_scenario = (
                                                                     "Quote All",
                                                                     "Quote Special Characters",
                                                                     "Quote Non-numeric",
-                                                                    "Quote None",
-                                                                ],
-                                                            },
-                                                        },
+                                                                    "Quote None"
+                                                                ]
+                                                            }
+                                                        }
                                                     },
                                                     {
                                                         "title": "JsonlFormat",
@@ -170,10 +194,12 @@ single_csv_scenario = (
                                                             "filetype": {
                                                                 "title": "Filetype",
                                                                 "default": "jsonl",
-                                                                "enum": ["jsonl"],
-                                                                "type": "string",
+                                                                "enum": [
+                                                                    "jsonl"
+                                                                ],
+                                                                "type": "string"
                                                             }
-                                                        },
+                                                        }
                                                     },
                                                     {
                                                         "title": "ParquetFormat",
@@ -182,50 +208,59 @@ single_csv_scenario = (
                                                             "filetype": {
                                                                 "title": "Filetype",
                                                                 "default": "parquet",
-                                                                "enum": ["parquet"],
-                                                                "type": "string",
+                                                                "enum": [
+                                                                    "parquet"
+                                                                ],
+                                                                "type": "string"
                                                             },
                                                             "decimal_as_float": {
                                                                 "title": "Convert Decimal Fields to Floats",
                                                                 "description": "Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
                                                                 "default": False,
-                                                                "type": "boolean",
-                                                            },
-                                                        },
-                                                    },
+                                                                "type": "boolean"
+                                                            }
+                                                        }
+                                                    }
                                                 ]
-                                            },
+                                            }
                                         },
                                         {
                                             "title": "Legacy Format",
-                                            "required": ["filetype"],
+                                            "required": [
+                                                "filetype"
+                                            ],
                                             "type": "object",
-                                            "properties": {"filetype": {"title": "Filetype", "type": "string"}},
-                                        },
+                                            "properties": {
+                                                "filetype": {
+                                                    "title": "Filetype",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     ]
                                 },
                                 "schemaless": {
                                     "title": "Schemaless",
                                     "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
                                     "default": False,
-                                    "type": "boolean",
-                                },
+                                    "type": "boolean"
+                                }
                             },
-                            "required": ["name", "file_type", "validation_policy"],
-                        },
+                            "required": [
+                                "name",
+                                "file_type",
+                                "validation_policy"
+                            ]
+                        }
                     },
-                    "start_date": {
-                        "title": "Start Date",
-                        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-                        "examples": ["2021-01-01T00:00:00Z"],
-                        "format": "date-time",
-                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-                        "order": 1,
-                        "type": "string",
-                    },
+                    "source_config": {
+                        "title": "Source Config"
+                    }
                 },
-                "required": ["streams"],
-            },
+                "required": [
+                    "streams"
+                ]
+            }
         }
     )
     .set_expected_catalog(
@@ -236,8 +271,8 @@ single_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -317,9 +352,9 @@ multi_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -419,8 +454,8 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -514,8 +549,8 @@ invalid_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -583,8 +618,8 @@ csv_single_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -670,9 +705,9 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -686,7 +721,7 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -787,13 +822,13 @@ csv_custom_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -895,13 +930,13 @@ csv_legacy_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1021,13 +1056,13 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1043,7 +1078,7 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1139,8 +1174,8 @@ empty_schema_inference_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1339,7 +1374,7 @@ schemaless_csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1513,7 +1548,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },

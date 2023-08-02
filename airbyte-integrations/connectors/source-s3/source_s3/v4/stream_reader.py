@@ -10,8 +10,8 @@ from typing import Iterable, List, Optional, Set
 import boto3.session
 import smart_open
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from source_s3.v4.config import Config
@@ -158,14 +158,10 @@ def _get_s3_compatible_client_args(config: Config) -> dict:
     """
     Returns map of args used for creating s3 boto3 client.
     """
-    client_config = ClientConfig(signature_version=UNSIGNED())
-    client_kv_args = {"config": client_config}
-    client_kv_args.update(
-        {
-            "endpoint_url": config.source_config.endpoint,
-            "use_ssl": True,
-            "verify": True,
-            "config": ClientConfig(s3={"addressing_style": "auto"}),
-        }
-    )
+    client_kv_args = {
+        "config": ClientConfig(s3={"addressing_style": "auto"}),
+        "endpoint_url": config.source_config.endpoint,
+        "use_ssl": True,
+        "verify": True,
+    }
     return client_kv_args

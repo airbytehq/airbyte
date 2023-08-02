@@ -9,8 +9,19 @@ from typing import Iterable, List, Optional, Set, Generic
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
+from enum import Enum
+from io import IOBase
+from typing import Iterable, List, Optional, Set
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from wcmatch.glob import GLOBSTAR, globmatch
 from airbyte_cdk.sources.file_based.types import SpecType
+
+
+class FileReadMode(Enum):
+    READ = "r"
+    READ_BINARY = "rb"
 
 
 class AbstractFileBasedStreamReader(ABC, Generic[SpecType]):
@@ -24,6 +35,15 @@ class AbstractFileBasedStreamReader(ABC, Generic[SpecType]):
     @config.setter
     @abstractmethod
     def config(self, value: AbstractFileBasedSpec[SpecType]) -> None:
+        """
+        FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
+
+        Note: FileBasedSource only requires the keys defined in the abstract config, whereas concrete implementations of StreamReader
+        will require keys that (for example) allow it to authenticate with the 3rd party.
+
+        Therefore, concrete implementations of AbstractFileBasedStreamReader's config setter should assert that `value` is of the correct
+        config type for that type of StreamReader.
+        """
         ...
 
     @abstractmethod

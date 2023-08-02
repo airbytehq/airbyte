@@ -186,7 +186,25 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._infer_schema(files))
+        schema = loop.run_until_complete(self._infer_schema(files))
+        return self._fill_nulls(schema)
+
+    @staticmethod
+    def _fill_nulls(schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        if isinstance(schema, dict):
+            for k, v in schema.items():
+                if k == "type":
+                    if isinstance(v, list):
+                        if "null" not in v:
+                            schema[k] = ["null"] + v
+                    elif v != "null":
+                        schema[k] = ["null", v]
+                else:
+                    DefaultFileBasedStream._fill_nulls(v)
+        elif isinstance(schema, list):
+            for item in schema:
+                DefaultFileBasedStream._fill_nulls(item)
+        return schema
 
     async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         """
@@ -208,7 +226,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # number of concurrent tasks drops below the number allowed.
             done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
-                base_schema = merge_schemas(base_schema, task.result())
+                try:
+                    base_schema = merge_schemas(base_schema, task.result())
+                except Exception as exc:
+                    self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 
         return base_schema
 

@@ -15,7 +15,7 @@ class S3Config(BaseModel):
         title="AWS Access Key ID",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-                    "permissions. If accessing publicly available data, this field is not necessary.",
+        "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=1,
     )
@@ -24,7 +24,7 @@ class S3Config(BaseModel):
         title="AWS Secret Access Key",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-                    "permissions. If accessing publicly available data, this field is not necessary.",
+        "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=2,
     )
@@ -56,4 +56,3 @@ class Config(AbstractFileBasedSpec[S3Config]):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
-

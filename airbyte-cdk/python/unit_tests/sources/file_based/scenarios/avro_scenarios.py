@@ -243,8 +243,8 @@ single_avro_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "integer"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "integer"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -327,19 +327,19 @@ multiple_avro_combine_schema_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_double": {"type": "string"},
-                            "col_string": {"type": "string"},
+                            "col_double": {"type": ["null", "string"]},
+                            "col_string": {"type": ["null", "string"]},
                             "col_album": {
                                 "properties": {
-                                    "album": {"type": "string"},
+                                    "album": {"type": ["null", "string"]},
                                 },
-                                "type": "object",
+                                "type": ["null", "object"],
                             },
                             "col_song": {
                                 "properties": {
-                                    "title": {"type": "string"},
+                                    "title": {"type": ["null", "string"]},
                                 },
-                                "type": "object",
+                                "type": ["null", "object"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -422,28 +422,28 @@ avro_all_types_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_array": {"items": {"type": "string"}, "type": "array"},
-                            "col_bool": {"type": "boolean"},
-                            "col_bytes": {"type": "string"},
-                            "col_double": {"type": "string"},
-                            "col_enum": {"enum": ["POP_ROCK", "INDIE_ROCK", "ALTERNATIVE_ROCK"], "type": "string"},
-                            "col_fixed": {"pattern": "^[0-9A-Fa-f]{8}$", "type": "string"},
-                            "col_float": {"type": "number"},
-                            "col_int": {"type": "integer"},
-                            "col_long": {"type": "integer"},
-                            "col_map": {"additionalProperties": {"type": "string"}, "type": "object"},
+                            "col_array": {"items": {"type": ["null", "string"]}, "type": ["null", "array"]},
+                            "col_bool": {"type": ["null", "boolean"]},
+                            "col_bytes": {"type": ["null", "string"]},
+                            "col_double": {"type": ["null", "string"]},
+                            "col_enum": {"enum": ["POP_ROCK", "INDIE_ROCK", "ALTERNATIVE_ROCK"], "type": ["null", "string"]},
+                            "col_fixed": {"pattern": "^[0-9A-Fa-f]{8}$", "type": ["null", "string"]},
+                            "col_float": {"type": ["null", "number"]},
+                            "col_int": {"type": ["null", "integer"]},
+                            "col_long": {"type": ["null", "integer"]},
+                            "col_map": {"additionalProperties": {"type": ["null", "string"]}, "type": ["null", "object"]},
                             "col_record": {
-                                "properties": {"artist": {"type": "string"}, "song": {"type": "string"}, "year": {"type": "integer"}},
-                                "type": "object",
+                                "properties": {"artist": {"type": ["null", "string"]}, "song": {"type": ["null", "string"]}, "year": {"type": ["null", "integer"]}},
+                                "type": ["null", "object"],
                             },
-                            "col_string": {"type": "string"},
-                            "col_decimal": {"pattern": "^-?\\d{(1, 5)}(?:\\.\\d(1, 5))?$", "type": "string"},
-                            "col_uuid": {"type": "string"},
-                            "col_date": {"format": "date", "type": "string"},
-                            "col_time_millis": {"type": "integer"},
-                            "col_time_micros": {"type": "integer"},
-                            "col_timestamp_millis": {"format": "date-time", "type": "string"},
-                            "col_timestamp_micros": {"type": "string"},
+                            "col_string": {"type": ["null", "string"]},
+                            "col_decimal": {"pattern": "^-?\\d{(1, 5)}(?:\\.\\d(1, 5))?$", "type": ["null", "string"]},
+                            "col_uuid": {"type": ["null", "string"]},
+                            "col_date": {"format": "date", "type": ["null", "string"]},
+                            "col_time_millis": {"type": ["null", "integer"]},
+                            "col_time_micros": {"type": ["null", "integer"]},
+                            "col_timestamp_millis": {"format": "date-time", "type": ["null", "string"]},
+                            "col_timestamp_micros": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -587,10 +587,10 @@ multiple_streams_avro_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_title": {"type": "string"},
-                            "col_album": {"type": "string", "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"]},
-                            "col_year": {"type": "integer"},
-                            "col_vocals": {"type": "boolean"},
+                            "col_title": {"type": ["null", "string"]},
+                            "col_album": {"type": ["null", "string"], "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"]},
+                            "col_year": {"type": ["null", "integer"]},
+                            "col_vocals": {"type": ["null", "boolean"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -604,12 +604,12 @@ multiple_streams_avro_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_name": {"type": "string"},
+                            "col_name": {"type": ["null", "string"]},
                             "col_location": {
-                                "properties": {"country": {"type": "string"}, "state": {"type": "string"}, "city": {"type": "string"}},
-                                "type": "object",
+                                "properties": {"country": {"type": ["null", "string"]}, "state": {"type": ["null", "string"]}, "city": {"type": ["null", "string"]}},
+                                "type": ["null", "object"],
                             },
-                            "col_attendance": {"type": "integer"},
+                            "col_attendance": {"type": ["null", "integer"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -698,19 +698,19 @@ avro_file_with_decimal_as_float_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_double": {"type": "number"},
-                            "col_string": {"type": "string"},
+                            "col_double": {"type": ["null", "number"]},
+                            "col_string": {"type": ["null", "string"]},
                             "col_album": {
                                 "properties": {
-                                    "album": {"type": "string"},
+                                    "album": {"type": ["null", "string"]},
                                 },
-                                "type": "object",
+                                "type": ["null", "object"],
                             },
                             "col_song": {
                                 "properties": {
-                                    "title": {"type": "string"},
+                                    "title": {"type": ["null", "string"]},
                                 },
-                                "type": "object",
+                                "type": ["null", "object"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
