@@ -113,6 +113,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger):
+        # Only cast values if the schema is provided
         if schema:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
             return partial(
