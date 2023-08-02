@@ -16,6 +16,11 @@ COPY dbt-project-template-snowflake/* ./dbt-template/
 
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
+
+# workaround for https://github.com/yaml/pyyaml/issues/601
+# this should be fixed in the airbyte/base-airbyte-protocol-python image
+RUN pip install "Cython<3.0" "pyyaml==5.4" --no-build-isolation
+
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code

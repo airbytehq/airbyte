@@ -1193,6 +1193,58 @@ FAILING_CATALOG_TRANSITIONS = [
             ),
         },
     ),
+    Transition(
+        name="Removing a top level field should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"username": {"type": "string"}, "email": {"type": "string"}},
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"username": {"type": "string"}},
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Removing a nested field should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
@@ -1264,32 +1316,6 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["string"]}}}}},
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-    ),
-    Transition(
-        name="Removing a field should not fail.",
-        should_fail=False,
-        previous={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {
-                        "properties": {
-                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
-                        }
-                    },
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-        current={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )

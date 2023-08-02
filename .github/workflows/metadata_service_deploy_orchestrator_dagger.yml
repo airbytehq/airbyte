@@ -19,6 +19,10 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "metadata deploy orchestrator"
+          context: "master"
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
         env:
           DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

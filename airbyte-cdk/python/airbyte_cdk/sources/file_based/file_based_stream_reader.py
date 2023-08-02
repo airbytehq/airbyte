@@ -2,19 +2,46 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import abstractmethod
-from datetime import datetime
-from fnmatch import fnmatch
+import logging
+from abc import ABC, abstractmethod
+from enum import Enum
 from io import IOBase
-from typing import List, Optional
+from typing import Iterable, List, Optional, Set
 
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from pydantic import BaseModel
+from wcmatch.glob import GLOBSTAR, globmatch
 
 
-class AbstractFileBasedStreamReader(BaseModel):
+class FileReadMode(Enum):
+    READ = "r"
+    READ_BINARY = "rb"
+
+
+class AbstractFileBasedStreamReader(ABC):
+    def __init__(self) -> None:
+        self._config = None
+
+    @property
+    def config(self) -> Optional[AbstractFileBasedSpec]:
+        return self._config
+
+    @config.setter
     @abstractmethod
-    def open_file(self, file: RemoteFile) -> IOBase:
+    def config(self, value: AbstractFileBasedSpec) -> None:
+        """
+        FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
+
+        Note: FileBasedSource only requires the keys defined in the abstract config, whereas concrete implementations of StreamReader
+        will require keys that (for example) allow it to authenticate with the 3rd party.
+
+        Therefore, concrete implementations of AbstractFileBasedStreamReader's config setter should assert that `value` is of the correct
+        config type for that type of StreamReader.
+        """
+        ...
+
+    @abstractmethod
+    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
         """
         Return a file handle for reading.
 
@@ -27,14 +54,13 @@ class AbstractFileBasedStreamReader(BaseModel):
         ...
 
     @abstractmethod
-    def list_matching_files(
+    def get_matching_files(
         self,
         globs: List[str],
-        from_date: Optional[datetime] = None,
-    ) -> List[RemoteFile]:
+        logger: logging.Logger,
+    ) -> Iterable[RemoteFile]:
         """
-        Return all files that match any of the globs. If a from_date provided,
-        return only files last modified after that date.
+        Return all files that match any of the globs.
 
         Example:
 
@@ -49,16 +75,29 @@ class AbstractFileBasedStreamReader(BaseModel):
         """
         ...
 
-    @staticmethod
-    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
+    @classmethod
+    def filter_files_by_globs(cls, files: List[RemoteFile], globs: List[str]) -> Iterable[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """
-        return [file for file in files if any(fnmatch(file.uri, glob) for glob in globs)]
+        seen = set()
+
+        for file in files:
+            if cls.file_matches_globs(file, globs):
+                if file.uri not in seen:
+                    seen.add(file.uri)
+                    yield file
 
     @staticmethod
-    def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]) -> List[str]:
+    def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:
+        # Use the GLOBSTAR flag to enable recursive ** matching
+        # (https://facelessuser.github.io/wcmatch/wcmatch/#globstar)
+        return any(globmatch(file.uri, g, flags=GLOBSTAR) for g in globs)
+
+    @staticmethod
+    def get_prefixes_from_globs(globs: List[str]) -> Set[str]:
         """
         Utility method for extracting prefixes from the globs.
         """
-        ...
+        prefixes = {glob.split("*")[0] for glob in globs}
+        return set(filter(lambda x: bool(x), prefixes))

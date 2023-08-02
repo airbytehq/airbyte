@@ -8,9 +8,12 @@
 # Please reach out to the Connectors Operations team if you have any question.
 FROM airbyte/integration-base-java:dev AS build
 
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
+  # these two lines are a workaround for https://github.com/yaml/pyyaml/issues/601
+  pip3 install wheel && \
+  pip3 install "Cython<3.0" "pyyaml==5.4" --no-build-isolation && \
   pip3 install dbt-clickhouse>=1.4.0
 
 # Luckily, none of normalization's files conflict with destination-clickhouse's files :)
@@ -44,7 +47,7 @@ ENV APPLICATION destination-clickhouse
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/destination-clickhouse
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"

@@ -8,7 +8,10 @@ const destinationDocs = `${connectorsDocsRoot}/destinations`;
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
     .readdirSync(dir)
-    .filter((fileName) => !(fileName.endsWith('.inapp.md') || fileName.endsWith('-migrations.md')))
+    .filter(
+      (fileName) =>
+        !(fileName.endsWith('.inapp.md') || fileName.endsWith('-migrations.md'))
+    )
     .map((fileName) => fileName.replace('.md', ''))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
@@ -218,26 +221,20 @@ const contributeToAirbyte = {
     id: 'contributing-to-airbyte/README',
   },
   items: [
-    'contributing-to-airbyte/code-of-conduct',
-    'contributing-to-airbyte/issues-and-pull-requests',
-    'contributing-to-airbyte/developing-locally',
-    'contributing-to-airbyte/developing-on-docker',
-    'contributing-to-airbyte/python-gradle-setup',
-    'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/gradle',
+    'contributing-to-airbyte/issues-and-requests',
+    'contributing-to-airbyte/change-cdk-connector',
+    'contributing-to-airbyte/submit-new-connector',
+    'contributing-to-airbyte/writing-docs',
     {
       type: 'category',
-      label: 'Updating documentation',
-      link: {
-        type: 'doc',
-        id: 'contributing-to-airbyte/contribute-documentation',
-      },
+      label: 'Resources',
       items: [
-        {
-          type: 'link',
-          label: 'Connector doc template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
+        'contributing-to-airbyte/resources/pull-requests-handbook',
+        'contributing-to-airbyte/resources/code-style',
+        'contributing-to-airbyte/resources/developing-locally',
+        'contributing-to-airbyte/resources/developing-on-docker',
+        'contributing-to-airbyte/resources/gradle',
+        'contributing-to-airbyte/resources/python-gradle-setup',
       ],
     },
   ],
@@ -361,7 +358,9 @@ const operatorGuide = {
     'operator-guides/using-the-airflow-airbyte-operator',
     'operator-guides/using-prefect-task',
     'operator-guides/using-dagster-integration',
+    'operator-guides/using-kestra-plugin',
     'operator-guides/locating-files-local-destination',
+    'operator-guides/collecting-metrics',
     {
       type: 'category',
       label: 'Transformations and Normalization',
@@ -371,19 +370,10 @@ const operatorGuide = {
         'operator-guides/transformation-and-normalization/transformations-with-airbyte',
       ],
     },
-    {
-      type: 'category',
-      label: 'Configuring Airbyte',
-      link: {
-        type: 'doc',
-        id: 'operator-guides/configuring-airbyte',
-      },
-      items: ['operator-guides/sentry-integration'],
-    },
+    'operator-guides/configuring-airbyte',
     'operator-guides/using-custom-connectors',
     'operator-guides/scaling-airbyte',
     'operator-guides/configuring-sync-notifications',
-    'operator-guides/collecting-metrics',
   ],
 };
 
@@ -395,6 +385,7 @@ const understandingAirbyte = {
     'understanding-airbyte/airbyte-protocol',
     'understanding-airbyte/airbyte-protocol-docker',
     'understanding-airbyte/basic-normalization',
+    'understanding-airbyte/typing-deduping',
     {
       type: 'category',
       label: 'Connections and Sync Modes',
@@ -425,6 +416,11 @@ const understandingAirbyte = {
 const security = {
   type: 'doc',
   id: 'operator-guides/security',
+};
+
+const support = {
+  type: 'doc',
+  id: 'operator-guides/contact-support',
 };
 
 module.exports = {
@@ -459,6 +455,7 @@ module.exports = {
     understandingAirbyte,
     contributeToAirbyte,
     sectionHeader('Resources'),
+    support,
     security,
     {
       type: 'category',
@@ -471,6 +468,7 @@ module.exports = {
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
+        'project-overview/code-of-conduct',
         {
           type: 'link',
           label: 'Airbyte Repository',
@@ -499,6 +497,20 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        /*
+        {
+              type: 'category',
+              label: 'May 2023',
+              link: {
+                  type: 'doc',
+                  id: 'release_notes/may_2023',
+              },
+              items: [
+                'release_notes/upgrading_to_destinations_v2'
+              ],
+        },
+        */
+        'release_notes/june_2023',
         'release_notes/may_2023',
         'release_notes/april_2023',
         'release_notes/march_2023',

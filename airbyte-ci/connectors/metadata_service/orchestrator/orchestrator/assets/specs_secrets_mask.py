@@ -46,11 +46,9 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
-def all_specs_secrets(
-    persist_oss_registry_from_metadata: ConnectorRegistryV0, persist_cloud_registry_from_metadata: ConnectorRegistryV0
-) -> Set[str]:
-    oss_registry_from_metadata_dict = persist_oss_registry_from_metadata.dict()
-    cloud_registry_from_metadata_dict = persist_cloud_registry_from_metadata.dict()
+def all_specs_secrets(persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0) -> Set[str]:
+    oss_registry_from_metadata_dict = persisted_oss_registry.dict()
+    cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()
 
     all_secret_properties = []
     all_entries = (

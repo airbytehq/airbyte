@@ -1,0 +1,24 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fc8132b4-848a-4b8c-8421-daacc4ea1345
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-shopify-oauth
+  githubIssueLabel: source-shopify-oauth
+  icon: shopify.svg
+  license: ELv2
+  name: Shopify
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: false
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/shopify-oauth
+  tags:
+    - language:python
+  _ab_internal:
+    _sl: 100
+    _ql: 200
+  supportLevel: community
+metadataSpecVersion: "1.0"

@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyte
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteLogMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -37,6 +38,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -44,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +77,12 @@ class AsyncStreamConsumerTest {
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))));
+
+  private static final JsonNode PAYLOAD = Jsons.jsonNode(Map.of(
+      "created_at", "2022-02-01T17:02:19+00:00",
+      "id", 1,
+      "make", "Mazda",
+      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
 
   private static final AirbyteMessage STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -114,7 +124,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith1State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -130,7 +140,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith2State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -147,21 +157,20 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith0State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> allRecords = generateRecords(1_000);
 
     consumer.start();
-    consumeRecords(consumer, expectedRecords);
+    consumeRecords(consumer, allRecords);
     consumer.close();
 
     verifyStartAndClose();
 
-    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, allRecords);
   }
 
   @Test
   void testShouldBlockWhenQueuesAreFull() throws Exception {
     consumer.start();
-
   }
 
   /*
@@ -215,6 +224,60 @@ class AsyncStreamConsumerTest {
     assertTrue(recordCount.get() < 1000, String.format("Record count was %s", recordCount.get()));
   }
 
+  @Test
+  void deserializeAirbyteMessageWithAirbyteRecord() {
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(PAYLOAD));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final String airbyteRecordString = Jsons.serialize(PAYLOAD);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(airbyteRecordString, partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithEmptyAirbyteRecord() {
+    final Map emptyMap = Map.of();
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(Jsons.jsonNode(emptyMap)));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(emptyMap.toString(), partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithNoStateOrRecord() {
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.LOG)
+        .withLog(new AirbyteLogMessage());
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithAirbyteState() {
+    final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithBadAirbyteState() {
+    final AirbyteMessage badState = new AirbyteMessage()
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
+    final String serializedAirbyteMessage = Jsons.serialize(badState);
+    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
+  }
+
   @Nested
   class ErrorHandling {
 
@@ -246,10 +309,10 @@ class AsyncStreamConsumerTest {
 
   }
 
-  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<PartialAirbyteMessage> records) {
+  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<AirbyteMessage> records) {
     records.forEach(m -> {
       try {
-        consumer.accept(m.getSerialized(), RECORD_SIZE_20_BYTES);
+        consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -258,25 +321,20 @@ class AsyncStreamConsumerTest {
 
   // NOTE: Generates records at chunks of 160 bytes
   @SuppressWarnings("SameParameterValue")
-  private static List<PartialAirbyteMessage> generateRecords(final long targetSizeInBytes) {
-    final List<PartialAirbyteMessage> output = Lists.newArrayList();
+  private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
+    final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
       final JsonNode payload =
           Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
       final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
-      final PartialAirbyteMessage airbyteMessage = new PartialAirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)
-          .withRecord(new PartialAirbyteRecordMessage()
+          .withRecord(new AirbyteRecordMessage()
               .withStream(STREAM_NAME)
-              .withNamespace(SCHEMA_NAME))
-          .withSerialized(Jsons.serialize(new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream(STREAM_NAME)
-                  .withNamespace(SCHEMA_NAME)
-                  .withData(payload))));
+              .withNamespace(SCHEMA_NAME)
+              .withData(payload));
       if (bytesCounter > targetSizeInBytes) {
         break;
       } else {
@@ -292,7 +350,7 @@ class AsyncStreamConsumerTest {
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})
-  private void verifyRecords(final String streamName, final String namespace, final Collection<PartialAirbyteMessage> expectedRecords)
+  private void verifyRecords(final String streamName, final String namespace, final List<AirbyteMessage> allRecords)
       throws Exception {
     final ArgumentCaptor<Stream<PartialAirbyteMessage>> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
     verify(flushFunction, atLeast(1)).flush(
@@ -306,7 +364,15 @@ class AsyncStreamConsumerTest {
         // flatten those results into a single list for the simplicity of comparison
         .flatMap(s -> s)
         .toList();
-    assertEquals(expectedRecords.stream().toList(), actualRecords);
+
+    final var expRecords = allRecords.stream().map(m -> new PartialAirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new PartialAirbyteRecordMessage()
+            .withStream(m.getRecord().getStream())
+            .withNamespace(m.getRecord().getNamespace())
+            .withData(m.getRecord().getData()))
+        .withSerialized(Jsons.serialize(m.getRecord().getData()))).collect(Collectors.toList());
+    assertEquals(expRecords, actualRecords);
   }
 
 }

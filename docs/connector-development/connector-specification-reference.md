@@ -57,7 +57,9 @@ Additionally, `order` values cannot be duplicated within the same object or grou
 
 By default, all optional fields will be collapsed into an `Optional fields` section which can be expanded or collapsed by the user. This helps streamline the UI for setting up a connector by initially focusing attention on the required fields only. For existing connectors, if their configuration contains a non-empty and non-default value for a collapsed optional field, then that section will be automatically opened when the connector is opened in the UI.
 
-These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal. **Note:** `always_show` is only allowed on optional fields.
+These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal. 
+
+**Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be shwon.
 
 Within a collapsed `Optional fields` section, the optional fields' `order` defines their position in the section; those without an `order` will be placed after fields with an `order`, and will themselves be ordered alphabetically by field name.
 

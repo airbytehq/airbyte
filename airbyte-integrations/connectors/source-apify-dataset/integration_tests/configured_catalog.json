@@ -7,7 +7,17 @@
         "name": "DatasetItems",
         "supported_sync_modes": ["full_refresh"],
         "destination_sync_mode": "overwrite",
-        "json_schema": {}
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "data": {
+                "type": "object",
+                "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
       }
     }
   ]
