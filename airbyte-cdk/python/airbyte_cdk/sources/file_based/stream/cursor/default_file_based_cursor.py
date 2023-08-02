@@ -48,10 +48,20 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 )
 
     def get_state(self) -> StreamState:
-        state = {
-            "history": self._file_to_datetime_history,
-        }
+        state = {"history": self._file_to_datetime_history, "_ab_source_file_last_modified": self._get_cursor()}
         return state
+
+    def _get_cursor(self) -> Optional[str]:
+        """
+        Returns the cursor value.
+
+        Files are synced in order of last-modified with secondary sort on filename, so the cursor value is
+        a string joining the last-modified timestamp of the last synced file and the name of the file.
+        """
+        if self._file_to_datetime_history.items():
+            filename, timestamp = max(self._file_to_datetime_history.items(), key=lambda x: (x[1], x[0]))
+            return f"{timestamp}_{filename}"
+        return None
 
     def _is_history_full(self) -> bool:
         """

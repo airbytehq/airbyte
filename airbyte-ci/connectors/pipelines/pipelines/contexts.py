@@ -15,15 +15,15 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from connector_ops.utils import Connector
+from dagger import Client, Directory, Secret
+from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
 from pipelines.bases import CIContext, ConnectorReport, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
 from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
-from connector_ops.utils import Connector
-from dagger import Client, Directory, Secret
-from github import PullRequest
 
 
 class ContextState(Enum):

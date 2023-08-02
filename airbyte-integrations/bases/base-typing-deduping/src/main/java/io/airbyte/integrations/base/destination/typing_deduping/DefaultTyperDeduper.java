@@ -57,6 +57,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       throw new IllegalStateException("Tables were already prepared.");
     }
     overwriteStreamsWithTmpTable = new HashSet<>();
+    LOGGER.info("Preparing final tables");
 
     // For each stream, make sure that its corresponding final table exists.
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
@@ -106,6 +107,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    * into the final table.
    */
   public void commitFinalTables() throws Exception {
+    LOGGER.info("Committing final tables");
     for (StreamConfig streamConfig : parsedCatalog.streams()) {
       if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
         StreamId streamId = streamConfig.id();
