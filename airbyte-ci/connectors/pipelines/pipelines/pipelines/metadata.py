@@ -47,7 +47,12 @@ class PoetryRun(Step):
 
     async def _run(self, poetry_run_args: list) -> StepResult:
         poetry_run_exec = self.poetry_run_container.with_exec(poetry_run_args)
-        return await self.get_step_result(poetry_run_exec)
+        result = await self.get_step_result(poetry_run_exec)
+
+        py_project_content = await poetry_run_exec.with_exec(["cat", "pyproject.toml"]).stdout()
+        lockfile_content = await poetry_run_exec.with_exec(["cat", "poetry.lock"]).stdout()
+        breakpoint()
+        return result
 
 
 class MetadataValidation(PoetryRun):
