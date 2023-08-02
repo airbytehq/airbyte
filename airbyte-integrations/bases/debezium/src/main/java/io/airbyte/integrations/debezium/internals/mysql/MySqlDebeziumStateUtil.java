@@ -28,7 +28,6 @@ import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +67,8 @@ public class MySqlDebeziumStateUtil {
       // Get the GTID set that is available in the server
       final GtidSet availableGtidSet = new GtidSet(availableGtidStr.get());
       if (gtidSetFromSavedState.isContainedWithin(availableGtidSet)) {
-        LOGGER.info("MySQL server current GTID set {} does contain the GTID set required by the connector {}", availableGtidSet, gtidSetFromSavedState);
+        LOGGER.info("MySQL server current GTID set {} does contain the GTID set required by the connector {}", availableGtidSet,
+            gtidSetFromSavedState);
         final Optional<GtidSet> gtidSetToReplicate = subtractGtidSet(availableGtidSet, gtidSetFromSavedState, database);
         if (gtidSetToReplicate.isPresent()) {
           final Optional<GtidSet> purgedGtidSet = purgedGtidSet(database);
@@ -162,9 +162,9 @@ public class MySqlDebeziumStateUtil {
   }
 
   public Optional<MysqlDebeziumStateAttributes> savedOffset(final Properties baseProperties,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode cdcOffset,
-      final JsonNode config) {
+                                                            final ConfiguredAirbyteCatalog catalog,
+                                                            final JsonNode cdcOffset,
+                                                            final JsonNode config) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty()),
         Optional.empty());
@@ -216,7 +216,7 @@ public class MySqlDebeziumStateUtil {
   }
 
   private Optional<MysqlDebeziumStateAttributes> extractStateAttributes(final Set<Partition> partitions,
-      final Map<Partition, MySqlOffsetContext> offsets) {
+                                                                        final Map<Partition, MySqlOffsetContext> offsets) {
     boolean found = false;
     for (final Partition partition : partitions) {
       final MySqlOffsetContext mySqlOffsetContext = offsets.get(partition);
@@ -239,7 +239,6 @@ public class MySqlDebeziumStateUtil {
         Optional.ofNullable(previousOffset.gtidSet())));
 
   }
-
 
   public JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,

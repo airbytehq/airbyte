@@ -110,7 +110,8 @@ public class MysqlDebeziumStateUtilTest {
     final Optional<MysqlDebeziumStateAttributes> parsedOffset = mySqlDebeziumStateUtil.savedOffset(MYSQL_PROPERTIES, CONFIGURED_CATALOG,
         debeziumState, config);
     Assertions.assertTrue(parsedOffset.isPresent());
-    final JsonNode stateGeneratedUsingParsedOffset = mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+    final JsonNode stateGeneratedUsingParsedOffset =
+        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     Assertions.assertEquals(debeziumState, stateGeneratedUsingParsedOffset);
   }
 
@@ -137,7 +138,8 @@ public class MysqlDebeziumStateUtilTest {
     final Optional<MysqlDebeziumStateAttributes> parsedOffset = mySqlDebeziumStateUtil.savedOffset(MYSQL_PROPERTIES, CONFIGURED_CATALOG,
         debeziumState, config);
     Assertions.assertTrue(parsedOffset.isPresent());
-    final JsonNode stateGeneratedUsingParsedOffset = mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+    final JsonNode stateGeneratedUsingParsedOffset =
+        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     Assertions.assertEquals(debeziumState, stateGeneratedUsingParsedOffset);
   }
 
