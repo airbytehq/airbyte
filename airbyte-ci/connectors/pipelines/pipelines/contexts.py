@@ -174,7 +174,7 @@ class PipelineContext:
 
     @property
     def has_dagger_cloud_token(self) -> bool:
-        return bool(os.getenv("_EXPERIMENTAL_DAGGER_CLOUD_TOKEN"))
+        return "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN" in os.environ
 
     @property
     def dagger_cloud_url(self) -> str:
