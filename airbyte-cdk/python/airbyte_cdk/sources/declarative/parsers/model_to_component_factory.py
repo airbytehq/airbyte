@@ -507,6 +507,7 @@ class ModelToComponentFactory:
 
         return DatetimeBasedCursor(
             cursor_field=model.cursor_field,
+            cursor_datetime_formats=model.cursor_datetime_formats if model.cursor_datetime_formats else [],
             cursor_granularity=model.cursor_granularity,
             datetime_format=model.datetime_format,
             end_datetime=end_datetime,
