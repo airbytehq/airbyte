@@ -847,6 +847,8 @@ class TestConnection:
             "schedule_data",
             "status",
             "resource_requirements",
+            "non_breaking_changes_preference",
+            "geography",
         ]
 
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_manual_schedule, "bar.yaml")

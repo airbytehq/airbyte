@@ -1,21 +1,21 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_employee": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_customer_thread": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ip_address": {
       "type": ["null", "string"]
     },
     "message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "file_name": {
       "type": ["null", "string"]
@@ -27,11 +27,11 @@
       "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "read": {

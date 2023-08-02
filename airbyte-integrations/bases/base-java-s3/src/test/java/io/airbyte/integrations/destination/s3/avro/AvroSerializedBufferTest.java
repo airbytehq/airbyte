@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
@@ -27,6 +28,7 @@ import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class AvroSerializedBufferTest {
@@ -48,6 +50,11 @@ public class AvroSerializedBufferTest {
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
+
+  @BeforeAll
+  public static void setup() {
+    DestinationConfig.initialize(Jsons.deserialize("{}"));
+  }
 
   @Test
   public void testSnappyAvroWriter() throws Exception {

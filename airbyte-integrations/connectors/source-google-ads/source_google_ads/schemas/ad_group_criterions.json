@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.ad_group": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.age_range.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.app_payment_model.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.approval_status": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.audience.audience": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.bid_modifier": {
+      "type": ["null", "number"]
+    },
+    "ad_group_criterion.combined_audience.combined_audience": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.cpc_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.cpm_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.cpv_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.criterion_id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.custom_affinity.custom_affinity": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.custom_audience.custom_audience": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.custom_intent.custom_intent": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.disapproval_reasons": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.display_name": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.effective_cpc_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.effective_cpc_bid_source": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.effective_cpm_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.effective_cpm_bid_source": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.effective_cpv_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.effective_cpv_bid_source": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.effective_percent_cpc_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.effective_percent_cpc_bid_source": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.final_mobile_urls": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.final_url_suffix": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.final_urls": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.gender.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.income_range.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.keyword.match_type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.keyword.text": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.labels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.mobile_app_category.mobile_app_category_constant": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.mobile_application.app_id": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.mobile_application.name": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.negative": {
+      "type": ["null", "boolean"]
+    },
+    "ad_group_criterion.parental_status.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.percent_cpc_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.placement.url": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.position_estimates.estimated_add_clicks_at_first_position_cpc": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.position_estimates.estimated_add_cost_at_first_position_cpc": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.position_estimates.first_page_cpc_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.position_estimates.first_position_cpc_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.position_estimates.top_of_page_cpc_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.quality_info.creative_quality_score": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.quality_info.post_click_quality_score": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.quality_info.quality_score": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.quality_info.search_predicted_ctr": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.resource_name": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.status": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.system_serving_status": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.topic.path": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.topic.topic_constant": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.tracking_url_template": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.url_custom_parameters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "ad_group_criterion.user_interest.user_interest_category": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.user_list.user_list": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.webpage.conditions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.webpage.coverage_percentage": {
+      "type": ["null", "number"]
+    },
+    "ad_group_criterion.webpage.criterion_name": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.webpage.sample.sample_urls": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ad_group_criterion.youtube_channel.channel_id": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.youtube_video.video_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verify - Services Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "default_template_sid": {
+      "type": ["null", "string"]
+    },
+    "tts_name": {
+      "type": ["null", "string"]
+    },
+    "psd2_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "do_not_share_warning_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "mailer_sid": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "totp": {
+      "type": ["null", "object"],
+      "properties": {
+        "time_step": {
+          "type": ["null", "number"]
+        },
+        "skew": {
+          "type": ["null", "number"]
+        },
+        "code_length": {
+          "type": ["null", "number"]
+        },
+        "issuer": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "code_length": {
+      "type": ["null", "number"]
+    },
+    "custom_code_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "push": {
+      "type": ["null", "object"],
+      "properties": {
+        "apn_credential_sid": {
+            "type": ["null", "string"]
+          },
+        "include_date": {
+          "type": ["null", "boolean"]
+        },
+        "fcm_credential_sid": {
+            "type": ["null", "string"]
+          }
+      }
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "dtmf_input_required": {
+      "type": ["null", "boolean"]
+    },
+    "skip_sms_to_landlines": {
+      "type": ["null", "boolean"]
+    },
+    "lookup_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "verification_checks": {
+          "type": ["null", "string"]
+        },
+        "rate_limits": {
+          "type": ["null", "string"]
+        },
+        "entities": {
+          "type": ["null", "string"]
+        },
+        "access_tokens": {
+          "type": ["null", "string"]
+        },
+        "verifications": {
+          "type": ["null", "string"]
+        },
+        "webhooks": {
+          "type": ["null", "string"]
+        },
+        "messaging_configurations": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

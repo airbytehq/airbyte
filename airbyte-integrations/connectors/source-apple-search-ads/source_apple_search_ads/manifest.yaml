@@ -94,7 +94,6 @@ definitions:
     cursor_granularity: "P1D"
     cursor_field: "date"
     lookback_window: "P30D"
-    datetime_format: "%Y-%m-%d"
 
   report_stream:
     selector:

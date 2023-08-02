@@ -87,6 +87,9 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {}
+    },
+    "amount_decimal": {
+      "type": ["null", "string"]
     }
   }
 }
