@@ -39,3 +39,31 @@ class TestStep:
         assert step_result.stderr == timed_out_step_result.stderr
         assert step_result.output_artifact == timed_out_step_result.output_artifact
         assert step.retry_count == step.max_retries + 1
+
+
+class TestReport:
+    @pytest.fixture
+    def test_context(self, mocker):
+        return mocker.Mock()
+
+    def test_report_failed_if_it_has_no_step_result(self, test_context):
+        report = bases.Report(test_context, [])
+        assert not report.success
+        report = bases.Report(test_context, [bases.StepResult(None, bases.StepStatus.FAILURE)])
+        assert not report.success
+
+        report = bases.Report(
+            test_context, [bases.StepResult(None, bases.StepStatus.FAILURE), bases.StepResult(None, bases.StepStatus.SUCCESS)]
+        )
+        assert not report.success
+
+        report = bases.Report(test_context, [bases.StepResult(None, bases.StepStatus.SUCCESS)])
+        assert report.success
+
+        report = bases.Report(
+            test_context, [bases.StepResult(None, bases.StepStatus.SUCCESS), bases.StepResult(None, bases.StepStatus.SKIPPED)]
+        )
+        assert report.success
+
+        report = bases.Report(test_context, [bases.StepResult(None, bases.StepStatus.SKIPPED)])
+        assert report.success
