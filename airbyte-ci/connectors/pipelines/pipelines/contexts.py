@@ -15,15 +15,15 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from connector_ops.utils import Connector
+from dagger import Client, Directory, Secret
+from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
 from pipelines.bases import CIContext, ConnectorReport, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
 from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
-from connector_ops.utils import Connector
-from dagger import Client, Directory, Secret
-from github import PullRequest
 
 
 class ContextState(Enum):
@@ -571,3 +571,46 @@ class PublishConnectorContext(ConnectorContext):
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message
+
+
+class PublishPyPIContext(ConnectorContext):
+    def __init__(
+        self,
+        connector: Connector,
+        modified_files: List[str],
+        pypi_username: str,
+        pypi_password: str,
+        pypi_repository: str,
+        ci_report_bucket: str,
+        report_output_prefix: str,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        gha_workflow_run_url: Optional[str] = None,
+        dagger_logs_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+        ci_gcs_credentials: str = None,
+    ):
+        self.pypi_username = pypi_username
+        self.pypi_password = pypi_password
+        self.pypi_repository = pypi_repository
+
+        pipeline_name = f"Publish PyPI {connector.technical_name}"
+
+        super().__init__(
+            pipeline_name=pipeline_name,
+            connector=connector,
+            modified_files=modified_files,
+            report_output_prefix=report_output_prefix,
+            ci_report_bucket=ci_report_bucket,
+            is_local=is_local,
+            git_branch=git_branch,
+            git_revision=git_revision,
+            gha_workflow_run_url=gha_workflow_run_url,
+            dagger_logs_url=dagger_logs_url,
+            pipeline_start_timestamp=pipeline_start_timestamp,
+            ci_context=ci_context,
+            ci_gcs_credentials=ci_gcs_credentials,
+            should_save_report=True,
+        )
