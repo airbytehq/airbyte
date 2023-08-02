@@ -5,7 +5,7 @@
 from typing import Optional
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, Field, ValidationError, root_validator
+from pydantic import ValidationError, root_validator
 from pydantic import AnyUrl, BaseModel, Field
 
 class S3Config(BaseModel):

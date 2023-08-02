@@ -3,7 +3,7 @@ import logging
 
 import pytest
 from pydantic import ValidationError
-from source_s3.v4.config import Config
+from source_s3.v4.config import Config, S3Config
 
 logger = logging.Logger("")
 
@@ -21,6 +21,12 @@ logger = logging.Logger("")
 def test_config(kwargs, expected_error):
     if expected_error:
         with pytest.raises(expected_error):
-            Config(**kwargs)
+            Config(
+                streams=[],
+                source_config=S3Config(**kwargs)
+            )
     else:
-        Config(**kwargs)
+        Config(
+            streams=[],
+            source_config=S3Config(**kwargs)
+            )

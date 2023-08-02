@@ -7,15 +7,12 @@ from typing import Any, Dict, List, Optional, Set
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-<<<<<<< HEAD
 from airbyte_cdk.sources.file_based.remote_file import FileReadMode, RemoteFile
-=======
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
->>>>>>> master
 from botocore.stub import Stubber
 from pydantic import AnyUrl
-from source_s3.v4.config import Config
+from source_s3.v4.config import Config, S3Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
 logger = logging.Logger("")
@@ -113,11 +110,13 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
     try:
         aws_access_key_id = aws_secret_access_key = None if endpoint else "test"
         reader.config = Config(
-            bucket="test",
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
             streams=[],
-            endpoint=endpoint,
+            source_config=S3Config(
+                bucket="test",
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key,
+                endpoint=endpoint,
+            )
         )
     except Exception as exc:
         raise exc
@@ -130,7 +129,14 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
 
 def test_get_matching_files_exception():
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    reader.config = Config(
+        streams=[],
+        source_config=S3Config(
+            bucket="test",
+            aws_access_key_id="test",
+            aws_secret_access_key="test"
+        )
+    )
     stub = Stubber(reader.s3_client)
     stub.add_client_error("list_objects_v2")
     stub.activate()

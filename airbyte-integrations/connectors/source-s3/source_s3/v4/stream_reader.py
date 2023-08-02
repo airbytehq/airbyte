@@ -53,8 +53,8 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader[Config]):
             else:
                 self._s3_client = boto3.client(
                     "s3",
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    aws_access_key_id=self.config.source_config.aws_access_key_id,
+                    aws_secret_access_key=self.config.source_config.aws_secret_access_key,
                 )
         return self._s3_client
 
