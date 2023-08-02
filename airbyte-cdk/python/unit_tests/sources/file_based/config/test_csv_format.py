@@ -4,7 +4,6 @@
 
 import pytest as pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
-from pydantic import ValidationError
 
 
 @pytest.mark.parametrize(
