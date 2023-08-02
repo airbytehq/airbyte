@@ -92,10 +92,10 @@ class VersionBreakingChange(BaseModel):
 
 class AirbyteInternal(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    field_sl: Literal[100, 200, 300] = Field(..., alias="_sl")
-    field_ql: Literal[100, 200, 300, 400, 500, 600] = Field(..., alias="_ql")
+    field_sl: Optional[Literal[100, 200, 300]] = Field(None, alias="_sl")
+    field_ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = Field(None, alias="_ql")
 
 
 class JobTypeResourceLimit(BaseModel):
