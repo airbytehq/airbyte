@@ -1,0 +1,54 @@
+{
+  "properties": {
+    "log_level": {
+      "type": ["null", "string"]
+    },
+    "resource_sid": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "request_method": {
+      "type": ["null", "string"]
+    },
+    "date_generated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "alert_text": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "request_url": {
+      "type": ["null", "string"]
+    },
+    "service_sid": {
+      "type": ["null", "string"]
+    },
+    "error_code": {
+      "type": ["null", "string"]
+    },
+    "api_version": {
+      "type": ["null", "string"]
+    },
+    "more_info": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": "object",
+  "additionalProperties": true
+}

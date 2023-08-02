@@ -1,0 +1,78 @@
+{
+  "properties": {
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "api_version": {
+      "type": ["null", "string"]
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "date_sent": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "direction": {
+      "type": ["null", "string"]
+    },
+    "error_code": {
+      "type": ["null", "string"]
+    },
+    "error_message": {
+      "type": ["null", "string"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "messaging_service_sid": {
+      "type": ["null", "string"]
+    },
+    "price_unit": {
+      "type": ["null", "string"]
+    },
+    "num_media": {
+      "type": ["null", "integer"]
+    },
+    "num_segments": {
+      "type": ["null", "integer"]
+    },
+    "price": {
+      "type": ["null", "number"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "subresource_uris": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "feedback": {
+          "type": ["null", "string"]
+        },
+        "media": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "to": {
+      "type": ["null", "string"]
+    },
+    "uri": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": "object",
+  "additionalProperties": true
+}
