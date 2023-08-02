@@ -43,4 +43,16 @@ When modifying the CDK and a connector in the same PR or branch, please use the 
 1. Set the version of the SDK in `version.properties` to the next appropriate version number, along with a `-SNAPSHOT` suffix, as explained above.
 1. In your connector project, modify the `build.gradle` to use the _new_ local CDK version with the `-SNAPSHOT` suffix, as explained above.
 1. Build and test your connector as usual. Gradle will automatically build the snapshot version of the CDK, and it will use this version when building and testing your connector.
-1. As you make additional changes to the CDK, your can repeat the build and local republish steps to incorporate the latest changes.
+1. As you make additional changes to the CDK, Gradle will automatically rebuild and republish the CDK locally in order to incorporate the latest changes.
+
+## Developing a connector against a pinned CDK version
+
+You can always pin your connector to a prior stable version of the CDK, which may not match what is the latest version in the `airbyte` repo. For instance, your connector can be pinned to `0.1.1` while the latest version may be `0.2.0`.
+
+Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your connector, and you can use your local IDE to browse the prior version of the codebase that corresponds to that version.
+
+<!--
+TODO: More detailed instructions needed.
+
+Add screenshots and additional details for IntelliJ IDEA and/or VS Code.
+-->
