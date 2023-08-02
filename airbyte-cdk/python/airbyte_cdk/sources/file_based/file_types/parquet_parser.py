@@ -4,12 +4,14 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping
+import os
+from typing import Any, Dict, Iterable, List, Mapping
+from urllib.parse import unquote
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pyarrow import Scalar
@@ -27,11 +29,16 @@ class ParquetParser(FileTypeParser):
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
-        # Pyarrow can detect the schema of a parquet file by reading only its metadata.
-        # https://github.com/apache/arrow/blob/main/python/pyarrow/_parquet.pyx#L1168-L1243
-        parquet_file = pq.ParquetFile(stream_reader.open_file(file))
-        parquet_schema = parquet_file.schema_arrow
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+            parquet_file = pq.ParquetFile(fp)
+            parquet_schema = parquet_file.schema_arrow
+
+        # Inferred non-partition schema
         schema = {field.name: ParquetParser.parquet_type_to_schema_type(field.type, parquet_format) for field in parquet_schema}
+        # Inferred partition schema
+        partition_columns = {partition.split("=")[0]: {"type": "string"} for partition in self._extract_partitions(file.uri)}
+
+        schema.update(partition_columns)
         return schema
 
     def parse_records(
@@ -44,13 +51,23 @@ class ParquetParser(FileTypeParser):
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")  # FIXME test this branch!
-        table = pq.read_table(stream_reader.open_file(file))
-        for batch in table.to_batches():
-            for i in range(batch.num_rows):
-                row_dict = {
-                    column: ParquetParser._to_output_value(batch.column(column)[i], parquet_format) for column in table.column_names
-                }
-                yield row_dict
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+            reader = pq.ParquetFile(fp)
+            partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
+            for row_group in range(reader.num_row_groups):
+                batch_dict = reader.read_row_group(row_group).to_pydict()
+                for record_values in zip(*batch_dict.values()):
+                    record = dict(zip(batch_dict.keys(), record_values))
+                    record.update(partition_columns)
+                    yield record
+
+    @staticmethod
+    def _extract_partitions(filepath: str) -> List[str]:
+        return [unquote(partition) for partition in filepath.split(os.sep) if "=" in partition]
+
+    @property
+    def file_read_mode(self) -> FileReadMode:
+        return FileReadMode.READ_BINARY
 
     @staticmethod
     def _to_output_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:

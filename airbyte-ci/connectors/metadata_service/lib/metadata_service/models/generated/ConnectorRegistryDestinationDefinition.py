@@ -19,6 +19,14 @@ class ReleaseStage(BaseModel):
     )
 
 
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
+    )
+
+
 class ResourceRequirements(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -90,6 +98,14 @@ class VersionBreakingChange(BaseModel):
     )
 
 
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    field_sl: Literal[100, 200, 300] = Field(..., alias="_sl")
+    field_ql: Literal[100, 200, 300, 400, 500, 600] = Field(..., alias="_ql")
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -154,6 +170,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
@@ -173,3 +190,4 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     )
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
+    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")

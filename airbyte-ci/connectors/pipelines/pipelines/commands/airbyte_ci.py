@@ -7,6 +7,7 @@
 from typing import List
 
 import click
+from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -17,10 +18,10 @@ from pipelines.utils import (
     get_modified_files_in_commit,
     get_modified_files_in_pull_request,
 )
-from github import PullRequest
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
+from .groups.tests import tests
 
 # HELPERS
 
@@ -135,6 +136,7 @@ def airbyte_ci(
 
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
+airbyte_ci.add_command(tests)
 
 if __name__ == "__main__":
     airbyte_ci()
