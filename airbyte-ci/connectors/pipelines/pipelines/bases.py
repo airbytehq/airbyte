@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Set
 
 import anyio
 import asyncer
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: List[Path] = field(default_factory=list)
+    modified_files: Set[Path] = field(default_factory=list)
 
     @property
     def has_metadata_change(self) -> bool:

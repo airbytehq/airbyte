@@ -325,7 +325,7 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
 
 def _find_modified_connectors(file_path: Union[str, Path], dependency_scanning: bool = True) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
-    modified_connectors = {}
+    modified_connectors = set()
     for connector, connector_dependencies in ALL_CONNECTOR_DEPENDENCIES:
         if Path(file_path).is_relative_to(Path(connector.code_directory)):
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
@@ -349,10 +349,10 @@ def get_modified_connectors(modified_files: Set[Path], dependency_scanning: bool
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
     # Ignore files with certain extensions
-    modified_files = [file for file in modified_files if not _is_ignored_file(file)]
-    modified_connectors = {}
+    modified_connectors = set()
     for modified_file in modified_files:
-        modified_connectors.update(_find_modified_connectors(modified_file, dependency_scanning))
+        if not _is_ignored_file(modified_file):
+            modified_connectors.update(_find_modified_connectors(modified_file, dependency_scanning))
     return modified_connectors
 
 

@@ -1,18 +1,226 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import os
+import random
 from pathlib import Path
-from unittest.mock import MagicMock
+from typing import Callable
 
 import pytest
 from click.testing import CliRunner
-from connector_ops.utils import Connector, ConnectorLanguage
+from connector_ops.utils import METADATA_FILE_NAME, Connector, ConnectorLanguage, get_all_connectors_in_repo
+from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.commands.groups import connectors
+
+
+@pytest.fixture(autouse=True, scope="module")
+def from_airbyte_root(airbyte_repo_path):
+    original_dir = Path.cwd()
+    os.chdir(airbyte_repo_path)
+    yield airbyte_repo_path
+    os.chdir(original_dir)
 
 
 @pytest.fixture(scope="session")
 def runner():
     return CliRunner()
+
+
+ALL_CONNECTORS = get_all_connectors_in_repo()
+
+
+def pick_a_random_connector(
+    language: ConnectorLanguage = None, release_stage: str = None, other_picked_connectors: list = None
+) -> Connector:
+    """Pick a random connector from the list of all connectors."""
+    all_connectors = list(ALL_CONNECTORS)
+    if language:
+        all_connectors = [c for c in all_connectors if c.language is language]
+    if release_stage:
+        all_connectors = [c for c in all_connectors if c.release_stage == release_stage]
+    picked_connector = random.choice(all_connectors)
+    if other_picked_connectors:
+        while picked_connector in other_picked_connectors:
+            picked_connector = random.choice(all_connectors)
+    return picked_connector
+
+
+def test_get_selected_connectors_by_name_no_file_modification():
+    connector = pick_a_random_connector()
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(connector.technical_name,),
+        selected_release_stages=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        modified_files=set(),
+    )
+
+    assert len(selected_connectors) == 1
+    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert selected_connectors[0].technical_name == connector.technical_name
+    assert not selected_connectors[0].modified_files
+
+
+def test_get_selected_connectors_by_release_stage_no_file_modification():
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=("generally_available", "beta"),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        modified_files=set(),
+    )
+
+    set([c.release_stage for c in selected_connectors]) == {"generally_available", "beta"}
+
+
+def test_get_selected_connectors_by_language_no_file_modification():
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=(),
+        selected_languages=(ConnectorLanguage.LOW_CODE,),
+        modified=False,
+        metadata_changes_only=False,
+        modified_files=set(),
+    )
+
+    set([c.language for c in selected_connectors]) == {ConnectorLanguage.LOW_CODE}
+
+
+def test_get_selected_connectors_by_name_with_file_modification():
+    connector = pick_a_random_connector()
+    modified_files = {connector.code_directory / "setup.py"}
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(connector.technical_name,),
+        selected_release_stages=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert selected_connectors[0].technical_name == connector.technical_name
+    assert selected_connectors[0].modified_files == modified_files
+
+
+def test_get_selected_connectors_by_name_and_release_stage_or_languages_leads_to_intersection():
+    connector = pick_a_random_connector()
+    modified_files = {connector.code_directory / "setup.py"}
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(connector.technical_name,),
+        selected_release_stages=(connector.release_stage,),
+        selected_languages=(connector.language,),
+        modified=False,
+        metadata_changes_only=False,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+
+
+def test_get_selected_connectors_with_modified():
+    first_modified_connector = pick_a_random_connector()
+    second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
+    modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=(),
+        selected_languages=(),
+        modified=True,
+        metadata_changes_only=False,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 2
+
+
+def test_get_selected_connectors_with_modified_and_language():
+    first_modified_connector = pick_a_random_connector(language=ConnectorLanguage.PYTHON)
+    second_modified_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA, other_picked_connectors=[first_modified_connector])
+    modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=(),
+        selected_languages=(ConnectorLanguage.JAVA,),
+        modified=True,
+        metadata_changes_only=False,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+
+
+def test_get_selected_connectors_with_modified_and_release_stage():
+    first_modified_connector = pick_a_random_connector(release_stage="alpha")
+    second_modified_connector = pick_a_random_connector(
+        release_stage="generally_available", other_picked_connectors=[first_modified_connector]
+    )
+    modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=("generally_available",),
+        selected_languages=(),
+        modified=True,
+        metadata_changes_only=False,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+
+
+def test_get_selected_connectors_with_modified_and_metadata_only():
+    first_modified_connector = pick_a_random_connector()
+    second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
+    modified_files = {
+        first_modified_connector.code_directory / "setup.py",
+        second_modified_connector.code_directory / METADATA_FILE_NAME,
+        second_modified_connector.code_directory / "setup.py",
+    }
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=(),
+        selected_languages=(),
+        modified=True,
+        metadata_changes_only=True,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+    assert selected_connectors[0].modified_files == {
+        second_modified_connector.code_directory / METADATA_FILE_NAME,
+        second_modified_connector.code_directory / "setup.py",
+    }
+
+
+def test_get_selected_connectors_with_metadata_only():
+    first_modified_connector = pick_a_random_connector()
+    second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
+    modified_files = {
+        first_modified_connector.code_directory / "setup.py",
+        second_modified_connector.code_directory / METADATA_FILE_NAME,
+        second_modified_connector.code_directory / "setup.py",
+    }
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_release_stages=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=True,
+        modified_files=modified_files,
+    )
+
+    assert len(selected_connectors) == 1
+    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+    assert selected_connectors[0].modified_files == {
+        second_modified_connector.code_directory / METADATA_FILE_NAME,
+        second_modified_connector.code_directory / "setup.py",
+    }
 
 
 @pytest.fixture()
@@ -26,126 +234,59 @@ def click_context_obj():
         "is_local": True,
         "is_ci": False,
         "select_modified_connectors": False,
-        "selected_connectors_and_files": {},
+        "selected_connectors_with_modified_files": {},
         "gha_workflow_run_url": None,
         "ci_report_bucket_name": None,
         "use_remote_secrets": False,
         "ci_gcs_credentials": None,
         "execute_timeout": 0,
+        "concurrency": 1,
+        "ci_git_user": None,
+        "ci_github_access_token": None,
     }
 
 
 @pytest.mark.parametrize(
-    "all_connectors,names,release_stage,language,expected_selected_connectors_names",
+    "command, command_args",
     [
+        (connectors.test, []),
         (
-            {
-                MagicMock(technical_name="source-alpha-python", release_stage="alpha", language=ConnectorLanguage.PYTHON),
-                MagicMock(technical_name="source-ga-java", release_stage="generally_available", language=ConnectorLanguage.JAVA),
-                MagicMock(technical_name="source-ga-python", release_stage="alpha", language=ConnectorLanguage.PYTHON),
-            },
-            ("source-alpha-python", "source-ga-python"),
-            (),
-            (),
-            {"source-alpha-python", "source-ga-python"},
+            connectors.publish,
+            [
+                "--spec-cache-gcs-credentials",
+                "test",
+                "--spec-cache-bucket-name",
+                "test",
+                "--metadata-service-gcs-credentials",
+                "test",
+                "--metadata-service-bucket-name",
+                "test",
+                "--docker-hub-username",
+                "test",
+                "--docker-hub-password",
+                "test",
+            ],
         ),
+        (connectors.format_code, []),
+        (connectors.build, []),
     ],
 )
-def test_get_selected_connectors(
-    mocker,
-    all_connectors: set[MagicMock],
-    names: tuple[str],
-    release_stage: tuple[str],
-    language: tuple[ConnectorLanguage],
-    expected_selected_connectors_names: set[str],
+def test_commands_do_not_override_connector_selection(
+    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list
 ):
-    """Test that the selected connectors are returned."""
-    mocker.patch.object(connectors, "get_all_connectors_in_repo", return_value=all_connectors)
-    selected_connectors = connectors.get_selected_connectors(names, release_stage, language)
-    assert {c.technical_name for c in selected_connectors} == expected_selected_connectors_names
+    """
+    This test is here to make sure that the commands do not override the connector selection
+    This is important because we want to control the connector selection in a single place.
+    """
 
+    selected_connector = mocker.MagicMock()
+    click_context_obj["selected_connectors_with_modified_files"] = [selected_connector]
 
-def test_test_command_select_modified_connectors(mocker, runner: CliRunner, click_context_obj: dict, new_connector: Connector):
-    """Test that on test all the modified connectors, even the new ones, are tested."""
-    click_context_obj["select_modified_connectors"] = True
-    click_context_obj["modified_files"] = [
-        Path("airbyte-integrations/connectors/source-pokeapi/setup.py"),
-        new_connector.code_directory / "metadata.yaml",
-    ]
-    mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors, "ConnectorContext", mock_connector_context)
-    runner.invoke(connectors.test, catch_exceptions=False, obj=click_context_obj)
-    assert click_context_obj["selected_connectors_and_files"] == {
-        Connector("source-pokeapi"): [Path("airbyte-integrations/connectors/source-pokeapi/setup.py")],
-        Connector("source-new-connector"): [new_connector.code_directory / "metadata.yaml"],
-    }
-    assert mock_connector_context.call_count == 2
-    mock_connector_context.call_args_list[0].kwargs["connector"] == Connector("source-pokeapi")
-    mock_connector_context.call_args_list[0].kwargs["modified_files"] == [Path("airbyte-integrations/connectors/source-pokeapi/setup.py")]
-    mock_connector_context.call_args_list[1].kwargs["connector"] == Connector("source-new-connector")
-    mock_connector_context.call_args_list[1].kwargs["modified_files"] == [new_connector.code_directory / "metadata.yaml"]
-
-
-def test_test_command_select_selected_connectors(mocker, runner: CliRunner, click_context_obj: dict, new_connector: Connector):
-    """Test that on test a selected connectors is tested and the other modified one are not if select_modified_connectors is not False."""
-
-    click_context_obj["selected_connectors_and_files"] = {
-        Connector("source-openweather"): [Path("airbyte-integrations/connectors/source-openweather/setup.py")],
-    }
-    pre_selected_connectors_and_files = click_context_obj["selected_connectors_and_files"]
-
-    click_context_obj["modified_files"] = [
-        Path("airbyte-integrations/connectors/source-pokeapi/setup.py"),
-        new_connector.code_directory / "metadata.yaml",
-        Path("airbyte-integrations/connectors/source-openweather/setup.py"),
-    ]
-
-    click_context_obj["select_modified_connectors"] = False
-    mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors, "ConnectorContext", mock_connector_context)
-    runner.invoke(connectors.test, catch_exceptions=False, obj=click_context_obj)
-
-    assert click_context_obj["selected_connectors_and_files"] == pre_selected_connectors_and_files
-    assert mock_connector_context.call_count == 1
-    mock_connector_context.call_args_list[0].kwargs["connector"] == Connector("source-openwehater")
-    mock_connector_context.call_args_list[0].kwargs["modified_files"] == [
-        Path("airbyte-integrations/connectors/source-openweather/setup.py")
-    ]
-
-
-def test_publish_command_select_modified_connectors(mocker, runner: CliRunner, click_context_obj: dict, new_connector: Connector):
-    """Test that on publish only the connectors with modified metadata.yaml files are published."""
-    click_context_obj["select_modified_connectors"] = True
-    click_context_obj["modified_files"] = [
-        Path("airbyte-integrations/connectors/source-pokeapi/setup.py"),
-        new_connector.code_directory / "metadata.yaml",
-    ]
-    mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors, "PublishConnectorContext", mock_connector_context)
     mocker.patch.object(connectors.click, "confirm")
-
-    runner.invoke(
-        connectors.publish,
-        [
-            "--spec-cache-gcs-credentials",
-            "test",
-            "--spec-cache-bucket-name",
-            "test",
-            "--metadata-service-gcs-credentials",
-            "test",
-            "--metadata-service-bucket-name",
-            "test",
-            "--docker-hub-username",
-            "test",
-            "--docker-hub-password",
-            "test",
-        ],
-        catch_exceptions=False,
-        obj=click_context_obj,
-    )
-    assert click_context_obj["selected_connectors_and_files"] == {
-        Connector("source-new-connector"): [new_connector.code_directory / "metadata.yaml"]
-    }
+    mock_connector_context = mocker.MagicMock()
+    mocker.patch.object(connectors, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors, "PublishConnectorContext", mock_connector_context)
+    runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
-    mock_connector_context.call_args_list[0].kwargs["connector"] == Connector("source-new-connector")
-    mock_connector_context.call_args_list[0].kwargs["modified_files"] == [new_connector.code_directory / "metadata.yaml"]
+    # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
+    assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector

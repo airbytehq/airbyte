@@ -78,6 +78,10 @@ def get_selected_connectors_with_modified_files(
     """
     all_connectors = get_all_connectors_in_repo()
 
+    if metadata_changes_only and not modified:
+        main_logger.info("--metadata-changes-only overrides --modified")
+        modified = True
+
     selected_modified_connectors = get_modified_connectors(modified_files) if modified else set()
     selected_connectors_by_name = validate_selected_connectors_exist(
         {Connector(technical_name=name) for name in selected_names}, all_connectors
