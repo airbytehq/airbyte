@@ -349,7 +349,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       pkVarDeclaration = "DECLARE missing_pk_count INT64;";
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -419,7 +419,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -440,7 +440,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
-    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)){
       cdcConditionalOrIncludeStatement = """
       OR (
         _airbyte_loaded_at IS NOT NULL
@@ -450,8 +450,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "raw_table_id", stream.id().rawTableId(QUOTE),
+        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
