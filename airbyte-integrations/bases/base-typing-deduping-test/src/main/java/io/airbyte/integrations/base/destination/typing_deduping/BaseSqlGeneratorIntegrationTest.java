@@ -287,15 +287,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   @Test
-  public void testRenameFinalTable() throws Exception {
+  public void overwriteFinalTable() throws Exception {
     createFinalTable(false, incrementalAppendStream.id(), "_tmp");
     List<JsonNode> records = singletonList(Jsons.deserialize(
         """
             {
               "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_meta": {},
-              "id1": 1
+              "_airbyte_meta": {}
             }
             """));
     insertFinalTableRecords(
