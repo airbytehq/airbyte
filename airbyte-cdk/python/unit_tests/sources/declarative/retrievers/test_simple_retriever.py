@@ -481,5 +481,5 @@ def test_emit_log_request_response_messages(mocker):
 
     retriever._fetch_next_page(stream_state={}, stream_slice={})
 
-    assert requester.send_request.call_args_list[0][1]["log_request"] is True
+    assert requester.send_request.call_args_list[0][1]["log_formatter"] is not None
     assert requester.send_request.call_args_list[0][1]["log_formatter"](response) == format_http_message_mock.return_value

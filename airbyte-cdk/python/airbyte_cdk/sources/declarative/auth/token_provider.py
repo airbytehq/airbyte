@@ -52,7 +52,6 @@ class SessionTokenProvider(TokenProvider):
 
     def _refresh(self) -> None:
         response = self.login_requester.send_request(
-            log_request=True,
             log_formatter=lambda response: format_http_message(
                 response,
                 "Login request",

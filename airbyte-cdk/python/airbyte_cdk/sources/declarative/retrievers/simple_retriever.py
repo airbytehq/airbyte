@@ -404,7 +404,6 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
             request_body_json=self._request_body_json(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             ),
-            log_request=True,
             log_formatter=lambda response: format_http_message(
                 response,
                 f"Stream '{self.name}' request",

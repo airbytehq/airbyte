@@ -383,7 +383,6 @@ class HttpRequester(Requester):
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
-        log_request: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
         request = self._create_prepared_request(
@@ -396,13 +395,12 @@ class HttpRequester(Requester):
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
         )
 
-        response = self._send_with_retry(request, log_request=log_request, log_formatter=log_formatter)
+        response = self._send_with_retry(request, log_formatter=log_formatter)
         return self._validate_response(response)
 
     def _send_with_retry(
         self,
         request: requests.PreparedRequest,
-        log_request: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> requests.Response:
         """
@@ -435,12 +433,11 @@ class HttpRequester(Requester):
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
-        return backoff_handler(user_backoff_handler)(request, log_request=log_request, log_formatter=log_formatter)  # type: ignore
+        return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
     def _send(
         self,
         request: requests.PreparedRequest,
-        log_request: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> requests.Response:
         """
@@ -466,9 +463,7 @@ class HttpRequester(Requester):
         )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
-        if log_request:
-            if log_formatter is None:
-                raise ValueError("response_formatter must be provided if log_request is True")
+        if log_formatter:
             formatter = log_formatter
             self.message_repository.log_message(
                 Level.DEBUG,

@@ -135,11 +135,12 @@ class Requester(RequestOptionsProvider):
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
-        log_request: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
         """
         Sends a request and returns the response. Might return no response if the error handler chooses to ignore the response or throw an exception in case of an error.
         If path is set, the path configured on the requester itself is ignored.
         If header, params and body are set, they are merged with the ones configured on the requester itself.
+
+        If a log formatter is provided, it's used to log the performed request and response. If it's not provided, no logging is performed.
         """

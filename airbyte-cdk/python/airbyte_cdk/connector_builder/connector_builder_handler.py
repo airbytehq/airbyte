@@ -71,7 +71,6 @@ def read_stream(
         error = AirbyteTracedException.from_exception(
             exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {str(exc)}"
         )
-        raise exc
         return error.as_airbyte_message()
 
 

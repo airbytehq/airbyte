@@ -594,9 +594,9 @@ def test_log_requests(should_log, status_code, should_throw):
     formatter.return_value = "formatted_response"
     if should_throw:
         with pytest.raises(DefaultBackoffException):
-            requester.send_request(log_request=should_log, log_formatter=formatter)
+            requester.send_request(log_formatter=formatter if should_log else None)
     else:
-        requester.send_request(log_request=should_log, log_formatter=formatter)
+        requester.send_request(log_formatter=formatter if should_log else None)
     if should_log:
         assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
         formatter.assert_called_once_with(response)
