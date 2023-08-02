@@ -1,10 +1,10 @@
 {
-    "ad_group.id": "ad_groups:\"ad_group.id\"",
-    "campaign.id": "campaigns:\"campaign.id\"",
-    "ad_group_ad.ad.id": "ad_group_ads:\"ad_group_ad.ad.id\"",
-    "customer.id": "accounts:\"customer.id\"",
-    "campaign.resource_name": "campaigns:\"campaign.resource_name\"",
-    "ad_group.resource_name": "ad_groups:\"ad_group.resource_name\"",
-    "ad_group_ad.ad.resource_name": "ad_group_ads:\"ad_group_ad.ad.resource_name\"",
-    "label.resource_name": "labels:\"label.resource_name\""
+    "*:ad_group.id": "ad_groups:\"ad_group.id\"",
+    "*:campaign.id": "campaigns:\"campaign.id\"",
+    "*:ad_group_ad.ad.id": "ad_group_ads:\"ad_group_ad.ad.id\"",
+    "*:customer.id": "accounts:\"customer.id\"",
+    "*:campaign.resource_name": "campaigns:\"campaign.resource_name\"",
+    "*:ad_group.resource_name": "ad_groups:\"ad_group.resource_name\"",
+    "*:ad_group_ad.ad.resource_name": "ad_group_ads:\"ad_group_ad.ad.resource_name\"",
+    "*:label.resource_name": "labels:\"label.resource_name\""
 }

@@ -1,6 +1,6 @@
 {
-  "account_id": "ad_account:id",
-  "ad_id": "ads:id",
-  "adset_id": "ad_sets:id",
-  "campaign_id": "campaigns:id"
+  "*:account_id": "ad_account:id",
+  "*:ad_id": "ads:id",
+  "*:adset_id": "ad_sets:id",
+  "*:campaign_id": "campaigns:id"
 }
