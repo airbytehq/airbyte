@@ -314,3 +314,45 @@ def test_get_updated_state(config, latest_record, current_state, expected_state)
     if expected_state == "start_date":
         expected_state = {"updatedAt": config["start_date"]}
     assert stream.get_updated_state(latest_record, current_state) == expected_state
+
+
+def test_filter_null_bytes(config):
+    stream = Leads(config)
+
+    def to_iterable(lines):
+        for line in lines:
+            yield line
+    test_lines = [
+        "Hello\x00World\n",
+        "Name,Email\n",
+        "John\x00Doe,john.doe@example.com\n"
+    ]
+    expected_lines = [
+        "HelloWorld\n",
+        "Name,Email\n",
+        "JohnDoe,john.doe@example.com\n"
+    ]
+    filtered_lines = stream.filter_null_bytes(to_iterable(test_lines))
+    for expected_line, filtered_line in zip(expected_lines, filtered_lines):
+        assert expected_line == filtered_line
+
+
+def test_csv_rows(config):
+    stream = Leads(config)
+
+    def to_iterable(lines):
+        for line in lines:
+            yield line
+
+    test_lines = [
+        "Name,Email\n",
+        "John Doe,john.doe@example.com\n",
+        "Jane Doe,jane.doe@example.com\n"
+    ]
+    expected_records = [
+        {"Name": "John Doe", "Email": "john.doe@example.com"},
+        {"Name": "Jane Doe", "Email": "jane.doe@example.com"}
+    ]
+    records = stream.csv_rows(to_iterable(test_lines))
+    for expected_record, record in zip(expected_records, records):
+        assert expected_record == record
