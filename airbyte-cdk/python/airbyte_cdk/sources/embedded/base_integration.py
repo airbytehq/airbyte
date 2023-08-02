@@ -33,7 +33,7 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
         stream = get_stream(catalog, stream_name)
         if not stream:
             raise ValueError(f"Stream {stream_name} not found, the following streams are available: {', '.join(get_stream_names(catalog))}")
-        if not state or SyncMode.incremental not in stream.supported_sync_modes:
+        if SyncMode.incremental not in stream.supported_sync_modes:
             configured_catalog = create_configured_catalog(stream, sync_mode=SyncMode.full_refresh)
         else:
             configured_catalog = create_configured_catalog(stream, sync_mode=SyncMode.incremental)

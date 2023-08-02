@@ -67,7 +67,7 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=self.stream1,
-                        sync_mode=SyncMode.full_refresh,
+                        sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.append,
                         primary_key=[["test"]],
                     )
@@ -108,6 +108,24 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                 ]
             ),
             state,
+        )
+
+    def test_incremental_without_state(self):
+        state = AirbyteStateMessage(data={})
+        list(self.integration._load_data("test"))
+        self.source.read.assert_called_once_with(
+            self.config,
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=self.stream1,
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.append,
+                        primary_key=[["test"]],
+                    )
+                ]
+            ),
+            None,
         )
 
     def test_incremental_unsupported(self):
