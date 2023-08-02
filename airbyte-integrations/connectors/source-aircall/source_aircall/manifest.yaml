@@ -10,6 +10,20 @@ definitions:
       username: "{{ config['api_id'] }}"
       password: "{{ config['api_token'] }}"
 
+  record_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "per_page"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 20
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
+
   record_retriever:
     type: SimpleRetriever
     record_selector:
@@ -18,18 +32,7 @@ definitions:
         type: DpathExtractor
         field_path: ["{{ parameters.name }}"]
     paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "per_page"
-      pagination_strategy:
-        type: "PageIncrement"
-        page_size: 20
-      page_token_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "page"
+      $ref: "#/definitions/record_paginator"
 
   calls_stream:
     type: DeclarativeStream
@@ -148,18 +151,7 @@ definitions:
         type: DpathExtractor
         field_path: ["users"]
     paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "per_page"
-      pagination_strategy:
-        type: "PageIncrement"
-        page_size: 20
-      page_token_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "page"
+      $ref: "#/definitions/record_paginator"
     requester:
       $ref: "#/definitions/requester"
 
