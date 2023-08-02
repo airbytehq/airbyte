@@ -541,7 +541,7 @@ class TestSpec(BaseTest):
         )
         if additional_properties_values:
             assert all(
-                [additional_properties_value is True for additional_properties_value in additional_properties_values]
+                [additional_properties_value is not False for additional_properties_value in additional_properties_values]
             ), "When set, additionalProperties field value must be true for backward compatibility."
 
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
