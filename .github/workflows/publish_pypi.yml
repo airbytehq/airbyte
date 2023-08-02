@@ -8,7 +8,7 @@ on:
         default: "--name=source-pokeapi"
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish-pypi' command."
-        default: "--repository-testpypi"
+        default: "--pypi-repository=testpypi"
       runs-on:
         type: string
         default: conn-prod-xlarge-runner
