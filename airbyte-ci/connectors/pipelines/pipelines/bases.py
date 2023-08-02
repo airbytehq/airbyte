@@ -439,6 +439,7 @@ class Report:
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
                 "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
+                "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
             }
         )
 
@@ -476,6 +477,9 @@ class Report:
                 sub_panels.append(sub_panel)
             failures_group = Group(*sub_panels)
             to_render.append(failures_group)
+
+        if self.pipeline_context.dagger_cloud_url:
+            self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
@@ -535,6 +539,7 @@ class ConnectorReport(Report):
                 "ci_context": self.pipeline_context.ci_context,
                 "cdk_version": self.pipeline_context.cdk_version,
                 "html_report_url": self.html_report_url,
+                "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
             }
         )
 
@@ -551,6 +556,10 @@ class ConnectorReport(Report):
         ]
         markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
         markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
+
+        if self.pipeline_context.dagger_cloud_url:
+            markdown_comment += f"☁️ [View runs for commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
+
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
         markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/README.md) tool with the following command**\n"
         markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
@@ -580,6 +589,7 @@ class ConnectorReport(Report):
             template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
+            template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
             template_context[
                 "icon_url"
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
@@ -617,6 +627,9 @@ class ConnectorReport(Report):
 
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
         to_render = [step_results_table, details_instructions]
+
+        if self.pipeline_context.dagger_cloud_url:
+            self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
