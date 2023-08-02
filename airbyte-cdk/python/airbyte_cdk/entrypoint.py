@@ -11,20 +11,19 @@ import socket
 import sys
 import tempfile
 from functools import wraps
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.source import TCatalog, TState
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests import Session
+from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
 
@@ -147,7 +146,9 @@ class AirbyteEntrypoint(object):
         yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
-    def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: TCatalog, state: TState) -> Iterable[AirbyteMessage]:
+    def read(
+        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
+    ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
@@ -156,57 +157,64 @@ class AirbyteEntrypoint(object):
         yield from self._emit_queued_messages(self.source)
 
     @staticmethod
-    def validate_connection(source_spec: ConnectorSpecification, config: Mapping[str, Any]) -> None:
+    def validate_connection(source_spec: ConnectorSpecification, config: TConfig) -> None:
         # Remove internal flags from config before validating so
         # jsonschema's additionalProperties flag won't fail the validation
         connector_config, _ = split_config(config)
         check_config_against_spec_or_exit(connector_config, source_spec)
 
     @staticmethod
-    def set_up_secret_filter(config, connection_specification: Mapping[str, Any]):
+    def set_up_secret_filter(config: TConfig, connection_specification: Mapping[str, Any]) -> None:
         # Now that we have the config, we can use it to get a list of ai airbyte_secrets
         # that we should filter in logging to avoid leaking secrets
         config_secrets = get_secrets(connection_specification, config)
         update_secrets(config_secrets)
 
     @staticmethod
-    def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
+    def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
         return airbyte_message.json(exclude_unset=True)
 
-    def _emit_queued_messages(self, source) -> Iterable[AirbyteMessage]:
+    @classmethod
+    def extract_catalog(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "catalog"):
+            return parsed_args.catalog
+        return None
+
+    def _emit_queued_messages(self, source: Source) -> Iterable[AirbyteMessage]:
         if hasattr(source, "message_repository") and source.message_repository:
             yield from source.message_repository.consume_queue()
         return
 
 
-def launch(source: Source, args: List[str]):
+def launch(source: Source, args: List[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
         print(message)
 
 
-def _init_internal_request_filter():
+def _init_internal_request_filter() -> None:
     """
     Wraps the Python requests library to prevent sending requests to internal URL endpoints.
     """
     wrapped_fn = Session.send
 
     @wraps(wrapped_fn)
-    def filtered_send(self, request, **kwargs):
+    def filtered_send(self: Any, request: PreparedRequest, **kwargs: Any) -> Response:
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
             raise ValueError(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
-                + f"protocol {parsed_url.scheme}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
+                + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
             raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
-            is_private = _is_private_url(parsed_url.hostname, parsed_url.port)
+            is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
             if is_private:
                 raise ValueError(
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
@@ -215,11 +223,11 @@ def _init_internal_request_filter():
         except socket.gaierror:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname}' specified.")
+            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
 
         return wrapped_fn(self, request, **kwargs)
 
-    Session.send = filtered_send
+    Session.send = filtered_send  # type: ignore [method-assign]
 
 
 def _is_private_url(hostname: str, port: int) -> bool:
@@ -237,7 +245,7 @@ def _is_private_url(hostname: str, port: int) -> bool:
     return False
 
 
-def main():
+def main() -> None:
     impl_module = os.environ.get("AIRBYTE_IMPL_MODULE", Source.__module__)
     impl_class = os.environ.get("AIRBYTE_IMPL_PATH", Source.__name__)
     module = importlib.import_module(impl_module)

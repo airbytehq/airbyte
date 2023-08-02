@@ -38,7 +38,8 @@ public class MySqlDebeziumStateUtil {
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-    // We use the schema_only_recovery property cause using this mode will instruct Debezium to construct the db schema history.
+    // We use the schema_only_recovery property cause using this mode will instruct Debezium to
+    // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),

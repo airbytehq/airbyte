@@ -503,7 +503,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC, `_airbyte_extracted_at` DESC
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, `_airbyte_extracted_at` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
