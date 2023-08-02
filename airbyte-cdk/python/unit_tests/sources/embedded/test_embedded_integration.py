@@ -111,7 +111,6 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
         )
 
     def test_incremental_without_state(self):
-        state = AirbyteStateMessage(data={})
         list(self.integration._load_data("test"))
         self.source.read.assert_called_once_with(
             self.config,
