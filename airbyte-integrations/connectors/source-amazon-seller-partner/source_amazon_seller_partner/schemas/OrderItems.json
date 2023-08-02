@@ -1,0 +1,151 @@
+{
+    "title": "Order Items",
+    "description": "All order items that were updated after a specified date",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "AmazonOrderId": {
+            "type": "string"
+        },
+        "ASIN": {
+            "type": "string"
+        },
+        "OrderItemId": {
+            "type": "string"
+        },
+        "SellerSKU": {
+            "type": "string"
+        },
+        "Title": {
+            "type": "string"
+        },
+        "QuantityOrdered": {
+            "type": "integer"
+        },
+        "QuantityShipped": {
+            "type": "integer"
+        },
+        "PointsGranted": {
+            "type": "object",
+            "properties": {
+                "PointsNumber": {
+                    "type": "integer"
+                },
+                "PointsMonetaryValue": {
+                    "type": "object",
+                    "properties": {
+                        "CurrencyCode": {
+                            "type": "string"
+                        },
+                        "Amount": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "ItemPrice": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "ShippingPrice": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "ScheduledDeliveryEndDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "ScheduledDeliveryStartDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "CODFee": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "CODFeeDiscount": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "PriceDesignation": {
+            "type": "string"
+        },
+        "BuyerInfo": {
+            "type": "object",
+            "properties": {
+                "BuyerCustomizedInfo": {
+                    "type": "object",
+                    "properties": {
+                        "CustomizedURL": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "GiftMessageText": {
+                    "type": "string"
+                },
+                "GiftWrapPrice": {
+                    "type": "object",
+                    "properties": {
+                        "CurrencyCode": {
+                            "type": "string"
+                        },
+                        "Amount": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "GiftWrapLevel": {
+                    "type": "string"
+                }
+            }
+        },
+        "BuyerRequestedCancel": {
+            "type": "object",
+            "properties": {
+                "IsBuyerRequestedCancel": {
+                    "type": "boolean"
+                },
+                "BuyerCancelReason": {
+                    "type": "string"
+                }
+            }
+        },
+        "SerialNumbers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}

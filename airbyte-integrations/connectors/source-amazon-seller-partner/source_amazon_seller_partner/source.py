@@ -55,6 +55,7 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReport,
     MerchantListingsReportBackCompat,
     MerchantListingsReports,
+    OrderItems,
     OrderReportDataShipping,
     Orders,
     RestockInventoryReports,
@@ -136,7 +137,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         try:
             stream_kwargs = self._get_stream_kwargs(config)
-            stream_to_check = VendorSalesReports(**stream_kwargs)
+            stream_to_check = Orders(**stream_kwargs)
             next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
@@ -176,6 +177,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorInventoryReports(**stream_kwargs),
             VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            OrderItems(**stream_kwargs),
             OrderReportDataShipping(**stream_kwargs),
             SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),

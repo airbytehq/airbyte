@@ -820,6 +820,59 @@ class Orders(IncrementalAmazonSPStream):
         else:
             return self.default_backoff_time
 
+class OrderItems(IncrementalAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
+    API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
+    """
+    name = "OrderItems"
+    primary_key = "OrderItemId"
+    cursor_field = "OrderLastUpdateDate"
+    replication_start_date_field = None
+    replication_end_date_field = None
+    next_page_token_field = "NextToken"
+    page_size_field = None
+    default_backoff_time = 60
+    cached_state: Dict = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream_kwargs = kwargs
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice['AmazonOrderId']}/orderItems"
+    
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        orders = Orders(**self.stream_kwargs)
+        for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
+            self.cached_state[self.cursor_field] = order_record["LastUpdateDate"]
+            time.sleep(1)
+            self.logger.info(f"OrderItems stream slice for order {order_record['AmazonOrderId']}")
+            yield {"AmazonOrderId": order_record["AmazonOrderId"], self.cursor_field: order_record["LastUpdateDate"]}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = self.cached_state[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+    
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+    
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        order_items_list = response.json().get(self.data_field, {})
+        if order_items_list.get(self.next_page_token_field) is None:
+            self.cached_state[self.cursor_field] = stream_slice[self.cursor_field]
+        for order_item in order_items_list.get(self.name, []):
+            order_item["AmazonOrderId"] = order_items_list.get('AmazonOrderId')
+            yield order_item
+
 
 class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
     """
