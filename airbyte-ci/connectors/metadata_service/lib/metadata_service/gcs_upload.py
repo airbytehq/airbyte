@@ -15,7 +15,7 @@ from google.cloud import storage
 from google.oauth2 import service_account
 
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
-from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
+from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load, ValidatorContext
 from metadata_service.utils import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
@@ -122,8 +122,8 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
 
-def create_prerelease_metadata_file(metadata_file_path: Path, prerelease_tag: str) -> Path:
-    metadata, error = validate_and_load(metadata_file_path, [])
+def create_prerelease_metadata_file(metadata_file_path: Path, prerelease: str) -> Path:
+    metadata, error = validate_and_load(metadata_file_path, [], prerelease=prerelease)
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
@@ -131,13 +131,13 @@ def create_prerelease_metadata_file(metadata_file_path: Path, prerelease_tag: st
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
     metadata_dict = to_json_sanitized_dict(metadata, exclude_none=True)
-    metadata_dict["data"]["dockerImageTag"] = prerelease_tag
+    metadata_dict["data"]["dockerImageTag"] = prerelease
     for registry in get(metadata_dict, "data.registries", {}).values():
         if "dockerImageTag" in registry:
-            registry["dockerImageTag"] = prerelease_tag
+            registry["dockerImageTag"] = prerelease
 
     # write metadata to yaml file in system tmp folder
-    tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / prerelease_tag / METADATA_FILE_NAME
+    tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / prerelease / METADATA_FILE_NAME
     tmp_metadata_file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(tmp_metadata_file_path, "w") as f:
         yaml.dump(metadata_dict, f)
@@ -162,7 +162,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, prereleas
     if prerelease:
         metadata_file_path = create_prerelease_metadata_file(metadata_file_path, prerelease)
 
-    metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS)
+    metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, prerelease=prerelease)
 
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")

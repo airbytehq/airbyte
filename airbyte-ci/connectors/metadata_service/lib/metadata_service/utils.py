@@ -14,7 +14,7 @@ def to_json_sanitized_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
         dict: a sanitized dictionary
     """
     defalut_kwargs = {
-        "by_alias": True, # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. _ab_internal)
+        "by_alias": True,  # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. _ab_internal)
     }
 
     kwargs = {**defalut_kwargs, **kwargs}
