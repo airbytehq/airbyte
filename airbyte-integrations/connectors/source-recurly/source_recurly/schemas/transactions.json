@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"],
+      "maxLength": 13
+    },
+    "uuid": {
+      "type": ["null", "string"],
+      "maxLength": 32
+    },
+    "original_transaction_id": {
+      "type": ["null", "string"],
+      "maxLength": 13
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "code": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "invoice": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "number": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "voided_by_invoice": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "number": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "subscription_ids": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"],
+        "maxLength": 13
+      }
+    },
+    "type": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "origin": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "currency": {
+      "type": ["null", "string"],
+      "maxLength": 3
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "status": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "success": {
+      "type": ["null", "boolean"]
+    },
+    "backup_payment_method_used": {
+      "type": ["null", "boolean"]
+    },
+    "refunded": {
+      "type": ["null", "boolean"]
+    },
+    "billing_address": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "last_name": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "phone": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "street1": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "street2": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "city": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "region": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "postal_code": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "country": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "collection_method": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "payment_method": {
+      "type": "object",
+      "properties": {
+        "card_type": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "first_six": {
+          "type": ["null", "string"],
+          "maxLength": 6
+        },
+        "last_four": {
+          "type": ["null", "string"],
+          "maxLength": 4
+        },
+        "last_two": {
+          "type": ["null", "string"],
+          "maxLength": 2
+        },
+        "exp_month": {
+          "type": ["null", "number"]
+        },
+        "exp_year": {
+          "type": ["null", "number"]
+        },
+        "gateway_token": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "gateway_code": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "billing_agreement_id": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "name_on_account": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "account_type": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "routing_number": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "routing_number_bank": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "ip_address_v4": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "ip_address_country": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "status_code": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "status_message": {
+      "type": ["null", "string"],
+      "maxLength": 1024
+    },
+    "customer_message": {
+      "type": ["null", "string"],
+      "maxLength": 1024
+    },
+    "customer_message_locale": {
+      "type": ["null", "string"],
+      "maxLength": 12
+    },
+    "payment_gateway": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        }
+      }
+    },
+    "gateway_message": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "gateway_reference": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "gateway_approval_code": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "gateway_response_code": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "gateway_response_time": {
+      "type": ["null", "number"]
+    },
+    "gateway_response_values": {
+      "type": "object"
+    },
+    "cvv_check": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "avs_check": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "voided_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "collected_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

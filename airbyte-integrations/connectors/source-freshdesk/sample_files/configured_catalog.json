@@ -1,0 +1,721 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "agents",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "occasional": {
+              "type": "boolean"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "signature": {
+              "type": ["string", "null"]
+            },
+            "ticket_scope": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "last_active_at": {
+              "type": ["string", "null"]
+            },
+            "available_since": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": "string"
+            },
+            "contact": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "job_title": {
+                  "type": ["string", "null"]
+                },
+                "language": {
+                  "type": "string"
+                },
+                "last_login_at": {
+                  "type": ["string", "null"]
+                },
+                "mobile": {
+                  "type": ["string", "integer", "null"]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "phone": {
+                  "type": ["string", "integer", "null"]
+                },
+                "time_zone": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "updated_at": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "note": {
+              "type": ["string", "null"]
+            },
+            "domains": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "custom_fields": {
+              "type": "object"
+            },
+            "health_score": {
+              "type": ["string", "null"]
+            },
+            "account_tier": {
+              "type": "string"
+            },
+            "renewal_date": {
+              "type": ["string", "null"]
+            },
+            "industry": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "address": {
+              "type": ["string", "null"]
+            },
+            "company_id": {
+              "type": ["integer", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "job_title": {
+              "type": ["string", "null"]
+            },
+            "language": {
+              "type": "string"
+            },
+            "mobile": {
+              "type": ["string", "integer", "null"]
+            },
+            "name": {
+              "type": "string"
+            },
+            "phone": {
+              "type": ["string", "integer", "null"]
+            },
+            "time_zone": {
+              "type": "string"
+            },
+            "twitter_id": {
+              "type": ["integer", "null"]
+            },
+            "custom_fields": {
+              "type": "object"
+            },
+            "facebook_id": {
+              "type": ["integer", "null"]
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "csat_rating": {
+              "type": ["integer", "null"]
+            },
+            "preferred_source": {
+              "type": "string"
+            },
+            "unique_external_id": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string"
+            },
+            "body_text": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "incoming": {
+              "type": "boolean"
+            },
+            "private": {
+              "type": "boolean"
+            },
+            "user_id": {
+              "type": "integer"
+            },
+            "support_email": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": "integer"
+            },
+            "category": {
+              "type": "integer"
+            },
+            "to_emails": {
+              "type": ["array", "null"]
+            },
+            "from_email": {
+              "type": ["string", "null"]
+            },
+            "cc_emails": {
+              "type": ["array", "null"]
+            },
+            "bcc_emails": {
+              "type": ["array", "null"]
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "attachments": {
+              "type": ["array", "null"]
+            },
+            "ticket_id": {
+              "type": "integer"
+            },
+            "source_additional_info": {
+              "type": ["object", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "escalate_to": {
+              "type": ["integer", "null"]
+            },
+            "unassigned_for": {
+              "type": ["string", "null"]
+            },
+            "business_hour_id": {
+              "type": ["integer", "null"]
+            },
+            "group_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "auto_ticket_assign": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "roles",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "default": {
+              "type": "boolean"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "satisfaction_ratings",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "survey_id": {
+              "type": "integer"
+            },
+            "user_id": {
+              "type": "integer"
+            },
+            "agent_id": {
+              "type": "integer"
+            },
+            "feedback": {
+              "type": "string"
+            },
+            "group_id": {
+              "type": "integer"
+            },
+            "ticket_id": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "ratings": {
+              "type": "object"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "skills",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "rank": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "match_type": {
+              "type": "string"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "resource_type": {
+                    "type": "string"
+                  },
+                  "field_name": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "surveys",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "accepted_ratings": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "default": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "cc_emails": {
+              "type": "array"
+            },
+            "fwd_emails": {
+              "type": "array"
+            },
+            "reply_cc_emails": {
+              "type": "array"
+            },
+            "ticket_cc_emails": {
+              "type": "array"
+            },
+            "fr_escalated": {
+              "type": "boolean"
+            },
+            "spam": {
+              "type": "boolean"
+            },
+            "email_config_id": {
+              "type": ["integer", "null"]
+            },
+            "group_id": {
+              "type": ["integer", "null"]
+            },
+            "priority": {
+              "type": "integer"
+            },
+            "requester_id": {
+              "type": "integer"
+            },
+            "responder_id": {
+              "type": "integer"
+            },
+            "source": {
+              "type": "integer"
+            },
+            "company_id": {
+              "type": ["integer", "null"]
+            },
+            "status": {
+              "type": "integer"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "association_type": {
+              "type": ["integer", "null"]
+            },
+            "to_emails": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "product_id": {
+              "type": ["integer", "null"]
+            },
+            "id": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "due_by": {
+              "type": "string"
+            },
+            "fr_due_by": {
+              "type": "string"
+            },
+            "is_escalated": {
+              "type": "boolean"
+            },
+            "custom_fields": {
+              "type": "object"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "associated_tickets_count": {
+              "type": ["integer", "null"]
+            },
+            "tags": {
+              "type": "array"
+            },
+            "nr_due_by": {
+              "type": ["string", "null"]
+            },
+            "nr_escalated": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "description_text": {
+              "type": "string"
+            },
+            "requester": {
+              "type": "object"
+            },
+            "stats": {
+              "type": "object"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "time_entries",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "billable": {
+              "type": "boolean"
+            },
+            "note": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "timer_running": {
+              "type": "boolean"
+            },
+            "agent_id": {
+              "type": "integer"
+            },
+            "ticket_id": {
+              "type": "integer"
+            },
+            "company_id": {
+              "type": ["integer", "null"]
+            },
+            "time_spent": {
+              "type": "string"
+            },
+            "executed_at": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    }
+  ]
+}

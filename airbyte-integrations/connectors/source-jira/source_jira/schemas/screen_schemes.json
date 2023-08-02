@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The ID of the screen scheme."
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the screen scheme."
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the screen scheme."
+    },
+    "screens": {
+      "description": "The IDs of the screens for the screen types of the screen scheme.",
+      "type": "object",
+      "properties": {
+        "edit": {
+          "type": "integer",
+          "description": "The ID of the edit screen."
+        },
+        "create": {
+          "type": "integer",
+          "description": "The ID of the create screen."
+        },
+        "view": {
+          "type": "integer",
+          "description": "The ID of the view screen."
+        },
+        "default": {
+          "type": "integer",
+          "description": "The ID of the default screen. Required when creating a screen scheme."
+        }
+      }
+    },
+    "issueTypeScreenSchemes": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "A screen scheme."
+}

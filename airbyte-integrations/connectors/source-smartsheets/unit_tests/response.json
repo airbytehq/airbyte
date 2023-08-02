@@ -1,0 +1,251 @@
+{
+  "accessLevel": "OWNER",
+  "columns": [
+    {
+      "id": 1101932201830276,
+      "index": 0,
+      "primary": true,
+      "title": "id",
+      "type": "TEXT_NUMBER",
+      "validation": false,
+      "version": 0,
+      "width": 51
+    },
+    {
+      "id": 5605531829200772,
+      "index": 1,
+      "title": "first_name",
+      "type": "TEXT_NUMBER",
+      "validation": false,
+      "version": 0,
+      "width": 275
+    },
+    {
+      "id": 3353732015515524,
+      "index": 2,
+      "title": "last_name",
+      "type": "TEXT_NUMBER",
+      "validation": false,
+      "version": 0,
+      "width": 224
+    },
+    {
+      "id": 7857331642886020,
+      "index": 3,
+      "title": "email",
+      "type": "TEXT_NUMBER",
+      "validation": false,
+      "version": 0,
+      "width": 231
+    },
+    {
+      "id": 2227832108672900,
+      "index": 4,
+      "options": [
+        "Agender",
+        "Bigender",
+        "Female",
+        "Genderfluid",
+        "Genderqueer",
+        "Male",
+        "Non-binary",
+        "Polygender"
+      ],
+      "title": "gender",
+      "type": "PICKLIST",
+      "validation": false,
+      "version": 0,
+      "width": 193
+    },
+    {
+      "id": 6731431736043396,
+      "index": 5,
+      "title": "ip_address",
+      "type": "TEXT_NUMBER",
+      "validation": false,
+      "version": 0,
+      "width": 206
+    },
+    {
+      "id": 4479631922358148,
+      "index": 6,
+      "title": "dob",
+      "type": "DATE",
+      "validation": false,
+      "version": 0,
+      "width": 201
+    }
+  ],
+  "createdAt": "2021-08-27T11:36:41+00:00",
+  "dependenciesEnabled": false,
+  "effectiveAttachmentOptions": [
+    "GOOGLE_DRIVE",
+    "DROPBOX",
+    "ONEDRIVE",
+    "LINK",
+    "EVERNOTE",
+    "BOX_COM",
+    "FILE",
+    "EGNYTE"
+  ],
+  "ganttEnabled": false,
+  "hasSummaryFields": false,
+  "id": 679252988323716,
+  "modifiedAt": "2022-04-13T06:50:10+00:00",
+  "name": "aws_s3_sample",
+  "permalink": "https://app.smartsheet.com/sheets/v7vHw7qHJChcvfHQ8j3xJpG8H82Fh39Rc9PRGvQ1",
+  "resourceManagementEnabled": false,
+  "rows": [
+    {
+      "cells": [
+        { "columnId": 1101932201830276, "displayValue": "1", "value": 1.0 },
+        {
+          "columnId": 5605531829200772,
+          "displayValue": "Joni",
+          "value": "Joni"
+        },
+        {
+          "columnId": 3353732015515524,
+          "displayValue": "Watling",
+          "value": "Watling"
+        },
+        {
+          "columnId": 7857331642886020,
+          "displayValue": "jwatling0@amazonaws.com",
+          "value": "jwatling0@amazonaws.com"
+        },
+        {
+          "columnId": 2227832108672900,
+          "displayValue": "Genderqueer",
+          "value": "Genderqueer"
+        },
+        {
+          "columnId": 6731431736043396,
+          "displayValue": "195.50.216.194",
+          "value": "195.50.216.194"
+        },
+        { "columnId": 4479631922358148, "value": "2020-11-23" }
+      ],
+      "createdAt": "2021-08-27T11:36:41+00:00",
+      "expanded": true,
+      "id": 3201922565072772,
+      "modifiedAt": "2021-08-27T11:36:41+00:00",
+      "rowNumber": 1
+    },
+    {
+      "cells": [
+        { "columnId": 1101932201830276, "displayValue": "2", "value": 2.0 },
+        {
+          "columnId": 5605531829200772,
+          "displayValue": "Bernardo",
+          "value": "Bernardo"
+        },
+        {
+          "columnId": 3353732015515524,
+          "displayValue": "Klaaassen",
+          "value": "Klaaassen"
+        },
+        {
+          "columnId": 7857331642886020,
+          "displayValue": "bklaaassen1@cbc.ca",
+          "value": "bklaaassen1@cbc.ca"
+        },
+        {
+          "columnId": 2227832108672900,
+          "displayValue": "Polygender",
+          "value": "Polygender"
+        },
+        {
+          "columnId": 6731431736043396,
+          "displayValue": "116.208.253.97",
+          "value": "116.208.253.97"
+        },
+        { "columnId": 4479631922358148, "value": "2020-02-22" }
+      ],
+      "createdAt": "2021-08-27T11:36:41+00:00",
+      "expanded": true,
+      "id": 7705522192443268,
+      "modifiedAt": "2021-08-27T11:36:41+00:00",
+      "rowNumber": 2,
+      "siblingId": 3201922565072772
+    },
+    {
+      "cells": [
+        { "columnId": 1101932201830276, "displayValue": "3", "value": 3.0 },
+        {
+          "columnId": 5605531829200772,
+          "displayValue": "Drake",
+          "value": "Drake"
+        },
+        {
+          "columnId": 3353732015515524,
+          "displayValue": "Bednell",
+          "value": "Bednell"
+        },
+        {
+          "columnId": 7857331642886020,
+          "displayValue": "dbednell2@theguardian.com",
+          "value": "dbednell2@theguardian.com"
+        },
+        {
+          "columnId": 2227832108672900,
+          "displayValue": "Non-binary",
+          "value": "Non-binary"
+        },
+        {
+          "columnId": 6731431736043396,
+          "displayValue": "120.15.24.132",
+          "value": "120.15.24.132"
+        },
+        { "columnId": 4479631922358148, "value": "2020-08-21" }
+      ],
+      "createdAt": "2021-08-27T11:36:41+00:00",
+      "expanded": true,
+      "id": 2076022658230148,
+      "modifiedAt": "2021-08-27T11:36:41+00:00",
+      "rowNumber": 3,
+      "siblingId": 7705522192443268
+    },
+    {
+      "cells": [
+        { "columnId": 1101932201830276, "displayValue": "4", "value": 4.0 },
+        {
+          "columnId": 5605531829200772,
+          "displayValue": "Alfreda",
+          "value": "Alfreda"
+        },
+        {
+          "columnId": 3353732015515524,
+          "displayValue": "Brumbye",
+          "value": "Brumbye"
+        },
+        {
+          "columnId": 7857331642886020,
+          "displayValue": "abrumbye3@howstuffworks.com",
+          "value": "abrumbye3@howstuffworks.com"
+        },
+        {
+          "columnId": 2227832108672900,
+          "displayValue": "Genderqueer",
+          "value": "Genderqueer"
+        },
+        {
+          "columnId": 6731431736043396,
+          "displayValue": "64.22.217.122",
+          "value": "64.22.217.122"
+        },
+        { "columnId": 4479631922358148, "value": "2020-12-29" }
+      ],
+      "createdAt": "2021-08-27T11:36:41+00:00",
+      "expanded": true,
+      "id": 6579622285600644,
+      "modifiedAt": "2021-08-27T11:36:41+00:00",
+      "rowNumber": 4,
+      "siblingId": 2076022658230148
+    }
+  ],
+  "totalRowCount": 100,
+  "userPermissions": { "summaryPermissions": "ADMIN" },
+  "userSettings": { "criticalPathEnabled": false, "displaySummaryTasks": true },
+  "version": 9
+}

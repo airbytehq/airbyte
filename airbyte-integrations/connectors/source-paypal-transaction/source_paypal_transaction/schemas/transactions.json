@@ -1,0 +1,382 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "transaction_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "paypal_reference_id": {
+          "type": ["null", "string"],
+          "maxLength": 24
+        },
+        "paypal_reference_id_type": {
+          "type": ["null", "string"],
+          "maxLength": 3,
+          "minLength": 3
+        },
+        "protection_eligibility": {
+          "type": ["null", "string"],
+          "maxLength": 2
+        },
+        "paypal_account_id": {
+          "type": ["null", "string"],
+          "maxLength": 24
+        },
+        "transaction_id": {
+          "type": ["null", "string"],
+          "maxLength": 24
+        },
+        "transaction_event_code": {
+          "type": ["null", "string"],
+          "maxLength": 5
+        },
+        "transaction_initiation_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "transaction_updated_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "transaction_amount": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 32
+            }
+          }
+        },
+        "fee_amount": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 32
+            }
+          }
+        },
+        "insurance_amount": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 32
+            }
+          }
+        },
+        "shipping_amount": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 32
+            }
+          }
+        },
+        "shipping_discount_amount": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 32
+            }
+          }
+        },
+        "transaction_status": {
+          "type": ["null", "string"],
+          "maxLength": 1
+        },
+        "transaction_subject": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "transaction_note": {
+          "type": ["null", "string"]
+        },
+        "invoice_id": {
+          "type": ["null", "string"],
+          "maxLength": 127
+        },
+        "custom_field": {
+          "type": ["null", "string"],
+          "maxLength": 127
+        }
+      }
+    },
+    "transaction_id": {
+      "type": ["null", "string"],
+      "maxLength": 24
+    },
+    "transaction_initiation_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "payer_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "account_id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "email_address": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        },
+        "address_status": {
+          "type": ["null", "string"],
+          "maxLength": 1
+        },
+        "payer_status": {
+          "type": ["null", "string"],
+          "maxLength": 1
+        },
+        "payer_name": {
+          "type": ["null", "object"],
+          "properties": {
+            "given_name": {
+              "type": ["null", "string"],
+              "maxLength": 256
+            },
+            "surname": {
+              "type": ["null", "string"],
+              "maxLength": 256
+            },
+            "alternate_full_name": {
+              "type": ["null", "string"],
+              "maxLength": 256
+            }
+          }
+        },
+        "country_code": {
+          "type": ["null", "string"],
+          "maxLength": 3
+        }
+      }
+    },
+    "shipping_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"],
+          "maxLength": 500
+        },
+        "address": {
+          "type": ["null", "object"],
+          "properties": {
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"],
+              "maxLength": 256
+            },
+            "country_code": {
+              "type": ["null", "string"],
+              "maxLength": 3
+            },
+            "postal_code": {
+              "type": ["null", "string"],
+              "maxLength": 256
+            }
+          }
+        }
+      }
+    },
+    "cart_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "item_details": {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "item_code": {
+                "type": ["null", "string"],
+                "maxLength": 1000
+              },
+              "item_name": {
+                "type": ["null", "string"],
+                "maxLength": 256
+              },
+              "item_description": {
+                "type": ["null", "string"]
+              },
+              "item_quantity": {
+                "type": ["null", "string"]
+              },
+              "item_unit_price": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                }
+              },
+              "item_amount": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                }
+              },
+              "tax_amounts": {
+                "type": "array",
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "tax_amount": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "currency_code": {
+                          "type": "string",
+                          "maxLength": 3,
+                          "minLength": 3
+                        },
+                        "value": {
+                          "type": "string",
+                          "maxLength": 32
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "total_item_amount": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                }
+              },
+              "invoice_number": {
+                "type": ["null", "string"],
+                "maxLength": 200
+              }
+            }
+          }
+        }
+      }
+    },
+    "store_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "store_id": {
+          "type": ["null", "string"],
+          "maxLength": 100
+        },
+        "terminal_id": {
+          "type": ["null", "string"],
+          "maxLength": 60
+        }
+      }
+    },
+    "auction_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "auction_site": {
+          "type": ["null", "string"],
+          "maxLength": 200
+        },
+        "auction_item_site": {
+          "type": ["null", "string"]
+        },
+        "auction_buyer_id": {
+          "type": ["null", "string"],
+          "maxLength": 500
+        },
+        "auction_closing_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "incentive_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "incentive_details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "incentive_type": {
+                "type": ["null", "string"],
+                "maxLength": 500
+              },
+              "incentive_code": {
+                "type": ["null", "string"],
+                "maxLength": 200
+              },
+              "incentive_amount": {
+                "type": "object",
+                "properties": {
+                  "currency_code": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                }
+              },
+              "incentive_program_code": {
+                "type": ["null", "string"],
+                "maxLength": 100
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "properties": {
+    "email": {
+      "type": ["null", "string"]
+    },
+    "listId": {
+      "type": ["null", "integer"]
+    }
+  },
+  "type": ["null", "object"]
+}

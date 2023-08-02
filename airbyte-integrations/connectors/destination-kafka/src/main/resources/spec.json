@@ -1,0 +1,259 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kafka",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Kafka Destination Spec",
+    "type": "object",
+    "required": [
+      "bootstrap_servers",
+      "topic_pattern",
+      "protocol",
+      "acks",
+      "enable_idempotence",
+      "compression_type",
+      "batch_size",
+      "linger_ms",
+      "max_in_flight_requests_per_connection",
+      "client_dns_lookup",
+      "buffer_memory",
+      "max_request_size",
+      "retries",
+      "socket_connection_setup_timeout_ms",
+      "socket_connection_setup_timeout_max_ms",
+      "max_block_ms",
+      "request_timeout_ms",
+      "delivery_timeout_ms",
+      "send_buffer_bytes",
+      "receive_buffer_bytes"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "bootstrap_servers": {
+        "title": "Bootstrap Servers",
+        "description": "A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. The client will make use of all servers irrespective of which servers are specified here for bootstrapping&mdash;this list only impacts the initial hosts used to discover the full set of servers. This list should be in the form <code>host1:port1,host2:port2,...</code>. Since these servers are just used for the initial connection to discover the full cluster membership (which may change dynamically), this list need not contain the full set of servers (you may want more than one, though, in case a server is down).",
+        "type": "string",
+        "examples": ["kafka-broker1:9092,kafka-broker2:9092"]
+      },
+      "topic_pattern": {
+        "title": "Topic Pattern",
+        "description": "Topic pattern in which the records will be sent. You can use patterns like '{namespace}' and/or '{stream}' to send the message to a specific topic based on these values. Notice that the topic name will be transformed to a standard naming convention.",
+        "type": "string",
+        "examples": ["sample.topic", "{namespace}.{stream}.sample"]
+      },
+      "test_topic": {
+        "title": "Test Topic",
+        "description": "Topic to test if Airbyte can produce messages.",
+        "type": "string",
+        "examples": ["test.topic"]
+      },
+      "sync_producer": {
+        "title": "Sync Producer",
+        "description": "Wait synchronously until the record has been sent to Kafka.",
+        "type": "boolean",
+        "default": false
+      },
+      "protocol": {
+        "title": "Protocol",
+        "type": "object",
+        "description": "Protocol used to communicate with brokers.",
+        "oneOf": [
+          {
+            "title": "PLAINTEXT",
+            "required": ["security_protocol"],
+            "properties": {
+              "security_protocol": {
+                "type": "string",
+                "enum": ["PLAINTEXT"],
+                "default": "PLAINTEXT"
+              }
+            }
+          },
+          {
+            "title": "SASL PLAINTEXT",
+            "required": [
+              "security_protocol",
+              "sasl_mechanism",
+              "sasl_jaas_config"
+            ],
+            "properties": {
+              "security_protocol": {
+                "type": "string",
+                "enum": ["SASL_PLAINTEXT"],
+                "default": "SASL_PLAINTEXT"
+              },
+              "sasl_mechanism": {
+                "title": "SASL Mechanism",
+                "description": "SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
+                "type": "string",
+                "default": "PLAIN",
+                "enum": ["PLAIN"]
+              },
+              "sasl_jaas_config": {
+                "title": "SASL JAAS Config",
+                "description": "JAAS login context parameters for SASL connections in the format used by JAAS configuration files.",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "SASL SSL",
+            "required": [
+              "security_protocol",
+              "sasl_mechanism",
+              "sasl_jaas_config"
+            ],
+            "properties": {
+              "security_protocol": {
+                "type": "string",
+                "enum": ["SASL_SSL"],
+                "default": "SASL_SSL"
+              },
+              "sasl_mechanism": {
+                "title": "SASL Mechanism",
+                "description": "SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
+                "type": "string",
+                "default": "GSSAPI",
+                "enum": [
+                  "GSSAPI",
+                  "OAUTHBEARER",
+                  "SCRAM-SHA-256",
+                  "SCRAM-SHA-512",
+                  "PLAIN"
+                ]
+              },
+              "sasl_jaas_config": {
+                "title": "SASL JAAS Config",
+                "description": "JAAS login context parameters for SASL connections in the format used by JAAS configuration files.",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      },
+      "client_id": {
+        "title": "Client ID",
+        "description": "An ID string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging.",
+        "type": "string",
+        "examples": ["airbyte-producer"]
+      },
+      "acks": {
+        "title": "ACKs",
+        "description": "The number of acknowledgments the producer requires the leader to have received before considering a request complete. This controls the  durability of records that are sent.",
+        "type": "string",
+        "default": "1",
+        "enum": ["0", "1", "all"]
+      },
+      "enable_idempotence": {
+        "title": "Enable Idempotence",
+        "description": "When set to 'true', the producer will ensure that exactly one copy of each message is written in the stream. If 'false', producer retries due to broker failures, etc., may write duplicates of the retried message in the stream.",
+        "type": "boolean",
+        "default": false
+      },
+      "compression_type": {
+        "title": "Compression Type",
+        "description": "The compression type for all data generated by the producer.",
+        "type": "string",
+        "default": "none",
+        "enum": ["none", "gzip", "snappy", "lz4", "zstd"]
+      },
+      "batch_size": {
+        "title": "Batch Size",
+        "description": "The producer will attempt to batch records together into fewer requests whenever multiple records are being sent to the same partition.",
+        "type": "integer",
+        "examples": [16384]
+      },
+      "linger_ms": {
+        "title": "Linger ms",
+        "description": "The producer groups together any records that arrive in between request transmissions into a single batched request.",
+        "type": "string",
+        "examples": [0]
+      },
+      "max_in_flight_requests_per_connection": {
+        "title": "Max in Flight Requests per Connection",
+        "description": "The maximum number of unacknowledged requests the client will send on a single connection before blocking. Can be greater than 1, and the maximum value supported with idempotency is 5.",
+        "type": "integer",
+        "examples": [5]
+      },
+      "client_dns_lookup": {
+        "title": "Client DNS Lookup",
+        "description": "Controls how the client uses DNS lookups. If set to use_all_dns_ips, connect to each returned IP address in sequence until a successful connection is established. After a disconnection, the next IP is used. Once all IPs have been used once, the client resolves the IP(s) from the hostname again. If set to resolve_canonical_bootstrap_servers_only, resolve each bootstrap address into a list of canonical names. After the bootstrap phase, this behaves the same as use_all_dns_ips. If set to default (deprecated), attempt to connect to the first IP address returned by the lookup, even if the lookup returns multiple IP addresses.",
+        "type": "string",
+        "default": "use_all_dns_ips",
+        "enum": [
+          "default",
+          "use_all_dns_ips",
+          "resolve_canonical_bootstrap_servers_only",
+          "use_all_dns_ips"
+        ]
+      },
+      "buffer_memory": {
+        "title": "Buffer Memory",
+        "description": "The total bytes of memory the producer can use to buffer records waiting to be sent to the server.",
+        "type": "string",
+        "examples": 33554432
+      },
+      "max_request_size": {
+        "title": "Max Request Size",
+        "description": "The maximum size of a request in bytes.",
+        "type": "integer",
+        "examples": [1048576]
+      },
+      "retries": {
+        "title": "Retries",
+        "description": "Setting a value greater than zero will cause the client to resend any record whose send fails with a potentially transient error.",
+        "type": "integer",
+        "examples": [2147483647]
+      },
+      "socket_connection_setup_timeout_ms": {
+        "title": "Socket Connection Setup Timeout",
+        "description": "The amount of time the client will wait for the socket connection to be established.",
+        "type": "string",
+        "examples": [10000]
+      },
+      "socket_connection_setup_timeout_max_ms": {
+        "title": "Socket Connection Setup Max Timeout",
+        "description": "The maximum amount of time the client will wait for the socket connection to be established. The connection setup timeout will increase exponentially for each consecutive connection failure up to this maximum.",
+        "type": "string",
+        "examples": [30000]
+      },
+      "max_block_ms": {
+        "title": "Max Block ms",
+        "description": "The configuration controls how long the KafkaProducer's send(), partitionsFor(), initTransactions(), sendOffsetsToTransaction(), commitTransaction() and abortTransaction() methods will block.",
+        "type": "string",
+        "examples": [60000]
+      },
+      "request_timeout_ms": {
+        "title": "Request Timeout",
+        "description": "The configuration controls the maximum amount of time the client will wait for the response of a request. If the response is not received before the timeout elapses the client will resend the request if necessary or fail the request if retries are exhausted.",
+        "type": "integer",
+        "examples": [30000]
+      },
+      "delivery_timeout_ms": {
+        "title": "Delivery Timeout",
+        "description": "An upper bound on the time to report success or failure after a call to 'send()' returns.",
+        "type": "integer",
+        "examples": [120000]
+      },
+      "send_buffer_bytes": {
+        "title": "Send Buffer bytes",
+        "description": "The size of the TCP send buffer (SO_SNDBUF) to use when sending data. If the value is -1, the OS default will be used.",
+        "type": "integer",
+        "examples": [131072]
+      },
+      "receive_buffer_bytes": {
+        "title": "Receive Buffer bytes",
+        "description": "The size of the TCP receive buffer (SO_RCVBUF) to use when reading data. If the value is -1, the OS default will be used.",
+        "type": "integer",
+        "examples": [32768]
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "href": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "index": {
+            "type": "number"
+        },
+        "createdAt": {
+            "type": "string"
+        },
+        "updatedAt": {
+            "type": "string"
+        },
+        "browserLink": {
+            "type": "string"
+        },
+        "values": {
+            "type": "object",
+            "properties": {
+                "^c-_": {
+                    "type": [
+                        "string",
+                        "number",
+                        "object",
+                        "array",
+                        "boolean",
+                        "null"
+                    ]
+                }
+            }
+        }
+    }
+}

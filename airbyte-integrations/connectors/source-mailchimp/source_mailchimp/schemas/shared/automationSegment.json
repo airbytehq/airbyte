@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Automation Segment",
+  "description": "Segment by interaction with an Automation workflow.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "Automation",
+      "enum": ["Automation"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["automation"],
+      "title": "Segment Field",
+      "description": "Segment by interaction with an Automation workflow.",
+      "example": "automation"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["started", "completed", "not_started", "not_completed"],
+      "title": "Segment Operator",
+      "description": "The status of the member with regard to the automation workflow. One of the following: has started the workflow, has completed the workflow, has not started the workflow, or has not completed the workflow.",
+      "example": "started"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Data",
+      "description": "The web id for the automation workflow to segment against.",
+      "example": "2135217"
+    }
+  }
+}

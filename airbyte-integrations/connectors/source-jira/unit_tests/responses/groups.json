@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "name": "Test group 17",
+      "groupId": "test1"
+    },
+    {
+      "name": "Test group 17",
+      "groupId": "test2"
+    },
+    {
+      "name": "Test group 17",
+      "groupId": "test3"
+    },
+    {
+      "name": "Test group 17",
+      "groupId": "test4"
+    }
+  ]
+}

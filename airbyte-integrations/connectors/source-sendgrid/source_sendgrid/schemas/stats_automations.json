@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "bounce_drops": {
+          "type": "integer"
+        },
+        "bounces": {
+          "type": "integer"
+        },
+        "clicks": {
+          "type": "integer"
+        },
+        "delivered": {
+          "type": "integer"
+        },
+        "invalid_emails": {
+          "type": "integer"
+        },
+        "opens": {
+          "type": "integer"
+        },
+        "requests": {
+          "type": "integer"
+        },
+        "spam_report_drops": {
+          "type": "integer"
+        },
+        "spam_reports": {
+          "type": "integer"
+        },
+        "unique_clicks": {
+          "type": "integer"
+        },
+        "unique_opens": {
+          "type": "integer"
+        },
+        "unsubscribes": {
+          "type": "integer"
+        }
+      }
+    },
+    "aggregation": {
+      "type": "string"
+    },
+    "step_id": {
+      "type": "string"
+    }
+  }
+}

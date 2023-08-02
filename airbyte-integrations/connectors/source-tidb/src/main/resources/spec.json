@@ -1,0 +1,59 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/tidb",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "TiDB Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "properties": {
+      "host": {
+        "description": "Hostname of the database.",
+        "title": "Host",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "description": "Port of the database.",
+        "title": "Port",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 4000,
+        "examples": ["4000"],
+        "order": 1
+      },
+      "database": {
+        "description": "Name of the database.",
+        "title": "Database",
+        "type": "string",
+        "order": 2
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "title": "Username",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
+      }
+    }
+  }
+}

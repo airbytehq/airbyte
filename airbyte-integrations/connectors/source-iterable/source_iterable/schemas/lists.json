@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "integer"]
+    },
+    "listType": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

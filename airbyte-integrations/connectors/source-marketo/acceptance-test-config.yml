@@ -1,0 +1,97 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-marketo:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_marketo/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "exception"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.2"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "activities_delete_lead"
+            bypass_reason: "Marketo prune deletions older than 14 days"
+          - name: "activities_update_opportunity"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_change_segment"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_document_interacted_with"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_call_webhook"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_push_leadto_marketo"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_change_revenue_stage"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_dialogue_goal_reached"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_removefrom_opportunity"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_received_forwardto_friend_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_open_sales_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_share_content"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_sales_email_bounced"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_dialogue_engaged"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_dialogue_appointment_scheduled"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_click_sales_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_sent_forwardto_friend_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_click_link"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_send_sales_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_change_revenue_stage_manually"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_receive_sales_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_replyto_sales_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_addto_opportunity"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_open_email"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_calltoactionclickedinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_hasattendedevent"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_asksquestionsinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_assetdownloadsinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_respondedtoapollinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+        # 52 streams, most of them use BULK API therefore it takes much time to run a sync
+        timeout_seconds: 9000
+        fail_on_extra_columns: false
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

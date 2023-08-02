@@ -1,0 +1,114 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "cadence_memberships" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "cadences" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "people" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "emails" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "calls" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "accounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "actions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "notes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "successes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "crm_activities" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "account_stages" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "team_templates" }
+    }
+  },
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "email_templates" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "call_data_records" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "meetings" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "searches" }
+    }
+  }
+]

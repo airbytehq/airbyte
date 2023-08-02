@@ -1,0 +1,54 @@
+name: "Runner CI Python Tests"
+description: "Runner CI Python Tests"
+inputs:
+  module-name:
+    required: true
+  module-folder:
+    required: true
+outputs:
+  coverage-paths:
+    description: "Coverage Paths"
+    value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
+  flake8-logs:
+    description: "Flake8 Logs"
+    value: ${{ steps.build-linter-reports.outputs.flake8-logs }}
+  mypy-logs:
+    description: "MyPy Logs"
+    value: ${{ steps.build-linter-reports.outputs.mypy-logs }}
+  black-diff:
+    description: "Black Diff"
+    value: ${{ steps.build-linter-reports.outputs.black-diff }}
+  isort-diff:
+    description: "Isort Diff"
+    value: ${{ steps.build-linter-reports.outputs.isort-diff }}
+runs:
+  using: "composite"
+  steps:
+    - name: Build Coverage Reports
+      id: build-coverage-reports
+      shell: bash
+      run: |
+        GRADLE_JOB=$(source ./tools/lib/lib.sh; full_path_to_gradle_path ${{ inputs.module-folder }} "unitTest")
+        REPORT_FOLDER="${{ inputs.module-folder }}/coverage/"
+        ./gradlew --no-daemon -Preports_folder=${REPORT_FOLDER} ${GRADLE_JOB}
+
+        echo "coverage-paths=coverage/coverage.xml" >> $GITHUB_OUTPUT
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        file: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
+        name: "UnitTests of ${{ inputs.module-name }}"
+
+    - name: Build Linter Reports
+      id: build-linter-reports
+      shell: bash
+      run: |
+        GRADLE_JOB=$(source ./tools/lib/lib.sh; full_path_to_gradle_path ${{ inputs.module-folder }} "airbytePythonReport")
+        REPORT_FOLDER="${{ inputs.module-folder }}/reports/"
+        ./gradlew --no-daemon -Preports_folder=${REPORT_FOLDER} ${GRADLE_JOB}
+
+        echo "mypy-logs=reports/mypy.log" >> $GITHUB_OUTPUT
+        echo "black-diff=reports/black.diff" >> $GITHUB_OUTPUT
+        echo "isort-diff=reports/isort.diff" >> $GITHUB_OUTPUT
+        echo "flake8-logs=reports/flake.txt" >> $GITHUB_OUTPUT

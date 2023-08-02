@@ -1,0 +1,419 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "gid": {
+      "type": ["null", "string"]
+    },
+    "resource_type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "approval_status": {
+      "type": ["null", "string"]
+    },
+    "completed": {
+      "type": ["null", "boolean"]
+    },
+    "completed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "completed_by": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dependencies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "dependents": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "due_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "due_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "external": {
+      "type": ["null", "object"],
+      "properties": {
+        "data": {
+          "type": ["null", "string"]
+        },
+        "gid": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "hearted": {
+      "type": ["null", "boolean"]
+    },
+    "hearts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "user": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "html_notes": {
+      "type": ["null", "string"]
+    },
+    "is_rendered_as_separator": {
+      "type": ["null", "boolean"]
+    },
+    "liked": {
+      "type": ["null", "boolean"]
+    },
+    "likes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "user": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "memberships": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "project": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "section": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "modified_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "num_hearts": {
+      "type": ["null", "integer"]
+    },
+    "num_likes": {
+      "type": ["null", "integer"]
+    },
+    "num_subtasks": {
+      "type": ["null", "integer"]
+    },
+    "resource_subtype": {
+      "type": ["null", "string"]
+    },
+    "start_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "assignee": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "created_by": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "currency_code": {
+            "type": ["null", "string"]
+          },
+          "custom_label": {
+            "type": ["null", "string"]
+          },
+          "custom_label_position": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "display_value": {
+            "type": ["null", "string"]
+          },
+          "enabled": {
+            "type": ["null", "boolean"]
+          },
+          "enum_options": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "gid": {
+                  "type": ["null", "string"]
+                },
+                "resource_type": {
+                  "type": ["null", "string"]
+                },
+                "color": {
+                  "type": ["null", "string"]
+                },
+                "enabled": {
+                  "type": ["null", "boolean"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "enum_value": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": {
+                "type": ["null", "string"]
+              },
+              "resource_type": {
+                "type": ["null", "string"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              },
+              "enabled": {
+                "type": ["null", "boolean"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "format": {
+            "type": ["null", "string"]
+          },
+          "has_notifications_enabled": {
+            "type": ["null", "boolean"]
+          },
+          "is_global_to_workspace": {
+            "type": ["null", "boolean"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "number_value": {
+            "type": ["null", "number"]
+          },
+          "precision": {
+            "type": ["null", "integer"]
+          },
+          "resource_subtype": {
+            "type": ["null", "string"]
+          },
+          "text_value": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "followers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "parent": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "permalink_url": {
+      "type": ["null", "string"]
+    },
+    "projects": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "workspace": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

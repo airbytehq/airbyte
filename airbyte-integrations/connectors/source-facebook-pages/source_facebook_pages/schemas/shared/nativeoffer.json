@@ -1,0 +1,78 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "barcode_photo": {
+      "type": ["string", "null"]
+    },
+    "barcode_photo_uri": {
+      "type": ["string", "null"]
+    },
+    "barcode_type": {
+      "type": ["string", "null"]
+    },
+    "barcode_value": {
+      "type": ["string", "null"]
+    },
+    "block_reshares": {
+      "type": ["boolean", "null"]
+    },
+    "details": {
+      "type": ["string", "null"]
+    },
+    "disable_location": {
+      "type": ["boolean", "null"]
+    },
+    "expiration_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "instore_code": {
+      "type": ["string", "null"]
+    },
+    "location_type": {
+      "type": ["string", "null"]
+    },
+    "max_save_count": {
+      "type": ["integer", "null"]
+    },
+    "online_code": {
+      "type": ["string", "null"]
+    },
+    "page_set_id": {
+      "type": ["string", "null"]
+    },
+    "redemption_code": {
+      "type": ["string", "null"]
+    },
+    "redemption_link": {
+      "type": ["string", "null"]
+    },
+    "save_count": {
+      "type": ["integer", "null"]
+    },
+    "terms": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "total_unique_codes": {
+      "type": ["string", "null"]
+    },
+    "unique_codes": {
+      "type": ["string", "null"]
+    },
+    "unique_codes_file_code_type": {
+      "type": ["string", "null"]
+    },
+    "unique_codes_file_name": {
+      "type": ["string", "null"]
+    },
+    "unique_codes_file_upload_status": {
+      "type": ["string", "null"]
+    }
+  }
+}

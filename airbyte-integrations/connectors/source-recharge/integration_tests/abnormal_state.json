@@ -1,0 +1,51 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "addresses" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "charges" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "discounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "onetimes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "orders" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
+      "stream_descriptor": { "name": "subscriptions" }
+    }
+  }
+]

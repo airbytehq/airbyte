@@ -1,0 +1,16 @@
+{
+  "type": "string",
+  "title": "Campaign Status",
+  "description": "The current status of the campaign.",
+  "enum": [
+    "save",
+    "paused",
+    "schedule",
+    "sending",
+    "sent",
+    "canceled",
+    "canceling",
+    "archived"
+  ],
+  "readOnly": true
+}

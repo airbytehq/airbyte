@@ -1,0 +1,25 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "page_welcome_message_body": {
+      "type": ["string", "null"]
+    },
+    "page_welcome_message_type": {
+      "type": ["string", "null"]
+    },
+    "template_name": {
+      "type": ["string", "null"]
+    },
+    "time_created": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "time_last_used": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

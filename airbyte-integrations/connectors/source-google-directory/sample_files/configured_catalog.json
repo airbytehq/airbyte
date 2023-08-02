@@ -1,0 +1,279 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "givenName": {
+                  "type": "string"
+                },
+                "familyName": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                }
+              },
+              "required": ["givenName", "familyName", "fullName"]
+            },
+            "isAdmin": {
+              "type": "boolean"
+            },
+            "isDelegatedAdmin": {
+              "type": "boolean"
+            },
+            "lastLoginTime": {
+              "type": "string"
+            },
+            "creationTime": {
+              "type": "string"
+            },
+            "agreedToTerms": {
+              "type": "boolean"
+            },
+            "hashFunction": {
+              "type": "string"
+            },
+            "suspended": {
+              "type": "boolean"
+            },
+            "changePasswordAtNextLogin": {
+              "type": "boolean"
+            },
+            "ipWhitelisted": {
+              "type": "boolean"
+            },
+            "emails": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "customType": {
+                      "type": "string"
+                    },
+                    "primary": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["address", "type", "customType", "primary"]
+                }
+              ]
+            },
+            "externalIds": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "customType": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["value", "type", "customType"]
+                }
+              ]
+            },
+            "relations": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "customType": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["value", "type", "customType"]
+                }
+              ]
+            },
+            "organizations": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "primary": {
+                      "type": "boolean"
+                    },
+                    "customType": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "title",
+                    "primary",
+                    "customType",
+                    "description"
+                  ]
+                }
+              ]
+            },
+            "phones": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["value", "type"]
+                }
+              ]
+            },
+            "aliases": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "nonEditableAliases": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "customerId": {
+              "type": "string"
+            },
+            "orgUnitPath": {
+              "type": "string"
+            },
+            "isMailboxSetup": {
+              "type": "boolean"
+            },
+            "includeInGlobalAddressList": {
+              "type": "boolean"
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "directMembersCount": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "adminCreated": {
+              "type": "boolean"
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_members",
+        "json_schema": {
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

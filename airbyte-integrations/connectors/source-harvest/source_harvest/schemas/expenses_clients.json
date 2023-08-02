@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": ["null", "integer"]
+    },
+    "client_name": {
+      "type": ["null", "string"]
+    },
+    "total_amount": {
+      "type": ["null", "number"]
+    },
+    "billable_amount": {
+      "type": ["null", "number"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
+    }
+  }
+}

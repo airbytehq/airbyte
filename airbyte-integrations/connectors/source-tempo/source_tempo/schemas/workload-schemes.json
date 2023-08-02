@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "type": "string",
+      "description": "The URL of the Workload Scheme",
+      "format": "uri",
+      "readOnly": true
+    },
+    "id": {
+      "type": "integer",
+      "description": "The ID of the tempo Workload Scheme.",
+      "readOnly": true
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the tempo Workload Scheme.",
+      "readOnly": true
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the tempo Workload Scheme.",
+      "readOnly": true
+    },
+    "defaultScheme": {
+      "type": "boolean",
+      "description": "The defaultScheme of the tempo Workload Scheme.",
+      "readOnly": true
+    },
+    "memberCount": {
+      "type": "integer",
+      "description": "The memberCount of the tempo Workload Scheme.",
+      "readOnly": true
+    },
+    "days": {
+      "type": "array",
+      "description": "The days of the tempo Workload Scheme.",
+      "readOnly": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string"
+          },
+          "requiredSeconds": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

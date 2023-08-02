@@ -1,0 +1,15 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/spacex-api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Spacex Api Spec
+  type: object
+  additionalProperties: true
+  properties:
+    id:
+      title: Unique ID for specific source target
+      type: string
+      desciption: Optional, For a specific ID
+    options:
+      title: Configuration options for endpoints
+      type: string
+      desciption: Optional, Possible values for an endpoint. Example values for launches-latest, upcoming, past

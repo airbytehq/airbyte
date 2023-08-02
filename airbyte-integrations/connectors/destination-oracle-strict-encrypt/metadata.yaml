@@ -1,0 +1,25 @@
+data:
+  registries:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/destination-oracle-strict-encrypt
+  githubIssueLabel: destination-oracle
+  icon: oracle.svg
+  license: ELv2
+  name: Oracle
+  normalizationConfig:
+    normalizationIntegrationType: oracle
+    normalizationRepository: airbyte/normalization-oracle
+    normalizationTag: 0.4.1
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/oracle
+  supportsDbt: true
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

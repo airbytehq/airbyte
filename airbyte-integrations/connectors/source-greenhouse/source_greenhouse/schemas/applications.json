@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "public_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "rejection_reason": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "rejection_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "custom_fields": {
+          "type": ["null", "object"]
+        },
+        "keyed_custom_fields": {
+          "type": ["null", "object"]
+        }
+      }
+    },
+    "rejected_at": {
+      "type": ["null", "string"]
+    },
+    "prospective_office": {
+      "type": ["null", "string"]
+    },
+    "prospective_department": {
+      "type": ["null", "string"]
+    },
+    "prospect_detail": {
+      "type": "object",
+      "properties": {
+        "prospect_stage": {
+          "type": ["null", "string"]
+        },
+        "prospect_pool": {
+          "type": ["null", "string"]
+        },
+        "prospect_owner": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "prospect": {
+      "type": "boolean"
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "last_activity_at": {
+      "type": "string"
+    },
+    "jobs": {
+      "type": "array"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "current_stage": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "credited_to": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": "integer"
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "employee_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "candidate_id": {
+      "type": "integer"
+    },
+    "attachments": {
+      "type": "array"
+    },
+    "applied_at": {
+      "type": "string"
+    },
+    "answers": {
+      "type": "array"
+    }
+  }
+}

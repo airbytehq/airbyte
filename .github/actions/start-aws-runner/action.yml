@@ -1,0 +1,73 @@
+name: "Runner Start (AWS)"
+description: "Starting Runner on AWS Cloud"
+inputs:
+  aws-access-key-id:
+    required: true
+  aws-secret-access-key:
+    required: true
+  github-token:
+    required: true
+  ec2-image-id:
+    # https://internal-docs.airbyte.io/Things-To-Know/Build-Runner-Images
+    default: "ami-017f6fe645968f7e0"
+    required: true
+  ec2-instance-type:
+    default: "c5.2xlarge"
+    required: true
+  subnet-id:
+    default: "subnet-0469a9e68a379c1d3"
+    required: true
+  security-group-id:
+    default: "sg-0793f3c9413f21970,sg-023656a050e7d5634"
+    required: true
+  label:
+    required: false
+  ec2-instance-id:
+    required: false
+
+outputs:
+  label:
+    value: ${{ steps.start-ec2-runner.outputs.label }}
+  ec2-instance-id:
+    value: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: us-east-2
+
+    - name: Get a latest AMI id
+      id: get-ami-id
+      shell: bash
+      run: |-
+        echo "latest_ami_id=$(aws ec2 describe-images --owners "self" \
+                                                      --region "us-east-2" \
+                                                      --filters "Name=name,Values=github-runner*" \
+                                                      --filters "Name=state,Values=available" \
+                                                      --query "sort_by(Images, &CreationDate)[-1].ImageId" \
+                                                      --output text)" >> $GITHUB_OUTPUT
+
+    - name: Start EC2 runner
+      id: start-ec2-runner
+      uses: airbytehq/ec2-github-runner@MSGv0.0.5
+      with:
+        mode: start
+        github-token: ${{ inputs.github-token }}
+        ec2-image-id: ${{ steps.get-ami-id.outputs.latest_ami_id }}
+        ec2-instance-type: ${{ inputs.ec2-instance-type }}
+        subnet-id: ${{ inputs.subnet-id }}
+        security-group-id: ${{ inputs.security-group-id }}
+        # this adds a label to group any EC2 runners spun up within the same action run
+        # this enables creating a pool of runners to run multiple/matrix jobs on in parallel
+        label: runner-pool-${{ github.run_id }}
+        aws-resource-tags: >
+          [
+            {"Key": "BuildType", "Value": "oss"},
+            {"Key": "Repository", "Value": "${{ github.repository }}"},
+            {"Key": "Branch", "Value": "${{ github.ref }}"}
+          ]

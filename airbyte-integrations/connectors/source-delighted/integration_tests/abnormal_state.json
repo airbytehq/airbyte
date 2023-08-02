@@ -1,0 +1,30 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": 4126108288 },
+      "stream_descriptor": { "name": "people" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "unsubscribed_at": 4126108288 },
+      "stream_descriptor": { "name": "unsubscribes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "bounced_at": 4126108288 },
+      "stream_descriptor": { "name": "bounces" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 4126108288 },
+      "stream_descriptor": { "name": "survey_responses" }
+    }
+  }
+]

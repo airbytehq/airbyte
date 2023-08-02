@@ -1,0 +1,9 @@
+{
+  "host": "127.0.0.1",
+  "port": "27888",
+  "database": "sample_analytics",
+  "user": "user",
+  "password": "password",
+  "auth_source": "admin",
+  "ssl": false
+}

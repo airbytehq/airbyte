@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": ["boolean", "null"]
+    },
+    "address": {
+      "type": ["string", "null"]
+    },
+    "company_id": {
+      "type": ["integer", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "job_title": {
+      "type": ["string", "null"]
+    },
+    "language": {
+      "type": ["string", "null"]
+    },
+    "mobile": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "phone": {
+      "type": ["string", "null"]
+    },
+    "time_zone": {
+      "type": ["string", "null"]
+    },
+    "twitter_id": {
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "type": ["object", "null"]
+    },
+    "facebook_id": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["string", "null"]
+    },
+    "csat_rating": {
+      "type": ["integer", "null"]
+    },
+    "preferred_source": {
+      "type": ["string", "null"]
+    },
+    "unique_external_id": {
+      "type": ["string", "null"]
+    }
+  }
+}

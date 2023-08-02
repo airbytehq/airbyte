@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "authorId": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "taskId": {
+      "type": "string"
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Directory Spec",
+    "type": "object",
+    "required": ["credentials_json", "email"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials_json": {
+        "type": "string",
+        "title": "Credentials JSON",
+        "description": "The contents of the JSON service account key. See the <a href=\"https://developers.google.com/admin-sdk/reports/v1/guides/delegation\">docs</a> for more information on how to generate this key.",
+        "airbyte_secret": true
+      },
+      "email": {
+        "type": "string",
+        "title": "Email",
+        "description": "The email of the user, who has permissions to access the Google Workspace Admin APIs."
+      },
+      "lookback": {
+        "type": "integer",
+        "title": "Lookback Window in Days",
+        "minimum": 0,
+        "maximum": 180,
+        "description": "Sets the range of time shown in the report. The maximum value allowed by the Google API is 180 days."
+      }
+    }
+  }
+}

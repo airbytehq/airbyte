@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "title": "Social Profiles Age Segment",
+  "description": "Segment by age ranges in Social Profiles data.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "SocialAge",
+      "enum": ["SocialAge"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["social_age"],
+      "title": "Segment Field",
+      "description": "Segment by age ranges in Social Profiles data.",
+      "example": "social_age"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not"],
+      "title": "Segment Operator",
+      "description": "Members who are/not the exact criteria listed.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "enum": ["18-24", "25-34", "35-54", "55+"],
+      "title": "Segment Operator",
+      "description": "The age range to segment.",
+      "example": "35-54"
+    }
+  }
+}

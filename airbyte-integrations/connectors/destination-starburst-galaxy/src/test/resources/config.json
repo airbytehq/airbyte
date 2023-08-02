@@ -1,0 +1,18 @@
+{
+  "accept_terms": true,
+  "server_hostname": "abc-12345678-wxyz.galaxy.starburst.io",
+  "port": "443",
+  "username": "user@example.com",
+  "password": "password",
+  "staging_object_store": {
+    "object_store_type": "S3",
+    "s3_bucket_name": "required",
+    "s3_bucket_path": "required",
+    "s3_bucket_region": "required",
+    "s3_access_key_id": "required",
+    "s3_secret_access_key": "required"
+  },
+  "purge_staging_data": true,
+  "catalog": "s3_catalog",
+  "catalog_schema": "public"
+}

@@ -1,0 +1,31 @@
+connector_image: airbyte/source-google-sheets:dev
+test_strictness_level: high
+acceptance_tests:
+  basic_read:
+    tests:
+    - config_path: secrets/service_config.json
+      expect_records:
+        path: integration_tests/expected_records.txt
+  connection:
+    tests:
+    - config_path: secrets/config.json
+      status: succeed
+    - config_path: secrets/config_with_url.json
+      status: succeed
+    - config_path: secrets/service_config.json
+      status: succeed
+    - config_path: integration_tests/invalid_config.json
+      status: exception
+  discovery:
+    tests:
+    - config_path: secrets/service_config.json
+  full_refresh:
+    tests:
+    - config_path: secrets/service_config.json
+      configured_catalog_path: integration_tests/configured_catalog.json
+  incremental:
+    bypass_reason: "Incremental sync are not supported on this connector"
+  spec:
+    tests:
+    - spec_path: source_google_sheets/spec.yaml
+

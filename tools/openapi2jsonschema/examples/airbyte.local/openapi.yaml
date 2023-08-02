@@ -1,0 +1,2992 @@
+openapi: 3.0.0
+servers:
+  - url: http://airbyte.local
+  - url: http://localhost:8000/api
+info:
+  contact:
+    email: contact@airbyte.io
+  description: |
+    Airbyte Configuration API
+    [https://airbyte.io](https://airbyte.io).
+
+    This API is a collection of HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
+
+    Here are some conventions that this API follows:
+    * All endpoints are http POST methods.
+    * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
+    * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
+    * For all `update` methods, the whole object must be passed in, even the fields that did not change.
+
+    Change Management:
+    * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
+    * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
+    * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
+      * Adding fields to request or response bodies.
+      * Adding new HTTP endpoints.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Airbyte Configuration API
+  version: 1.0.0
+  x-apisguru-categories:
+    - developer_tools
+  x-origin:
+    - format: openapi
+      url: https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-api/src/main/openapi/config.yaml
+      version: "3.0"
+  x-providerName: airbyte.local
+  x-serviceName: config
+externalDocs:
+  description: Find out more about Airbyte
+  url: https://airbyte.io
+security:
+  - {}
+tags:
+  - description: Workspace related resources.
+    name: workspace
+  - description: SourceDefinition related resources.
+    name: source_definition
+  - description: SourceDefinition specification related resources.
+    name: source_definition_specification
+  - description: Source related resources.
+    name: source
+  - description: DestinationDefinition related resources.
+    name: destination_definition
+  - description: DestinationDefinitionSpecification related resources.
+    name: destination_definition_specification
+  - description: Destination  related resources.
+    name: destination
+  - description: Connection between sources and destinations.
+    name: connection
+  - description: Connection between sources and destinations.
+    name: web_backend
+  - description: Healthchecks
+    name: health
+  - description: Export/Import Airbyte Configuration and Database resources.
+    name: deployment
+paths:
+  /v1/connections/create:
+    post:
+      operationId: createConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Create a connection between a source and a destination
+      tags:
+        - connection
+  /v1/connections/delete:
+    post:
+      operationId: deleteConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Delete a connection
+      tags:
+        - connection
+  /v1/connections/get:
+    post:
+      operationId: getConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get a connection
+      tags:
+        - connection
+  /v1/connections/list:
+    post:
+      description: List connections for workspace. Does not return deleted connections.
+      operationId: listConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Returns all connections for a workspace.
+      tags:
+        - connection
+  /v1/connections/reset:
+    post:
+      operationId: resetConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Reset the data for the connection. Deletes data generated by the connection in the destination. Resets any cursors back to initial state.
+      tags:
+        - connection
+  /v1/connections/sync:
+    post:
+      operationId: syncConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Trigger a manual sync of the connection
+      tags:
+        - connection
+  /v1/connections/update:
+    post:
+      operationId: updateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a connection
+      tags:
+        - connection
+  /v1/deployment/export:
+    post:
+      operationId: exportArchive
+      responses:
+        "200":
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+          description: Successful operation
+      summary: Export Airbyte Configuration and Data Archive
+      tags:
+        - deployment
+  /v1/deployment/import:
+    post:
+      operationId: importArchive
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
+          description: Successful operation
+      summary: Import Airbyte Configuration and Data Archive
+      tags:
+        - deployment
+  /v1/destination_definition_specifications/get:
+    post:
+      operationId: getDestinationDefinitionSpecification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionSpecificationRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get specification for a destinationDefinition
+      tags:
+        - destination_definition_specification
+  /v1/destination_definitions/create:
+    post:
+      operationId: createDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionCreate"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Creates a destinationsDefinition
+      tags:
+        - destination_definition
+  /v1/destination_definitions/get:
+    post:
+      operationId: getDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get destinationDefinition
+      tags:
+        - destination_definition
+  /v1/destination_definitions/list:
+    post:
+      operationId: listDestinationDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+          description: Successful operation
+      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
+      tags:
+        - destination_definition
+  /v1/destination_definitions/list_latest:
+    post:
+      description: Guaranteed to retrieve the latest information on supported destinations.
+      operationId: listLatestDestinationDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+          description: Successful operation
+      summary: List the latest destinationDefinitions Airbyte supports
+      tags:
+        - destination_definition
+  /v1/destination_definitions/update:
+    post:
+      operationId: updateDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update destinationDefinition
+      tags:
+        - destination_definition
+  /v1/destinations/check_connection:
+    post:
+      operationId: checkConnectionToDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Check connection to the destination
+      tags:
+        - destination
+  /v1/destinations/check_connection_for_update:
+    post:
+      operationId: checkConnectionToDestinationForUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Check connection for a proposed update to a destination
+      tags:
+        - destination
+  /v1/destinations/create:
+    post:
+      operationId: createDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Create a destination
+      tags:
+        - destination
+  /v1/destinations/delete:
+    post:
+      operationId: deleteDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Delete the destination
+      tags:
+        - destination
+  /v1/destinations/get:
+    post:
+      operationId: getDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get configured destination
+      tags:
+        - destination
+  /v1/destinations/list:
+    post:
+      operationId: listDestinationsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: List configured destinations for a workspace
+      tags:
+        - destination
+  /v1/destinations/update:
+    post:
+      operationId: updateDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a destination
+      tags:
+        - destination
+  /v1/health:
+    get:
+      operationId: getHealthCheck
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckRead"
+          description: Successful operation
+      summary: Health Check
+      tags:
+        - health
+  /v1/jobs/cancel:
+    post:
+      operationId: cancelJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Cancels a job
+      tags:
+        - jobs
+  /v1/jobs/get:
+    post:
+      operationId: getJobInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get information about a job
+      tags:
+        - jobs
+  /v1/jobs/list:
+    post:
+      operationId: listJobsFor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobListRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
+      tags:
+        - jobs
+  /v1/logs/get:
+    post:
+      operationId: getLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogsRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                format: binary
+                type: string
+          description: Returns the log file
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get logs
+      tags:
+        - logs
+  /v1/notifications/try:
+    post:
+      operationId: tryNotificationConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Try sending a notifications
+      tags:
+        - notifications
+  /v1/openapi:
+    get:
+      operationId: getOpenApiSpec
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                format: binary
+                type: string
+          description: Returns the openapi specification file
+      summary: Returns the openapi specification
+      tags:
+        - openapi
+  /v1/operations/check:
+    post:
+      operationId: checkOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperatorConfiguration"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckOperationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Check if an operation to be created is valid
+      tags:
+        - operation
+  /v1/operations/create:
+    post:
+      operationId: createOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Create an operation to be applied as part of a connection pipeline
+      tags:
+        - operation
+  /v1/operations/delete:
+    post:
+      operationId: deleteOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Delete an operation
+      tags:
+        - operation
+  /v1/operations/get:
+    post:
+      operationId: getOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Returns an operation
+      tags:
+        - operation
+  /v1/operations/list:
+    post:
+      description: List operations for connection.
+      operationId: listOperationsForConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Returns all operations for a connection.
+      tags:
+        - operation
+  /v1/operations/update:
+    post:
+      operationId: updateOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update an operation
+      tags:
+        - operation
+  /v1/scheduler/destinations/check_connection:
+    post:
+      operationId: executeDestinationCheckConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationCoreConfig"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Run check connection for a given destination configuration
+      tags:
+        - scheduler
+  /v1/scheduler/sources/check_connection:
+    post:
+      operationId: executeSourceCheckConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCoreConfig"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Run check connection for a given source configuration
+      tags:
+        - scheduler
+  /v1/scheduler/sources/discover_schema:
+    post:
+      operationId: executeSourceDiscoverSchema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCoreConfig"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDiscoverSchemaRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Run discover schema for a given source a source configuration
+      tags:
+        - scheduler
+  /v1/source_definition_specifications/get:
+    post:
+      operationId: getSourceDefinitionSpecification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionSpecificationRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get specification for a SourceDefinition.
+      tags:
+        - source_definition_specification
+  /v1/source_definitions/create:
+    post:
+      operationId: createSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionCreate"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Creates a sourceDefinition
+      tags:
+        - source_definition
+  /v1/source_definitions/get:
+    post:
+      operationId: getSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get source
+      tags:
+        - source_definition
+  /v1/source_definitions/list:
+    post:
+      operationId: listSourceDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+          description: Successful operation
+      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
+      tags:
+        - source_definition
+  /v1/source_definitions/list_latest:
+    post:
+      description: Guaranteed to retrieve the latest information on supported sources.
+      operationId: listLatestSourceDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+          description: Successful operation
+      summary: List the latest sourceDefinitions Airbyte supports
+      tags:
+        - source_definition
+  /v1/source_definitions/update:
+    post:
+      operationId: updateSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionUpdate"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a sourceDefinition
+      tags:
+        - source_definition
+  /v1/sources/check_connection:
+    post:
+      operationId: checkConnectionToSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Check connection to the source
+      tags:
+        - source
+  /v1/sources/check_connection_for_update:
+    post:
+      operationId: checkConnectionToSourceForUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Check connection for a proposed update to a source
+      tags:
+        - source
+  /v1/sources/create:
+    post:
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Create a source
+      tags:
+        - source
+  /v1/sources/delete:
+    post:
+      operationId: deleteSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Delete a source
+      tags:
+        - source
+  /v1/sources/discover_schema:
+    post:
+      operationId: discoverSchemaForSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDiscoverSchemaRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Discover the schema catalog of the source
+      tags:
+        - source
+  /v1/sources/get:
+    post:
+      operationId: getSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get source
+      tags:
+        - source
+  /v1/sources/list:
+    post:
+      description: List sources for workspace. Does not return deleted sources.
+      operationId: listSourcesForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: List sources for workspace
+      tags:
+        - source
+  /v1/sources/update:
+    post:
+      operationId: updateSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a source
+      tags:
+        - source
+  /v1/state/get:
+    post:
+      operationId: getState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Fetch the current state for a connection.
+      tags:
+        - connection
+  /v1/web_backend/connections/create:
+    post:
+      operationId: webBackendCreateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Create a connection
+      tags:
+        - web_backend
+  /v1/web_backend/connections/get:
+    post:
+      operationId: webBackendGetConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Get a connection
+      tags:
+        - web_backend
+  /v1/web_backend/connections/list:
+    post:
+      operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Returns all connections for a workspace.
+      tags:
+        - web_backend
+  /v1/web_backend/connections/update:
+    post:
+      operationId: webBackendUpdateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a connection
+      tags:
+        - web_backend
+  /v1/web_backend/destinations/recreate:
+    post:
+      operationId: webBackendRecreateDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationRecreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Recreate a destination
+      tags:
+        - web_backend
+  /v1/web_backend/sources/recreate:
+    post:
+      operationId: webBackendRecreateSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceRecreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Recreate a source
+      tags:
+        - web_backend
+  /v1/workspaces/create:
+    post:
+      operationId: createWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Creates a workspace
+      tags:
+        - workspace
+  /v1/workspaces/delete:
+    post:
+      operationId: deleteWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Deletes a workspace
+      tags:
+        - workspace
+  /v1/workspaces/get:
+    post:
+      operationId: getWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Find workspace by ID
+      tags:
+        - workspace
+  /v1/workspaces/get_by_slug:
+    post:
+      operationId: getWorkspaceBySlug
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SlugRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Find workspace by slug
+      tags:
+        - workspace
+  /v1/workspaces/list:
+    post:
+      operationId: listWorkspaces
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceReadList"
+          description: Successful operation
+      summary: List all workspaces registered in the current Airbyte deployment
+      tags:
+        - workspace
+  /v1/workspaces/update:
+    post:
+      operationId: updateWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update workspace state
+      tags:
+        - workspace
+components:
+  responses:
+    ExceptionResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KnownExceptionInfo"
+      description: Exception occurred; see message for details.
+    InvalidInputResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+      description: Input failed validation
+    NotFoundResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFoundKnownExceptionInfo"
+      description: Object with given id was not found.
+  schemas:
+    AirbyteArchive:
+      description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
+      format: binary
+      type: string
+    AirbyteCatalog:
+      description: describes the available schema (catalog).
+      properties:
+        streams:
+          items:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration"
+          type: array
+      required:
+        - streams
+      type: object
+    AirbyteStream:
+      additionalProperties: false
+      description: the immutable schema defined by the source
+      properties:
+        defaultCursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+          items:
+            type: string
+          type: array
+        jsonSchema:
+          $ref: "#/components/schemas/StreamJsonSchema"
+          description: Stream schema using Json Schema specs.
+        name:
+          description: Stream's name.
+          type: string
+        namespace:
+          description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
+          type: string
+        sourceDefinedCursor:
+          description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
+          type: boolean
+        sourceDefinedPrimaryKey:
+          description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+          items:
+            items:
+              type: string
+            type: array
+          type: array
+        supportedSyncModes:
+          items:
+            $ref: "#/components/schemas/SyncMode"
+          type: array
+      required:
+        - name
+        - json_schema
+      type: object
+    AirbyteStreamAndConfiguration:
+      additionalProperties: false
+      description: each stream is split in two parts; the immutable schema from source and mutable configuration for destination
+      properties:
+        config:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration"
+        stream:
+          $ref: "#/components/schemas/AirbyteStream"
+      type: object
+    AirbyteStreamConfiguration:
+      additionalProperties: false
+      description: the mutable part of the stream to configure the destination
+      properties:
+        aliasName:
+          description: Alias name to the stream to be used in the destination
+          type: string
+        cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+          items:
+            type: string
+          type: array
+        destinationSyncMode:
+          $ref: "#/components/schemas/DestinationSyncMode"
+        primaryKey:
+          description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+          items:
+            items:
+              type: string
+            type: array
+          type: array
+        selected:
+          type: boolean
+        syncMode:
+          $ref: "#/components/schemas/SyncMode"
+      required:
+        - syncMode
+        - destinationSyncMode
+      type: object
+    AttemptInfoRead:
+      properties:
+        attempt:
+          $ref: "#/components/schemas/AttemptRead"
+        logs:
+          $ref: "#/components/schemas/LogRead"
+      required:
+        - attempt
+        - logs
+      type: object
+    AttemptRead:
+      properties:
+        bytesSynced:
+          format: int64
+          type: integer
+        createdAt:
+          format: int64
+          type: integer
+        endedAt:
+          format: int64
+          type: integer
+        id:
+          format: int64
+          type: integer
+        recordsSynced:
+          format: int64
+          type: integer
+        status:
+          $ref: "#/components/schemas/AttemptStatus"
+        updatedAt:
+          format: int64
+          type: integer
+      required:
+        - id
+        - status
+        - createdAt
+        - updatedAt
+      type: object
+    AttemptStatus:
+      enum:
+        - running
+        - failed
+        - succeeded
+      type: string
+    CheckConnectionRead:
+      properties:
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
+        message:
+          type: string
+        status:
+          enum:
+            - succeeded
+            - failed
+          type: string
+      required:
+        - status
+        - jobInfo
+      type: object
+    CheckOperationRead:
+      properties:
+        message:
+          type: string
+        status:
+          enum:
+            - succeeded
+            - failed
+          type: string
+      required:
+        - status
+      type: object
+    ConnectionCreate:
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          description: Optional name of the connection
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+      required:
+        - sourceId
+        - destinationId
+        - status
+      type: object
+    ConnectionId:
+      format: uuid
+      type: string
+    ConnectionIdRequestBody:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+      required:
+        - connectionId
+      type: object
+    ConnectionRead:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+      required:
+        - connectionId
+        - name
+        - sourceId
+        - destinationId
+        - syncCatalog
+        - status
+      type: object
+    ConnectionReadList:
+      properties:
+        connections:
+          items:
+            $ref: "#/components/schemas/ConnectionRead"
+          type: array
+      required:
+        - connections
+      type: object
+    ConnectionSchedule:
+      description: if null, then no schedule is set.
+      properties:
+        timeUnit:
+          enum:
+            - minutes
+            - hours
+            - days
+            - weeks
+            - months
+          type: string
+        units:
+          format: int64
+          type: integer
+      required:
+        - units
+        - timeUnit
+      type: object
+    ConnectionState:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+      required:
+        - connectionId
+      type: object
+    ConnectionStateObject:
+      type: object
+    ConnectionStatus:
+      description: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
+      enum:
+        - active
+        - inactive
+        - deprecated
+      type: string
+    ConnectionUpdate:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+      required:
+        - connectionId
+        - syncCatalog
+        - status
+      type: object
+    CustomerId:
+      format: uuid
+      type: string
+    DataType:
+      enum:
+        - string
+        - number
+        - boolean
+        - object
+        - array
+      type: string
+    DestinationConfiguration:
+      description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
+      example:
+        user: charles
+    DestinationCoreConfig:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+      required:
+        - workspaceId
+        - destinationDefinitionId
+        - connectionConfiguration
+      type: object
+    DestinationCreate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        name:
+          type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - name
+        - destinationDefinitionId
+        - connectionConfiguration
+      type: object
+    DestinationDefinitionCreate:
+      properties:
+        dockerImageTag:
+          type: string
+        dockerRepository:
+          type: string
+        documentationUrl:
+          format: uri
+          type: string
+        icon:
+          type: string
+        name:
+          type: string
+      required:
+        - name
+        - dockerRepository
+        - dockerImageTag
+        - documentationUrl
+      type: object
+    DestinationDefinitionId:
+      format: uuid
+      type: string
+    DestinationDefinitionIdRequestBody:
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+      required:
+        - destinationDefinitionId
+      type: object
+    DestinationDefinitionRead:
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        dockerImageTag:
+          type: string
+        dockerRepository:
+          type: string
+        documentationUrl:
+          format: uri
+          type: string
+        icon:
+          type: string
+        name:
+          type: string
+      required:
+        - destinationDefinitionId
+        - name
+        - dockerRepository
+        - dockerImageTag
+        - documentationUrl
+      type: object
+    DestinationDefinitionReadList:
+      properties:
+        destinationDefinitions:
+          items:
+            $ref: "#/components/schemas/DestinationDefinitionRead"
+          type: array
+      required:
+        - destinationDefinitions
+      type: object
+    DestinationDefinitionSpecification:
+      description: The specification for what values are required to configure the destinationDefinition.
+      example:
+        user:
+          type: string
+    DestinationDefinitionSpecificationRead:
+      properties:
+        connectionSpecification:
+          $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        documentationUrl:
+          type: string
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
+        supportedDestinationSyncModes:
+          items:
+            $ref: "#/components/schemas/DestinationSyncMode"
+          type: array
+        supportsDbt:
+          type: boolean
+        supportsNormalization:
+          type: boolean
+      required:
+        - destinationDefinitionId
+        - jobInfo
+      type: object
+    DestinationDefinitionUpdate:
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        dockerImageTag:
+          type: string
+      required:
+        - destinationDefinitionId
+        - dockerImageag
+      type: object
+    DestinationId:
+      format: uuid
+      type: string
+    DestinationIdRequestBody:
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+      required:
+        - destinationId
+      type: object
+    DestinationRead:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        destinationName:
+          type: string
+        name:
+          type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - destinationDefinitionId
+        - destinationId
+        - workspaceId
+        - connectionConfiguration
+        - name
+        - destinationName
+      type: object
+    DestinationReadList:
+      properties:
+        destinations:
+          items:
+            $ref: "#/components/schemas/DestinationRead"
+          type: array
+      required:
+        - destinations
+      type: object
+    DestinationRecreate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - destinationId
+        - destinationDefinitionId
+        - connectionConfiguration
+        - name
+      type: object
+    DestinationSyncMode:
+      enum:
+        - append
+        - overwrite
+        - append_dedup
+      type: string
+    DestinationUpdate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+      required:
+        - destinationId
+        - connectionConfiguration
+        - name
+      type: object
+    HealthCheckRead:
+      properties:
+        db:
+          type: boolean
+      required:
+        - db
+      type: object
+    ImportRead:
+      properties:
+        reason:
+          type: string
+        status:
+          enum:
+            - succeeded
+            - failed
+          type: string
+      required:
+        - status
+      type: object
+    InvalidInputExceptionInfo:
+      properties:
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          items:
+            type: string
+          type: array
+        message:
+          type: string
+        validationErrors:
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+          type: array
+      required:
+        - message
+        - validationErrors
+      type: object
+    InvalidInputProperty:
+      properties:
+        invalidValue:
+          type: string
+        message:
+          type: string
+        propertyPath:
+          type: string
+      required:
+        - propertyPath
+      type: object
+    JobConfigType:
+      enum:
+        - check_connection_source
+        - check_connection_destination
+        - discover_schema
+        - get_spec
+        - sync
+        - reset_connection
+      type: string
+    JobId:
+      format: int64
+      type: integer
+    JobIdRequestBody:
+      properties:
+        id:
+          $ref: "#/components/schemas/JobId"
+      required:
+        - id
+      type: object
+    JobInfoRead:
+      properties:
+        attempts:
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
+          type: array
+        job:
+          $ref: "#/components/schemas/JobRead"
+      required:
+        - job
+        - attempts
+      type: object
+    JobListRequestBody:
+      properties:
+        configId:
+          type: string
+        configTypes:
+          items:
+            $ref: "#/components/schemas/JobConfigType"
+          type: array
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns all jobs created after and including this job, or the full pagination pagesize if that list is smaller than a page. Otherwise, this field is ignored.
+          $ref: "#/components/schemas/JobId"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+          type: object
+      required:
+        - configTypes
+        - configId
+      type: object
+    JobRead:
+      properties:
+        configId:
+          type: string
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        createdAt:
+          format: int64
+          type: integer
+        id:
+          $ref: "#/components/schemas/JobId"
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        updatedAt:
+          format: int64
+          type: integer
+      required:
+        - id
+        - configType
+        - configId
+        - createdAt
+        - updatedAt
+        - status
+      type: object
+    JobReadList:
+      properties:
+        jobs:
+          items:
+            $ref: "#/components/schemas/JobWithAttemptsRead"
+          type: array
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
+      required:
+        - jobs
+        - totalCount
+      type: object
+    JobStatus:
+      enum:
+        - pending
+        - running
+        - incomplete
+        - failed
+        - succeeded
+        - cancelled
+      type: string
+    JobWithAttemptsRead:
+      properties:
+        attempts:
+          items:
+            $ref: "#/components/schemas/AttemptRead"
+          type: array
+        job:
+          $ref: "#/components/schemas/JobRead"
+      type: object
+    KnownExceptionInfo:
+      properties:
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          items:
+            type: string
+          type: array
+        message:
+          type: string
+        rootCauseExceptionClassName:
+          type: string
+        rootCauseExceptionStack:
+          items:
+            type: string
+          type: array
+      required:
+        - message
+      type: object
+    LogRead:
+      properties:
+        logLines:
+          items:
+            type: string
+          type: array
+      required:
+        - logLines
+      type: object
+    LogType:
+      description: type/source of logs produced
+      enum:
+        - server
+        - scheduler
+      type: string
+    LogsRequestBody:
+      properties:
+        logType:
+          $ref: "#/components/schemas/LogType"
+      required:
+        - logType
+      type: object
+    NamespaceDefinitionType:
+      default: source
+      description: Method used for computing final namespace in destination
+      enum:
+        - source
+        - destination
+        - customformat
+      type: string
+    NotFoundKnownExceptionInfo:
+      properties:
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          items:
+            type: string
+          type: array
+        id:
+          type: string
+        message:
+          type: string
+        rootCauseExceptionClassName:
+          type: string
+        rootCauseExceptionStack:
+          items:
+            type: string
+          type: array
+      required:
+        - message
+      type: object
+    Notification:
+      properties:
+        notificationType:
+          $ref: "#/components/schemas/NotificationType"
+        slackConfiguration:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+      required:
+        - notificationType
+      type: object
+    NotificationRead:
+      properties:
+        message:
+          type: string
+        status:
+          enum:
+            - succeeded
+            - failed
+          type: string
+      required:
+        - status
+      type: object
+    NotificationType:
+      enum:
+        - slack
+      type: string
+    OperationCreate:
+      properties:
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - name
+        - operatorConfiguration
+        - workspaceId
+      type: object
+    OperationId:
+      format: uuid
+      type: string
+    OperationIdRequestBody:
+      properties:
+        OperationId:
+          $ref: "#/components/schemas/OperationId"
+      required:
+        - OperationId
+      type: object
+    OperationRead:
+      properties:
+        name:
+          type: string
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+        - workspaceId
+      type: object
+    OperationReadList:
+      properties:
+        operations:
+          items:
+            $ref: "#/components/schemas/OperationRead"
+          type: array
+      required:
+        - operations
+      type: object
+    OperationUpdate:
+      properties:
+        name:
+          type: string
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+      type: object
+    OperatorConfiguration:
+      properties:
+        dbt:
+          $ref: "#/components/schemas/OperatorDbt"
+        normalization:
+          $ref: "#/components/schemas/OperatorNormalization"
+        operatorType:
+          $ref: "#/components/schemas/OperatorType"
+      required:
+        - operatorType
+      type: object
+    OperatorDbt:
+      properties:
+        dbtArguments:
+          type: string
+        dockerImage:
+          type: string
+        gitRepoBranch:
+          type: string
+        gitRepoUrl:
+          type: string
+      required:
+        - gitRepoUrl
+      type: object
+    OperatorNormalization:
+      properties:
+        option:
+          enum:
+            - basic
+          type: string
+      type: object
+    OperatorType:
+      enum:
+        - normalization
+        - dbt
+      type: string
+    Pagination:
+      properties:
+        pageSize:
+          type: integer
+        rowOffset:
+          type: integer
+      type: object
+    ResourceRequirements:
+      description: optional resource requirements to run workers (blank for unbounded allocations)
+      properties:
+        cpu_limit:
+          type: string
+        cpu_request:
+          type: string
+        memory_limit:
+          type: string
+        memory_request:
+          type: string
+      type: object
+    SlackNotificationConfiguration:
+      properties:
+        webhook:
+          type: string
+      required:
+        - webhook
+      type: object
+    SlugRequestBody:
+      properties:
+        slug:
+          type: string
+      required:
+        - slug
+      type: object
+    SourceConfiguration:
+      description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
+      example:
+        user: charles
+    SourceCoreConfig:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+      required:
+        - sourceDefinitionId
+        - connectionConfiguration
+      type: object
+    SourceCreate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - name
+        - sourceDefinitionId
+        - connectionConfiguration
+      type: object
+    SourceDefinitionCreate:
+      properties:
+        dockerImageTag:
+          type: string
+        dockerRepository:
+          type: string
+        documentationUrl:
+          format: uri
+          type: string
+        icon:
+          type: string
+        name:
+          type: string
+      required:
+        - name
+        - dockerRepository
+        - dockerImageTag
+        - documentationUrl
+      type: object
+    SourceDefinitionId:
+      format: uuid
+      type: string
+    SourceDefinitionIdRequestBody:
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+      required:
+        - sourceDefinitionId
+      type: object
+    SourceDefinitionRead:
+      properties:
+        dockerImageTag:
+          type: string
+        dockerRepository:
+          type: string
+        documentationUrl:
+          format: uri
+          type: string
+        icon:
+          type: string
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+      required:
+        - sourceDefinitionId
+        - name
+        - dockerRepository
+        - dockerImageTag
+      type: object
+    SourceDefinitionReadList:
+      properties:
+        sourceDefinitions:
+          items:
+            $ref: "#/components/schemas/SourceDefinitionRead"
+          type: array
+      required:
+        - sourceDefinitions
+      type: object
+    SourceDefinitionSpecification:
+      description: The specification for what values are required to configure the sourceDefinition.
+      example:
+        user:
+          type: string
+      type: object
+    SourceDefinitionSpecificationRead:
+      properties:
+        connectionSpecification:
+          $ref: "#/components/schemas/SourceDefinitionSpecification"
+        documentationUrl:
+          type: string
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+      required:
+        - sourceDefinitionId
+        - jobInfo
+      type: object
+    SourceDefinitionUpdate:
+      description: Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
+      properties:
+        dockerImageTag:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+      required:
+        - sourceDefinitionId
+        - dockerImageTag
+      type: object
+    SourceDiscoverSchemaRead:
+      description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
+      properties:
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
+        breakingChange:
+          type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
+      required:
+        - jobInfo
+      type: object
+    SourceId:
+      format: uuid
+      type: string
+    SourceIdRequestBody:
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+      required:
+        - sourceId
+      type: object
+    SourceRead:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        sourceName:
+          type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - sourceDefinitionId
+        - sourceId
+        - workspaceId
+        - connectionConfiguration
+        - name
+        - sourceName
+      type: object
+    SourceReadList:
+      properties:
+        sources:
+          items:
+            $ref: "#/components/schemas/SourceRead"
+          type: array
+      required:
+        - sources
+      type: object
+    SourceRecreate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - sourceDefinitionId
+        - sourceId
+        - connectionConfiguration
+        - name
+      type: object
+    SourceUpdate:
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+      required:
+        - sourceId
+        - connectionConfiguration
+        - name
+      type: object
+    StreamJsonSchema:
+      type: object
+    SyncMode:
+      enum:
+        - full_refresh
+        - incremental
+      type: string
+    SynchronousJobRead:
+      properties:
+        configId:
+          description: only present if a config id was provided.
+          type: string
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        createdAt:
+          format: int64
+          type: integer
+        endedAt:
+          format: int64
+          type: integer
+        id:
+          format: uuid
+          type: string
+        logs:
+          $ref: "#/components/schemas/LogRead"
+        succeeded:
+          type: boolean
+      required:
+        - id
+        - configType
+        - createdAt
+        - endedAt
+        - succeeded
+      type: object
+    WebBackendConnectionCreate:
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          description: Optional name of the connection
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        operations:
+          items:
+            $ref: "#/components/schemas/OperationCreate"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
+      required:
+        - connection
+        - sourceId
+        - destinationId
+        - status
+      type: object
+    WebBackendConnectionRead:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        destination:
+          $ref: "#/components/schemas/DestinationRead"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        isSyncing:
+          type: boolean
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
+          format: int64
+          type: integer
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
+        name:
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        operations:
+          items:
+            $ref: "#/components/schemas/OperationRead"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        source:
+          $ref: "#/components/schemas/SourceRead"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        schemaChange:
+          enum:
+            - no_change
+            - non_breaking
+            - breaking
+          type: string
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
+      required:
+        - connectionId
+        - name
+        - sourceId
+        - destinationId
+        - syncCatalog
+        - status
+        - source
+        - destination
+        - isSyncing
+        - schemaChange
+      type: object
+    WebBackendConnectionReadList:
+      properties:
+        connections:
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionRead"
+          type: array
+      required:
+        - connections
+      type: object
+    WebBackendConnectionRequestBody:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        withRefreshedCatalog:
+          type: boolean
+      required:
+        - connectionId
+      type: object
+    WebBackendConnectionUpdate:
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          default: null
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          example: ${SOURCE_NAMESPACE}
+          type: string
+        operationIds:
+          items:
+            $ref: "#/components/schemas/OperationId"
+          type: array
+        operations:
+          items:
+            $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
+          type: array
+        prefix:
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+          type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        skipReset:
+          type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
+      required:
+        - connectionId
+        - syncCatalog
+        - status
+      type: object
+    WebBackendOperationCreateOrUpdate:
+      properties:
+        name:
+          type: string
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - name
+        - operatorConfiguration
+        - workspaceId
+      type: object
+    WorkspaceCreate:
+      properties:
+        anonymousDataCollection:
+          type: boolean
+        email:
+          format: email
+          type: string
+        name:
+          type: string
+        news:
+          type: boolean
+        notifications:
+          items:
+            $ref: "#/components/schemas/Notification"
+          type: array
+        securityUpdates:
+          type: boolean
+      required:
+        - name
+      type: object
+    WorkspaceId:
+      format: uuid
+      type: string
+    WorkspaceIdRequestBody:
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+      type: object
+    WorkspaceRead:
+      properties:
+        anonymousDataCollection:
+          type: boolean
+        customerId:
+          $ref: "#/components/schemas/CustomerId"
+        displaySetupWizard:
+          type: boolean
+        email:
+          format: email
+          type: string
+        initialSetupComplete:
+          type: boolean
+        name:
+          type: string
+        news:
+          type: boolean
+        notifications:
+          items:
+            $ref: "#/components/schemas/Notification"
+          type: array
+        securityUpdates:
+          type: boolean
+        slug:
+          type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - customerId
+        - name
+        - slug
+        - initialSetupComplete
+      type: object
+    WorkspaceReadList:
+      properties:
+        workspaces:
+          items:
+            $ref: "#/components/schemas/WorkspaceRead"
+          type: array
+      required:
+        - workspaces
+      type: object
+    WorkspaceUpdate:
+      properties:
+        anonymousDataCollection:
+          type: boolean
+        displaySetupWizard:
+          type: boolean
+        email:
+          format: email
+          type: string
+        initialSetupComplete:
+          type: boolean
+        news:
+          type: boolean
+        notifications:
+          items:
+            $ref: "#/components/schemas/Notification"
+          type: array
+        securityUpdates:
+          type: boolean
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+      required:
+        - workspaceId
+        - initialSetupComplete
+        - anonymousDataCollection
+        - news
+        - securityUpdates
+      type: object
+    CatalogDiff:
+      type: object
+      description: Describes the difference between two Airbyte catalogs.
+      required:
+        - transforms
+      properties:
+        transforms:
+          description: list of stream transformations. order does not matter.
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamTransform"
+    StreamTransform:
+      type: object
+      required:
+        - transformType
+        - streamDescriptor
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_stream
+            - remove_stream
+            - update_stream
+        streamDescriptor:
+          $ref: "#/components/schemas/StreamDescriptor"
+        updateStream:
+          type: array
+          description: list of field transformations. order does not matter.
+          items:
+            $ref: "#/components/schemas/FieldTransform"
+    FieldTransform:
+      type: object
+      description: "Describes the difference between two Streams."
+      required:
+        - transformType
+        - fieldName
+        - breaking
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_field
+            - remove_field
+            - update_field_schema
+        fieldName:
+          $ref: "#/components/schemas/FieldName"
+        breaking:
+          type: boolean
+        addField:
+          $ref: "#/components/schemas/FieldAdd"
+        removeField:
+          $ref: "#/components/schemas/FieldRemove"
+        updateFieldSchema:
+          $ref: "#/components/schemas/FieldSchemaUpdate"
+    FieldAdd:
+      type: object
+      properties:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldRemove:
+      type: object
+      properties:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldSchemaUpdate:
+      type: object
+      required:
+        - oldSchema
+        - newSchema
+      properties:
+        oldSchema:
+          $ref: "#/components/schemas/FieldSchema"
+        newSchema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldName:
+      description: A field name is a list of strings that form the path to the field.
+      type: array
+      items:
+        type: string
+    FieldSchema:
+      description: JSONSchema representation of the field
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+

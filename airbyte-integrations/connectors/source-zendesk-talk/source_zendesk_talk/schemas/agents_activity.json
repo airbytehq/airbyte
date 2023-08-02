@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": ["null", "integer"]
+    },
+    "agent_state": {
+      "type": ["null", "string"]
+    },
+    "available_time": {
+      "type": ["null", "integer"]
+    },
+    "avatar_url": {
+      "type": ["null", "string"]
+    },
+    "away_time": {
+      "type": ["null", "integer"]
+    },
+    "call_status": {
+      "type": ["null", "string"]
+    },
+    "calls_accepted": {
+      "type": ["null", "integer"]
+    },
+    "calls_denied": {
+      "type": ["null", "integer"]
+    },
+    "calls_missed": {
+      "type": ["null", "integer"]
+    },
+    "forwarding_number": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "online_time": {
+      "type": ["null", "integer"]
+    },
+    "total_call_duration": {
+      "type": ["null", "integer"]
+    },
+    "total_talk_time": {
+      "type": ["null", "integer"]
+    },
+    "total_wrap_up_time": {
+      "type": ["null", "integer"]
+    },
+    "via": {
+      "type": ["null", "string"]
+    },
+    "accepted_third_party_conferences": {
+      "type": ["null", "integer"]
+    },
+    "accepted_transfers": {
+      "type": ["null", "integer"]
+    },
+    "average_hold_time": {
+      "type": ["null", "integer"]
+    },
+    "average_talk_time": {
+      "type": ["null", "integer"]
+    },
+    "average_wrap_up_time": {
+      "type": ["null", "integer"]
+    },
+    "calls_put_on_hold": {
+      "type": ["null", "integer"]
+    },
+    "started_third_party_conferences": {
+      "type": ["null", "integer"]
+    },
+    "started_transfers": {
+      "type": ["null", "integer"]
+    },
+    "total_hold_time": {
+      "type": ["null", "integer"]
+    }
+  }
+}

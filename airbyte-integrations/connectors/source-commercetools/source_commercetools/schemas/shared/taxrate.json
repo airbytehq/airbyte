@@ -1,0 +1,37 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "includedInPrice": {
+      "type": ["null", "boolean"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "subRates": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    }
+  }
+}

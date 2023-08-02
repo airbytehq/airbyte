@@ -1,0 +1,23 @@
+version: 2
+sources:
+- name: test_normalization
+  quoting:
+    database: true
+    schema: false
+    identifier: false
+  tables:
+  - name: _airbyte_raw_arrays
+  - name: _airbyte_raw_conflict_stream_array
+  - name: _airbyte_raw_conflict_stream_name
+  - name: _airbyte_raw_conflict_stream_scalar
+  - name: _airbyte_raw_nested_s__lting_into_long_names
+  - name: _airbyte_raw_non_nest__lting_into_long_names
+  - name: _airbyte_raw_some_stream_that_was_empty
+  - name: _airbyte_raw_unnest_alias
+- name: test_normalization_namespace
+  quoting:
+    database: true
+    schema: false
+    identifier: false
+  tables:
+  - name: _airbyte_raw_simple_s__lting_into_long_names

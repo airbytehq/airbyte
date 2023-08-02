@@ -1,0 +1,34 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-confluence:dev
+acceptance_tests:
+  spec:
+    tests:
+    - spec_path: "source_confluence/spec.json"
+  connection:
+    tests:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    tests:
+    - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      expect_records:
+        path: "integration_tests/expected_records.jsonl"
+      fail_on_extra_columns: false
+      ignored_fields:
+        pages:
+          - name: body/view/value
+            bypass_reason: "Different class order"
+  full_refresh:
+    tests:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        pages:
+          - name: "body/view"

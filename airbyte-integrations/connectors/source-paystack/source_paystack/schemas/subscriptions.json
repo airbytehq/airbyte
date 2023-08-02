@@ -1,0 +1,71 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "start": {
+      "type": ["null", "integer"]
+    },
+    "quantity": {
+      "type": ["null", "integer"]
+    },
+    "subscription_code": {
+      "type": ["null", "string"]
+    },
+    "email_token": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "cron_expression": {
+      "type": ["null", "string"]
+    },
+    "next_payment_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "open_invoice": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "integration": {
+      "type": ["null", "integer"]
+    },
+    "plan": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "authorization": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "customer": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "invoice_limit": {
+      "type": ["null", "integer"]
+    },
+    "split_code": {
+      "type": ["null", "string"]
+    },
+    "payments_count": {
+      "type": ["null", "integer"]
+    },
+    "most_recent_invoice": {
+      "type": ["null", "object"],
+      "properties": {}
+    }
+  }
+}

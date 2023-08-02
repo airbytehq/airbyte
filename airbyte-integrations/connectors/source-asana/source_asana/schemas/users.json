@@ -1,0 +1,54 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "gid": {
+      "type": ["null", "string"]
+    },
+    "resource_type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "photo": {
+      "type": ["null", "object"],
+      "properties": {
+        "image_128x128": {
+          "type": ["null", "string"]
+        },
+        "image_21x21": {
+          "type": ["null", "string"]
+        },
+        "image_27x27": {
+          "type": ["null", "string"]
+        },
+        "image_36x36": {
+          "type": ["null", "string"]
+        },
+        "image_60x60": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "workspaces": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

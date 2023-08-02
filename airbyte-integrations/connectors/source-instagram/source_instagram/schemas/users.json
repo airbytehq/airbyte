@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "biography": {
+      "type": ["null", "string"]
+    },
+    "ig_id": {
+      "type": ["null", "integer"]
+    },
+    "followers_count": {
+      "type": ["null", "integer"]
+    },
+    "follows_count": {
+      "type": ["null", "integer"]
+    },
+    "media_count": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "profile_picture_url": {
+      "type": ["null", "string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "website": {
+      "type": ["null", "string"]
+    }
+  }
+}

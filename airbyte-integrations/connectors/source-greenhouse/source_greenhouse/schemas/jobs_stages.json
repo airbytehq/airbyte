@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "job_id": {
+      "type": ["null", "integer"]
+    },
+    "priority": {
+      "type": ["null", "integer"]
+    },
+    "interviews": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "schedulable": {
+            "type": ["null", "boolean"]
+          },
+          "estimated_minutes": {
+            "type": ["null", "integer"]
+          },
+          "default_interviewer_users": {
+            "type": ["null", "array"]
+          },
+          "interview_kit": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "content": {
+                "type": ["null", "string"]
+              },
+              "questions": {
+                "type": ["null", "array"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

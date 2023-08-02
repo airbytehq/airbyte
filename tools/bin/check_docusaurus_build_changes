@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# ------------- Import some defaults for the shell
+
+# Source shell defaults
+# $0 is the currently running program (this file)
+this_file_directory=$(dirname $0)
+relative_path_to_defaults=$this_file_directory/../shell_defaults
+
+# if a file exists there, source it. otherwise complain
+if test -f $relative_path_to_defaults; then
+  # source and '.' are the same program
+  source $relative_path_to_defaults
+else
+  echo -e "\033[31m\nFAILED TO SOURCE TEST RUNNING OPTIONS.\033[39m"
+  echo -e "\033[31mTried $relative_path_to_defaults\033[39m"
+  exit 1
+fi
+
+
+# ------------- Start Main
+set +o xtrace
+echo -e "$blue_text""This test ensures no changes result from running docusaurs build""$default_text"
+set -o xtrace
+
+# Generate static files
+cd $this_file_directory  #lets us run this without relative path dep
+cd ../../docusaurus
+yarn install
+yarn run build
+
+
+# +o counterintuitively unsets the option
+set +o errexit # exit 1 expected below in normal operation
+# this line is the test
+git diff-index --quiet HEAD --
+clean=$? # $? is the return status of the last command
+set -o errexit
+
+
+# ------------- User communication on testing results
+
+set +o xtrace
+
+if test $clean -eq 0; then
+  echo -e "$blue_text""\n\n\nDocusaurs has no changes to commit!""$default_text"
+  echo -e "$blue_text""Generated documentation should be as local testing""$default_text"
+
+else
+  echo -e "$red_text""\n\n\ndocusaurs build resulted in changes from this commit.""$default_text"
+  echo -e "$red_text""  Run docusaurus build locally (yarn run build), commit, and try again""$default_text"
+fi

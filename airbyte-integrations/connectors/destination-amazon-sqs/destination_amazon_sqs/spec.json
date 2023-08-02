@@ -1,0 +1,93 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/amazon-sqs",
+  "supported_destination_sync_modes": ["append"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Amazon Sqs",
+    "type": "object",
+    "required": ["queue_url", "region"],
+    "additionalProperties": false,
+    "properties": {
+      "queue_url": {
+        "title": "Queue URL",
+        "description": "URL of the SQS Queue",
+        "type": "string",
+        "examples": [
+          "https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"
+        ],
+        "order": 0
+      },
+      "region": {
+        "title": "AWS Region",
+        "description": "AWS Region of the SQS Queue",
+        "type": "string",
+        "enum": [
+          "us-east-1",
+          "us-east-2",
+          "us-west-1",
+          "us-west-2",
+          "af-south-1",
+          "ap-east-1",
+          "ap-south-1",
+          "ap-northeast-1",
+          "ap-northeast-2",
+          "ap-northeast-3",
+          "ap-southeast-1",
+          "ap-southeast-2",
+          "ca-central-1",
+          "cn-north-1",
+          "cn-northwest-1",
+          "eu-central-1",
+          "eu-north-1",
+          "eu-south-1",
+          "eu-west-1",
+          "eu-west-2",
+          "eu-west-3",
+          "sa-east-1",
+          "me-south-1",
+          "us-gov-east-1",
+          "us-gov-west-1"
+        ],
+        "order": 1
+      },
+      "message_delay": {
+        "title": "Message Delay",
+        "description": "Modify the Message Delay of the individual message from the Queue's default (seconds).",
+        "type": "integer",
+        "examples": ["15"],
+        "order": 2
+      },
+      "access_key": {
+        "title": "AWS IAM Access Key ID",
+        "description": "The Access Key ID of the AWS IAM Role to use for sending  messages",
+        "type": "string",
+        "examples": ["xxxxxHRNxxx3TBxxxxxx"],
+        "order": 3,
+        "airbyte_secret": true
+      },
+      "secret_key": {
+        "title": "AWS IAM Secret Key",
+        "description": "The Secret Key of the AWS IAM Role to use for sending messages",
+        "type": "string",
+        "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
+        "order": 4,
+        "airbyte_secret": true
+      },
+      "message_body_key": {
+        "title": "Message Body Key",
+        "description": "Use this property to extract the contents of the named key in the input record to use as the SQS message body. If not set, the entire content of the input record data is used as the message body.",
+        "type": "string",
+        "examples": ["myDataPath"],
+        "order": 5
+      },
+      "message_group_id": {
+        "title": "Message Group Id",
+        "description": "The tag that specifies that a message belongs to a specific message group. This parameter applies only to, and is REQUIRED by, FIFO queues.",
+        "type": "string",
+        "examples": ["my-fifo-group"],
+        "order": 6
+      }
+    }
+  }
+}

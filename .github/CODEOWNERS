@@ -1,0 +1,51 @@
+# CDK and Connector Acceptance Tests
+/airbyte-cdk/python @airbytehq/connector-extensibility
+/airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
+
+# Protocol related items
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
+
+# Normalization
+/airbyte-integrations/bases/base-normalization/ @airbytehq/destinations
+
+# Java-based connectors
+/airbyte-integrations/bases/base-java/ @airbytehq/jdbc-connectors
+
+# Java-based source connectors
+/airbyte-integrations/bases/debezium-v1-4-2/ @airbytehq/dbsources
+/airbyte-integrations/bases/debezium-v1-9-6/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-jdbc/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-alloydb/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-bigquery/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-clickhouse/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-cockroachdb/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-db2/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-mssql/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-mysql/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-oracle/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-postgres/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-redshift/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-snowflake/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-tidb/ @airbytehq/dbsources
+
+# Java-based destination connectors
+/airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
+/airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
+/airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery-denormalized/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-gcs/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mariadb-columnstore/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mysql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-oracle/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-rockset/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-tidb/ @airbytehq/destinations

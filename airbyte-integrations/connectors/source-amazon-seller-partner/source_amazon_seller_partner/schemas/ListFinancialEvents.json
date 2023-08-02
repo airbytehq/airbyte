@@ -1,0 +1,989 @@
+{
+  "title": "ListFinancialEvents",
+  "description": "List of Financial Events",
+  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ShipmentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "OrderChargeList": {
+            "type": ["null", "array"]
+          },
+          "OrderChargeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "DirectPaymentList": {
+            "type": ["null", "array"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ShipmentItemList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "RefundEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "OrderChargeList": {
+            "type": ["null", "array"]
+          },
+          "OrderChargeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "DirectPaymentList": {
+            "type": ["null", "array"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ShipmentItemList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "GuaranteeClaimEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "OrderChargeList": {
+            "type": ["null", "array"]
+          },
+          "OrderChargeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "DirectPaymentList": {
+            "type": ["null", "array"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ShipmentItemList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "ChargebackEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "OrderChargeList": {
+            "type": ["null", "array"]
+          },
+          "OrderChargeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "DirectPaymentList": {
+            "type": ["null", "array"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ShipmentItemList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "PayWithAmazonEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "TransactionPostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "BusinessObjectType": {
+            "type": ["null", "string"]
+          },
+          "SalesChannel": {
+            "type": ["null", "string"]
+          },
+          "Charge": {
+            "type": ["null", "object"]
+          },
+          "FeeList": {
+            "type": ["null", "array"]
+          },
+          "PaymentAmountType": {
+            "type": ["null", "string"]
+          },
+          "AmountDescription": {
+            "type": ["null", "string"]
+          },
+          "FulfillmentChannel": {
+            "type": ["null", "string"]
+          },
+          "StoreName": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "ServiceProviderCreditEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "ProviderTransactionType": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceCountryCode": {
+            "type": ["null", "string"]
+          },
+          "SellerId": {
+            "type": ["null", "string"]
+          },
+          "SellerStoreName": {
+            "type": ["null", "string"]
+          },
+          "ProviderId": {
+            "type": ["null", "string"]
+          },
+          "ProviderStoreName": {
+            "type": ["null", "string"]
+          },
+          "TransactionAmount": {
+            "type": ["null", "object"]
+          },
+          "TransactionCreationDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "RetrochargeEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "RetrochargeEventType": {
+            "type": ["null", "string"]
+          },
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "BaseTax": {
+            "type": ["null", "object"]
+          },
+          "ShippingTax": {
+            "type": ["null", "object"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "RetrochargeTaxWithheldList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "RentalTransactionEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "RentalEventType": {
+            "type": ["null", "string"]
+          },
+          "ExtensionLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "RentalChargeList": {
+            "type": ["null", "array"]
+          },
+          "RentalFeeList": {
+            "type": ["null", "array"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "RentalInitialValue": {
+            "type": ["null", "object"]
+          },
+          "RentalReimbursement": {
+            "type": ["null", "object"]
+          },
+          "RentalTaxWithheldList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "PerformanceBondRefundEventList": {
+      "type": "array",
+      "items": {}
+    },
+    "ProductAdsPaymentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "postedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "transactionType": {
+            "type": ["null", "string"]
+          },
+          "invoiceId": {
+            "type": ["null", "string"]
+          },
+          "baseValue": {
+            "type": ["null", "object"]
+          },
+          "taxValue": {
+            "type": ["null", "object"]
+          },
+          "transactionValue": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "ServiceFeeEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "FeeReason": {
+            "type": ["null", "string"]
+          },
+          "FeeList": {
+            "type": ["null", "array"]
+          },
+          "SellerSKU": {
+            "type": ["null", "string"]
+          },
+          "FnSKU": {
+            "type": ["null", "string"]
+          },
+          "FeeDescription": {
+            "type": ["null", "string"]
+          },
+          "ASIN": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "SellerDealPaymentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "postedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "dealId": {
+            "type": ["null", "string"]
+          },
+          "dealDescription": {
+            "type": ["null", "string"]
+          },
+          "eventType": {
+            "type": ["null", "string"]
+          },
+          "feeType": {
+            "type": ["null", "string"]
+          },
+          "feeAmount": {
+            "type": ["null", "object"]
+          },
+          "taxAmount": {
+            "type": ["null", "object"]
+          },
+          "totalAmount": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "DebtRecoveryEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "DebtRecoveryType": {
+            "type": ["null", "string"]
+          },
+          "RecoveryAmount": {
+            "type": ["null", "object"]
+          },
+          "OverPaymentCredit": {
+            "type": ["null", "object"]
+          },
+          "DebtRecoveryItemList": {
+            "type": ["null", "array"]
+          },
+          "ChargeInstrumentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "LoanServicingEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "LoanAmount": {
+            "type": ["null", "object"]
+          },
+          "SourceBusinessEventType": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "AdjustmentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AdjustmentType": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "AdjustmentAmount": {
+            "type": ["null", "object"]
+          },
+          "AdjustmentItemList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "SAFETReimbursementEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "SAFETClaimId": {
+            "type": ["null", "string"]
+          },
+          "ReimbursedAmount": {
+            "type": ["null", "object"]
+          },
+          "ReasonCode": {
+            "type": ["null", "string"]
+          },
+          "SAFETReimbursementItemList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "SellerReviewEnrollmentPaymentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "EnrollmentId": {
+            "type": ["null", "string"]
+          },
+          "ParentASIN": {
+            "type": ["null", "string"]
+          },
+          "FeeComponent": {
+            "type": ["null", "object"]
+          },
+          "ChargeComponent": {
+            "type": ["null", "object"]
+          },
+          "TotalAmount": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "FBALiquidationEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "OriginalRemovalOrderId": {
+            "type": ["null", "string"]
+          },
+          "LiquidationProceedsAmount": {
+            "type": ["null", "object"]
+          },
+          "LiquidationFeeAmount": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "CouponPaymentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "CouponId": {
+            "type": ["null", "string"]
+          },
+          "SellerCouponDescription": {
+            "type": ["null", "string"]
+          },
+          "ClipOrRedemptionCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "PaymentEventId": {
+            "type": ["null", "string"]
+          },
+          "FeeComponent": {
+            "type": ["null", "object"]
+          },
+          "ChargeComponent": {
+            "type": ["null", "object"]
+          },
+          "TotalAmount": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "ImagingServicesFeeEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "ImagingRequestBillingItemID": {
+            "type": ["null", "string"]
+          },
+          "ASIN": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "FeeList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "NetworkComminglingTransactionEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "NetCoTransactionID": {
+            "type": ["null", "string"]
+          },
+          "SwapReason": {
+            "type": ["null", "string"]
+          },
+          "ASIN": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceId": {
+            "type": ["null", "string"]
+          },
+          "TaxExclusiveAmount": {
+            "type": ["null", "object"]
+          },
+          "TaxAmount": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "AffordabilityExpenseEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "MarketplaceId": {
+            "type": ["null", "string"]
+          },
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "BaseExpense": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeCGST": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeSGST": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeIGST": {
+            "type": ["null", "object"]
+          },
+          "TotalExpense": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "AffordabilityExpenseReversalEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "MarketplaceId": {
+            "type": ["null", "string"]
+          },
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "BaseExpense": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeCGST": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeSGST": {
+            "type": ["null", "object"]
+          },
+          "TaxTypeIGST": {
+            "type": ["null", "object"]
+          },
+          "TotalExpense": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "TrialShipmentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "FinancialEventGroupId": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "SKU": {
+            "type": ["null", "string"]
+          },
+          "FeeList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "TDSReimbursementEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "FinancialEventGroupId": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "SKU": {
+            "type": ["null", "string"]
+          },
+          "FeeList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "AdhocDisbursementEventList": {
+      "type": ["null","array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AdjustmentType": {
+            "type": ["null", "string"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "AdjustmentAmount": {
+            "type": ["null", "object"]
+          },
+          "AdjustmentItemList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "ShipmentSettleEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "AmazonOrderId": {
+            "type": ["null", "string"]
+          },
+          "SellerOrderId": {
+            "type": ["null", "string"]
+          },
+          "MarketplaceName": {
+            "type": ["null", "string"]
+          },
+          "OrderChargeList": {
+            "type": ["null", "array"]
+          },
+          "OrderChargeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeList": {
+            "type": ["null", "array"]
+          },
+          "OrderFeeAdjustmentList": {
+            "type": ["null", "array"]
+          },
+          "DirectPaymentList": {
+            "type": ["null", "array"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ShipmentItemList": {
+            "type": ["null", "array"]
+          },
+          "ShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "ChargeRefundEventList": {
+      "type": ["null","array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "ChargeAmount": {
+            "type": ["null", "object"]
+          },
+          "ChargeType": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "FailedAdhocDisbursementEventList": {
+      "type": ["null","array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "FundsTransfersType": {
+            "type": ["null", "string"]
+          },
+          "TransferId": {
+            "type": ["null", "string"]
+          },
+          "DisbursementId": {
+            "type": ["null", "string"]
+          },
+          "PaymentDisbursementType": {
+            "type": ["null", "string"]
+          },
+          "Status": {
+            "type": ["null", "string"]
+          },
+          "TransferAmount": {
+            "type": ["null", "object"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "ValueAddedServiceChargeEventList": {
+      "type": ["null","array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "Description": {
+            "type": ["null", "string"]
+          },
+          "TransactionAmount": {
+            "type": ["null", "object"]
+          },
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "CapacityReservationBillingEventList": {
+      "type": "array",
+      "items": {}
+    },
+    "TaxWithholdingEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "BaseAmount": {
+            "type": ["null", "object"]
+          },
+          "WithheldAmount": {
+            "type": ["null", "object"]
+          },
+          "TaxWithholdingPeriod": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "RemovalShipmentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "MerchantOrderId": {
+            "type": ["null", "string"]
+          },
+          "OrderId": {
+            "type": ["null", "string"]
+          },
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "RemovalShipmentItemList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    },
+    "RemovalShipmentAdjustmentEventList": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PostedDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "AdjustmentEventId": {
+            "type": ["null", "string"]
+          },
+          "MerchantOrderId": {
+            "type": ["null", "string"]
+          },
+          "OrderId": {
+            "type": ["null", "string"]
+          },
+          "TransactionType": {
+            "type": ["null", "string"]
+          },
+          "RemovalShipmentItemAdjustmentList": {
+            "type": ["null", "array"]
+          }
+        }
+      }
+    }
+  }
+}

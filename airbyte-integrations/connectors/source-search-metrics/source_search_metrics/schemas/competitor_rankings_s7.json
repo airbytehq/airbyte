@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "visibility": {
+      "type": ["null", "integer"]
+    },
+    "avg_position": {
+      "type": ["null", "number"]
+    },
+    "keyword_count": {
+      "type": ["null", "integer"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "url_type": {
+      "type": ["null", "string"]
+    }
+  }
+}

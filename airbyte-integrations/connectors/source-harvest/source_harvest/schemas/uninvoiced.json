@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": ["null", "integer"]
+    },
+    "client_name": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "project_name": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "total_hours": {
+      "type": ["null", "number"]
+    },
+    "uninvoiced_hours": {
+      "type": ["null", "number"]
+    },
+    "uninvoiced_expenses": {
+      "type": ["null", "number"]
+    },
+    "uninvoiced_amount": {
+      "type": ["null", "number"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
+    }
+  }
+}

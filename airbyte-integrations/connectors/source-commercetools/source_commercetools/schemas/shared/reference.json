@@ -1,0 +1,22 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "typeId": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "obj": {
+      "type": ["null", "object"],
+      "properties": {
+        "typeId": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

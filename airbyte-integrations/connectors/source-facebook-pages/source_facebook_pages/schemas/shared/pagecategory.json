@@ -1,0 +1,14 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "api_enum": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    }
+  }
+}

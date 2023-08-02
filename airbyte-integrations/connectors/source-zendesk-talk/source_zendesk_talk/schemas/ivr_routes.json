@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": ["null", "string"]
+    },
+    "greeting": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "ivr_id": {
+      "type": ["null", "integer"]
+    },
+    "ivr_menu_id": {
+      "type": ["null", "integer"]
+    },
+    "keypress": {
+      "type": ["null", "string"]
+    },
+    "option_text": {
+      "type": ["null", "string"]
+    },
+    "options": {
+      "type": ["null", "object"]
+    },
+    "overflow_options": {
+      "type": ["null", "array"]
+    }
+  }
+}

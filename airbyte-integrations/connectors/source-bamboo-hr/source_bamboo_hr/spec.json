@@ -1,0 +1,31 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bamboo-hr",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bamboo HR Spec",
+    "type": "object",
+    "required": ["subdomain", "api_key"],
+    "additionalProperties": true,
+    "properties": {
+      "subdomain": {
+        "type": "string",
+        "description": "Sub Domain of bamboo hr"
+      },
+      "api_key": {
+        "type": "string",
+        "description": "Api key of bamboo hr",
+        "airbyte_secret": true
+      },
+      "custom_reports_fields": {
+        "type": "string",
+        "default": "",
+        "description": "Comma-separated list of fields to include in custom reports."
+      },
+      "custom_reports_include_default_fields": {
+        "type": "boolean",
+        "default": true,
+        "description": "If true, the custom reports endpoint will include the default fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names."
+      }
+    }
+  }
+}

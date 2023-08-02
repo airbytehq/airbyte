@@ -1,0 +1,61 @@
+connector_image: airbyte/source-pinterest:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_pinterest/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.5.0"   # Add Pattern for "start_date"
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: exception
+      - config_path: secrets/config_oauth.json
+        status: succeed
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        empty_streams:
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: ad_account_analytics
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: ad_analytics
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: ad_group_analytics
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: ad_groups
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: ads
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: board_section_pins
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: board_sections
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: campaign_analytics
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: campaigns
+          - bypass_reason: The stream could return 0 records, because of low rate-limits
+            name: user_account_analytics
+        timeout_seconds: 1200
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        fail_on_extra_columns: false
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json

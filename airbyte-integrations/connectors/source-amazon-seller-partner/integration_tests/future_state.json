@@ -1,0 +1,13 @@
+[
+   {
+     "type": "STREAM",
+     "stream": {
+       "stream_state": {
+         "LastUpdateDate": "2121-07-01T00:00:00Z"
+       },
+       "stream_descriptor": {
+         "name": "Orders"
+       }
+     }
+   }
+ ]

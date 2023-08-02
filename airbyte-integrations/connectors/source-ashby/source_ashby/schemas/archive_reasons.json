@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "reasonType": {
+      "type": ["null", "string"]
+    },
+    "isArchived": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

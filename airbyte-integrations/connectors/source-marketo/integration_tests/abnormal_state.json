@@ -1,0 +1,37 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2025-07-15T07:41:30Z" },
+      "stream_descriptor": { "name": "programs" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2025-07-15T07:41:30Z" },
+      "stream_descriptor": { "name": "campaigns" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2025-07-15T07:41:30Z" },
+      "stream_descriptor": { "name": "lists" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2025-07-15T07:41:30Z" },
+      "stream_descriptor": { "name": "leads" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "activityDate": "2025-07-15T07:41:30Z" },
+      "stream_descriptor": { "name": "activities_visit_webpage" }
+    }
+  }
+]

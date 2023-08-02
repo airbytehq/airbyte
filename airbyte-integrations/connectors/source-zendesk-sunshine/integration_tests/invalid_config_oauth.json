@@ -1,0 +1,10 @@
+{
+  "credentials": {
+    "auth_method": "oauth2.0",
+    "client_id": "some_client_id",
+    "client_secret": "some_client_secret",
+    "access_token": "some_access_token"
+  },
+  "subdomain": "d3v-airbyte",
+  "start_date": "2020-01-01T00:00:00Z"
+}

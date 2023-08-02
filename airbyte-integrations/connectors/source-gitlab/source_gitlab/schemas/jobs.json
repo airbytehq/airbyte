@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "stage": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "tag": {
+      "type": ["null", "boolean"]
+    },
+    "coverage": {
+      "type": ["null", "number", "string"]
+    },
+    "allow_failure": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "duration": {
+      "type": ["null", "number"]
+    },
+    "queued_duration": {
+      "type": ["null", "number"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "artifacts": {
+      "type": ["null", "array"]
+    },
+    "artifacts_expire_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tag_list": {
+      "type": ["null", "array"]
+    },
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "pipeline": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "pipeline_id": {
+      "type": ["null", "integer"]
+    },
+    "runner": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "runner_id": {
+      "type": ["null", "integer"]
+    },
+    "commit": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "erased_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "failure_reason": {
+      "type": ["null", "string"]
+    },
+    "project": {
+      "type": ["null", "object"],
+      "properties": {
+        "ci_job_token_scope_enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
+    }
+  }
+}

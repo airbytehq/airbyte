@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "namespace": {
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "type": ["null", "string"]
+    },
+    "owner_resource": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "value": {
+      "type": ["null", "string"]
+    },
+    "value_type": {
+      "type": ["null", "string"]
+    }
+  }
+}

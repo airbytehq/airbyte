@@ -1,0 +1,109 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "integration": {
+      "type": ["null", "integer"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "due_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "has_invoice": {
+      "type": ["null", "boolean"]
+    },
+    "invoice_number": {
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "pdf_url": {
+      "type": ["null", "string"]
+    },
+    "line_items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "type": ["null", "integer"]
+          },
+          "quantity": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "tax": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "request_code": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "paid": {
+      "type": ["null", "boolean"]
+    },
+    "paid_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "notifications": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "sent_at": {
+            "type": ["null", "string"]
+          },
+          "channel": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "offline_reference": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

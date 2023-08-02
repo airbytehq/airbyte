@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "current_timestamp": {
+      "type": "integer"
+    },
+    "average_call_duration": {
+      "type": ["null", "integer"]
+    },
+    "average_queue_wait_time": {
+      "type": ["null", "integer"]
+    },
+    "average_wrap_up_time": {
+      "type": ["null", "integer"]
+    },
+    "max_calls_waiting": {
+      "type": ["null", "integer"]
+    },
+    "max_queue_wait_time": {
+      "type": ["null", "integer"]
+    },
+    "total_call_duration": {
+      "type": ["null", "integer"]
+    },
+    "total_calls": {
+      "type": ["null", "integer"]
+    },
+    "total_voicemails": {
+      "type": ["null", "integer"]
+    },
+    "total_wrap_up_time": {
+      "type": ["null", "integer"]
+    },
+    "average_callback_wait_time": {
+      "type": ["null", "integer"]
+    },
+    "average_hold_time": {
+      "type": ["null", "integer"]
+    },
+    "average_time_to_answer": {
+      "type": ["null", "integer"]
+    },
+    "total_callback_calls": {
+      "type": ["null", "integer"]
+    },
+    "total_calls_abandoned_in_queue": {
+      "type": ["null", "integer"]
+    },
+    "total_calls_outside_business_hours": {
+      "type": ["null", "integer"]
+    },
+    "total_calls_with_exceeded_queue_wait_time": {
+      "type": ["null", "integer"]
+    },
+    "total_calls_with_requested_voicemail": {
+      "type": ["null", "integer"]
+    },
+    "total_hold_time": {
+      "type": ["null", "integer"]
+    },
+    "total_inbound_calls": {
+      "type": ["null", "integer"]
+    },
+    "total_outbound_calls": {
+      "type": ["null", "integer"]
+    },
+    "total_textback_requests": {
+      "type": ["null", "integer"]
+    },
+    "total_embeddable_callback_calls": {
+      "type": ["null", "integer"]
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "audio_name": {
+      "type": ["null", "string"]
+    },
+    "audio_url": {
+      "type": ["null", "string"]
+    },
+    "category_id": {
+      "type": ["null", "integer"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "default_lang": {
+      "type": ["null", "boolean"]
+    },
+    "has_sub_settings": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "ivr_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["string", "integer"]
+      }
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "pending": {
+      "type": ["null", "boolean"]
+    },
+    "phone_number_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["string", "integer"]
+      }
+    },
+    "upload_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}

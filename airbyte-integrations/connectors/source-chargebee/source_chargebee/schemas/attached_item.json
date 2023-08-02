@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Attached Items",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "parent_item_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "item_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "quantity": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "quantity_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "billing_cycles": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "charge_on_event": {
+      "type": ["string", "null"]
+    },
+    "charge_once": {
+      "type": ["boolean", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    }
+  },
+  "custom_fields": {
+    "type": ["null", "array"],
+    "items": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

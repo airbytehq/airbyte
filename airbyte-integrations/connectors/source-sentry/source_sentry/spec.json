@@ -1,0 +1,40 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Sentry Spec",
+    "type": "object",
+    "required": ["auth_token", "organization", "project"],
+    "additionalProperties": true,
+    "properties": {
+      "auth_token": {
+        "type": "string",
+        "title": "Authentication Tokens",
+        "description": "Log into Sentry and then <a href=\"https://sentry.io/settings/account/api/auth-tokens/\">create authentication tokens</a>.For self-hosted, you can find or create authentication tokens by visiting \"{instance_url_prefix}/settings/account/api/auth-tokens/\"",
+        "airbyte_secret": true
+      },
+      "hostname": {
+        "type": "string",
+        "title": "Host Name",
+        "description": "Host name of Sentry API server.For self-hosted, specify your host name here. Otherwise, leave it empty.",
+        "default": "sentry.io"
+      },
+      "organization": {
+        "type": "string",
+        "title": "Organization",
+        "description": "The slug of the organization the groups belong to."
+      },
+      "project": {
+        "type": "string",
+        "title": "Project",
+        "description": "The name (slug) of the Project you want to sync."
+      },
+      "discover_fields": {
+        "type": "array",
+        "item": "string",
+        "title": "Discover Event Fields",
+        "description": "Fields to retrieve when fetching discover events"
+      }
+    }
+  }
+}

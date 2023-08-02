@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "distinct_id": {
+      "type": "string"
+    },
+    "properties": {
+      "type": "object"
+    },
+    "event": {
+      "type": ["string", "object"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "person": {
+      "type": "object",
+      "properties": {
+        "is_identified": {
+          "type": "boolean"
+        },
+        "distinct_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object"
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": ["string", "object"]
+      }
+    },
+    "elements_chain": {
+      "type": "string"
+    }
+  }
+}

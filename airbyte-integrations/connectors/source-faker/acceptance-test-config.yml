@@ -1,0 +1,64 @@
+connector_image: airbyte/source-faker:dev
+test_strictness_level: high
+acceptance_tests:
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+  spec:
+    tests:
+      - spec_path: source_faker/spec.json
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: "2.1.0" # We changed the cursor field of all streams to be "updated_at"
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          products:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          purchases:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          products:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+          purchases:
+            - name: updated_at
+              bypass_reason: "dynamic field"
+            - name: created_at
+              bypass_reason: "dynamic field"
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json

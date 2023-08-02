@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "sha": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "actions": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "admin_creator": {
+      "type": ["string", "null"]
+    },
+    "allowed_advertising_objectives": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "backdated_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "call_to_action": {
+      "type": ["string", "null"]
+    },
+    "can_reply_privately": {
+      "type": ["boolean", "null"]
+    },
+    "caption": {
+      "type": ["string", "null"]
+    },
+    "child_attachments": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "comments_mirroring_domain": {
+      "type": ["string", "null"]
+    },
+    "coordinates": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "expanded_height": {
+      "type": ["integer", "null"]
+    },
+    "expanded_width": {
+      "type": ["integer", "null"]
+    },
+    "feed_targeting": {
+      "type": ["string", "null"]
+    },
+    "from": {
+      "type": ["string", "null"]
+    },
+    "full_picture": {
+      "type": ["string", "null"]
+    },
+    "height": {
+      "type": ["integer", "null"]
+    },
+    "icon": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "instagram_eligibility": {
+      "type": ["string", "null"]
+    },
+    "is_app_share": {
+      "type": ["boolean", "null"]
+    },
+    "is_eligible_for_promotion": {
+      "type": ["boolean", "null"]
+    },
+    "is_expired": {
+      "type": ["boolean", "null"]
+    },
+    "is_hidden": {
+      "type": ["boolean", "null"]
+    },
+    "is_inline_created": {
+      "type": ["boolean", "null"]
+    },
+    "is_instagram_eligible": {
+      "type": ["boolean", "null"]
+    },
+    "is_popular": {
+      "type": ["boolean", "null"]
+    },
+    "is_published": {
+      "type": ["boolean", "null"]
+    },
+    "is_spherical": {
+      "type": ["boolean", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "message": {
+      "type": ["string", "null"]
+    },
+    "message_tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "multi_share_end_card": {
+      "type": ["boolean", "null"]
+    },
+    "multi_share_optimized": {
+      "type": ["boolean", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "object_id": {
+      "type": ["string", "null"]
+    },
+    "parent_id": {
+      "type": ["string", "null"]
+    },
+    "permalink_url": {
+      "type": ["string", "null"]
+    },
+    "picture": {
+      "type": ["string", "null"]
+    },
+    "promotable_id": {
+      "type": ["string", "null"]
+    },
+    "promotion_status": {
+      "type": ["string", "null"]
+    },
+    "properties": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "scheduled_publish_time": {
+      "type": ["number", "null"]
+    },
+    "shares": {
+      "type": ["string", "null"]
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "status_type": {
+      "type": ["string", "null"]
+    },
+    "story": {
+      "type": ["string", "null"]
+    },
+    "story_tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "subscribed": {
+      "type": ["boolean", "null"]
+    },
+    "targeting": {
+      "type": ["string", "null"]
+    },
+    "timeline_visibility": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "via": {
+      "type": ["string", "null"]
+    },
+    "video_buying_eligibility": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "width": {
+      "type": ["integer", "null"]
+    }
+  }
+}

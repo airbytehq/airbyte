@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Contacts",
+  "description": "The Contacts report provides an extra level of granularity with details on each contact within an interaction.",
+  "properties": {
+    "interaction_id": {
+      "type": "string",
+      "examples": ["9a7c39081c3a4606b82462a092a6c2e1"]
+    },
+    "contact_id": {
+      "type": "string",
+      "examples": ["a1ea1e41d2cb1d85d184fc0c1f9c1462"]
+    },
+    "company_number": {
+      "type": "string",
+      "examples": ["+345345345"]
+    },
+    "phone_display_name": {
+      "type": ["string", "null"],
+      "examples": ["Phone neame - Caller"]
+    },
+    "contact_person_number": {
+      "type": "string",
+      "examples": ["+4343434"]
+    },
+    "external_phone_number": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "direction": {
+      "type": "string",
+      "examples": ["IN"]
+    },
+    "contact_type": {
+      "type": "string",
+      "examples": ["Answered"]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2022-01-19 09:59:42"]
+    },
+    "wait_time": {
+      "type": ["integer", "null"],
+      "examples": [29]
+    },
+    "time_to_missed": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "abandon_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "short_abandon_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "time_to_voicemail": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "ring_time": {
+      "type": ["integer", "null"],
+      "examples": [27]
+    },
+    "connect_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "answered_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "examples": ["2022-01-19 10:00:12"]
+    },
+    "connected_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "examples": ["2022-01-19 10:00:12"]
+    },
+    "talk_time": {
+      "type": ["integer", "null"],
+      "examples": [268]
+    },
+    "hard_hold_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "soft_hold_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "hold_time": {
+      "type": ["integer", "null"],
+      "examples": [0]
+    },
+    "after_call_work_time": {
+      "type": ["integer", "null"],
+      "examples": [30]
+    },
+    "finished_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "examples": ["2022-01-19 10:05:11"]
+    },
+    "duration": {
+      "type": ["integer", "null"],
+      "examples": [328]
+    },
+    "handle_time": {
+      "type": ["integer", "null"],
+      "examples": [228]
+    },
+    "inside_business_hours": {
+      "type": "string",
+      "examples": ["Yes"]
+    },
+    "inside_service_level": {
+      "type": "string",
+      "examples": ["Yes"]
+    },
+    "within_service_level_threshold": {
+      "type": "string",
+      "examples": ["Yes"]
+    },
+    "transfer_out": {
+      "type": "string",
+      "examples": ["No"]
+    },
+    "transfer_out_type": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "transfer_in": {
+      "type": ["string", "null"],
+      "examples": ["No"]
+    },
+    "transfer_in_type": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "callback": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "ring_groups": {
+      "type": ["string", "null"],
+      "examples": ["cs_storyous_cz"]
+    },
+    "user_name": {
+      "type": ["string", "null"],
+      "examples": ["The User"]
+    },
+    "direct_assignment_user": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "team_name": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "examples": ["618255e0fba4741asad4fsdf"]
+    },
+    "direct_assignment_ids": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "examples": ["None"]
+    },
+    "handling_ring_groups": {
+      "type": ["string", "null"],
+      "examples": ["awesome_ring_group"]
+    }
+  }
+}

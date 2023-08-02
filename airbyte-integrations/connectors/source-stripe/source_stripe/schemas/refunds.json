@@ -1,0 +1,48 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "charge": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "receipt_number": {
+      "type": ["null", "string"]
+    },
+    "source_transfer_reversal": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "transfer_reversal": {
+      "type": ["null", "string"]
+    }
+  }
+}

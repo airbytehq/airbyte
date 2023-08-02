@@ -1,0 +1,20 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "common_name": {
+      "type": ["null", "string"]
+    }
+  }
+}

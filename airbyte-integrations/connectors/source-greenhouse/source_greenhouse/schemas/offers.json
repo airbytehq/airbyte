@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "application_id": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": ["null", "string"]
+    },
+    "resolved_at": {
+      "type": ["null", "string"]
+    },
+    "starts_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "integer"
+    },
+    "candidate_id": {
+      "type": "integer"
+    },
+    "opening": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "opening_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "opened_at": {
+          "type": "string"
+        },
+        "closed_at": {
+          "type": ["null", "string"]
+        },
+        "application_id": {
+          "type": ["null", "integer"]
+        },
+        "close_reason": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "object"],
+      "properties": {
+        "employment_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "keyed_custom_fields": {
+      "type": "object",
+      "properties": {
+        "employment_type": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

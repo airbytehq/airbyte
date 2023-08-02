@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "title": "Email Activity",
+  "description": "A list of member's subscriber activity in a specific campaign.",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "title": "The unique id for the campaign.",
+      "description": "The unique id for the campaign."
+    },
+    "list_id": {
+      "type": "string",
+      "title": "The unique id for the list.",
+      "description": "The unique id for the list."
+    },
+    "list_is_active": {
+      "type": "boolean",
+      "title": "The status of the list used.",
+      "description": "The status of the list used, namely if it's deleted or disabled."
+    },
+    "email_id": {
+      "type": "string",
+      "title": "email MD5 hash.",
+      "description": "The MD5 hash of the lowercase version of the list member's email address."
+    },
+    "email_address": {
+      "type": "string",
+      "title": "Email address for a subscriber.",
+      "description": "Email address for a subscriber."
+    },
+    "action": {
+      "type": ["string", "null"],
+      "title": "action",
+      "enum": ["open", "click", "bounce"],
+      "description": "One of the following actions: 'open', 'click', or 'bounce'"
+    },
+    "type": {
+      "type": ["string", "null"],
+      "title": "Type",
+      "enum": ["hard", "soft"],
+      "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
+    },
+    "timestamp": {
+      "type": ["string", "null"],
+      "title": "Action date and time",
+      "description": "The date and time recorded for the action in ISO 8601 format.",
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["string", "null"],
+      "title": "Click url",
+      "description": "If the action is a 'click', the URL on which the member clicked."
+    },
+    "ip": {
+      "type": ["string", "null"],
+      "title": "Action ip address",
+      "description": "The IP address recorded for the action."
+    }
+  }
+}

@@ -1,0 +1,29 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    implementation 'com.azure:azure-storage-blob:12.20.2'
+    implementation 'org.apache.commons:commons-csv:1.4'
+
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation "org.testcontainers:junit-jupiter:1.17.5"
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
+}

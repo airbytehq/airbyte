@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "demographic_question_set_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "translations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "language": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "required": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

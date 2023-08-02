@@ -1,0 +1,14 @@
+{
+  "streams": [
+    {
+      "name": "xkcd",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "num",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object"
+      }
+    }
+  ]
+}

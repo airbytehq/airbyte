@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_created_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_modified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_modified_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "discount_type": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "date_expires": {
+      "type": ["null", "string"]
+    },
+    "date_expires_gmt": {
+      "type": ["null", "string"]
+    },
+    "usage_count": {
+      "type": ["null", "integer"]
+    },
+    "individual_use": {
+      "type": ["null", "boolean"]
+    },
+    "product_ids": {
+      "type": ["null", "array"]
+    },
+    "excluded_product_ids": {
+      "type": ["null", "array"]
+    },
+    "usage_limit": {
+      "type": ["null", "integer"]
+    },
+    "usage_limit_per_user": {
+      "type": ["null", "integer"]
+    },
+    "limit_usage_to_x_items": {
+      "type": ["null", "integer"]
+    },
+    "free_shipping": {
+      "type": ["null", "boolean"]
+    },
+    "product_categories": {
+      "type": ["null", "array"]
+    },
+    "excluded_product_categories": {
+      "type": ["null", "array"]
+    },
+    "exclude_sale_items": {
+      "type": ["null", "boolean"]
+    },
+    "minimum_amount": {
+      "type": ["null", "string"]
+    },
+    "maximum_amount": {
+      "type": ["null", "string"]
+    },
+    "email_restrictions": {
+      "type": ["null", "array"]
+    },
+    "used_by": {
+      "type": ["null", "array"]
+    },
+    "meta_data": {
+      "$ref": "meta_data.json"
+    },
+    "_links": {
+      "$ref": "_links.json"
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

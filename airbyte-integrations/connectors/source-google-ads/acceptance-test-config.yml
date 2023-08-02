@@ -1,0 +1,70 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-google-ads:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_google_ads/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "exception"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        timeout_seconds: 600
+        empty_streams:
+          - name: "accounts"
+            bypass_reason: "Floating data"
+          - name: "display_topics_performance_report"
+            bypass_reason: "Stream not filled yet."
+          - name: "account_labels"
+            bypass_reason: "Unable to seed the stream"
+          - name: "ad_group_criterion_labels"
+            bypass_reason: "Unable to seed the stream"
+          - name: "click_view"
+            bypass_reason: "Stream not filled yet."
+          - name: "unhappytable"
+            bypass_reason: "Stream not filled yet."
+          - name: "shopping_performance_report"
+            bypass_reason: "Stream not filled yet."
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_with_gaql.json"
+        configured_catalog_path: "integration_tests/configured_catalog_with_gaql_only.json"
+        # This config allows to read from the click_view stream which is empty in other configs.
+        # It should be tested anyway because it has different date range compared to other streams.
+      - config_path: "secrets/config_click_view.json"
+        configured_catalog_path: "integration_tests/configured_catalog_with_click_view.json"
+  incremental:
+    tests:
+      - config_path: "secrets/incremental_config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        threshold_days: 14
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        cursor_paths:
+          account_performance_report: ["4651612872", "segments.date"]
+          click_view: ["4651612872", "segments.date"]
+          geographic_report: ["4651612872", "segments.date"]
+          keyword_report: ["4651612872", "segments.date"]
+          display_topics_performance_report: ["4651612872", "segments.date"]
+          shopping_performance_report: ["4651612872", "segments.date"]
+          ad_group_ads: ["4651612872", "segments.date"]
+          ad_groups: ["4651612872", "segments.date"]
+          accounts: ["4651612872", "segments.date"]
+          campaigns: ["4651612872", "segments.date"]
+          campaign_budget: ["4651612872", "segments.date"]
+          user_location_report: ["4651612872", "segments.date"]
+          ad_group_ad_report: ["4651612872", "segments.date"]
+          display_keyword_performance_report: ["4651612872", "segments.date"]

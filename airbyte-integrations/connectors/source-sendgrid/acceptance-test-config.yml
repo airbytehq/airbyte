@@ -1,0 +1,62 @@
+connector_image: airbyte/source-sendgrid:dev
+test_strictness_level: "high"
+acceptance_tests:
+  spec:
+    tests:
+    - spec_path: "source_sendgrid/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.3.0"
+  connection:
+    tests:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "secrets/old_config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_time.json"
+      status: "failed"
+    - config_path: "integration_tests/invalid_api_key.json"
+      status: "failed"
+  discovery:
+    tests:
+    - config_path: "secrets/old_config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.3.0"
+  basic_read:
+    tests:
+    - config_path: "secrets/config.json"
+      expect_records:
+        path: "integration_tests/expected_records.jsonl"
+        extra_fields: no
+        exact_order: no
+        extra_records: yes
+      empty_streams:
+      - name: spam_reports
+        bypass_reason: "can not populate"
+      - name: invalid_emails
+        bypass_reason: "can not populate"
+      - name: blocks
+        bypass_reason: "can not populate"
+      ignored_fields:
+        segments:
+        - name: sample_updated_at
+          bypass_reason: "depend on current date"
+        - name: next_sample_update
+          bypass_reason: "depend on current date"
+      fail_on_extra_columns: false
+  incremental:
+    tests:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/no_spam_reports_configured_catalog.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        global_suppressions: ["created"]
+        blocks: ["created"]
+        bounces: ["created"]
+        invalid_emails: ["created"]
+          # TODO: create spam_reports records
+          # spam_reports: ["created"]
+  full_refresh:
+    tests:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"

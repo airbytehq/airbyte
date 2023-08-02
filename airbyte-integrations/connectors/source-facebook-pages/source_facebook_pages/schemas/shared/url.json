@@ -1,0 +1,20 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "engagement": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "og_object": {
+      "type": ["string", "null"]
+    },
+    "ownership_permissions": {
+      "type": ["string", "null"]
+    },
+    "scopes": {
+      "type": ["string", "null"]
+    }
+  }
+}

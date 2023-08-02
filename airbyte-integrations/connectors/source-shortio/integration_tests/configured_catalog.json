@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental",
+      "stream": {
+        "name": "clicks",
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dt"],
+        "supported_sync_modes": ["incremental"],
+        "json_schema": {}
+      }
+    },
+    {
+      "destination_sync_mode": "append",
+      "sync_mode": "full_refresh",
+      "stream": {
+        "name": "links",
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "json_schema": {}
+      }
+    }
+  ]
+}

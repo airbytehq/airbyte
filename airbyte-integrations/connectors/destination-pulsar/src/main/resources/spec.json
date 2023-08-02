@@ -1,0 +1,137 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pulsar",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Pulsar Destination Spec",
+    "type": "object",
+    "required": [
+      "brokers",
+      "use_tls",
+      "topic_type",
+      "topic_tenant",
+      "topic_namespace",
+      "topic_pattern",
+      "compression_type",
+      "send_timeout_ms",
+      "max_pending_messages",
+      "max_pending_messages_across_partitions",
+      "batching_enabled",
+      "batching_max_messages",
+      "batching_max_publish_delay",
+      "block_if_queue_full"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "brokers": {
+        "title": "Pulsar brokers",
+        "description": "A list of host/port pairs to use for establishing the initial connection to the Pulsar cluster.",
+        "type": "string",
+        "examples": ["broker1:6650,broker2:6650"]
+      },
+      "use_tls": {
+        "title": "Use TLS",
+        "description": "Whether to use TLS encryption on the connection.",
+        "type": "boolean",
+        "default": false
+      },
+      "topic_type": {
+        "title": "Topic type",
+        "description": "It identifies type of topic. Pulsar supports two kind of topics: persistent and non-persistent. In persistent topic, all messages are durably persisted on disk (that means on multiple disks unless the broker is standalone), whereas non-persistent topic does not persist message into storage disk.",
+        "type": "string",
+        "default": "persistent",
+        "enum": ["persistent", "non-persistent"]
+      },
+      "topic_tenant": {
+        "title": "Topic tenant",
+        "description": "The topic tenant within the instance. Tenants are essential to multi-tenancy in Pulsar, and spread across clusters.",
+        "type": "string",
+        "default": "public",
+        "examples": ["public"]
+      },
+      "topic_namespace": {
+        "title": "Topic namespace",
+        "description": "The administrative unit of the topic, which acts as a grouping mechanism for related topics. Most topic configuration is performed at the namespace level. Each tenant has one or multiple namespaces.",
+        "type": "string",
+        "default": "default",
+        "examples": ["default"]
+      },
+      "topic_pattern": {
+        "title": "Topic pattern",
+        "description": "Topic pattern in which the records will be sent. You can use patterns like '{namespace}' and/or '{stream}' to send the message to a specific topic based on these values. Notice that the topic name will be transformed to a standard naming convention.",
+        "type": "string",
+        "examples": ["sample.topic", "{namespace}.{stream}.sample"]
+      },
+      "topic_test": {
+        "title": "Test topic",
+        "description": "Topic to test if Airbyte can produce messages.",
+        "type": "string",
+        "examples": ["test.topic"]
+      },
+      "producer_name": {
+        "title": "Producer name",
+        "description": "Name for the producer. If not filled, the system will generate a globally unique name which can be accessed with.",
+        "type": "string",
+        "examples": ["airbyte-producer"]
+      },
+      "producer_sync": {
+        "title": "Sync producer",
+        "description": "Wait synchronously until the record has been sent to Pulsar.",
+        "type": "boolean",
+        "default": false
+      },
+      "compression_type": {
+        "title": "Compression type",
+        "description": "Compression type for the producer.",
+        "type": "string",
+        "default": "NONE",
+        "enum": ["NONE", "LZ4", "ZLIB", "ZSTD", "SNAPPY"]
+      },
+      "send_timeout_ms": {
+        "title": "Message send timeout",
+        "description": "If a message is not acknowledged by a server before the send-timeout expires, an error occurs (in ms).",
+        "type": "integer",
+        "default": 30000
+      },
+      "max_pending_messages": {
+        "title": "Max pending messages",
+        "description": "The maximum size of a queue holding pending messages.",
+        "type": "integer",
+        "default": 1000
+      },
+      "max_pending_messages_across_partitions": {
+        "title": "Max pending messages across partitions",
+        "description": "The maximum number of pending messages across partitions.",
+        "type": "integer",
+        "default": 50000
+      },
+      "batching_enabled": {
+        "title": "Enable batching",
+        "description": "Control whether automatic batching of messages is enabled for the producer.",
+        "type": "boolean",
+        "default": true
+      },
+      "batching_max_messages": {
+        "title": "Batching max messages",
+        "description": "Maximum number of messages permitted in a batch.",
+        "type": "integer",
+        "default": 1000
+      },
+      "batching_max_publish_delay": {
+        "title": "Batching max publish delay",
+        "description": " Time period in milliseconds within which the messages sent will be batched.",
+        "type": "integer",
+        "default": 1
+      },
+      "block_if_queue_full": {
+        "title": "Block if queue is full",
+        "description": "If the send operation should block when the outgoing message queue is full.",
+        "type": "boolean",
+        "default": false
+      }
+    }
+  }
+}

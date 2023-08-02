@@ -1,0 +1,151 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": true,
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "purpose": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "expires_at": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "filename": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "links": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "object": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "data": {
+                    "type": [
+                        "null",
+                        "array"
+                    ],
+                    "items": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "properties": {
+                            "id": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "object": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "created": {
+                                "type": [
+                                    "null",
+                                    "integer"
+                                ]
+                            },
+                            "expired": {
+                                "type": [
+                                    "null",
+                                    "integer"
+                                ]
+                            },
+                            "expires_at": {
+                                "type": [
+                                    "null",
+                                    "integer"
+                                ]
+                            },
+                            "file": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "livemode": {
+                                "type": [
+                                    "null",
+                                    "boolean"
+                                ]
+                            },
+                            "metadata": {
+                                "type": [
+                                    "null",
+                                    "object"
+                                ]
+                            },
+                            "url": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "has_more": {"type": ["null", "boolean"]},
+                "url": {"type": ["null", "string"]}
+            }
+        },
+        "size": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "title": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "url": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

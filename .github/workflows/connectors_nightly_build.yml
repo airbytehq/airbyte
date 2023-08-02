@@ -1,0 +1,43 @@
+name: Connectors nightly build
+
+on:
+  schedule:
+    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        default: conn-nightly-xlarge-runner
+        required: true
+      test-connectors-options:
+        default: --concurrency=5 --release-stage=generally_available --release-stage=beta
+        required: true
+
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for GA and Beta connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+
+jobs:
+  test_connectors:
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for GA and Beta connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+    timeout-minutes: 720 # 12 hours
+    runs-on: ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Test connectors
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "nightly_builds"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --release-stage=generally_available --release-stage=beta' }} test"

@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "channelType": {
+      "type": ["null", "string"]
+    },
+    "messageMedium": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

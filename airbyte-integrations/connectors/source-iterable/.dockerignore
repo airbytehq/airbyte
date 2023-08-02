@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_iterable
+!setup.py
+!main.py
+!secrets

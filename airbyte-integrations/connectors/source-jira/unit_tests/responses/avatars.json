@@ -1,0 +1,28 @@
+{
+  "system": [
+    {
+      "id": "10300",
+      "isSystemAvatar": true,
+      "isSelected": false,
+      "isDeletable": false,
+      "urls": {
+        "16x16": "/secure/useravatar?size=xsmall&avatarId=10300",
+        "24x24": "/secure/useravatar?size=small&avatarId=10300",
+        "32x32": "/secure/useravatar?size=medium&avatarId=10300",
+        "48x48": "/secure/useravatar?avatarId=10300"
+      }
+    },
+    {
+      "id": "10303",
+      "isSystemAvatar": true,
+      "isSelected": false,
+      "isDeletable": false,
+      "urls": {
+        "16x16": "/secure/useravatar?size=xsmall&avatarId=10303",
+        "24x24": "/secure/useravatar?size=small&avatarId=10303",
+        "32x32": "/secure/useravatar?size=medium&avatarId=10303",
+        "48x48": "/secure/useravatar?avatarId=10303"
+      }
+    }
+  ]
+}

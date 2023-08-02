@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigcommerce",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "BigCommerce Source CDK Specifications",
+    "type": "object",
+    "required": ["start_date", "store_hash", "access_token"],
+    "additionalProperties": true,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "The date you would like to replicate data. Format: YYYY-MM-DD.",
+        "examples": ["2021-01-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "store_hash": {
+        "type": "string",
+        "title": "Store Hash",
+        "description": "The hash code of the store. For https://api.bigcommerce.com/stores/HASH_CODE/v3/, The store's hash code is 'HASH_CODE'."
+      },
+      "access_token": {
+        "type": "string",
+        "title": "Access Token",
+        "description": "Access Token for making authenticated requests.",
+        "airbyte_secret": true
+      }
+    }
+  }
+}

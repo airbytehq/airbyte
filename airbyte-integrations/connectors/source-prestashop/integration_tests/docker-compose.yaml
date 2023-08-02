@@ -1,0 +1,24 @@
+version: "3.3"
+services:
+  db:
+    image: mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+    volumes:
+      - ${INTEGRATION_TESTS_DIR:-.}:/docker-entrypoint-initdb.d/
+    networks:
+      - prestashop-net
+
+  presta_shop:
+    image: eugenekulak/airbyte-prestashop:0.1.0
+    ports:
+      - "8080:80"
+    environment:
+      - DB_SERVER=db
+    networks:
+      - prestashop-net
+
+networks:
+  prestashop-net: {}

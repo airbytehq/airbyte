@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["integer"]
+    },
+    "members_count": {
+      "type": ["integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "permissions": {
+      "type": ["null", "object"],
+      "properties": {
+        "visitors_seen": {
+          "type": ["null", "string"]
+        },
+        "proactive_chatting": {
+          "type": ["null", "string"]
+        },
+        "edit_visitor_information": {
+          "type": ["null", "boolean"]
+        },
+        "edit_visitor_notes": {
+          "type": ["null", "boolean"]
+        },
+        "view_past_chats": {
+          "type": ["null", "string"]
+        },
+        "edit_chat_tags": {
+          "type": ["null", "boolean"]
+        },
+        "manage_bans": {
+          "type": ["null", "string"]
+        },
+        "access_analytics": {
+          "type": ["null", "string"]
+        },
+        "view_monitor": {
+          "type": ["null", "string"]
+        },
+        "edit_department_agents": {
+          "type": ["null", "string"]
+        },
+        "set_agent_chat_limit": {
+          "type": ["null", "string"]
+        },
+        "manage_shortcuts": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

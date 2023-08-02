@@ -1,0 +1,46 @@
+connector_image: airbyte/source-paystack:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_paystack/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: disputes
+            bypass_reason: "unable to seed, this stream requires third party system"
+          - name: settlements
+            bypass_reason: "unable to seed, this stream requires third party system"
+        ignored_fields:
+          subscriptions:
+            - name: next_payment_date
+              bypass_reason: "Payment data is updated every month"
+            - name: open_invoice
+              bypass_reason: "Payment data is updated every month"
+            - name: payments_count
+              bypass_reason: "Payment data is updated every month"
+            - name: most_recent_invoice
+              bypass_reason: "Payment data is updated every month"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: false
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

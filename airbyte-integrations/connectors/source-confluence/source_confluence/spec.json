@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Confluence Spec",
+    "type": "object",
+    "required": ["api_token", "domain_name", "email"],
+    "additionalProperties": true,
+    "properties": {
+      "api_token": {
+        "title": "API Token",
+        "type": "string",
+        "description": "Please follow the Jira confluence for generating an API token: <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\">generating an API token</a>.",
+        "airbyte_secret": true
+      },
+      "domain_name": {
+        "title": "Domain name",
+        "type": "string",
+        "description": "Your Confluence domain name",
+        "examples": ["example.atlassian.net"]
+      },
+      "email": {
+        "title": "Email",
+        "type": "string",
+        "description": "Your Confluence login email",
+        "examples": ["abc@example.com"]
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "The key of the property. Required on create and update."
+    },
+    "value": {
+      "description": "The value of the property. Required on create and update."
+    }
+  },
+  "additionalProperties": true,
+  "description": "An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/)."
+}

@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.chartmogul.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
+  dockerImageTag: 0.2.1
+  dockerRepository: airbyte/source-chartmogul
+  githubIssueLabel: source-chartmogul
+  icon: chartmogul.svg
+  license: MIT
+  name: Chartmogul
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

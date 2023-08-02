@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "confidential": {
+      "type": ["null", "boolean"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "references": {
+      "type": ["null", "object"]
+    },
+    "author": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "start_date": {
+      "type": ["null", "string"]
+    },
+    "start_date_is_fixed": {
+      "type": ["null", "boolean"]
+    },
+    "start_date_fixed": {
+      "type": ["null", "string"]
+    },
+    "start_date_from_inherited_source": {
+      "type": ["null", "string", "boolean"]
+    },
+    "end_date": {
+      "type": ["null", "string"]
+    },
+    "due_date": {
+      "type": ["null", "string"]
+    },
+    "due_date_is_fixed": {
+      "type": ["null", "boolean"]
+    },
+    "due_date_fixed": {
+      "type": ["null", "string"]
+    },
+    "due_date_from_inherited_source": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "labels": {
+      "type": ["null", "array"]
+    },
+    "upvotes": {
+      "type": ["null", "integer"]
+    },
+    "downvotes": {
+      "type": ["null", "integer"]
+    },
+    "parent_iid": {
+      "type": ["null", "integer"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "text_color": {
+      "type": ["null", "string"]
+    },
+    "web_edit_url": {
+      "type": ["null", "string"]
+    },
+    "due_date_from_milestones": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "_links": {
+      "type": ["null", "object"],
+      "properties": {
+        "self": {
+          "type": ["null", "string"]
+        },
+        "epic_issues": {
+          "type": ["null", "string"]
+        },
+        "group": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "start_date_from_milestones": {
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

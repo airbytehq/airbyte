@@ -1,0 +1,43 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-amplitude:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_amplitude/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.24 # cursor field for stream events has been changed
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: "cohorts"
+            bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
+          - name: "annotations"
+            bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

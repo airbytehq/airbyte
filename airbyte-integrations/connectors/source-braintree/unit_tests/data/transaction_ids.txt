@@ -1,0 +1,7 @@
+<search-results>
+    <page-size type="integer">50</page-size>
+    <ids type="array">
+        <item>2cdqmzsg</item>
+        <item>hncnkbsy</item>
+    </ids>
+</search-results>

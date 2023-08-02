@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "query": {
+      "type": ["null", "string"]
+    },
+    "s_query": {
+      "type": ["null", "object"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "is_shared": {
+      "type": ["null", "boolean"]
+    },
+    "is_user_dependent": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

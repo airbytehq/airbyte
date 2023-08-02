@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "properties": {
+    "object": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "created": { "type": ["null", "string"], "format": "date-time" },
+    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "status": { "type": "string" },
+    "status_id": { "type": "integer" },
+    "status_label": { "type": "string" },
+    "from_name": { "type": "string" },
+    "from_email": { "type": "string" },
+    "num_recipients": { "type": "integer" },
+    "lists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "object": { "type": "string" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "created": { "type": "string", "format": "date-time" },
+          "updated": { "type": "string", "format": "date-time" },
+          "person_count": { "type": "integer" },
+          "list_type": { "type": "string" },
+          "folder": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "excluded_lists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "object": { "type": "string" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "created": { "type": "string", "format": "date-time" },
+          "updated": { "type": "string", "format": "date-time" },
+          "person_count": { "type": "integer" },
+          "list_type": { "type": "string" },
+          "folder": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "is_segmented": { "type": "boolean" },
+    "send_time": { "type": ["null", "string"], "format": "date-time" },
+    "sent_at": { "type": ["null", "string"], "format": "date-time" },
+    "campaign_type": { "type": "string" },
+    "subject": { "type": ["null", "string"] },
+    "message_type": { "type": "string" },
+    "template_id": { "type": ["null", "string"] }
+  }
+}

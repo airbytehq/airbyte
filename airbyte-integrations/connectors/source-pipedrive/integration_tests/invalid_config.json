@@ -1,0 +1,7 @@
+{
+  "authorization": {
+    "auth_type": "Token",
+    "api_token": "wrong-api-token"
+  },
+  "replication_start_date": "2021-01-01T10:10:10Z"
+}

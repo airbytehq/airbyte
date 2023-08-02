@@ -1,0 +1,35 @@
+{
+  "agents": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "companies": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "contacts": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "conversations": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "groups": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "roles": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "satisfaction_ratings": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "skills": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "surveys": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "tickets": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  },
+  "time_entries": {
+    "updated_at": "2020-04-21T13:34:26-0700"
+  }
+}

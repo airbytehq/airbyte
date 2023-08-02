@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": ["null", "integer"]
+    },
+    "available_via": {
+      "type": ["null", "string"]
+    },
+    "call_charge": {
+      "type": ["null", "string"]
+    },
+    "call_id": {
+      "type": ["null", "integer"]
+    },
+    "completion_status": {
+      "type": ["null", "string"]
+    },
+    "conference_from": {
+      "type": ["null", "integer"]
+    },
+    "conference_time": {
+      "type": ["null", "integer"]
+    },
+    "conference_to": {
+      "type": ["null", "integer"]
+    },
+    "consultation_from": {
+      "type": ["null", "integer"]
+    },
+    "consultation_time": {
+      "type": ["null", "integer"]
+    },
+    "consultation_to": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "integer"]
+    },
+    "forwarded_to": {
+      "type": ["null", "string"]
+    },
+    "hold_time": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "minutes_billed": {
+      "type": ["null", "integer"]
+    },
+    "quality_issues": {
+      "type": ["null", "array"]
+    },
+    "talk_time": {
+      "type": ["null", "integer"]
+    },
+    "transferred_from": {
+      "type": ["null", "integer"]
+    },
+    "transferred_to": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "wrap_up_time": {
+      "type": ["null", "integer"]
+    }
+  }
+}

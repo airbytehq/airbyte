@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "campaignId": {
+      "type": "string"
+    },
+    "trend": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": ["string", "null"]
+          },
+          "promoters": {
+            "type": ["number", "null"]
+          },
+          "passives": {
+            "type": ["number", "null"]
+          },
+          "detractors": {
+            "type": ["number", "null"]
+          },
+          "total": {
+            "type": ["number", "null"]
+          },
+          "score": {
+            "type": ["number", "null"]
+          }
+        }
+      }
+    },
+    "last": {
+      "type": "object",
+      "properties": {
+        "promoters": {
+          "type": ["number", "null"]
+        },
+        "passives": {
+          "type": ["number", "null"]
+        },
+        "detractors": {
+          "type": ["number", "null"]
+        },
+        "total": {
+          "type": ["number", "null"]
+        },
+        "score": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "questionsStats": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "deliveryStats": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": ["number", "null"]
+        },
+        "opened": {
+          "type": ["number", "null"]
+        },
+        "responded": {
+          "type": ["number", "null"]
+        },
+        "optedOut": {
+          "type": ["number", "null"]
+        },
+        "isBounced": {
+          "type": ["number", "null"]
+        }
+      }
+    }
+  }
+}

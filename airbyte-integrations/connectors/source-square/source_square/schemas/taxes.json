@@ -1,0 +1,58 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "present_at_all_locations": {
+      "type": ["null", "boolean"]
+    },
+    "tax_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "calculation_phase": {
+          "type": ["null", "string"]
+        },
+        "inclusion_type": {
+          "type": ["null", "string"]
+        },
+        "percentage": {
+          "type": ["null", "string"]
+        },
+        "applies_to_custom_amounts": {
+          "type": ["null", "boolean"]
+        },
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
+        "tax_type_id": {
+          "type": ["null", "string"]
+        },
+        "tax_type_name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "absent_at_location_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+connector_image: airbyte/source-paypal-transaction:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_paypal_transaction/spec.json
+        config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.13"
+  connection:
+    tests:
+      - config_path: secrets/config_oauth.json
+        status: succeed
+      - config_path: secrets/config_oauth_sandbox.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+      - config_path: integration_tests/invalid_config_oauth.json
+        status: failed
+  discovery:
+    tests:
+      - config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0" # Balances schema changed
+  basic_read:
+    tests:
+      - config_path: secrets/config_oauth.json
+        ignored_fields:
+          balances:
+            - name: last_refresh_time
+              bypass_reason: "field changes during every read"
+        empty_streams:
+          - name: transactions
+            bypass_reason: "can not populate"
+        timeout_seconds: 1200
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+      - config_path: secrets/config_oauth_sandbox.json
+        ignored_fields:
+          balances:
+            - name: last_refresh_time
+              bypass_reason: "field changes during every read"
+        timeout_seconds: 1200
+        expect_records:
+          path: "integration_tests/expected_records_sandbox.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  incremental:
+    tests:
+      - config_path: secrets/config_oauth.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        cursor_paths:
+          transactions: [ "date" ]
+          balances: [ "date" ]
+  full_refresh:
+    tests:
+      - config_path: secrets/config_oauth.json
+        configured_catalog_path: integration_tests/configured_catalog.json

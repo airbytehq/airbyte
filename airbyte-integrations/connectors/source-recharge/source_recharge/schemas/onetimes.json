@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "address_id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_id": {
+      "type": ["null", "string"]
+    },
+    "next_charge_scheduled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "price": {
+      "type": ["null", "string"]
+    },
+    "product_title": {
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "type": ["null", "array"]
+    },
+    "quantity": {
+      "type": ["null", "integer"]
+    },
+    "recharge_product_id": {
+      "type": ["null", "integer"]
+    },
+    "shopify_product_id": {
+      "type": ["null", "integer"]
+    },
+    "shopify_variant_id": {
+      "type": ["null", "integer"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "variant_title": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"],
+      "maxLength": 13
+    },
+    "uuid": {
+      "type": ["null", "string"],
+      "maxLength": 32
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "code": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"],
+          "maxLength": 13
+        },
+        "code": {
+          "type": ["null", "string"],
+          "maxLength": 256
+        }
+      }
+    },
+    "state": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "shipping": {
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "Shipping Address ID",
+              "maxLength": 13,
+              "readOnly": true
+            }
+          }
+        },
+        "method": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "Shipping Method ID",
+              "readOnly": true,
+              "maxLength": 13
+            }
+          }
+        },
+        "amount": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "pending_change": {
+      "type": ["null", "object"],
+      "title": "Subscription Change",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Subscription Change ID",
+          "description": "The ID of the Subscription Change.",
+          "maxLength": 13
+        },
+        "subscription_id": {
+          "type": "string",
+          "title": "Subscription ID",
+          "description": "The ID of the subscription that is going to be changed.",
+          "maxLength": 13
+        },
+        "activate_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Activated at",
+          "readOnly": true
+        },
+        "activated": {
+          "type": "boolean",
+          "title": "Activated?",
+          "description": "Returns `true` if the subscription change is activated."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created at",
+          "readOnly": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Updated at",
+          "readOnly": true
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Deleted at",
+          "readOnly": true
+        }
+      }
+    },
+    "current_period_started_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "current_period_ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "current_term_started_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "current_term_ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "trial_started_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "trial_ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "remaining_billing_cycles": {
+      "type": ["null", "number"]
+    },
+    "total_billing_cycles": {
+      "type": ["null", "number"]
+    },
+    "renewal_billing_cycles": {
+      "type": ["null", "number"]
+    },
+    "auto_renew": {
+      "type": ["null", "boolean"]
+    },
+    "paused_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "remaining_pause_cycles": {
+      "type": ["null", "number"]
+    },
+    "currency": {
+      "type": ["null", "string"],
+      "maxLength": 3
+    },
+    "revenue_schedule_type": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "unit_amount": {
+      "type": ["null", "number"]
+    },
+    "quantity": {
+      "type": ["null", "number"]
+    },
+    "add_ons": {
+      "type": ["null", "array"],
+      "title": "Add-ons",
+      "items": {
+        "type": ["null", "object"],
+        "title": "Subscription Add-on",
+        "description": "This links an Add-on to a specific Subscription.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Subscription Add-on ID",
+            "maxLength": 13
+          },
+          "code": {
+            "type": "string",
+            "title": "Add-on code",
+            "description": "The unique identifier for the add-on within its plan.",
+            "maxLength": 50
+          }
+        }
+      }
+    },
+    "add_ons_total": {
+      "type": ["null", "number"]
+    },
+    "subtotal": {
+      "type": ["null", "number"]
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "tax_info": {
+      "type": ["null", "object"],
+      "title": "Tax info",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries.",
+          "maxLength": 256
+        },
+        "region": {
+          "type": "string",
+          "title": "Region",
+          "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST.",
+          "maxLength": 256
+        },
+        "rate": {
+          "type": "number",
+          "format": "float",
+          "title": "Rate"
+        },
+        "tax_details": {
+          "type": ["null", "array"],
+          "description": "Provides additional tax details for Canadian Sales Tax when there is tax applied at both the country and province levels. This will only be populated for the Invoice response when fetching a single invoice and not for the InvoiceList or LineItem.",
+          "items": {
+            "type": "object",
+            "title": "Tax detail",
+            "properties": {
+              "type": {
+                "type": "string",
+                "title": "Type",
+                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST.",
+                "maxLength": 256
+              },
+              "region": {
+                "type": "string",
+                "title": "Region",
+                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code.",
+                "maxLength": 256
+              },
+              "rate": {
+                "type": "number",
+                "format": "float",
+                "title": "Rate",
+                "description": "Provides the tax rate for the region."
+              },
+              "tax": {
+                "type": "number",
+                "format": "float",
+                "title": "Tax",
+                "description": "The total tax applied for this tax type."
+              }
+            }
+          }
+        }
+      }
+    },
+    "total": {
+      "type": ["null", "number"]
+    },
+    "collection_method": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "po_number": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "net_terms": {
+      "type": ["null", "number"]
+    },
+    "terms_and_conditions": {
+      "type": ["null", "string"],
+      "maxLength": 16384
+    },
+    "customer_notes": {
+      "type": ["null", "string"],
+      "maxLength": 1024
+    },
+    "expiration_reason": {
+      "type": ["null", "string"],
+      "maxLength": 1024
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "activated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "canceled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "bank_account_authorized_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "gateway_code": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
+    "billing_info_id": {
+      "type": ["null", "string"],
+      "maxLength": 13
+    }
+  }
+}

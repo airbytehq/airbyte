@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "enum": [0, 1, 2, 3],
+  "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
+}

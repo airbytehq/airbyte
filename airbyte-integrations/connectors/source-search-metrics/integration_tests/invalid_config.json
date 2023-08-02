@@ -1,0 +1,7 @@
+{
+  "api_key": "invalid_api_key",
+  "client_secret": "invalid_client_secret",
+  "country_code": "CA",
+  "start_date": "20330807",
+  "window_in_days": 30
+}

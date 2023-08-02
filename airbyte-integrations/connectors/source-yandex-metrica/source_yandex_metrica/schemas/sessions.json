@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ym:s:visitID": {
+      "type": "string"
+    },
+    "ym:s:counterID": {
+      "type": "string"
+    },
+    "ym:s:watchIDs": {
+      "type": "string"
+    },
+    "ym:s:date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ym:s:dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ym:s:isNewUser": {
+      "type": "string"
+    },
+    "ym:s:startURL": {
+      "type": "string"
+    },
+    "ym:s:endURL": {
+      "type": "string"
+    },
+    "ym:s:pageViews": {
+      "type": "string"
+    },
+    "ym:s:visitDuration": {
+      "type": "string"
+    },
+    "ym:s:bounce": {
+      "type": "string"
+    },
+    "ym:s:ipAddress": {
+      "type": "string"
+    },
+    "ym:s:regionCountry": {
+      "type": "string"
+    },
+    "ym:s:regionCity": {
+      "type": "string"
+    },
+    "ym:s:regionCountryID": {
+      "type": "string"
+    },
+    "ym:s:regionCityID": {
+      "type": "string"
+    },
+    "ym:s:clientID": {
+      "type": "string"
+    },
+    "ym:s:networkType": {
+      "type": "string"
+    },
+    "ym:s:goalsID": {
+      "type": "string"
+    },
+    "ym:s:goalsSerialNumber": {
+      "type": "string"
+    },
+    "ym:s:goalsDateTime": {
+      "type": "string"
+    },
+    "ym:s:goalsPrice": {
+      "type": "string"
+    },
+    "ym:s:goalsOrder": {
+      "type": "string"
+    },
+    "ym:s:goalsCurrency": {
+      "type": "string"
+    },
+    "ym:s:lastTrafficSource": {
+      "type": "string"
+    },
+    "ym:s:lastAdvEngine": {
+      "type": "string"
+    },
+    "ym:s:lastReferalSource": {
+      "type": "string"
+    },
+    "ym:s:lastSearchEngineRoot": {
+      "type": "string"
+    },
+    "ym:s:lastSearchEngine": {
+      "type": "string"
+    },
+    "ym:s:lastSocialNetwork": {
+      "type": "string"
+    },
+    "ym:s:lastSocialNetworkProfile": {
+      "type": "string"
+    },
+    "ym:s:referer": {
+      "type": "string"
+    },
+    "ym:s:lastDirectClickOrder": {
+      "type": "string"
+    },
+    "ym:s:lastDirectBannerGroup": {
+      "type": "string"
+    },
+    "ym:s:lastDirectClickBanner": {
+      "type": "string"
+    },
+    "ym:s:lastDirectClickOrderName": {
+      "type": "string"
+    },
+    "ym:s:lastClickBannerGroupName": {
+      "type": "string"
+    },
+    "ym:s:lastDirectClickBannerName": {
+      "type": "string"
+    },
+    "ym:s:lastDirectPhraseOrCond": {
+      "type": "string"
+    },
+    "ym:s:lastDirectPlatformType": {
+      "type": "string"
+    },
+    "ym:s:lastDirectPlatform": {
+      "type": "string"
+    },
+    "ym:s:lastDirectConditionType": {
+      "type": "string"
+    },
+    "ym:s:lastCurrencyID": {
+      "type": "string"
+    },
+    "ym:s:from": {
+      "type": "string"
+    },
+    "ym:s:UTMCampaign": {
+      "type": "string"
+    },
+    "ym:s:UTMContent": {
+      "type": "string"
+    },
+    "ym:s:UTMMedium": {
+      "type": "string"
+    },
+    "ym:s:UTMSource": {
+      "type": "string"
+    },
+    "ym:s:UTMTerm": {
+      "type": "string"
+    },
+    "ym:s:openstatAd": {
+      "type": "string"
+    },
+    "ym:s:openstatCampaign": {
+      "type": "string"
+    },
+    "ym:s:openstatService": {
+      "type": "string"
+    },
+    "ym:s:openstatSource": {
+      "type": "string"
+    },
+    "ym:s:hasGCLID": {
+      "type": "string"
+    },
+    "ym:s:lastGCLID": {
+      "type": "string"
+    },
+    "ym:s:firstGCLID": {
+      "type": "string"
+    },
+    "ym:s:lastSignificantGCLID": {
+      "type": "string"
+    },
+    "ym:s:browserLanguage": {
+      "type": "string"
+    },
+    "ym:s:browserCountry": {
+      "type": "string"
+    },
+    "ym:s:clientTimeZone": {
+      "type": "string"
+    },
+    "ym:s:deviceCategory": {
+      "type": "string"
+    },
+    "ym:s:mobilePhone": {
+      "type": "string"
+    },
+    "ym:s:mobilePhoneModel": {
+      "type": "string"
+    },
+    "ym:s:operatingSystemRoot": {
+      "type": "string"
+    },
+    "ym:s:operatingSystem": {
+      "type": "string"
+    },
+    "ym:s:browser": {
+      "type": "string"
+    },
+    "ym:s:browserMajorVersion": {
+      "type": "string"
+    },
+    "ym:s:browserMinorVersion": {
+      "type": "string"
+    },
+    "ym:s:browserEngine": {
+      "type": "string"
+    },
+    "ym:s:browserEngineVersion1": {
+      "type": "string"
+    },
+    "ym:s:browserEngineVersion2": {
+      "type": "string"
+    },
+    "ym:s:browserEngineVersion3": {
+      "type": "string"
+    },
+    "ym:s:browserEngineVersion4": {
+      "type": "string"
+    },
+    "ym:s:cookieEnabled": {
+      "type": "string"
+    },
+    "ym:s:javascriptEnabled": {
+      "type": "string"
+    },
+    "ym:s:screenFormat": {
+      "type": "string"
+    },
+    "ym:s:screenColors": {
+      "type": "string"
+    },
+    "ym:s:screenOrientation": {
+      "type": "string"
+    },
+    "ym:s:screenWidth": {
+      "type": "string"
+    },
+    "ym:s:screenHeight": {
+      "type": "string"
+    },
+    "ym:s:physicalScreenWidth": {
+      "type": "string"
+    },
+    "ym:s:physicalScreenHeight": {
+      "type": "string"
+    },
+    "ym:s:windowClientWidth": {
+      "type": "string"
+    },
+    "ym:s:windowClientHeight": {
+      "type": "string"
+    },
+    "ym:s:purchaseID": {
+      "type": "string"
+    },
+    "ym:s:purchaseDateTime": {
+      "type": "string"
+    },
+    "ym:s:purchaseAffiliation": {
+      "type": "string"
+    },
+    "ym:s:purchaseRevenue": {
+      "type": "string"
+    },
+    "ym:s:purchaseTax": {
+      "type": "string"
+    },
+    "ym:s:purchaseShipping": {
+      "type": "string"
+    },
+    "ym:s:purchaseCoupon": {
+      "type": "string"
+    },
+    "ym:s:purchaseCurrency": {
+      "type": "string"
+    },
+    "ym:s:purchaseProductQuantity": {
+      "type": "string"
+    },
+    "ym:s:productsPurchaseID": {
+      "type": "string"
+    },
+    "ym:s:productsID": {
+      "type": "string"
+    },
+    "ym:s:productsName": {
+      "type": "string"
+    },
+    "ym:s:productsBrand": {
+      "type": "string"
+    },
+    "ym:s:productsCategory": {
+      "type": "string"
+    },
+    "ym:s:productsCategory1": {
+      "type": "string"
+    },
+    "ym:s:productsCategory2": {
+      "type": "string"
+    },
+    "ym:s:productsCategory3": {
+      "type": "string"
+    },
+    "ym:s:productsCategory4": {
+      "type": "string"
+    },
+    "ym:s:productsCategory5": {
+      "type": "string"
+    },
+    "ym:s:productsVariant": {
+      "type": "string"
+    },
+    "ym:s:productsPosition": {
+      "type": "string"
+    },
+    "ym:s:productsPrice": {
+      "type": "string"
+    },
+    "ym:s:productsCurrency": {
+      "type": "string"
+    },
+    "ym:s:productsCoupon": {
+      "type": "string"
+    },
+    "ym:s:productsQuantity": {
+      "type": "string"
+    },
+    "ym:s:impressionsURL": {
+      "type": "string"
+    },
+    "ym:s:impressionsDateTime": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductID": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductName": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductBrand": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory1": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory2": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory3": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory4": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCategory5": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductVariant": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductPrice": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCurrency": {
+      "type": "string"
+    },
+    "ym:s:impressionsProductCoupon": {
+      "type": "string"
+    },
+    "ym:s:offlineCallTalkDuration": {
+      "type": "string"
+    },
+    "ym:s:offlineCallHoldDuration": {
+      "type": "string"
+    },
+    "ym:s:offlineCallMissed": {
+      "type": "string"
+    },
+    "ym:s:offlineCallTag": {
+      "type": "string"
+    },
+    "ym:s:offlineCallFirstTimeCaller": {
+      "type": "string"
+    },
+    "ym:s:offlineCallURL": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey1": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey2": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey3": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey4": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey5": {
+      "type": "string"
+    },
+    "ym:s:parsedParamsKey6": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "OrderItemId": {
+      "type": "integer"
+    },
+    "FullyAllocated": {
+      "type": "boolean"
+    },
+    "UnitIdentifier": {
+      "description": "for convenience, referenced item's primary inventory unit",
+      "$ref": "../../generic/models/unit_of_measure_identifier.json"
+    },
+    "SecondaryUnitIdentifier": {
+      "description": "for convenience, referenced item's secondary inventory unit if defined",
+      "$ref": "../../generic/models/unit_of_measure_identifier.json"
+    },
+    "EstimatedQty": {
+      "description": "if present, calculated from SecondaryQty and cannot confirm until Qty entered",
+      "type": ["null", "number"]
+    },
+    "EstimatedSecondaryQty": {
+      "description": "if present, calculated from Qty and cannot confirm until SecondaryQty entered",
+      "type": ["null", "number"]
+    },
+    "OriginalPrimaryQty": {
+      "description": "on a shorted order, specifies original quantity ordered; otherwise same as Qty",
+      "type": ["null", "number"]
+    },
+    "IsOrderQtySecondary": {
+      "description": "if both Qty and SecondaryQty present, indicates whether at some point prior to shipping only SecondaryQty was present",
+      "type": "boolean"
+    },
+    "Allocations": {
+      "description": "supplied on GET {get;set;} ignored on PUT, POST",
+      "type": "array",
+      "items": {
+        "$ref": "allocation.json"
+      }
+    },
+    "Bin": {
+      "description": "supplied on GET, ignored on PUT, POST; use pick operations to set; cleared when shipped or packaged",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "createdDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "domain": {
+      "type": ["string", "null"]
+    },
+    "companyName": {
+      "type": ["string", "null"]
+    },
+    "industryName": {
+      "type": ["string", "null"]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "cxMetrics": {
+      "type": "object",
+      "properties": {
+        "NPS": {
+          "type": ["number", "null"]
+        },
+        "CSAT": {
+          "type": ["number", "null"]
+        },
+        "CES": {
+          "type": ["number", "null"]
+        },
+        "STAR": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "contactsCount": {
+      "type": ["number", "null"]
+    }
+  }
+}

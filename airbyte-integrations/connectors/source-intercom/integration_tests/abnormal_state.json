@@ -1,0 +1,77 @@
+[
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "segments"
+          },
+          "stream_state": {
+              "updated_at": 7626086649
+          }
+      }
+  },
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "companies"
+          },
+          "stream_state": {
+              "updated_at": 7626086649
+          }
+      }
+  },
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "company_segments"
+          },
+          "stream_state": {
+              "updated_at": 7626086649,
+              "companies": {
+                  "updated_at": 7626086649
+              }
+          }
+      }
+  },
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "conversations"
+          },
+          "stream_state": {
+              "updated_at": 7626086649,
+              "conversations": {
+                  "updated_at": 7626086649
+              }
+          }
+      }
+  },
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "conversation_parts"
+          },
+          "stream_state": {
+              "updated_at": 7626086649,
+              "conversations": {
+                  "updated_at": 7626086649
+              }
+          }
+      }
+  },
+  {
+      "type": "STREAM",
+      "stream": {
+          "stream_descriptor": {
+              "name": "contacts"
+          },
+          "stream_state": {
+              "updated_at": 7626086649
+          }
+      }
+  }
+]

@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "string"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "actor": {
+      "$ref": "user.json"
+    },
+    "event": {
+      "type": ["null", "string"]
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "commit_url": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state_reason": {
+      "type": ["null", "string"]
+    },
+    "label": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "color": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "review_requester": {
+      "$ref": "user.json"
+    },
+    "issue": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "repository_url": {
+          "type": ["null", "string"]
+        },
+        "labels_url": {
+          "type": ["null", "string"]
+        },
+        "comments_url": {
+          "type": ["null", "string"]
+        },
+        "events_url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "number": {
+          "type": ["null", "integer"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "body": {
+          "type": ["null", "string"]
+        },
+        "user": {
+          "$ref": "user.json"
+        }
+      }
+    },
+    "performed_via_github_app": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "slug": {
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "owner": {
+          "$ref": "user.json"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "external_url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "type": ["null", "object"],
+          "properties": {
+            "actions": {
+              "type": ["null", "string"]
+            },
+            "administration": {
+              "type": ["null", "string"]
+            },
+            "checks": {
+              "type": ["null", "string"]
+            },
+            "contents": {
+              "type": ["null", "string"]
+            },
+            "deployments": {
+              "type": ["null", "string"]
+            },
+            "discussions": {
+              "type": ["null", "string"]
+            },
+            "issues": {
+              "type": ["null", "string"]
+            },
+            "merge_queues": {
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "type": ["null", "string"]
+            },
+            "packages": {
+              "type": ["null", "string"]
+            },
+            "pages": {
+              "type": ["null", "string"]
+            },
+            "pull_requests": {
+              "type": ["null", "string"]
+            },
+            "repository_hooks": {
+              "type": ["null", "string"]
+            },
+            "repository_projects": {
+              "type": ["null", "string"]
+            },
+            "security_events": {
+              "type": ["null", "string"]
+            },
+            "statuses": {
+              "type": ["null", "string"]
+            },
+            "vulnerability_alerts": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "milestone": {
+      "type": ["null", "object"],
+      "properties": {
+        "title": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "assignee": {
+      "$ref": "user.json"
+    },
+    "assigner": {
+      "$ref": "user.json"
+    },
+    "project_card": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "project_id": {
+          "type": ["null", "integer"]
+        },
+        "project_url": {
+          "type": ["null", "string"]
+        },
+        "column_name": {
+          "type": ["null", "string"]
+        },
+        "previous_column_name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dismissed_review": {
+      "type": ["null", "object"],
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "review_id": {
+          "type": ["null", "integer"]
+        },
+        "dismissal_message": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "requested_team": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "slug": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "privacy": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "members_url": {
+          "type": ["null", "string"]
+        },
+        "repositories_url": {
+          "type": ["null", "string"]
+        },
+        "permission": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            },
+            "slug": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "privacy": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "members_url": {
+              "type": ["null", "string"]
+            },
+            "repositories_url": {
+              "type": ["null", "string"]
+            },
+            "permission": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "rename": {
+      "type": ["null", "object"],
+      "properties": {
+        "from": {
+          "type": ["null", "string"]
+        },
+        "to": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "requested_reviewer": {
+      "$ref": "user.json"
+    }
+  }
+}

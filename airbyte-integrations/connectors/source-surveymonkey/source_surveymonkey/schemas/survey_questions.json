@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "position": {
+      "type": ["integer", "null"]
+    },
+    "visible": {
+      "type": ["boolean", "null"]
+    },
+    "family": {
+      "type": ["string", "null"]
+    },
+    "subtype": {
+      "type": ["string", "null"]
+    },
+    "layout": {
+      "type": ["object", "null"]
+    },
+    "sorting": {
+      "type": ["object", "null"],
+      "properties": {
+        "ignore_last": {
+          "type": ["boolean", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "required": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "type": ["string", "null"]
+        },
+        "text": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "validation": {
+      "type": ["object", "null"],
+      "properties": {
+        "max": {
+          "type": ["integer", "null"]
+        },
+        "min": {
+          "type": ["integer", "null"]
+        },
+        "sum": {
+          "type": ["integer", "null"]
+        },
+        "sum_text": {
+          "type": ["string", "null"]
+        },
+        "text": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "forced_ranking": {
+      "type": ["boolean", "null"]
+    },
+    "headings": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "heading": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "href": {
+      "type": ["string", "null"]
+    },
+    "answers": {
+      "type": ["object", "null"],
+      "properties": {
+        "choices": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "position": {
+                "type": ["integer", "null"]
+              },
+              "visible": {
+                "type": ["boolean", "null"]
+              },
+              "text": {
+                "type": ["string", "null"]
+              },
+              "quiz_options": {
+                "type": ["object", "null"],
+                "properties": {
+                  "score": {
+                    "type": ["integer", "null"]
+                  }
+                }
+              },
+              "id": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

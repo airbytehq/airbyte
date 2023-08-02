@@ -1,0 +1,47 @@
+{
+  "prospects": {
+    "updatedAt": "2020-11-16T00:00:00Z"
+  },
+  "sequences": {
+    "updatedAt": "2021-02-16T00:00:00Z"
+  },
+  "sequenceStates": {
+    "updatedAt": "2021-04-16T00:00:00Z"
+  },
+  "sequenceSteps": {
+    "updatedAt": "2021-04-16T00:00:00Z"
+  },
+  "accounts": {
+    "updatedAt": "2021-11-16T00:00:00Z"
+  },
+  "opportunities": {
+    "updatedAt": "2022-01-16T00:00:00Z"
+  },
+  "personas": {
+    "updatedAt": "2022-01-03T10:00:00Z"
+  },
+  "mailings": {
+    "updatedAt": "2021-11-01T11:22:00Z"
+  },
+  "mailboxes": {
+    "updatedAt": "2019-01-01T00:00:30Z"
+  },
+  "stages": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "calls": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "users": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "tasks": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "templates": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "snippets": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  }
+}

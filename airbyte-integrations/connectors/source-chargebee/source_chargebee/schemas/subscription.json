@@ -1,0 +1,689 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "start_date": {
+      "type": ["integer", "null"]
+    },
+    "trial_end": {
+      "type": ["integer", "null"]
+    },
+    "remaining_billing_cycles": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "po_number": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "plan_quantity_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "plan_unit_price_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "customer_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "trial_start": {
+      "type": ["integer", "null"]
+    },
+    "trial_end_action": {
+      "type": ["string", "null"]
+    },
+    "current_term_start": {
+      "type": ["integer", "null"]
+    },
+    "current_term_end": {
+      "type": ["integer", "null"]
+    },
+    "next_billing_at": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "started_at": {
+      "type": ["integer", "null"]
+    },
+    "activated_at": {
+      "type": ["integer", "null"]
+    },
+    "contract_term_billing_cycle_on_renewal": {
+      "type": ["integer", "null"]
+    },
+    "override_relationship": {
+      "type": ["boolean", "null"]
+    },
+    "pause_date": {
+      "type": ["integer", "null"]
+    },
+    "resume_date": {
+      "type": ["integer", "null"]
+    },
+    "cancelled_at": {
+      "type": ["integer", "null"]
+    },
+    "cancel_reason": {
+      "type": ["string", "null"]
+    },
+    "created_from_ip": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "has_scheduled_advance_invoices": {
+      "type": ["boolean", "null"]
+    },
+    "has_scheduled_changes": {
+      "type": ["boolean", "null"]
+    },
+    "payment_source_id": {
+      "type": ["string", "null"],
+      "maxLength": 40
+    },
+    "plan_free_quantity_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "plan_amount_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "cancel_schedule_created_at": {
+      "type": ["integer", "null"]
+    },
+    "due_invoices_count": {
+      "type": ["integer", "null"]
+    },
+    "due_since": {
+      "type": ["integer", "null"]
+    },
+    "total_dues": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "mrr": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "exchange_rate": {
+      "type": ["number", "null"]
+    },
+    "base_currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "invoice_notes": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "properties": {}
+    },
+    "deleted": {
+      "type": ["boolean", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "coupon": {
+      "type": ["string", "null"]
+    },
+    "cancel_reason_code": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "free_period": {
+      "type": ["integer", "null"]
+    },
+    "free_period_unit": {
+      "type": ["string", "null"]
+    },
+    "create_pending_invoices": {
+      "type": ["boolean", "null"]
+    },
+    "auto_close_invoices": {
+      "type": ["boolean", "null"]
+    },
+    "coupons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "coupon_id": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "apply_till": {
+            "type": ["integer", "null"]
+          },
+          "apply_count": {
+            "type": ["integer", "null"]
+          },
+          "coupon_code": {
+            "type": ["string", "null"],
+            "maxLength": 50
+          }
+        }
+      }
+    },
+    "shipping_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "last_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "email": {
+          "type": ["string", "null"],
+          "maxLength": 70
+        },
+        "company": {
+          "type": ["string", "null"],
+          "maxLength": 250
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "line1": {
+          "type": ["string", "null"],
+          "maxLength": 180
+        },
+        "line2": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "line3": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "city": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state_code": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "country": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "zip": {
+          "type": ["string", "null"],
+          "maxLength": 20
+        },
+        "validation_status": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "referral_info": {
+      "type": ["object", "null"],
+      "properties": {
+        "referral_code": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "coupon_code": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "referral_id": {
+          "type": ["string", "null"],
+          "maxLength": 19
+        },
+        "external_reference_id": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "reward_status": {
+          "type": ["string", "null"]
+        },
+        "referral_system": {
+          "type": ["string", "null"]
+        },
+        "account_id": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "campaign_id": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "external_campaign_id": {
+          "type": ["string", "null"],
+          "maxLength": 100
+        },
+        "friend_offer_type": {
+          "type": ["string", "null"]
+        },
+        "referrer_reward_type": {
+          "type": ["string", "null"]
+        },
+        "notify_referral_system": {
+          "type": ["string", "null"]
+        },
+        "destination_url": {
+          "type": ["string", "null"],
+          "maxLength": 250
+        },
+        "post_purchase_widget_enabled": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "contract_term": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "contract_start": {
+          "type": ["integer", "null"]
+        },
+        "contract_end": {
+          "type": ["integer", "null"]
+        },
+        "billing_cycle": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "action_at_term_end": {
+          "type": ["string", "null"]
+        },
+        "total_contract_value": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "cancellation_cutoff_period": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["integer", "null"]
+        },
+        "subscription_id": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "remaining_billing_cycles": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+
+    "subscription_items": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_price_id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "item_type": {
+            "type": ["string", "null"]
+          },
+          "quantity": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "unit_price": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "unit_price_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "amount": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "amount_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "free_quantity": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "free_quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "trial_end": {
+            "type": ["integer", "null"]
+          },
+          "billing_cycles": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "service_period_days": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "maximum": 730
+          },
+          "charge_on_event": {
+            "type": ["string", "null"]
+          },
+          "charge_once": {
+            "type": ["boolean", "null"]
+          },
+          "charge_on_option": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "item_tiers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_price_id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "starting_unit": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "ending_unit": {
+            "type": ["integer", "null"]
+          },
+          "price": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "starting_unit_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "ending_unit_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "price_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "charged_items": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_price_id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "last_charged_at": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+
+    "plan_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "plan_quantity": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "plan_unit_price": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "setup_fee": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "billing_period": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "billing_period_unit": {
+      "type": ["string", "null"]
+    },
+    "auto_collection": {
+      "type": ["string", "null"]
+    },
+    "plan_amount": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "plan_free_quantity": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "gift_id": {
+      "type": ["string", "null"],
+      "maxLength": 150
+    },
+    "affiliate_token": {
+      "type": ["string", "null"],
+      "maxLength": 250
+    },
+    "offline_payment_method": {
+      "type": ["string", "null"]
+    },
+    "meta_data": {
+      "type": ["object", "null"],
+      "properties": {}
+    },
+    "addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "quantity": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "unit_price": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "amount": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "trial_end": {
+            "type": ["integer", "null"]
+          },
+          "remaining_billing_cycles": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "unit_price_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "amount_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "event_based_addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "quantity": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "unit_price": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "on_event": {
+            "type": ["string", "null"]
+          },
+          "charge_once": {
+            "type": ["boolean", "null"]
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "unit_price_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "charged_event_based_addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "last_charged_at": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "discounts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"]
+          },
+          "invoice_name": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"],
+            "enum": ["fixed_amount", "percentage"]
+          },
+          "percentage": {
+            "type": ["number", "null"]
+          },
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "currency_code": {
+            "type": ["string", "null"]
+          },
+          "duration_type": {
+            "type": ["string", "null"],
+            "enum": ["one_time", "forever", "limited_period"]
+          },
+          "period": {
+            "type": ["integer", "null"]
+          },
+          "period_unit": {
+            "type": ["string", "null"],
+            "enum": ["day", "week", "month", "year"]
+          },
+          "included_in_mrr": {
+            "type": ["boolean", "null"]
+          },
+          "apply_on": {
+            "type": ["string", "null"],
+            "enum": ["invoice_amount", "specific_item_price"]
+          },
+          "item_price_id": {
+            "type": ["string", "null"]
+          },
+          "created_at": {
+            "type": ["integer", "null"]
+          },
+          "apply_till": {
+            "type": ["integer", "null"]
+          },
+          "applied_count": {
+            "type": ["integer", "null"]
+          },
+          "coupon_id": {
+            "type": ["string", "null"]
+          },
+          "index": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

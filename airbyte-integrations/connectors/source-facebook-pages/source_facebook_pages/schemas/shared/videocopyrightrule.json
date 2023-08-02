@@ -1,0 +1,24 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "copyrights": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "created_date": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "is_in_migration": {
+      "type": ["boolean", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    }
+  }
+}

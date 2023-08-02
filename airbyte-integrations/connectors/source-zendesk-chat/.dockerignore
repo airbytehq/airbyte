@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main_dev.py
+!source_zendesk_chat
+!setup.py
+!secrets

@@ -1,0 +1,4 @@
+.coverage
+.venv
+state_*.yaml
+dist

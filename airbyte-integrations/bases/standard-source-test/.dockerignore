@@ -1,0 +1,4 @@
+*
+!Dockerfile
+!build
+!entrypoint.sh

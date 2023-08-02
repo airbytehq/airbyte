@@ -1,0 +1,18 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "actions"
+      },
+      "stream_state": {
+        "611aa586ef5f2c8e1deec8b6": {
+          "date": "2099-03-16T20:10:54.641Z"
+        },
+        "611aa0ef37acd675af67dc9b": {
+          "date": "2099-03-16T18:47:16.404Z"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,15 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
+}
+
+tasks.withType(Jar) {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}

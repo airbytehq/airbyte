@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "datetime": {
+      "type": ["null", "string"]
+    },
+    "is_day_time": {
+      "type": ["null", "boolean"]
+    },
+    "icon_code": {
+      "type": ["null", "integer"]
+    },
+    "weather_text": {
+      "type": ["null", "string"]
+    },
+    "temperature": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "feels_like_temperature": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "relative_humidity": {
+      "type": ["null", "integer"]
+    },
+    "precipitation": {
+      "type": ["null", "object"],
+      "properties": {
+        "precipitation_probability": {
+          "type": ["null", "integer"]
+        },
+        "total_precipitation": {
+          "type": ["null", "object"],
+          "properties": {
+            "value": {
+              "type": ["null", "number"]
+            },
+            "units": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "wind": {
+      "type": ["null", "object"],
+      "properties": {
+        "speed": {
+          "type": ["null", "object"],
+          "properties": {
+            "value": {
+              "type": ["null", "number"]
+            },
+            "units": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "direction": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "wind_gust": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "pressure": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "visibility": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "integer"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dew_point": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "cloud_cover": {
+      "type": ["null", "integer"]
+    }
+  }
+}

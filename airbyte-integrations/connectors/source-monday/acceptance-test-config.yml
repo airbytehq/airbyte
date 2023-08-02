@@ -1,0 +1,78 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-monday:dev
+test_strictness_level: "high"
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_monday/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config_api_token.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_oauth.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
+        # Changes applies to all configs
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.6"
+      - config_path: "secrets/config_api_token.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.6"
+      - config_path: "secrets/config_oauth.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.6"
+  basic_read:
+    tests:
+      - config_path: "secrets/config_api_token.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: teams
+            bypass_reason: "unable to populate"
+        ignored_fields:
+          items:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
+          updates:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
+      - config_path: "secrets/config_oauth.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: teams
+            bypass_reason: "unable to populate"
+        ignored_fields:
+          items:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
+          updates:
+            - name: assets/*/public_url
+              bypass_reason: "Unstable data"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config_api_token.json"
+  incremental:
+    tests:
+    - config_path: "secrets/config_api_token.json"
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        items: [ "updated_at_int" ]
+        boards: [ "updated_at_int" ]
+        activity_logs: [ "created_at_int" ]

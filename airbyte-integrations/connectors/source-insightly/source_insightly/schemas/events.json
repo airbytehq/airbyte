@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "EVENT_ID": {
+      "type": "integer"
+    },
+    "TITLE": {
+      "type": ["string", "null"]
+    },
+    "LOCATION": {
+      "type": ["string", "null"]
+    },
+    "START_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "END_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "ALL_DAY": {
+      "type": ["boolean", "null"]
+    },
+    "DETAILS": {
+      "type": ["string", "null"]
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "REMINDER_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "REMINDER_SENT": {
+      "type": ["boolean", "null"]
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "LINKS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "LINK_ID": {
+            "type": ["integer", "null"]
+          },
+          "OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "LINK_OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "LINK_OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "ROLE": {
+            "type": ["string", "null"]
+          },
+          "DETAILS": {
+            "type": ["string", "null"]
+          },
+          "RELATIONSHIP_ID": {
+            "type": ["integer", "null"]
+          },
+          "IS_FORWARD": {
+            "type": ["boolean", "null"]
+          }
+        }
+      }
+    }
+  }
+}

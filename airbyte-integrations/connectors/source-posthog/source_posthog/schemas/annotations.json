@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "content": {
+      "type": ["string", "null"]
+    },
+    "date_marker": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "creation_type": {
+      "type": ["string", "null"]
+    },
+    "dashboard_item": {
+      "type": ["string", "null"]
+    },
+    "created_by": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "distinct_id": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "scope": {
+      "type": "string"
+    }
+  }
+}

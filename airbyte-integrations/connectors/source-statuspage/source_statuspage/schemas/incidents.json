@@ -1,0 +1,306 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"],
+      "example": "p31zjtct2jer",
+      "description": "Incident Identifier"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "string"],
+            "description": "Identifier for component"
+          },
+          "page_id": {
+            "type": ["null", "string"],
+            "description": "Page identifier"
+          },
+          "group_id": {
+            "type": ["null", "string"],
+            "description": "Component Group identifier"
+          },
+          "created_at": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "group": {
+            "type": ["null", "boolean"],
+            "description": "Is this component a group"
+          },
+          "name": {
+            "type": ["null", "string"],
+            "description": "Display name for component"
+          },
+          "description": {
+            "type": ["null", "string"],
+            "description": "More detailed description for component"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Order the component will appear on the page"
+          },
+          "status": {
+            "type": ["null", "string"],
+            "enum": [
+              "operational",
+              "under_maintenance",
+              "degraded_performance",
+              "partial_outage",
+              "major_outage",
+              ""
+            ],
+            "description": "Status of component"
+          },
+          "showcase": {
+            "type": ["null", "boolean"],
+            "description": "Should this component be showcased"
+          },
+          "only_show_if_degraded": {
+            "type": ["null", "boolean"],
+            "description": "Requires a special feature flag to be enabled"
+          },
+          "automation_email": {
+            "type": ["null", "string"],
+            "description": "Requires a special feature flag to be enabled"
+          },
+          "start_date": {
+            "type": ["null", "string"],
+            "format": "date",
+            "description": "The date this component started being used"
+          }
+        },
+        "description": "Add page access groups to a component",
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "Incident components"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when the incident was created at."
+    },
+    "impact": {
+      "type": ["null", "string"],
+      "example": "critical",
+      "enum": ["none", "maintenance", "minor", "major", "critical"],
+      "description": "The impact of the incident."
+    },
+    "impact_override": {
+      "type": ["null", "object"],
+      "example": "minor",
+      "description": "value to override calculated impact value"
+    },
+    "incident_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "string"],
+            "description": "Incident Update Identifier."
+          },
+          "incident_id": {
+            "type": ["null", "string"],
+            "description": "Incident Identifier."
+          },
+          "affected_components": {
+            "type": ["null", "array"],
+            "description": "Affected components associated with the incident update."
+          },
+          "body": {
+            "type": ["null", "string"],
+            "description": "Incident update body."
+          },
+          "created_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "description": "The timestamp when the incident update was created at."
+          },
+          "custom_tweet": {
+            "type": ["null", "string"],
+            "description": "An optional customized tweet message for incident postmortem."
+          },
+          "deliver_notifications": {
+            "type": ["null", "boolean"],
+            "description": "Controls whether to delivery notifications."
+          },
+          "display_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "description": "Timestamp when incident update is happened."
+          },
+          "status": {
+            "type": ["null", "string"],
+            "enum": [
+              "investigating",
+              "identified",
+              "monitoring",
+              "resolved",
+              "scheduled",
+              "in_progress",
+              "verifying",
+              "completed"
+            ],
+            "description": "The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed."
+          },
+          "tweet_id": {
+            "type": ["null", "string"],
+            "description": "Tweet identifier associated to this incident update."
+          },
+          "twitter_updated_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "description": "The timestamp when twitter updated at."
+          },
+          "updated_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "description": "The timestamp when the incident update is updated."
+          },
+          "wants_twitter_update": {
+            "type": ["null", "boolean"],
+            "description": "Controls whether to create twitter update."
+          }
+        },
+        "description": "Update a previous incident update",
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "The incident updates for incident."
+    },
+    "metadata": {
+      "type": "object",
+      "example": {
+        "jira": {
+          "issue_id": "value"
+        }
+      },
+      "description": "Metadata attached to the incident. Top level values must be objects."
+    },
+    "monitoring_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when incident entered monitoring state."
+    },
+    "name": {
+      "type": ["null", "string"],
+      "example": "Data Layer Migration",
+      "description": "Incident Name"
+    },
+    "page_id": {
+      "type": ["null", "string"],
+      "description": "Incident Page Identifier"
+    },
+    "postmortem_body": {
+      "type": ["null", "string"],
+      "example": "##### Issue\nAt approximately 17:02 UTC on 2013-04-21, our master database server unexpectedly went unresponsive to all network.\nA reboot of the machine at 17:05 UTC resulted in a failed mount of a corrupted EBS volume, and we made the decision\nat that time to fail over the slave database.\n\n##### Resolution\nAt 17:12 UTC, the slave database had been successfully promoted to master and the application recovered enough to\naccept web traffic again. A new slave database node was created and placed into the rotation to guard against future\nmaster failures. The promoted slave database performed slowly for the next couple of hours as the query cache began\nto warm up, and eventually settled into a reasonable performance profile around 20:00 UTC.\n\n##### Future Mitigation Plans\nOver the past few months, we have been working on an overhaul to our data storage layer with a migration from a Postgres\nsetup to a distributed, fault-tolerant, multi-region data layer using Riak. This initiative has been prioritized, and\nthe migration will be performed in the coming weeks. We will notify our clients of the scheduled downtime via an\nincident on this status site, and via a blog post.\n",
+      "description": "Body of the Postmortem."
+    },
+    "postmortem_body_last_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when the incident postmortem body was last updated at."
+    },
+    "postmortem_ignored": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether the incident will have postmortem."
+    },
+    "postmortem_notified_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Indicates whether subscribers are already notificed about postmortem."
+    },
+    "postmortem_notified_twitter": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether to decide if notify postmortem on twitter."
+    },
+    "postmortem_published_at": {
+      "type": ["null", "boolean"],
+      "description": "The timestamp when the postmortem was published."
+    },
+    "resolved_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when incident was resolved."
+    },
+    "scheduled_auto_completed": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether the incident is scheduled to automatically change to complete."
+    },
+    "scheduled_auto_in_progress": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether the incident is scheduled to automatically change to in progress."
+    },
+    "scheduled_for": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "example": "2013-05-07T03:00:00.007Z",
+      "description": "The timestamp the incident is scheduled for."
+    },
+    "auto_transition_deliver_notifications_at_end": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether send notification when scheduled maintenances auto transition to completed."
+    },
+    "auto_transition_deliver_notifications_at_start": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether send notification when scheduled maintenances auto transition to started."
+    },
+    "auto_transition_to_maintenance_state": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether change components status to under_maintenance once scheduled maintenance is in progress."
+    },
+    "auto_transition_to_operational_state": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether change components status to operational once scheduled maintenance completes."
+    },
+    "scheduled_remind_prior": {
+      "type": ["null", "boolean"],
+      "description": "Controls whether to remind subscribers prior to scheduled incidents."
+    },
+    "scheduled_reminded_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when the scheduled incident reminder was sent at."
+    },
+    "scheduled_until": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "example": "2013-05-07T06:00:00.007Z",
+      "description": "The timestamp the incident is scheduled until."
+    },
+    "shortlink": {
+      "type": ["null", "string"],
+      "example": "http://stspg.io/803310a12",
+      "description": "Incident Shortlink."
+    },
+    "status": {
+      "type": ["null", "string"],
+      "example": "scheduled",
+      "enum": [
+        "investigating",
+        "identified",
+        "monitoring",
+        "resolved",
+        "scheduled",
+        "in_progress",
+        "verifying",
+        "completed"
+      ],
+      "description": "The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed."
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "The timestamp when the incident was updated at."
+    }
+  },
+  "description": "Get an incident",
+  "$schema": "http://json-schema.org/schema#"
+}

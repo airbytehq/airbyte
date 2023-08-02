@@ -1,0 +1,38 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "programId": {
+      "type": ["null", "integer"]
+    },
+    "programName": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "workspaceName": {
+      "type": ["null", "string"]
+    }
+  }
+}

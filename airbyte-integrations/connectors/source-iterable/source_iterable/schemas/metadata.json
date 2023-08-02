@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

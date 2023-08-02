@@ -1,0 +1,27 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "self": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "href": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "collection": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "href": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

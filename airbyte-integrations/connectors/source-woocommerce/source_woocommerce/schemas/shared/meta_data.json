@@ -1,0 +1,36 @@
+{
+  "type": ["null", "array", "object"],
+  "oneOf": [
+    {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "key": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "object", "string", "array"]
+        }
+      }
+    },
+    {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "object", "string", "array"]
+          }
+        }
+      }
+    }
+  ]
+}

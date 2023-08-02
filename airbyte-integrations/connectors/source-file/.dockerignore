@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!main.py
+!source_file
+!setup.py
+!integration_tests
+!secrets

@@ -1,0 +1,142 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_leads_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_notes_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_contacts_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_accounts_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_activities_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_tasks_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_calls_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_deals_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_events_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_vendors_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_products_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_quotes_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_sales__orders_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_purchase__orders_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_price__books_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_solutions_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_cases_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_invoices_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_attachments_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "incremental_campaigns_zoho_crm_stream" },
+      "stream_state": { "Modified_Time": "2220-03-07T11:30:00+00:00"}
+    }
+  }
+]

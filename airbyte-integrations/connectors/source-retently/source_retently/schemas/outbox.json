@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "customerId": {
+      "type": ["string", "null"]
+    },
+    "firstName": {
+      "type": ["string", "null"]
+    },
+    "lastName": {
+      "type": ["string", "null"]
+    },
+    "companyName": {
+      "type": ["string", "null"]
+    },
+    "companyId": {
+      "type": ["string", "null"]
+    },
+    "personTags": {
+      "type": ["array", "null"]
+    },
+    "sentDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "campaign": {
+      "type": ["string", "null"]
+    },
+    "campaignId": {
+      "type": ["string", "null"]
+    },
+    "surveyTemplateId": {
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "type": ["string", "null"]
+    },
+    "sentBy": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "detailedStatus": {
+      "type": "object",
+      "properties": {
+        "isOpened": {
+          "type": ["boolean", "null"]
+        },
+        "openedDate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "isResponded": {
+          "type": ["boolean", "null"]
+        },
+        "respondedDate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hasFeedback": {
+          "type": ["boolean", "null"]
+        },
+        "isOptedOut": {
+          "type": ["boolean", "null"]
+        },
+        "isBounced": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "additionalRecipients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"]
+          },
+          "mandrillMessageId": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "mandrillMessageId": {
+      "type": ["string", "null"]
+    }
+  }
+}

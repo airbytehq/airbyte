@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "firstName": {
+      "type": ["string", "null"]
+    },
+    "lastName": {
+      "type": ["string", "null"]
+    },
+    "companyName": {
+      "type": ["string", "null"]
+    },
+    "companyId": {
+      "type": ["string", "null"]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "createdDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["string", "integer", "number", "boolean"]
+          }
+        }
+      }
+    }
+  }
+}

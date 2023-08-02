@@ -1,0 +1,59 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667210538.json",
+  "title": "Root",
+  "type": "object",
+  "required": ["results", "page", "total_pages", "total_results"],
+  "properties": {
+    "results": {
+      "$id": "#root/results",
+      "title": "Results",
+      "type": "array",
+      "default": [],
+      "items": {
+        "$id": "#root/results/items",
+        "title": "Items",
+        "type": "object",
+        "required": ["id", "adult"],
+        "properties": {
+          "id": {
+            "$id": "#root/results/items/id",
+            "title": "Id",
+            "type": "integer",
+            "examples": [1670120],
+            "default": 0
+          },
+          "adult": {
+            "$id": "#root/results/items/adult",
+            "title": "Adult",
+            "type": ["null", "boolean"],
+            "examples": [false],
+            "default": true
+          }
+        }
+      }
+    },
+    "page": {
+      "$id": "#root/page",
+      "title": "Page",
+      "type": "integer",
+      "examples": [1],
+      "default": 0
+    },
+    "total_pages": {
+      "$id": "#root/total_pages",
+      "title": "Total_pages",
+      "type": "integer",
+      "examples": [7],
+      "default": 0
+    },
+    "total_results": {
+      "$id": "#root/total_results",
+      "title": "Total_results",
+      "type": "integer",
+      "examples": [620],
+      "default": 0
+    }
+  }
+}

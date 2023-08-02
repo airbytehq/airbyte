@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cc_emails": {
+      "type": ["array", "null"]
+    },
+    "fwd_emails": {
+      "type": ["array", "null"]
+    },
+    "reply_cc_emails": {
+      "type": ["array", "null"]
+    },
+    "ticket_cc_emails": {
+      "type": ["array", "null"]
+    },
+    "fr_escalated": {
+      "type": ["null", "boolean"]
+    },
+    "spam": {
+      "type": ["null", "boolean"]
+    },
+    "email_config_id": {
+      "type": ["integer", "null"]
+    },
+    "group_id": {
+      "type": ["integer", "null"]
+    },
+    "priority": {
+      "type": ["integer", "null"]
+    },
+    "requester_id": {
+      "type": ["integer", "null"]
+    },
+    "responder_id": {
+      "type": ["integer", "null"]
+    },
+    "source": {
+      "type": ["integer", "null"]
+    },
+    "company_id": {
+      "type": ["integer", "null"]
+    },
+    "status": {
+      "type": ["integer", "null"]
+    },
+    "subject": {
+      "type": ["string", "null"]
+    },
+    "association_type": {
+      "type": ["integer", "null"]
+    },
+    "to_emails": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "product_id": {
+      "type": ["integer", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "due_by": {
+      "type": ["string", "null"]
+    },
+    "fr_due_by": {
+      "type": ["string", "null"]
+    },
+    "is_escalated": {
+      "type": ["boolean", "null"]
+    },
+    "custom_fields": {
+      "type": ["object", "null"]
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["string", "null"]
+    },
+    "associated_tickets_count": {
+      "type": ["integer", "null"]
+    },
+    "tags": {
+      "type": ["array", "null"]
+    },
+    "nr_due_by": {
+      "type": ["string", "null"]
+    },
+    "nr_escalated": {
+      "type": ["boolean", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "description_text": {
+      "type": ["string", "null"]
+    },
+    "requester": {
+      "type": ["object", "null"]
+    },
+    "stats": {
+      "type": ["object", "null"]
+    }
+  }
+}

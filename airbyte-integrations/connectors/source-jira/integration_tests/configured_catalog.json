@@ -1,0 +1,637 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "application_roles",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["key"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "avatars",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "boards",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "board_issues",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "dashboards",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "filters",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "filter_sharing",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["groupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issues",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_comments",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_fields",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_field_configurations",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_custom_field_contexts",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_link_types",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_navigator_settings",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_notification_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_priorities",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_properties",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["key"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_remote_links",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_resolutions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_security_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_type_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_type_screen_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_votes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_watchers",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_worklogs",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "jira_settings",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "labels",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["label"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "permissions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["key"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "permission_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "projects",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_avatars",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_categories",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_components",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_email",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["projectId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_permission_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_types",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "project_versions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "screens",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "screen_tabs",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "screen_tab_fields",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "screen_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sprints",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sprint_issues",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updated"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "time_tracking",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["key"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["accountId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "users_groups_detailed",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["accountId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "workflows",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "workflow_schemes",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "workflow_statuses",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "workflow_status_categories",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

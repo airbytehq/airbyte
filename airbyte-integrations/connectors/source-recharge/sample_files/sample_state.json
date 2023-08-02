@@ -1,0 +1,23 @@
+{
+  "addresses": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "charges": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "customers": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "discounts": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "onetimes": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "orders": {
+    "updated_at": "2021-04-02T00:00:00"
+  },
+  "subscriptions": {
+    "updated_at": "2021-04-02T00:00:00"
+  }
+}

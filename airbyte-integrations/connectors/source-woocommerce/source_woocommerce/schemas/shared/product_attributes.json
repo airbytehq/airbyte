@@ -1,0 +1,26 @@
+{
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "properties": {
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "position": {
+        "type": ["null", "integer"]
+      },
+      "visible": {
+        "type": ["null", "boolean"]
+      },
+      "variation": {
+        "type": ["null", "boolean"]
+      },
+      "options": {
+        "type": ["null", "array"]
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "properties": {
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "api_version": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "message_status_callback": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "sms_fallback_method": {
+      "type": ["null", "string"]
+    },
+    "sms_fallback_url": {
+      "type": ["null", "string"]
+    },
+    "sms_method": {
+      "type": ["null", "string"]
+    },
+    "public_application_connect_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "sms_status_callback": {
+      "type": ["null", "string"]
+    },
+    "sms_url": {
+      "type": ["null", "string"]
+    },
+    "status_callback": {
+      "type": ["null", "string"]
+    },
+    "status_callback_method": {
+      "type": ["null", "string"]
+    },
+    "uri": {
+      "type": ["null", "string"]
+    },
+    "voice_caller_id_lookup": {
+      "type": ["null", "boolean"]
+    },
+    "voice_fallback_method": {
+      "type": ["null", "string"]
+    },
+    "voice_fallback_url": {
+      "type": ["null", "string"]
+    },
+    "voice_method": {
+      "type": ["null", "string"]
+    },
+    "voice_url": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": "object",
+  "additionalProperties": true
+}

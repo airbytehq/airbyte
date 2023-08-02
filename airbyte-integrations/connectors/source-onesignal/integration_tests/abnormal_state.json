@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "8d466489-38af-4067-a6b8-2645ad83f4c2": { "last_active": 2598826148 }},
+      "stream_descriptor": { "name": "devices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "8d466489-38af-4067-a6b8-2645ad83f4c2": { "last_active": 2598826148 }},
+      "stream_descriptor": { "name": "notifications" }
+    }
+  }
+]

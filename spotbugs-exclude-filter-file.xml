@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+  xmlns="https://github.com/spotbugs/filter/3.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+  <!-- examples: https://spotbugs.readthedocs.io/en/stable/filter.html#complete-example -->
+  <Match>
+    <Source name="~.*build/generated.*" />
+  </Match>
+  <Match>
+    <Package name="io.airbyte.workers.general.jmh_generated.*" />
+  </Match>
+  <Match>
+    <Package name="io.airbyte.api.client.*" />
+  </Match>
+  <!-- Suppress warning about use if InputStream#readObject. The usage is safe because it is not from an untrusted source. -->
+  <Match>
+    <Class name="io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
+    <Bug code="SECOBDES" />
+  </Match>
+
+</FindBugsFilter>

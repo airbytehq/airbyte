@@ -1,0 +1,70 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mongodb",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/mongodb",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Mongodb Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "user", "password", "auth_source"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "type": "string",
+        "description": "Host of a Mongo database to be replicated.",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "description": "Port of a Mongo database to be replicated.",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 27017,
+        "examples": ["27017"],
+        "order": 1
+      },
+      "database": {
+        "title": "Database name",
+        "type": "string",
+        "description": "Database to be replicated.",
+        "order": 2
+      },
+      "user": {
+        "title": "User",
+        "type": "string",
+        "description": "User",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Password",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "auth_source": {
+        "title": "Authentication source",
+        "type": "string",
+        "description": "Authentication source where user information is stored. See <a href=\"* [Authentication Source](https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.authSource)\"> the Mongo docs</a> for more info.",
+        "default": "admin",
+        "examples": ["admin"],
+        "order": 5
+      },
+      "replica_set": {
+        "title": "Replica Set",
+        "type": "string",
+        "description": "The name of the set to filter servers by, when connecting to a replica set (Under this condition, the 'TLS connection' value automatically becomes 'true'). See <a href=\"https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.replicaSet\"> the Mongo docs </a> for more info.",
+        "default": "",
+        "order": 6
+      },
+      "ssl": {
+        "title": "TLS connection",
+        "type": "boolean",
+        "description": "If this switch is enabled, TLS connections will be used to connect to MongoDB.",
+        "default": false,
+        "order": 7
+      }
+    }
+  }
+}

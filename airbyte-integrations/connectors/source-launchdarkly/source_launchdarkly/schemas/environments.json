@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "_pubnub": {
+      "type": ["null", "object"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "apiKey": {
+      "type": ["null", "string"]
+    },
+    "mobileKey": {
+      "type": ["null", "string"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "defaultTtl": {
+      "type": ["null", "integer"]
+    },
+    "secureMode": {
+      "type": ["null", "boolean"]
+    },
+    "defaultTrackEvents": {
+      "type": ["null", "boolean"]
+    },
+    "requireComments": {
+      "type": ["null", "boolean"]
+    },
+    "confirmChanges": {
+      "type": ["null", "boolean"]
+    },
+    "tags": {
+      "type": ["null", "array"]
+    },
+    "approvalSettings": {
+      "type": ["null", "object"]
+    }
+  }
+}

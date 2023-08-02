@@ -1,0 +1,14 @@
+# Top-level configs that apply to all profiles are set here
+config:
+  partial_parse: true
+  printer_width: 120
+  send_anonymous_usage_stats: false
+  use_colors: true
+
+normalize:
+  target: prod
+  outputs:
+    prod:
+#      type: "<bigquery | postgres | redshift | snowflake | other>"
+#      database-specific configuration here...
+

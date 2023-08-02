@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "task": {
+      "type": ["null", "string"]
+    },
+    "original_environment": {
+      "type": ["null", "string"]
+    },
+    "environment": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "statuses_url": {
+      "type": ["null", "string"]
+    },
+    "repository_url": {
+      "type": ["null", "string"]
+    },
+    "creator": {
+      "$ref": "user.json"
+    },
+    "sha": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "payload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transient_environment": {
+      "type": ["null", "boolean"]
+    },
+    "production_environment": {
+      "type": ["null", "boolean"]
+    },
+    "performed_via_github_app": {
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "type": "string"
+    }
+  }
+}

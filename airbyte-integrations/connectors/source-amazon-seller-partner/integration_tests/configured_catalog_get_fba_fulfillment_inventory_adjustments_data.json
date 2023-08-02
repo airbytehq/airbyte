@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA",
+        "json_schema": {
+          "title": "FBA Inventory Adjustments Report",
+          "description": "",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "adjusted-date": { "type": ["null", "string"] },
+            "transaction-item-id": { "type": ["null", "string"] },
+            "fnsku": { "type": ["null", "string"] },
+            "sku": { "type": ["null", "string"] },
+            "product-name": { "type": ["null", "string"] },
+            "fulfillment-center-id": { "type": ["null", "string"] },
+            "quantity": { "type": ["null", "string"] },
+            "reason": { "type": ["null", "string"] },
+            "disposition": { "type": ["null", "string"] },
+            "reconciled": { "type": ["null", "string"] },
+            "unreconciled": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

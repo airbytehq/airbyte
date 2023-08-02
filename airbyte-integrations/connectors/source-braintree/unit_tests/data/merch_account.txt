@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<merchant-accounts type="collection">
+    <current-page-number type="integer">1</current-page-number>
+    <page-size type="integer">20</page-size>
+    <total-items type="integer">1</total-items>
+    <merchant-account>
+        <status>active</status>
+        <id>airbyte</id>
+        <currency-iso-code>USD</currency-iso-code>
+        <default type="boolean">true</default>
+        <sub-merchant-account type="boolean">false</sub-merchant-account>
+    </merchant-account>
+</merchant-accounts>

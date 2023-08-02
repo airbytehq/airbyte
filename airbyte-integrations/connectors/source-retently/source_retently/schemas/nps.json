@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "score": {
+      "type": ["integer", "null"]
+    },
+    "scoreSum": {
+      "type": ["integer", "null"]
+    },
+    "metricsType": {
+      "type": ["string", "null"]
+    },
+    "promoters": {
+      "type": ["integer", "null"]
+    },
+    "passives": {
+      "type": ["integer", "null"]
+    },
+    "detractors": {
+      "type": ["integer", "null"]
+    },
+    "promotersCount": {
+      "type": ["integer", "null"]
+    },
+    "passivesCount": {
+      "type": ["integer", "null"]
+    },
+    "detractorsCount": {
+      "type": ["integer", "null"]
+    },
+    "totalResponses": {
+      "type": ["integer", "null"]
+    }
+  }
+}

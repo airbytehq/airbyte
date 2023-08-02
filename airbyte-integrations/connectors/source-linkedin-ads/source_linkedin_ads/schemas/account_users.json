@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "title": "AccountUsers",
+  "additionalProperties": true,
+  "properties": {
+    "account": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "user": {
+      "type": ["null", "string"]
+    }
+  }
+}

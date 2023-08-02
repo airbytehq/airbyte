@@ -1,0 +1,231 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/aws-datalake",
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AWS Datalake Destination Spec",
+    "type": "object",
+    "required": [
+      "credentials",
+      "region",
+      "bucket_name",
+      "lakeformation_database_name"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "aws_account_id": {
+        "type": "string",
+        "title": "AWS Account Id",
+        "description": "target aws account id",
+        "examples": ["111111111111"],
+        "order": 1
+      },
+      "credentials": {
+        "title": "Authentication mode",
+        "description": "Choose How to Authenticate to AWS.",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "IAM Role",
+            "required": ["role_arn", "credentials_title"],
+            "properties": {
+              "credentials_title": {
+                "type": "string",
+                "title": "Credentials Title",
+                "description": "Name of the credentials",
+                "const": "IAM Role",
+                "enum": ["IAM Role"],
+                "default": "IAM Role",
+                "order": 0
+              },
+              "role_arn": {
+                "title": "Target Role Arn",
+                "type": "string",
+                "description": "Will assume this role to write data to s3",
+                "airbyte_secret": false
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "IAM User",
+            "required": [
+              "credentials_title",
+              "aws_access_key_id",
+              "aws_secret_access_key"
+            ],
+            "properties": {
+              "credentials_title": {
+                "type": "string",
+                "title": "Credentials Title",
+                "description": "Name of the credentials",
+                "const": "IAM User",
+                "enum": ["IAM User"],
+                "default": "IAM User",
+                "order": 0
+              },
+              "aws_access_key_id": {
+                "title": "Access Key Id",
+                "type": "string",
+                "description": "AWS User Access Key Id",
+                "airbyte_secret": true
+              },
+              "aws_secret_access_key": {
+                "title": "Secret Access Key",
+                "type": "string",
+                "description": "Secret Access Key",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ],
+        "order": 2
+      },
+      "region": {
+        "title": "S3 Bucket Region",
+        "type": "string",
+        "default": "",
+        "description": "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
+        "enum": [
+          "",
+          "us-east-1",
+          "us-east-2",
+          "us-west-1",
+          "us-west-2",
+          "af-south-1",
+          "ap-east-1",
+          "ap-south-1",
+          "ap-northeast-1",
+          "ap-northeast-2",
+          "ap-northeast-3",
+          "ap-southeast-1",
+          "ap-southeast-2",
+          "ca-central-1",
+          "cn-north-1",
+          "cn-northwest-1",
+          "eu-central-1",
+          "eu-north-1",
+          "eu-south-1",
+          "eu-west-1",
+          "eu-west-2",
+          "eu-west-3",
+          "sa-east-1",
+          "me-south-1",
+          "us-gov-east-1",
+          "us-gov-west-1"
+        ],
+        "order": 3
+      },
+      "bucket_name": {
+        "title": "S3 Bucket Name",
+        "type": "string",
+        "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
+        "order": 4
+      },
+      "bucket_prefix": {
+        "title": "Target S3 Bucket Prefix",
+        "type": "string",
+        "description": "S3 prefix",
+        "order": 5
+      },
+      "lakeformation_database_name": {
+        "title": "Lake Formation Database Name",
+        "type": "string",
+        "description": "The default database this destination will use to create tables in per stream. Can be changed per connection by customizing the namespace.",
+        "order": 6
+      },
+      "lakeformation_database_default_tag_key": {
+        "title": "Lake Formation Database Tag Key",
+        "description": "Add a default tag key to databases created by this destination",
+        "examples": ["pii_level"],
+        "type": "string",
+        "order": 7
+      },
+      "lakeformation_database_default_tag_values": {
+        "title": "Lake Formation Database Tag Values",
+        "description": "Add default values for the `Tag Key` to databases created by this destination. Comma separate for multiple values.",
+        "examples": ["private,public"],
+        "type": "string",
+        "order": 8
+      },
+      "lakeformation_governed_tables": {
+        "title": "Lake Formation Governed Tables",
+        "description": "Whether to create tables as LF governed tables.",
+        "type": "boolean",
+        "default": false,
+        "order": 9
+      },
+      "format": {
+        "title": "Output Format *",
+        "type": "object",
+        "description": "Format of the data output.",
+        "oneOf": [
+          {
+            "title": "JSON Lines: Newline-delimited JSON",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "title": "Format Type *",
+                "type": "string",
+                "enum": ["JSONL"],
+                "default": "JSONL"
+              },
+              "compression_codec": {
+                "title": "Compression Codec (Optional)",
+                "description": "The compression algorithm used to compress data.",
+                "type": "string",
+                "enum": ["UNCOMPRESSED", "GZIP"],
+                "default": "UNCOMPRESSED"
+              }
+            }
+          },
+          {
+            "title": "Parquet: Columnar Storage",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "title": "Format Type *",
+                "type": "string",
+                "enum": ["Parquet"],
+                "default": "Parquet"
+              },
+              "compression_codec": {
+                "title": "Compression Codec (Optional)",
+                "description": "The compression algorithm used to compress data.",
+                "type": "string",
+                "enum": ["UNCOMPRESSED", "SNAPPY", "GZIP", "ZSTD"],
+                "default": "SNAPPY"
+              }
+            }
+          }
+        ],
+        "order": 10
+      },
+      "partitioning": {
+        "title": "Choose how to partition data",
+        "description": "Partition data by cursor fields when a cursor field is a date",
+        "type": "string",
+        "enum": [
+          "NO PARTITIONING",
+          "DATE",
+          "YEAR",
+          "MONTH",
+          "DAY",
+          "YEAR/MONTH",
+          "YEAR/MONTH/DAY"
+        ],
+        "default": "NO PARTITIONING",
+        "order": 11
+      },
+      "glue_catalog_float_as_decimal": {
+        "title": "Glue Catalog: Float as Decimal",
+        "description": "Cast float/double as decimal(38,18). This can help achieve higher accuracy and represent numbers correctly as received from the source.",
+        "type": "boolean",
+        "default": false,
+        "order": 12
+      }
+    }
+  }
+}

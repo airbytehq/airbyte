@@ -1,0 +1,193 @@
+{
+            "streams": [
+                        {
+                                    "stream": {
+                                                "name": "ad_account",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh"
+                                                ]
+                                    },
+                                    "sync_mode": "full_refresh",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ad_sets",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ad_creatives",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh"
+                                                ]
+                                    },
+                                    "sync_mode": "full_refresh",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_age_and_gender",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_country",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_region",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_dma",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_platform_and_device",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "ads_insights_action_type",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "campaigns",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "custom_conversions",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh"
+                                                ]
+                                    },
+                                    "sync_mode": "full_refresh",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "images",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "videos",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        },
+                        {
+                                    "stream": {
+                                                "name": "activities",
+                                                "json_schema": {},
+                                                "supported_sync_modes": [
+                                                            "full_refresh",
+                                                            "incremental"
+                                                ]
+                                    },
+                                    "sync_mode": "incremental",
+                                    "destination_sync_mode": "append"
+                        }
+            ]
+}

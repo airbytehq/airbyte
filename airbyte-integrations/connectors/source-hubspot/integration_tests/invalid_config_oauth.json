@@ -1,0 +1,9 @@
+{
+  "start_date": "2021-05-30T00:00:00Z",
+  "credentials": {
+    "credentials_title": "OAuth Credentials",
+    "client_id": "fake-client-id-not1234-id12345",
+    "client_secret": "fake-client-secret-not1234-secret12345",
+    "refresh_token": "fake-refresh-token-not1234-token12345"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "integrationTestFile",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["string", "null"]
+            },
+            "key": {
+              "type": ["string", "null"]
+            },
+            "new_confirmed": {
+              "type": ["number", "null"]
+            },
+            "new_deceased": {
+              "type": ["number", "null"]
+            },
+            "new_recovered": {
+              "type": ["number", "null"]
+            },
+            "new_tested": {
+              "type": ["number", "null"]
+            },
+            "total_confirmed": {
+              "type": ["number", "null"]
+            },
+            "total_deceased": {
+              "type": ["number", "null"]
+            },
+            "total_recovered": {
+              "type": ["number", "null"]
+            },
+            "total_tested": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

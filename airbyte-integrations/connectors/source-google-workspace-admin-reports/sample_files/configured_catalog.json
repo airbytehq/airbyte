@@ -1,0 +1,1008 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "admin",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqueQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqueQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "callerType": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                }
+              },
+              "required": ["callerType", "email", "profileId", "key"]
+            },
+            "ownerDomain": {
+              "type": "string"
+            },
+            "ipAddress": {
+              "type": "string"
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            },
+                            "intValue": {
+                              "type": "string"
+                            },
+                            "boolValue": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value", "intValue", "boolValue"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "drive",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "callerType": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                }
+              },
+              "required": ["callerType", "email", "profileId", "key"]
+            },
+            "ownerDomain": {
+              "type": "string"
+            },
+            "ipAddress": {
+              "type": "string"
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "boolValue": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": ["name", "boolValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "boolValue": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": ["name", "boolValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "logins",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqueQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqueQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "etag": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                }
+              },
+              "required": ["email", "profileId"]
+            },
+            "ipAddress": {
+              "type": "string"
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "multiValue": {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["name", "multiValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "boolValue": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": ["name", "boolValue"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "meet",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqueQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqueQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "etag": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "callerType": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                }
+              },
+              "required": ["callerType", "email", "profileId"]
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "intValue": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "intValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "mobile",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqueQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqueQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "etag": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "callerType": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                }
+              },
+              "required": ["callerType", "email", "profileId"]
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "intValue": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "intValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "oauth_tokens",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string"
+                },
+                "uniqueQualifier": {
+                  "type": "string"
+                },
+                "applicationName": {
+                  "type": "string"
+                },
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "time",
+                "uniqueQualifier",
+                "applicationName",
+                "customerId"
+              ]
+            },
+            "etag": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "profileId": {
+                  "type": "string"
+                }
+              },
+              "required": ["email", "profileId"]
+            },
+            "ipAddress": {
+              "type": "string"
+            },
+            "events": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "value"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "multiMessageValue": {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "parameter": {
+                                      "type": "array",
+                                      "items": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": ["name", "value"]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "multiValue": {
+                                              "type": "array",
+                                              "items": [
+                                                {
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": ["name", "multiValue"]
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": ["parameter"]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "parameter": {
+                                      "type": "array",
+                                      "items": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": ["name", "value"]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "multiValue": {
+                                              "type": "array",
+                                              "items": [
+                                                {
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": ["name", "multiValue"]
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": ["parameter"]
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["name", "multiMessageValue"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "multiValue": {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["name", "multiValue"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["name", "parameters"]
+                }
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

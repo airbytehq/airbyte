@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Plan",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "name": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "invoice_name": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "description": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "price": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "period": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "period_unit": {
+      "type": ["string", "null"]
+    },
+    "trial_period": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "trial_period_unit": {
+      "type": ["string", "null"]
+    },
+    "trial_end_action": {
+      "type": ["string", "null"]
+    },
+    "pricing_model": {
+      "type": ["string", "null"]
+    },
+    "free_quantity": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "setup_cost": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "archived_at": {
+      "type": ["integer", "null"]
+    },
+    "billing_cycles": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "redirect_url": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "enabled_in_hosted_pages": {
+      "type": ["boolean", "null"]
+    },
+    "enabled_in_portal": {
+      "type": ["boolean", "null"]
+    },
+    "addon_applicability": {
+      "type": ["string", "null"]
+    },
+    "tax_code": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "taxjar_product_code": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "avalara_sale_type": {
+      "type": ["string", "null"]
+    },
+    "avalara_transaction_type": {
+      "type": ["integer", "null"]
+    },
+    "avalara_service_type": {
+      "type": ["integer", "null"]
+    },
+    "sku": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "accounting_code": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "accounting_category1": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "accounting_category2": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "accounting_category3": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "accounting_category4": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "is_shippable": {
+      "type": ["boolean", "null"]
+    },
+    "shipping_frequency_period": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "shipping_frequency_period_unit": {
+      "type": ["string", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "giftable": {
+      "type": ["boolean", "null"]
+    },
+    "claim_url": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "free_quantity_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "price_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "invoice_notes": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    },
+    "taxable": {
+      "type": ["boolean", "null"]
+    },
+    "tax_profile_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "meta_data": {
+      "type": ["object", "null"],
+      "properties": {}
+    },
+    "show_description_in_invoices": {
+      "type": ["boolean", "null"]
+    },
+    "show_description_in_quotes": {
+      "type": ["boolean", "null"]
+    },
+    "tiers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "starting_unit": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "ending_unit": {
+            "type": ["integer", "null"]
+          },
+          "price": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "starting_unit_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "ending_unit_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          },
+          "price_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "applicable_addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
+    },
+    "attached_addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "quantity": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "billing_cycles": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "type": {
+            "type": ["string", "null"]
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "event_based_addons": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "quantity": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "on_event": {
+            "type": ["string", "null"]
+          },
+          "charge_once": {
+            "type": ["boolean", "null"]
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"],
+            "maxLength": 33
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

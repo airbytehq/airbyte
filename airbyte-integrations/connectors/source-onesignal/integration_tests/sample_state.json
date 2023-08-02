@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "fake_app_id": { "last_active": 1598826147 }},
+      "stream_descriptor": { "name": "devices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "fake_app_id": { "last_active": 1598826147 }},
+      "stream_descriptor": { "name": "notifications" }
+    }
+  }
+]

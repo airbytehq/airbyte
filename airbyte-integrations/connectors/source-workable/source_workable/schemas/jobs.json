@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "full_title": {
+      "type": ["null", "string"]
+    },
+    "shortcode": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "department": {
+      "type": ["null", "string"]
+    },
+    "department_hierarchy": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "minItems": 0
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "application_url": {
+      "type": ["null", "string"]
+    },
+    "shortlink": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "location_str": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "region": {
+          "type": ["null", "string"]
+        },
+        "region_code": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "zip_code": {
+          "type": ["null", "string"]
+        },
+        "telecommuting": {
+          "type": "boolean"
+        }
+      }
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "avatar_hash": {
+          "type": "string"
+        },
+        "status_text": {
+          "type": "string"
+        },
+        "status_emoji": {
+          "type": "string"
+        },
+        "real_name": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "real_name_normalized": {
+          "type": "string"
+        },
+        "display_name_normalized": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "image_24": {
+          "type": "string"
+        },
+        "image_32": {
+          "type": "string"
+        },
+        "image_48": {
+          "type": "string"
+        },
+        "image_72": {
+          "type": "string"
+        },
+        "image_192": {
+          "type": "string"
+        },
+        "image_512": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "image_1024": {
+          "type": "string"
+        },
+        "image_original": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "skype": {
+          "type": "string"
+        }
+      }
+    },
+    "team_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "color": {
+      "type": "string"
+    },
+    "real_name": {
+      "type": "string"
+    },
+    "tz": {
+      "type": "string"
+    },
+    "tz_label": {
+      "type": "string"
+    },
+    "tz_offset": {
+      "type": "integer"
+    },
+    "is_admin": {
+      "type": "boolean"
+    },
+    "is_owner": {
+      "type": "boolean"
+    },
+    "is_primary_owner": {
+      "type": "boolean"
+    },
+    "is_restricted": {
+      "type": "boolean"
+    },
+    "is_ultra_restricted": {
+      "type": "boolean"
+    },
+    "is_bot": {
+      "type": "boolean"
+    },
+    "updated": {
+      "type": "integer"
+    },
+    "is_app_user": {
+      "type": "boolean"
+    },
+    "has_2fa": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "default": 0
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "short_name": {
+      "type": "string",
+      "default": ""
+    },
+    "strategy": {
+      "type": ["null", "string"],
+      "default": null
+    },
+    "organization_id": {
+      "type": "integer",
+      "default": 0
+    },
+    "links": {
+      "type": "object",
+      "default": {},
+      "properties": {
+        "roles": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "policies": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "integer",
+            "default": 0
+          }
+        },
+        "domain": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "integer",
+            "default": 0
+          }
+        },
+        "supported_role": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    }
+  }
+}

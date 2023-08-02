@@ -1,0 +1,850 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "business_phones": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "given_name": {
+              "type": ["null", "string"]
+            },
+            "job_title": {
+              "type": ["null", "string"]
+            },
+            "mail": {
+              "type": ["null", "string"]
+            },
+            "mobile_phone": {
+              "type": ["null", "string"]
+            },
+            "office_location": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "surname": {
+              "type": ["null", "string"]
+            },
+            "user_principal_name": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "deleted_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "classification": {
+              "type": ["null", "string"]
+            },
+            "created_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "creation_options": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "expiration_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "group_types": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "is_assignable_to_role": {
+              "type": ["null", "boolean"]
+            },
+            "mail": {
+              "type": ["null", "string"]
+            },
+            "mail_enabled": {
+              "type": ["null", "boolean"]
+            },
+            "mail_nickname": {
+              "type": ["null", "string"]
+            },
+            "membership_rule": {
+              "type": ["null", "string"]
+            },
+            "membership_rule_processing_state": {
+              "type": ["null", "string"]
+            },
+            "onPremises_domain_name": {
+              "type": ["null", "string"]
+            },
+            "on_premises_last_sync_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "on_premises_net_bios_name": {
+              "type": ["null", "string"]
+            },
+            "on_premises_sam_account_name": {
+              "type": ["null", "string"]
+            },
+            "on_premises_security_identifier": {
+              "type": ["null", "string"]
+            },
+            "on_premises_sync_enabled": {
+              "type": ["null", "boolean"]
+            },
+            "preferred_data_location": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "proxy_addresses": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "renewed_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "resource_behavior_options": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "resource_provisioning_options": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "security_enabled": {
+              "type": ["null", "boolean"]
+            },
+            "security_edentifier": {
+              "type": ["null", "string"]
+            },
+            "theme": {
+              "type": ["null", "string"]
+            },
+            "visibility": {
+              "type": ["null", "string"]
+            },
+            "on_premises_provisioning_errors": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_members",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "business_phones": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "given_name": {
+              "type": ["null", "string"]
+            },
+            "job_title": {
+              "type": ["null", "string"]
+            },
+            "mail": {
+              "type": ["null", "string"]
+            },
+            "mobile_phone": {
+              "type": ["null", "string"]
+            },
+            "office_location": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "surname": {
+              "type": ["null", "string"]
+            },
+            "user_principal_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_owners",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "group_id": {
+              "type": ["null", "string"]
+            },
+            "business_phones": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "given_name": {
+              "type": ["null", "string"]
+            },
+            "job_title": {
+              "type": ["null", "string"]
+            },
+            "mail": {
+              "type": ["null", "string"]
+            },
+            "mobile_phone": {
+              "type": ["null", "string"]
+            },
+            "office_location": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "surname": {
+              "type": ["null", "string"]
+            },
+            "user_principal_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channels",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channel_members",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "roles": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "user_id": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"]
+            },
+            "channel_id": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channel_tabs",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "group_id": {
+              "type": ["null", "string"]
+            },
+            "channel_id": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            },
+            "sort_order_index": {
+              "type": ["null", "string"]
+            },
+            "teams_app": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "display_name": {
+                  "type": ["null", "string"]
+                },
+                "distribution_method": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "configuration": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "entity_id": {
+                  "type": ["null", "string"]
+                },
+                "content_url": {
+                  "type": ["null", "string"]
+                },
+                "remove_url": {
+                  "type": ["null", "string"]
+                },
+                "website_url": {
+                  "type": ["null", "string"]
+                },
+                "wiki_tab_id": {
+                  "type": ["null", "integer"]
+                },
+                "wiki_default_tab": {
+                  "type": ["null", "boolean"]
+                },
+                "has_content": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "group_id": {
+              "type": ["null", "string"]
+            },
+            "channel_id": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            },
+            "sort_order_index": {
+              "type": ["null", "string"]
+            },
+            "teams_app": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "display_name": {
+                  "type": ["null", "string"]
+                },
+                "distribution_method": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "configuration": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "entity_id": {
+                  "type": ["null", "string"]
+                },
+                "content_url": {
+                  "type": ["null", "string"]
+                },
+                "remove_url": {
+                  "type": ["null", "string"]
+                },
+                "website_url": {
+                  "type": ["null", "string"]
+                },
+                "wiki_tab_id": {
+                  "type": ["null", "integer"]
+                },
+                "wiki_default_tab": {
+                  "type": ["null", "boolean"]
+                },
+                "has_content": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversation_threads",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "group_id": {
+              "type": ["null", "string"]
+            },
+            "conversation_id": {
+              "type": ["null", "string"]
+            },
+            "topic": {
+              "type": ["null", "string"]
+            },
+            "has_attachments": {
+              "type": ["null", "boolean"]
+            },
+            "last_delivered_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "unique_senders": {
+              "type": ["null", "string"]
+            },
+            "preview": {
+              "type": ["null", "string"]
+            },
+            "is_locked": {
+              "type": ["null", "boolean"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversation_posts",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "thread_id": {
+              "type": ["null", "string"]
+            },
+            "conversation_id": {
+              "type": ["null", "string"]
+            },
+            "created_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "last_modified_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "change_key": {
+              "type": ["null", "string"]
+            },
+            "categories": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "received_date_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "has_attachments": {
+              "type": ["null", "boolean"]
+            },
+            "body": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "content_type": {
+                  "type": ["null", "string"]
+                },
+                "content": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "from": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "emailAddress": {
+                  "type": ["null", "object"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "address": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "sender": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "emailAddress": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "address": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "team_drives",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "last_modified_date_time": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            },
+            "drive_type": {
+              "type": ["null", "string"]
+            },
+            "created_by": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "user": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "display_name": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "owner": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "group": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "email": {
+                      "type": ["null", "string"]
+                    },
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "display_name": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "quota": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "deleted": {
+                  "type": ["null", "integer"]
+                },
+                "remaining": {
+                  "type": ["null", "number"]
+                },
+                "state": {
+                  "type": ["null", "string"]
+                },
+                "total": {
+                  "type": ["null", "number"]
+                },
+                "used": {
+                  "type": ["null", "integer"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "team_device_usage_report",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "report_refresh_date": {
+              "type": ["null", "string"]
+            },
+            "user_principal_name": {
+              "type": ["null", "string"]
+            },
+            "last_activity_date": {
+              "type": ["null", "string"]
+            },
+            "is_deleted": {
+              "type": ["null", "string"]
+            },
+            "deleted_date": {
+              "type": ["null", "string"]
+            },
+            "used_web": {
+              "type": ["null", "string"]
+            },
+            "used_windows_phone": {
+              "type": ["null", "string"]
+            },
+            "used_i_os": {
+              "type": ["null", "string"]
+            },
+            "used_mac": {
+              "type": ["null", "string"]
+            },
+            "used_android_phone": {
+              "type": ["null", "string"]
+            },
+            "used_windows": {
+              "type": ["null", "string"]
+            },
+            "report_period": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

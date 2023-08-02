@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "insertedAt": {
+      "type": ["null", "integer"]
+    },
+    "updatedAt": {
+      "type": ["null", "integer"]
+    },
+    "personaTagIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "contactListIds": {
+      "type": ["null", "object"],
+      "properties": {
+        "enrolled": {
+          "type": ["null", "integer"]
+        },
+        "active": {
+          "type": ["null", "integer"]
+        },
+        "steps": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "lastUpdatedByUserId": {
+      "type" : ["null", "integer"]
+    },
+    "contactCounts": {
+      "type": ["null", "object"],
+      "properties" : {
+        "active": {
+          "type" : ["null", "integer"]
+        },
+        "enrolled": {
+          "type" : ["null", "integer"]
+        }
+      }
+    },
+    "description": {
+      "type" : ["null", "string"]
+    },
+    "originalAuthorUserId": {
+      "type" : ["null", "integer"]
+    },
+    "migrationStatus": {
+      "type": ["null", "object"],
+      "properties" : {
+        "enrollmentMigrationStatus": {
+          "type" : ["null", "string"]
+        },
+        "enrollmentMigrationTimestamp": {
+          "type" : ["null", "integer"]
+        },
+        "flowId": {
+          "type" : ["null", "integer"]
+        },
+        "lastSuccessfulMigrationTimestamp": {
+          "type" : ["null", "integer"]
+        },
+        "migrationStatus": {
+          "type" : ["null", "string"]
+        },
+        "platformOwnsActions": {
+          "type" : ["null", "boolean"]
+        },
+        "portalId": {
+          "type" : ["null", "integer"]
+        },
+        "workflowId": {
+          "type" : ["null", "integer"]
+        }
+      }
+    },
+    "updateSource": {
+      "type": ["null", "object"],
+      "properties" : {
+        "sourceApplication": {
+          "properties" : {
+          "serviceName": {"type" : ["null", "string"]},
+          "source": {"type" : ["null", "string"]}
+          }
+        },
+        "updatedAt": {"type" : ["null", "integer"]},
+        "updatedByUser": {
+          "properties" : {
+            "userEmail": {"type" : ["null", "string"]},
+            "userId": {"type" : ["null", "integer"]}
+          }
+        }
+      }
+    },
+    "creationSource": {
+      "type": ["null", "object"],
+      "properties" : {
+        "clonedFromWorkflowId": {
+          "type" : ["null", "integer"]
+        },
+        "createdAt": {
+          "type" : ["null", "integer"]
+        },
+        "createdByUser": {
+          "properties" : {
+            "userEmail": {"type" : ["null", "string"]},
+            "userId": {"type" : ["null", "integer"]}
+          }
+        },
+        "sourceApplication": {
+          "properties" : {
+            "serviceName": {"type" : ["null", "string"]},
+            "source": {"type" : ["null", "string"]}
+          }
+        }
+      }
+    },
+    "portalId": {
+      "type" : ["null", "integer"]
+    }
+  }
+}

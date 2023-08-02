@@ -1,0 +1,34 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Klarna Spec
+  type: object
+  required:
+    - region
+    - playground
+    - username
+    - password
+  additionalProperties: true
+  properties:
+    region:
+      title: Region
+      type: string
+      enum:
+        - eu
+        - us
+        - oc
+      description: Base url region (For playground eu https://docs.klarna.com/klarna-payments/api/payments-api/#tag/API-URLs). Supported 'eu', 'us', 'oc'
+    playground:
+      title: Playground
+      type: boolean
+      description: Propertie defining if connector is used against playground or production environment
+      default: false
+    username:
+      title: Username
+      type: string
+      description: Consists of your Merchant ID (eid) - a unique number that identifies your e-store, combined with a random string (https://developers.klarna.com/api/#authentication)
+    password:
+      title: Password
+      type: string
+      description: A string which is associated with your Merchant ID and is used to authorize use of Klarna's APIs (https://developers.klarna.com/api/#authentication)
+      airbyte_secret: true

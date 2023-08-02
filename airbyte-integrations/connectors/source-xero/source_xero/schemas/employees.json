@@ -1,0 +1,25 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "FirstName": {
+      "type": ["null", "string"]
+    },
+    "LastName": {
+      "type": ["null", "string"]
+    },
+    "ExternalLink": {
+      "type": ["null", "string"]
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "EmployeeID": {
+      "type": ["string"]
+    }
+  },
+  "additionalProperties": true
+}

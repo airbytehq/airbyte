@@ -1,0 +1,61 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "shared_tickets": {
+      "type": ["null", "boolean"]
+    },
+    "organization_fields": {
+      "type": ["null", "object"],
+      "properties": {},
+      "additionalProperties": true
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "domain_names": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "shared_comments": {
+      "type": ["null", "boolean"]
+    },
+    "details": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

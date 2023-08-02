@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "RELATIONSHIP_ID": {
+      "type": "integer"
+    },
+    "FORWARD_TITLE": {
+      "type": ["string", "null"]
+    },
+    "FORWARD": {
+      "type": ["string", "null"]
+    },
+    "REVERSE_TITLE": {
+      "type": ["string", "null"]
+    },
+    "REVERSE": {
+      "type": ["string", "null"]
+    },
+    "FOR_CONTACTS": {
+      "type": ["boolean", "null"]
+    },
+    "FOR_ORGANISATIONS": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

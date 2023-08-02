@@ -1,0 +1,9 @@
+{
+  "base_url": "https://dev-your-org.us.auth0.com",
+  "credentials": {
+    "auth_type": "oauth2_confidential_application",
+    "client_secret": "top-secret",
+    "client_id": "click-copy-icon-from-applications-page",
+    "audience": "https://dev-your-org.us.auth0.com/api/v2/"
+  }
+}

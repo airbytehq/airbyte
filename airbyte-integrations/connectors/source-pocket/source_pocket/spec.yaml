@@ -1,0 +1,87 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/pocket
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Pocket Spec
+  type: object
+  required:
+    - consumer_key
+    - access_token
+  additionalProperties: true
+  properties:
+    consumer_key:
+      type: string
+      title: Consumer Key
+      description: Your application's Consumer Key.
+      airbyte_secret: true
+      order: 0
+    access_token:
+      type: string
+      title: Access Token
+      description: The user's Pocket access token.
+      airbyte_secret: true
+      order: 1
+    state:
+      type: string
+      title: State
+      description: Select the state of the items to retrieve.
+      order: 2
+      enum:
+        - unread
+        - archive
+        - all
+    favorite:
+      type: boolean
+      title: Is Favorite?
+      description: Retrieve only favorited items.
+      default: false
+      order: 3
+    tag:
+      type: string
+      title: Tag Name
+      description: Return only items tagged with this tag name. Use _untagged_ for retrieving only untagged items.
+      order: 4
+    content_type:
+      type: string
+      title: Content Type
+      description: Select the content type of the items to retrieve.
+      order: 5
+      enum:
+        - article
+        - video
+        - image
+    sort:
+      type: string
+      title: Sort By
+      description: Sort retrieved items by the given criteria.
+      order: 6
+      enum:
+        - newest
+        - oldest
+        - title
+        - site
+    detail_type:
+      type: string
+      title: Detail Type
+      description: Select the granularity of the information about each item.
+      order: 7
+      enum:
+        - simple
+        - complete
+    search:
+      type: string
+      title: Search Query
+      description: Only return items whose title or url contain the `search` string.
+      order: 8
+    domain:
+      type: string
+      title: Domain
+      description: Only return items from a particular `domain`.
+      order: 9
+    since:
+      type: string
+      title: Since
+      description: Only return items modified since the given timestamp.
+      pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+      examples:
+        - "2022-10-20 14:14:14"
+      order: 10

@@ -1,0 +1,154 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-google-search-console:dev
+test_strictness_level: "high"
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_google_search_console/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/service_account_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
+        timeout_seconds: 1800
+        empty_streams:
+          - name: search_analytics_page_report
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_keyword_site_report_by_page
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_keyword_page_report
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_site_report_by_page
+            bypass_reason: "Fast changing data"
+          - name: search_analytics_site_report_by_site
+            bypass_reason: "Fast changing data"
+        ignored_fields:
+          sitemaps:
+            - name: lastDownloaded
+              bypass_reason: "URL changes upon each request for privacy/security"
+            - name: contents/0/submitted
+              bypass_reason: "URL changes upon each request for privacy/security"
+          search_analytics_by_date:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_country:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: country
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_device:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: device
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_page:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: page
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_query:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: query
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_all_fields:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: query
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: page
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: device
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: country
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          custom_dimensions:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: country
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: device
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog.json"
+        timeout_seconds: 1800
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        timeout_seconds: 1800
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

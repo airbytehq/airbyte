@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "starting_balance": {
+      "type": "number"
+    },
+    "ending_balance": {
+      "type": "number"
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "block_expiry_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "entry_type": {
+      "type": "string"
+    },
+    "new_block_expiry_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "credit_block_per_unit_cost_basis": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "credit_block_id": {
+      "type": ["null", "string"]
+    }
+  },
+  "required": [
+    "id",
+    "starting_balance",
+    "ending_balance",
+    "amount",
+    "created_at",
+    "customer_id",
+    "entry_type",
+    "credit_block_per_unit_cost_basis",
+    "description",
+    "credit_block_id"
+  ]
+}

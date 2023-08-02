@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "title": "Creatives",
+  "additionalProperties": true,
+  "properties": {
+    "servingHoldReasons": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
+    },
+    "lastModifiedAt": {
+      "type": ["null", "integer"]
+    },
+    "lastModifiedBy": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "object"]
+    },
+    "createdAt": {
+      "type": ["null", "integer"]
+    },
+    "isTest": {
+      "type": ["null", "boolean"]
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "review": {
+      "type": ["null", "object"]
+    },
+    "isServing": {
+      "type": ["null", "boolean"]
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "intendedStatus": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": ["null", "string"]
+    }
+  }
+}

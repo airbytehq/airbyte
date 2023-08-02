@@ -1,0 +1,362 @@
+# Configuration for connection poke_to_pg
+definition_type: connection
+resource_name: poke_to_pg
+source_configuration_path: TO_UPDATE_FROM_TEST
+destination_configuration_path: TO_UPDATE_FROM_TEST
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+  status: active # REQUIRED | string | Allowed values: active, inactive, deprecated
+  skip_reset: false # OPTIONAL | boolean | Flag to check if the connection should be reset after a connection update
+  namespace_definition: source # OPTIONAL | string | Allowed values: source, destination, customformat
+  namespace_format: "${SOURCE_NAMESPACE}" # OPTIONAL | string | Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+  prefix: "" # REQUIRED | Prefix that will be prepended to the name of each stream when it is written to the destination
+  resource_requirements: # OPTIONAL | object | Resource requirements to run workers (blank for unbounded allocations)
+    cpu_limit: "" # OPTIONAL
+    cpu_request: "" # OPTIONAL
+    memory_limit: "" # OPTIONAL
+    memory_request: "" # OPTIONAL
+  schedule_type: basic
+  schedule_data:
+    basic_schedule:
+      time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
+      units: 1 # REQUIRED | integer
+  sync_catalog: # OPTIONAL | object | 🚨 ONLY edit streams.config, streams.stream should not be edited as schema cannot be changed.
+    streams:
+      - config:
+          alias_name: pokemon
+          cursor_field: []
+          destination_sync_mode: append
+          primary_key: []
+          selected: true
+          sync_mode: full_refresh
+        stream:
+          default_cursor_field: []
+          json_schema:
+            $schema: http://json-schema.org/draft-07/schema#
+            properties:
+              abilities:
+                items:
+                  properties:
+                    ability:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    is_hidden:
+                      type:
+                        - "null"
+                        - boolean
+                    slot:
+                      type:
+                        - "null"
+                        - integer
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              base_experience:
+                type:
+                  - "null"
+                  - integer
+              forms:
+                items:
+                  properties:
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      type:
+                        - "null"
+                        - string
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              game_indices:
+                items:
+                  properties:
+                    game_index:
+                      type:
+                        - "null"
+                        - integer
+                    version:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              height:
+                type:
+                  - "null"
+                  - integer
+              held_items:
+                items:
+                  properties:
+                    item:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    version_details:
+                      items:
+                        properties:
+                          rarity:
+                            type:
+                              - "null"
+                              - integer
+                          version:
+                            properties:
+                              name:
+                                type:
+                                  - "null"
+                                  - string
+                              url:
+                                type:
+                                  - "null"
+                                  - string
+                            type:
+                              - "null"
+                              - object
+                        type:
+                          - "null"
+                          - object
+                      type:
+                        - "null"
+                        - array
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              id:
+                type:
+                  - "null"
+                  - integer
+              "is_default ":
+                type:
+                  - "null"
+                  - boolean
+              location_area_encounters:
+                type:
+                  - "null"
+                  - string
+              moves:
+                items:
+                  properties:
+                    move:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    version_group_details:
+                      items:
+                        properties:
+                          level_learned_at:
+                            type:
+                              - "null"
+                              - integer
+                          move_learn_method:
+                            properties:
+                              name:
+                                type:
+                                  - "null"
+                                  - string
+                              url:
+                                type:
+                                  - "null"
+                                  - string
+                            type:
+                              - "null"
+                              - object
+                          version_group:
+                            properties:
+                              name:
+                                type:
+                                  - "null"
+                                  - string
+                              url:
+                                type:
+                                  - "null"
+                                  - string
+                            type:
+                              - "null"
+                              - object
+                        type:
+                          - "null"
+                          - object
+                      type:
+                        - "null"
+                        - array
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              name:
+                type:
+                  - "null"
+                  - string
+              order:
+                type:
+                  - "null"
+                  - integer
+              species:
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+              sprites:
+                properties:
+                  back_default:
+                    type:
+                      - "null"
+                      - string
+                  back_female:
+                    type:
+                      - "null"
+                      - string
+                  back_shiny:
+                    type:
+                      - "null"
+                      - string
+                  back_shiny_female:
+                    type:
+                      - "null"
+                      - string
+                  front_default:
+                    type:
+                      - "null"
+                      - string
+                  front_female:
+                    type:
+                      - "null"
+                      - string
+                  front_shiny:
+                    type:
+                      - "null"
+                      - string
+                  front_shiny_female:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+              stats:
+                items:
+                  properties:
+                    base_stat:
+                      type:
+                        - "null"
+                        - integer
+                    effort:
+                      type:
+                        - "null"
+                        - integer
+                    stat:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              types:
+                items:
+                  properties:
+                    slot:
+                      type:
+                        - "null"
+                        - integer
+                    type:
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              weight:
+                type:
+                  - "null"
+                  - integer
+            type: object
+          name: pokemon
+          source_defined_primary_key: []
+          supported_sync_modes:
+            - full_refresh

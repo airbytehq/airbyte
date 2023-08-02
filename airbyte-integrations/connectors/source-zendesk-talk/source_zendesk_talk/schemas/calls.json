@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": ["null", "integer"]
+    },
+    "call_charge": {
+      "type": ["null", "string"]
+    },
+    "call_group_id": {
+      "type": ["null", "integer"]
+    },
+    "call_recording_consent": {
+      "type": ["null", "string"]
+    },
+    "call_recording_consent_action": {
+      "type": ["null", "string"]
+    },
+    "call_recording_consent_keypress": {
+      "type": ["null", "string"]
+    },
+    "callback": {
+      "type": ["null", "boolean"]
+    },
+    "callback_source": {
+      "type": ["null", "string"]
+    },
+    "completion_status": {
+      "type": ["null", "string"]
+    },
+    "consultation_time": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "customer_requested_voicemail": {
+      "type": ["null", "boolean"]
+    },
+    "default_group": {
+      "type": ["null", "boolean"]
+    },
+    "direction": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "integer"]
+    },
+    "exceeded_queue_time": {
+      "type": ["null", "boolean"]
+    },
+    "hold_time": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "ivr_action": {
+      "type": ["null", "string"]
+    },
+    "ivr_destination_group_name": {
+      "type": ["null", "string"]
+    },
+    "ivr_hops": {
+      "type": ["null", "integer"]
+    },
+    "ivr_routed_to": {
+      "type": ["null", "string"]
+    },
+    "ivr_time_spent": {
+      "type": ["null", "integer"]
+    },
+    "minutes_billed": {
+      "type": ["null", "integer"]
+    },
+    "not_recording_time": {
+      "type": ["null", "integer"]
+    },
+    "outside_business_hours": {
+      "type": ["null", "boolean"]
+    },
+    "overflowed": {
+      "type": ["null", "boolean"]
+    },
+    "overflowed_to": {
+      "type": ["null", "string"]
+    },
+    "phone_number": {
+      "type": ["null", "string"]
+    },
+    "phone_number_id": {
+      "type": ["null", "integer"]
+    },
+    "quality_issues": {
+      "type": ["null", "array"]
+    },
+    "recording_control_interactions": {
+      "type": ["null", "integer"]
+    },
+    "recording_time": {
+      "type": ["null", "integer"]
+    },
+    "talk_time": {
+      "type": ["null", "integer"]
+    },
+    "ticket_id": {
+      "type": ["null", "integer"]
+    },
+    "time_to_answer": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "voicemail": {
+      "type": ["null", "boolean"]
+    },
+    "wait_time": {
+      "type": ["null", "integer"]
+    },
+    "wrap_up_time": {
+      "type": ["null", "integer"]
+    }
+  }
+}

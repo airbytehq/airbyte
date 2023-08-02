@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "advertiser": {
+      "type": ["null", "string"]
+    },
+    "advertiser_id": {
+      "type": ["null", "string"]
+    },
+    "advertiser_integration_code": {
+      "type": ["null", "string"]
+    },
+    "advertiser_status": {
+      "type": ["null", "string"]
+    },
+    "app_url": {
+      "type": ["null", "string"]
+    },
+    "app_url_excluded": {
+      "type": ["null", "string"]
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "type": ["null", "string"]
+    },
+    "cm_placement_id": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "country_id": {
+      "type": ["null", "string"]
+    },
+    "creative": {
+      "type": ["null", "string"]
+    },
+    "creative_id": {
+      "type": ["null", "string"]
+    },
+    "creative_integration_code": {
+      "type": ["null", "string"]
+    },
+    "creative_source": {
+      "type": ["null", "string"]
+    },
+    "creative_status": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "insertion_order": {
+      "type": ["null", "string"]
+    },
+    "insertion_order_id": {
+      "type": ["null", "string"]
+    },
+    "insertion_order_integration_code": {
+      "type": ["null", "string"]
+    },
+    "insertion_order_status": {
+      "type": ["null", "string"]
+    },
+    "inventory_source": {
+      "type": ["null", "string"]
+    },
+    "line_item": {
+      "type": ["null", "string"]
+    },
+    "line_item_id": {
+      "type": ["null", "string"]
+    },
+    "line_item_integration_code": {
+      "type": ["null", "string"]
+    },
+    "line_item_status": {
+      "type": ["null", "string"]
+    },
+    "partner": {
+      "type": ["null", "string"]
+    },
+    "partner_id": {
+      "type": ["null", "string"]
+    },
+    "partner_status": {
+      "type": ["null", "string"]
+    },
+    "targeted_data_providers": {
+      "type": ["null", "string"]
+    },
+    "cookie_reach_average_impression_frequency": {
+      "type": ["null", "string"]
+    },
+    "cookie_reach_impression_reach": {
+      "type": ["null", "string"]
+    },
+    "unique_reach_average_impression_frequency": {
+      "type": ["null", "string"]
+    },
+    "unique_reach_click_reach": {
+      "type": ["null", "string"]
+    },
+    "unique_reach_impression_reach": {
+      "type": ["null", "string"]
+    },
+    "unique_reach_total_reach": {
+      "type": ["null", "string"]
+    }
+  }
+}

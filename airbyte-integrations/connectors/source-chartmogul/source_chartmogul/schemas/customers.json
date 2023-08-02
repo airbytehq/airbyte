@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer"]
+    },
+    "uuid": {
+      "type": ["string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "external_ids": {
+      "type": ["null", "array"]
+    },
+    "data_source_uuid": {
+      "type": ["null", "string"]
+    },
+    "data_source_uuids": {
+      "type": ["null", "array"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "lead_created_at": {
+      "type": ["null", "string"]
+    },
+    "free_trial_started_at": {
+      "type": ["null", "string"]
+    },
+    "customer_since": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"],
+      "properties": {
+        "tags": {
+          "type": ["null", "array"]
+        },
+        "stripe": {
+          "type": ["null", "object"],
+          "properties": {
+            "brandID": {
+              "type": ["null", "string"]
+            },
+            "brandName": {
+              "type": ["null", "string"]
+            },
+            "createdAt": {
+              "type": ["null", "string"]
+            },
+            "platformName": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "clearbit": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "custom": {
+          "type": ["null", "object"],
+          "properties": {}
+        }
+      }
+    },
+    "address": {
+      "type": ["null", "object"],
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "address_zip": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "mrr": {
+      "type": ["null", "integer"]
+    },
+    "arr": {
+      "type": ["null", "integer"]
+    },
+    "billing-system-url": {
+      "type": ["null", "string"]
+    },
+    "chartmogul-url": {
+      "type": ["null", "string"]
+    },
+    "billing-system-type": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "currency-sign": {
+      "type": ["null", "string"]
+    }
+  }
+}
