@@ -48,6 +48,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       "unknown"
   );
   protected static final List<String> FINAL_TABLE_COLUMN_NAMES_CDC;
+
   static {
     FINAL_TABLE_COLUMN_NAMES_CDC = Streams.concat(
         FINAL_TABLE_COLUMN_NAMES.stream(),
@@ -80,15 +81,25 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   private StreamId streamId;
 
   protected abstract JsonNode generateConfig() throws Exception;
+
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
+
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
+
   protected abstract void createNamespace(String namespace);
+
   protected abstract void createRawTable(StreamId streamId) throws Exception;
+
   protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
+
   protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception;
+
   protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception;
+
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
+
   protected abstract List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception;
+
   protected abstract void teardownNamespace(String namespace);
 
   @BeforeEach
@@ -200,36 +211,59 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    *   <li>A JSON null value</li>
    *   <li>An invalid value</li>
    * </ul>
-   *
+   * <p>
    * In practice, incremental streams never write to a suffixed table, but SqlGenerator isn't allowed
    * to make that assumption (and we might as well exercise that code path).
    */
   @Test
-  public void testFullUpdateAllTypes() throws Exception {
+  public void allTypes() throws Exception {
     createRawTable(streamId);
     createFinalTable(false, streamId, "_foo");
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_inputrecords.jsonl"));
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
     String sql = generator.updateTable(incrementalDedupStream, "_foo");
     destinationHandler.execute(sql);
 
-    DIFFER.diffFinalTableRecords(
-        BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_expectedrecords.jsonl"),
+    verifyRecords(
+        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, "_foo"));
-    // We're not making stringent assertions on the raw table, under the assumption that T+D will only
-    // modify loaded_at or delete entire rows. I.e. it won't modify the data itself.
-    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
+  }
+
+  @Test
+  public void incrementalDedup() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(false, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+
+    String sql = generator.updateTable(incrementalDedupStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecords(
+        "sqlgenerator/incrementaldedup_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/incrementaldedup_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  private void verifyRecords(String expectedRawRecordsFile, List<JsonNode> actualRawRecords, String expectedFinalRecordsFile, List<JsonNode> actualFinalRecords) {
     assertAll(
-        () -> assertEquals(4, actualRawRecords.size()),
+        () -> DIFFER.diffRawTableRecords(
+            BaseTypingDedupingTest.readRecords(expectedRawRecordsFile),
+            actualRawRecords),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
                 .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
-                .count()
-        )
-    );
+                .count()),
+        () -> DIFFER.diffFinalTableRecords(
+            BaseTypingDedupingTest.readRecords(expectedFinalRecordsFile),
+            actualFinalRecords));
   }
 
 }
