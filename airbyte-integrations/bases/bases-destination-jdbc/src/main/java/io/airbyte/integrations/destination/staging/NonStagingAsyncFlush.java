@@ -2,23 +2,15 @@ package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -26,18 +18,18 @@ import java.util.stream.Stream;
 public class NonStagingAsyncFlush implements DestinationFlushFunction {
 
     private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
-    private final SqlOperations stagingOperations;
+    private final SqlOperations sqlOperations;
     private final JdbcDatabase database;
     private final ConfiguredAirbyteCatalog catalog;
     private final long optimalBatchSizeBytes;
 
     public NonStagingAsyncFlush(Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
-                                SqlOperations stagingOperations,
+                                SqlOperations sqlOperations,
                                 JdbcDatabase database,
                                 ConfiguredAirbyteCatalog catalog,
                                 long optimalBatchSizeBytes) {
         this.streamDescToWriteConfig = streamDescToWriteConfig;
-        this.stagingOperations = stagingOperations;
+        this.sqlOperations = sqlOperations;
         this.database = database;
         this.catalog = catalog;
         this.optimalBatchSizeBytes = optimalBatchSizeBytes;
@@ -54,7 +46,7 @@ public class NonStagingAsyncFlush implements DestinationFlushFunction {
         final String schemaName = writeConfig.getOutputSchemaName();
 
         try {
-            stagingOperations.insertRecords(
+            sqlOperations.insertRecords(
                     database,
                     stream.map(s -> new AirbyteRecordMessage().withStream(s.getRecord().getStream())
                             .withNamespace(s.getRecord().getNamespace())
