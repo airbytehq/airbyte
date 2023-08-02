@@ -1667,7 +1667,7 @@ csv_string_can_be_null_with_input_schemas_scenario = (
                     ("col1", "col2"),
                     ("2", "null"),
                 ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+                "last_modified": "2023-06-05T03:54:07.000000Z",
             }
         }
     )
@@ -1703,7 +1703,7 @@ csv_string_can_be_null_with_input_schemas_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -1773,7 +1773,7 @@ csv_string_not_null_if_no_null_values_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "2", "col2": "null", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "2", "col2": "null", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -1844,7 +1844,7 @@ csv_strings_can_be_null_not_quoted_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "2", "col2": None, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -1915,7 +1915,7 @@ csv_newline_in_values_quoted_value_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "2", "col2": 'val\n2', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "2", "col2": 'val\n2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -1986,7 +1986,7 @@ csv_newline_in_values_not_quoted_scenario = (
     .set_expected_records(
         [
             # Note that the value for col2 is truncated to "val" because the newline is not escaped
-            {"data": {"col1": "2", "col2": 'val', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "2", "col2": 'val', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2068,7 +2068,7 @@ csv_escape_char_is_set_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2144,7 +2144,7 @@ csv_double_quote_is_set_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": 'val11', "col2": 'val"2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2219,7 +2219,7 @@ csv_custom_delimiter_with_escape_char_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2293,7 +2293,7 @@ csv_custom_delimiter_in_double_quotes_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": 'val"1,1', "col2": 'val|2', "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2367,7 +2367,7 @@ csv_skip_before_header_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2440,7 +2440,7 @@ csv_skip_after_header_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2515,7 +2515,7 @@ csv_skip_before_and_after_header_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2585,7 +2585,7 @@ csv_autogenerate_column_names_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"f0": "val11", "f1": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"f0": "val11", "f1": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2658,7 +2658,7 @@ csv_custom_bool_values_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": True, "col2": False, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": True, "col2": False, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -2730,7 +2730,7 @@ csv_custom_null_values_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": None, "col2": "na", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": None, "col2": "na", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )

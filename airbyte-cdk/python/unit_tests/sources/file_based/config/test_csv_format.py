@@ -10,15 +10,15 @@ from pydantic import ValidationError
 @pytest.mark.parametrize(
     "skip_rows_before_header, autogenerate_column_names, expected_error",
     [
-        pytest.param(1, True, ValidationError, id="test_skip_rows_before_header_and_autogenerate_column_names"),
-        pytest.param(1, False, ValidationError, id="test_skip_rows_before_header_and_no_autogenerate_column_names"),
-        pytest.param(0, True, ValidationError, id="test_no_skip_rows_before_header_and_autogenerate_column_names"),
-        pytest.param(0, False, ValidationError, id="test_no_skip_rows_before_header_and_no_autogenerate_column_names"),
+        pytest.param(1, True, ValueError, id="test_skip_rows_before_header_and_autogenerate_column_names"),
+        pytest.param(1, False, None, id="test_skip_rows_before_header_and_no_autogenerate_column_names"),
+        pytest.param(0, True, None, id="test_no_skip_rows_before_header_and_autogenerate_column_names"),
+        pytest.param(0, False, None, id="test_no_skip_rows_before_header_and_no_autogenerate_column_names"),
     ]
 )
 def test_csv_format(skip_rows_before_header, autogenerate_column_names, expected_error):
     if expected_error:
-        with pytest.raises(ValidationError):
-            CsvFormat(skip_rows_before_header=1, autogenerate_column_names=True)
+        with pytest.raises(expected_error):
+            CsvFormat(skip_rows_before_header=skip_rows_before_header, autogenerate_column_names=autogenerate_column_names)
     else:
-        CsvFormat(skip_rows_before_header=1, autogenerate_column_names=True)
+        CsvFormat(skip_rows_before_header=skip_rows_before_header, autogenerate_column_names=autogenerate_column_names)
