@@ -1,13 +1,70 @@
 {
   "type": "object",
   "properties": {
-    "object": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "created": { "type": "string", "format": "date-time" },
-    "updated": { "type": "string", "format": "date-time" },
-    "person_count": { "type": "integer" },
-    "list_type": { "type": "string" },
-    "folder": { "type": ["null", "string"] }
+    "attributes": {
+      "properties": {
+        "created": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "updated": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "relationships": {
+      "properties": {
+        "profiles": {
+          "properties": {
+            "links": {
+              "properties": {
+                "related": {
+                  "type": "string"
+                },
+                "self": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "tags": {
+          "properties": {
+            "links": {
+              "properties": {
+                "related": {
+                  "type": "string"
+                },
+                "self": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
   }
 }

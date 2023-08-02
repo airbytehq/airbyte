@@ -1,4 +1,6 @@
 {
   "api_key": "api-key",
+  "filter": "",
+  "revision": "2023-07-15",
   "start_date": "2021-01-01T00:00:00Z"
 }
