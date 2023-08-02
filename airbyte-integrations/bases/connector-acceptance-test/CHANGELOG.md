@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.4
+Relax checking of `oneOf` common property and allow optional `default` keyword additional to `const` keyword.
+
 ## 0.11.3
 Refactor test_oauth_flow_parameters to validate advanced_auth instead of the deprecated authSpecification
 
