@@ -8,6 +8,12 @@
     "appName": {
       "type": ["null", "string"]
     },
+    "bcc": {
+      "type": ["null", "array"]
+    },
+    "cc": {
+      "type": ["null", "array"]
+    },
     "attempt": {
       "type": ["null", "integer"]
     },
@@ -176,6 +182,34 @@
     },
     "sourceId": {
       "type": ["null", "string"]
+    },
+    "subscriptions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "legalBasisChange": {
+            "type": ["null", "object"],
+            "properties": {
+              "legalBasisExplanation": {
+                "type": ["null", "string"]
+              },
+              "legalBasisType": {
+                "type": ["null", "string"]
+              },
+              "optState": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "status": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "status": {
       "type": ["null", "string"]

@@ -97,8 +97,10 @@ Information about expected report generation waiting time you may find [here](ht
 
 ## CHANGELOG
 
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |
 | 2.2.0   | 2023-07-05 | [27607](https://github.com/airbytehq/airbyte/pull/27607) | Add stream for sponsored brands v3 purchased product reports                                                    |

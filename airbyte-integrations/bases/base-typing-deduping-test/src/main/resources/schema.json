@@ -5,10 +5,12 @@
     "id2": { "type": "integer" },
     "updated_at": {
       "type": "string",
+      "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "_ab_cdc_deleted_at": {
       "type": "string",
+      "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "name": { "type": "string" },

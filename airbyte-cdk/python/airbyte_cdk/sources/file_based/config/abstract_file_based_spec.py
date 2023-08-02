@@ -44,7 +44,7 @@ class AbstractFileBasedSpec(BaseModel):
         return transformed_schema
 
     @staticmethod
-    def replace_enum_allOf_and_anyOf(schema: dict) -> dict:
+    def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
         Unpacks the enums under allOf and moves them up a level under the enum key
@@ -54,11 +54,13 @@ class AbstractFileBasedSpec(BaseModel):
         # this will need to add ["anyOf"] once we have more than one format type and loop over the list of elements
         objects_to_check = schema["properties"]["streams"]["items"]["properties"]["format"]
         if "additionalProperties" in objects_to_check:
-            for key in objects_to_check["additionalProperties"]["properties"]:
-                object_property = objects_to_check["additionalProperties"]["properties"][key]
-                if "allOf" in object_property and "enum" in object_property["allOf"][0]:
-                    object_property["enum"] = object_property["allOf"][0]["enum"]
-                    object_property.pop("allOf")
+            objects_to_check["additionalProperties"]["oneOf"] = objects_to_check["additionalProperties"].pop("anyOf", [])
+            for format in objects_to_check["additionalProperties"]["oneOf"]:
+                for key in format["properties"]:
+                    object_property = format["properties"][key]
+                    if "allOf" in object_property and "enum" in object_property["allOf"][0]:
+                        object_property["enum"] = object_property["allOf"][0]["enum"]
+                        object_property.pop("allOf")
 
         properties_to_change = ["primary_key", "input_schema"]
         for property_to_change in properties_to_change:
@@ -68,7 +70,7 @@ class AbstractFileBasedSpec(BaseModel):
         return schema
 
     @staticmethod
-    def add_legacy_format(schema: dict) -> dict:
+    def add_legacy_format(schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         Because we still need to allow for configs using the legacy format (like source-s3) where file format options
         are at the top level and not mapped from file_type -> format options, the json schema used to validate the

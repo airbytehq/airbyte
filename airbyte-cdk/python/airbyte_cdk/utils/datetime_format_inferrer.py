@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -13,9 +13,9 @@ class DatetimeFormatInferrer:
     This class is used to detect toplevel fields in records that might be datetime values, along with the used format.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._parser = DatetimeParser()
-        self._datetime_candidates: Union[None, Dict[str, str]] = None
+        self._datetime_candidates: Optional[Dict[str, str]] = None
         self._formats = [
             "%Y-%m-%d",
             "%Y-%m-%d %H:%M:%S",
@@ -46,7 +46,7 @@ class DatetimeFormatInferrer:
         except ValueError:
             return False
 
-    def _initialize(self, record: AirbyteRecordMessage):
+    def _initialize(self, record: AirbyteRecordMessage) -> None:
         """Initializes the internal state of the class"""
         self._datetime_candidates = {}
         for field_name, field_value in record.data.items():
@@ -57,19 +57,20 @@ class DatetimeFormatInferrer:
                     self._datetime_candidates[field_name] = format
                     break
 
-    def _validate(self, record: AirbyteRecordMessage):
+    def _validate(self, record: AirbyteRecordMessage) -> None:
         """Validates that the record is consistent with the inferred datetime formats"""
-        for candidate_field_name in list(self._datetime_candidates.keys()):
-            candidate_field_format = self._datetime_candidates[candidate_field_name]
-            current_value = record.data.get(candidate_field_name, None)
-            if (
-                current_value is None
-                or not self._can_be_datetime(current_value)
-                or not self._matches_format(current_value, candidate_field_format)
-            ):
-                self._datetime_candidates.pop(candidate_field_name)
+        if self._datetime_candidates:
+            for candidate_field_name in list(self._datetime_candidates.keys()):
+                candidate_field_format = self._datetime_candidates[candidate_field_name]
+                current_value = record.data.get(candidate_field_name, None)
+                if (
+                    current_value is None
+                    or not self._can_be_datetime(current_value)
+                    or not self._matches_format(current_value, candidate_field_format)
+                ):
+                    self._datetime_candidates.pop(candidate_field_name)
 
-    def accumulate(self, record: AirbyteRecordMessage):
+    def accumulate(self, record: AirbyteRecordMessage) -> None:
         """Analyzes the record and updates the internal state of candidate datetime fields"""
         self._initialize(record) if self._datetime_candidates is None else self._validate(record)
 
