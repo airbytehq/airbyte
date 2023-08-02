@@ -5,6 +5,7 @@
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
+from source_hubspot.errors import HubspotTimeout
 from source_hubspot.streams import (
     Campaigns,
     Companies,

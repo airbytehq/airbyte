@@ -12,6 +12,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests import HTTPError
+from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -64,6 +65,9 @@ class SourceHubspot(AbstractSource):
             if error.response.status_code == HTTPStatus.BAD_REQUEST:
                 response_json = error.response.json()
                 error_msg = f"400 Bad Request: {response_json['message']}, please check if provided credentials are valid."
+        except HubspotInvalidAuth as e:
+            alive = False
+            error_msg = repr(e)
         return alive, error_msg
 
     def get_granted_scopes(self, authenticator):
