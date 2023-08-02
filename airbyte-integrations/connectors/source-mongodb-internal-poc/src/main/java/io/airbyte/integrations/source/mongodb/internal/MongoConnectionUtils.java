@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -12,12 +18,6 @@ import com.mongodb.MongoDriverInformation;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
 
 /**
  * Helper utility for building a {@link MongoClient}.
@@ -55,7 +55,7 @@ public class MongoConnectionUtils {
   private static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
-    final StringBuilder  builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
     builder.append(connectionString);
     builder.append("?replicaSet=");
     builder.append(replicaSet);
@@ -64,4 +64,5 @@ public class MongoConnectionUtils {
     builder.append("&tls=true");
     return builder.toString();
   }
+
 }
