@@ -1,0 +1,16 @@
+{
+    "config_version": "0.1",
+    "bucket": "THIS BUCKET DOESN'T EXIST",
+    "aws_access_key_id": "KEY ID",
+    "aws_secret_access_key": "KEY",
+    "streams": [
+        {
+            "name": "test",
+            "file_type": "parquet",
+            "globs": [
+                "test_payroll/**/*.parquet"
+            ],
+            "validation_policy": "emit_record"
+        }
+    ]
+}

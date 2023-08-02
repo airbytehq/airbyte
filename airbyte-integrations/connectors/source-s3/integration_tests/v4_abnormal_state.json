@@ -1,0 +1,26 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "history": {
+          "simple_test.csv": "2021-07-25T15:33:04.000000Z",
+          "simple_test_2.csv": "2021-12-20T12:35:05.000000Z",
+          "redshift_result.csv": "2022-05-26T09:17:47.000000Z",
+          "redshift_result_3.csv": "2022-05-26T09:55:15.000000Z",
+          "redshift_result_2.csv": "2022-05-26T09:55:16.000000Z",
+          "simple_test.jsonl": "2022-07-15T08:31:02.000000Z",
+          "simple_test_newlines.jsonl": "2022-07-15T10:07:00.000000Z",
+          "test_sample.avro": "2022-05-11T11:54:11.000000Z",
+          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ON%20LEAVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2023-05-09T20:16:28.000000Z",
+          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ON%20LEAVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2023-05-09T20:16:28.000000Z",
+          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2023-05-09T20:16:29.000000Z",
+          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Hour/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2023-05-09T20:16:29.000000Z",
+          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2023-05-09T20:16:29.000000Z"
+        },
+        "_ab_source_file_last_modified": "2999-01-01T00:00:00.000000Z"
+      },
+      "stream_descriptor": { "name": "test" }
+    }
+  }
+]
