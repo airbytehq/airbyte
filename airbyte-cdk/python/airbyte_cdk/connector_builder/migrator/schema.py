@@ -23,12 +23,13 @@ class SchemaResolver:
                 unresolved_schema = json.load(schema_file)
 
             if os.path.exists(os.path.join(schemas_path, "shared")):
-                return jsonref.JsonRef.replace_refs(
+                return jsonref.replace_refs(
                     unresolved_schema,
                     loader=JsonFileLoader(python_package_path, "schemas/shared"),
                     # We need to have the "/" at the end because else, the last part in the path is not considered a dir and is
                     # dropped (see https://github.com/python/cpython/blob/b1de3807b832b72dfeb66dd5646159d08d2cc74a/Lib/urllib/parse.py#L570-L573)
-                    base_uri=python_package_path + "/"
+                    base_uri=python_package_path + "/",
+                    proxies=False,
                 )
             return unresolved_schema
         return None
