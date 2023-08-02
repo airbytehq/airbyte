@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
 ## 0.47.4
 File-based CDK updates
 

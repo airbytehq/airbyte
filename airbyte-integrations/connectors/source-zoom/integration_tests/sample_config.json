@@ -1,3 +1,6 @@
 {
-  "jwt_token": "abcd"
+  "account_id": "account_id",
+  "client_id": "client_id",
+  "client_secret": "client_secret",
+  "authorization_endpoint": "https://zoom.us/oauth/token"
 }
