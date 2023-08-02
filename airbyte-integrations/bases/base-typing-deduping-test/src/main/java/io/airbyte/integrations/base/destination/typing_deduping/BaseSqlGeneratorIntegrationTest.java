@@ -1,5 +1,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -155,6 +156,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     teardownNamespace(namespace);
   }
 
+  /**
+   * Test that T+D throws an error for an incremental-dedup sync where at least
+   * one record has a null primary key, and that we don't write any final records.
+   */
   @Test
   public void incrementalDedupInvalidPrimaryKey() throws Exception {
     createRawTable(streamId);
@@ -183,8 +188,21 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertThrows(
         Exception.class,
         () -> destinationHandler.execute(sql));
+    DIFFER.diffFinalTableRecords(
+        emptyList(),
+        dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * Run a full T+D update for an incremental-dedup stream, writing to a final table with "_foo" suffix,
+   * with values for all data types. Verifies all behaviors for all types:
+   * <ul>
+   *   <li>A valid, nonnull value</li>
+   *   <li>No value (i.e. the column is missing from the record)</li>
+   *   <li>A JSON null value</li>
+   *   <li>An invalid value</li>
+   * </ul>
+   */
   @Test
   public void testFullUpdateAllTypes() throws Exception {
     createRawTable(streamId);
@@ -199,6 +217,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_expectedrecords.jsonl"),
         dumpFinalTableRecords(streamId, "_foo"));
+    // We're not making stringent assertions on the raw table, under the assumption that T+D will only
+    // modify loaded_at or delete entire rows.
     List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     assertAll(
         () -> assertEquals(4, actualRawRecords.size()),
