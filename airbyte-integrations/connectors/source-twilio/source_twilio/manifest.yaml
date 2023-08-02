@@ -44,14 +44,11 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-  base_stream_with_pagination:
-    retriever:
-      $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
 
   accounts_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "accounts"
       path: "/Accounts.json"
@@ -65,7 +62,7 @@ definitions:
         partition_field: id
 
   addresses_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "addresses"
       path: "/Accounts/{{ stream_slice.id }}/Addresses.json"
@@ -91,7 +88,7 @@ definitions:
   
   
   dependent_phone_numbers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "dependent_phone_numbers"
       path: "/Accounts/{{stream_slice.account_id}}/Addresses/{{stream_slice.id}}/DependentPhoneNumbers.json"
@@ -106,7 +103,7 @@ definitions:
         $ref: "#/definitions/addresses_partition_router"
 
   alerts_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "alerts"
       path: "/Alerts"
@@ -129,7 +126,7 @@ definitions:
         step: "P1D"
 
   applications_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "applications"
       path: "Accounts/{{stream_slice.id}}/Applications.json"
@@ -144,7 +141,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
 
   available_phone_number_countries_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "available_phone_number_countries"
       path: "Accounts/{{stream_slice.id}}/AvailablePhoneNumbers.json"
@@ -169,7 +166,7 @@ definitions:
         partition_field: id
 
   available_phone_numbers_local_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "available_phone_numbers_local"
       path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Local.json"
@@ -184,7 +181,7 @@ definitions:
         $ref: "#/definitions/available_phone_number_countries_partition_router"
 
   available_phone_numbers_mobile_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "available_phone_numbers_mobile"
       path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Mobile.json"
@@ -199,7 +196,7 @@ definitions:
         $ref: "#/definitions/available_phone_number_countries_partition_router"
 
   available_phone_numbers_toll_free_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "available_phone_numbers"
       path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/TollFree.json"
@@ -214,7 +211,7 @@ definitions:
         $ref: "#/definitions/available_phone_number_countries_partition_router"
   
   calls_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "calls"
       path: "/Accounts/{{stream_slice.id}}/Calls.json"
@@ -235,7 +232,7 @@ definitions:
         step: "P1D"
 
   conferences_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "conferences"
       path: "/Accounts/{{stream_slice.id}}/Conferences.json"
@@ -263,7 +260,7 @@ definitions:
         partition_field: conferences_id
   
   conference_participants_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "conference_participants"
       path: "/Accounts/{{stream_slice.id}}/Conferences/{{ stream_slice.conferences_id}}/Participants.json"
@@ -278,7 +275,7 @@ definitions:
         $ref: "#/definitions/conferences_partition_router"
 
   conversations_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversations"
       path: "/Conversations"
@@ -302,7 +299,7 @@ definitions:
         partition_field: conversations_id
 
   conversation_messages_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversation_messages"
       path: "/Conversations/{{stream_slice.conversations_id}}/Messages"
@@ -319,7 +316,7 @@ definitions:
         $ref: "#/definitions/conversations_partition_router"
 
   conversation_participants_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversation_participants"
       path: "/Conversations/{{stream_slice.conversations_id}}/Participants"
@@ -336,7 +333,7 @@ definitions:
         $ref: "#/definitions/conversations_partition_router"
   
   incoming_phone_numbers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "incoming_phone_numbers"
       path: "/Accounts/{{stream_slice.id}}/IncomingPhoneNumbers.json"
@@ -351,7 +348,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
   
   keys_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "keys"
       path: "/Accounts/{{stream_slice.id}}/Keys.json"
@@ -366,7 +363,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
 
   flows_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "flows"
       primary_key: "sid"
@@ -392,7 +389,7 @@ definitions:
       partition_field: flow_id
 
   executions_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "executions"
       path: "/Flows/{{stream_slice.flow_id}}/Executions"
@@ -416,7 +413,7 @@ definitions:
       partition_field: execution_id
   
   step_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "step"
       path: "/Flows/{{stream_slice.flow_id}}/Executions/{{stream_slice.execution_id}}/Steps"
@@ -433,7 +430,7 @@ definitions:
         $ref: "#/definitions/executions_partition_router"
   
   outgoing_caller_ids_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "outgoing_caller_ids"
       path: "/Accounts/{{stream_slice.id}}/OutgoingCallerIds"
@@ -448,7 +445,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
   
   queues_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "queues"
       path: "/Accounts/{{stream_slice.id}}/Queues.json"
@@ -463,7 +460,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
   
   transcriptions_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "transcriptions"
       path: "/Accounts/{{stream_slice.id}}/Transcriptions.json"
@@ -478,7 +475,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
   
   messages_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "messages"
       path: "/Accounts/{{stream_slice.id}}/Messages.json"
@@ -506,7 +503,7 @@ definitions:
         partition_field: message_id
 
   message_media_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "message_media"
       path: "/Accounts/{{stream_slice.id}}/Messages/{{stream_slice.message_id}}/Media.json"
@@ -532,7 +529,7 @@ definitions:
         step: "P1D"
   
   usage_records_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "usage_records"
       path: "/Accounts/{{stream_slice.id}}/Usage/Records.json"
@@ -555,7 +552,7 @@ definitions:
         step: "P1D"
   
   usage_triggers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "usage_triggers"
       path: "/Accounts/{{stream_slice.id}}/Usage/Triggers.json"
@@ -570,7 +567,7 @@ definitions:
         $ref: "#/definitions/accounts_partition_router"
   
   recordings_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "recordings"
       path: "/Accounts/{{stream_slice.id}}/Recordings.json"
@@ -591,7 +588,7 @@ definitions:
         step: "P1D"
     
   services_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "services"
       path: "/Services"
@@ -615,7 +612,7 @@ definitions:
         partition_field: service_id
   
   roles_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "roles"
       path: "/Services/{{stream_slice.service_id}}"
@@ -632,7 +629,7 @@ definitions:
         $ref: "#/definitions/users_partition_router"
   
   trunks_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "trunks"
       path: "/Trunks"
@@ -649,7 +646,7 @@ definitions:
           password: "{{ config['auth_token'] }}"
 
   verify_services_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "verify_services"
       path: "/Services"
@@ -669,7 +666,7 @@ definitions:
           password: "{{ config['auth_token'] }}"
 
   users_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: "/Users"
@@ -693,7 +690,7 @@ definitions:
         partition_field: user_id
   
   user_conversations_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "user_conversations"
       path: "/Users/{{stream_slice.user_id}}/Conversations"
