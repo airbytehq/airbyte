@@ -9,7 +9,7 @@ from typing import Generic, Iterable, Optional
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.abstract_source import AbstractSource
+from airbyte_cdk.sources.source import Source
 
 
 class SourceRunner(ABC, Generic[TConfig]):
@@ -23,7 +23,7 @@ class SourceRunner(ABC, Generic[TConfig]):
 
 
 class CDKRunner(SourceRunner[TConfig]):
-    def __init__(self, source: AbstractSource, name: str):
+    def __init__(self, source: Source, name: str):
         self._source = source
         self._logger = logging.getLogger(name)
 

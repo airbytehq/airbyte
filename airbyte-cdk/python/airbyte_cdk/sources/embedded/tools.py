@@ -4,6 +4,7 @@
 
 from typing import Any, Callable, Dict, Iterable, Optional
 
+import dpath
 from airbyte_cdk.models import AirbyteStream
 
 
@@ -12,8 +13,6 @@ def get_first(iterable: Iterable[Any], predicate: Callable[[Any], bool] = lambda
 
 
 def get_defined_id(stream: AirbyteStream, data: Dict[str, Any]) -> Optional[str]:
-    import dpath
-
     if not stream.source_defined_primary_key:
         return None
     primary_key = []
