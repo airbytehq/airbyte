@@ -16,8 +16,10 @@ class PublishPyPIConnector(Step):
     title = "Publish connector to PyPI"
 
     async def _run(self) -> StepResult:
-        try:
+        if self.context.connector.language not in ["python", "low-code"]:
+            return self.skip("Only Python connectors can be published to PyPI.")
 
+        try:
             setup_cfg = dedent(
                 f"""
                 [metadata]
