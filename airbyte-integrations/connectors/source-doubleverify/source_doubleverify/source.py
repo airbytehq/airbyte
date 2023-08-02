@@ -12,8 +12,10 @@ import csv
 import gzip
 import json
 import backoff
+import pendulum
 from .utils import Utils
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 import logging
@@ -30,6 +32,8 @@ class DoubleverifyStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], catalog_stream: Mapping[str, Any]):
         super().__init__()
         self.config = config
+        if "end_date" not in self.config:
+            self.config["end_date"] = str(pendulum.yesterday())
         self.catalog_stream = catalog_stream
 
     def request_headers(
@@ -153,26 +157,61 @@ class DoubleverifyStream(HttpStream, ABC):
                     yield row
 
 
-class IncrementalDoubleverifyStream(DoubleverifyStream):
-    state_checkpoint_interval = None
+class IncrementalDoubleverifyStream(DoubleverifyStream, ABC):
+    #state_checkpoint_interval = None
+    window_in_days = 5
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        The cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
         :return str: The name of the cursor field.
         """
-        return []
+        return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        default_value = self.config.get("start_date") # Take start_date as the default value
+        latest_state = latest_record.get(self.cursor_field, default_value) # If no cursor field in the latest record, then take default_value
+        current_state = current_stream_state.get(self.cursor_field, default_value) # If no cursor field in the current stream state, then take default_value
+        
+        state = {self.cursor_field: max(pendulum.parse(latest_state), pendulum.parse(current_state)).strftime("%Y-%m-%d")}
+        print(state)
+        return state
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+        Returns list of dict
         """
-        return {}
+        start_date = pendulum.parse(self.config.get("start_date"))
+        end_date = pendulum.parse(self.config.get("end_date"))
+
+        # determine stream_state, if no stream_state we use start_date
+        if stream_state:
+            state = stream_state.get(self.cursor_field)
+
+            if state:
+                state = pendulum.parse(state)
+
+            start_date = state
+
+        # use the lowest date between start_date and end_date, otherwise API fails if start_date is in future
+        start_date = min(start_date, end_date)
+        date_slices = []
+
+        while start_date < end_date:
+            # the amount of days for each data-chunk beginning from start_date
+            end_date_slice = start_date.add(days=self.window_in_days)
+            date_slices.append({"start_date": start_date.strftime("%Y-%m-%d"), "end_date": end_date_slice.strftime("%Y-%m-%d")})
+
+            # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
+            start_date = end_date_slice.add(days=1)
+
+        return date_slices
 
 
 class Youtube(IncrementalDoubleverifyStream):
