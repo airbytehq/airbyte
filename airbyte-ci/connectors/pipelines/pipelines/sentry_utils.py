@@ -12,8 +12,17 @@ def initialize():
     if "SENTRY_DSN" in os.environ:
         sentry_sdk.init(
             dsn=os.environ.get("SENTRY_DSN"),
+            before_send=before_send,
             release=f"pipelines@{importlib.metadata.version('pipelines')}",
         )
+
+
+def before_send(event, hint):
+    # Ignore logged errors that do not contain an exception
+    if "log_record" in hint and "exc_info" not in hint:
+        return None
+
+    return event
 
 
 def with_step_context(func):

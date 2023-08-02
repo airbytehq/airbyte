@@ -236,8 +236,8 @@ single_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -255,7 +255,7 @@ single_csv_scenario = (
                 "data": {
                     "col1": "val11",
                     "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -264,7 +264,7 @@ single_csv_scenario = (
                 "data": {
                     "col1": "val21",
                     "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -317,9 +317,9 @@ multi_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -337,7 +337,7 @@ multi_csv_scenario = (
                 "data": {
                     "col1": "val11a",
                     "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -346,7 +346,7 @@ multi_csv_scenario = (
                 "data": {
                     "col1": "val21a",
                     "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -356,7 +356,7 @@ multi_csv_scenario = (
                     "col1": "val11b",
                     "col2": "val12b",
                     "col3": "val13b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -366,7 +366,7 @@ multi_csv_scenario = (
                     "col1": "val21b",
                     "col2": "val22b",
                     "col3": "val23b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -419,8 +419,8 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -438,7 +438,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 "data": {
                     "col1": "val11a",
                     "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -447,7 +447,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 "data": {
                     "col1": "val21a",
                     "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -457,7 +457,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "col1": "val11b",
                     "col2": "val12b",
                     "col3": "val13b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -467,7 +467,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "col1": "val21b",
                     "col2": "val22b",
                     "col3": "val23b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -514,8 +514,8 @@ invalid_csv_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -583,8 +583,8 @@ csv_single_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -603,7 +603,7 @@ csv_single_stream_scenario = (
                 "data": {
                     "col1": "val11a",
                     "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -612,7 +612,7 @@ csv_single_stream_scenario = (
                 "data": {
                     "col1": "val21a",
                     "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -670,9 +670,9 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "col3": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -686,7 +686,7 @@ csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -705,7 +705,7 @@ csv_multi_stream_scenario = (
                 "data": {
                     "col1": "val11a",
                     "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -714,25 +714,25 @@ csv_multi_stream_scenario = (
                 "data": {
                     "col1": "val21a",
                     "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
             {
-                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
         ]
@@ -787,13 +787,13 @@ csv_custom_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -814,7 +814,7 @@ csv_custom_format_scenario = (
                     "col1": "val11",
                     "col2": "val12",
                     "col3": "val |13|",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -824,7 +824,7 @@ csv_custom_format_scenario = (
                     "col1": "val21",
                     "col2": "val22",
                     "col3": "val23",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -834,7 +834,7 @@ csv_custom_format_scenario = (
                     "col1": "val,31",
                     "col2": "val |,32|",
                     "col3": "val, !! 33",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -895,13 +895,13 @@ csv_legacy_format_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -922,7 +922,7 @@ csv_legacy_format_scenario = (
                     "col1": "val11",
                     "col2": "val12",
                     "col3": "val |13|",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -932,7 +932,7 @@ csv_legacy_format_scenario = (
                     "col1": "val21",
                     "col2": "val22",
                     "col3": "val23",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -942,7 +942,7 @@ csv_legacy_format_scenario = (
                     "col1": "val,31",
                     "col2": "val |,32|",
                     "col3": "val, !! 33",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1021,13 +1021,13 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1043,7 +1043,7 @@ multi_stream_custom_format = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": "string",
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
@@ -1063,7 +1063,7 @@ multi_stream_custom_format = (
                 "data": {
                     "col1": "val11a",
                     "col2": "val ! 12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1072,25 +1072,25 @@ multi_stream_custom_format = (
                 "data": {
                     "col1": "val ! 21a",
                     "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val @@@@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val @@@@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val @@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val @@ 13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
             {
-                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
         ]
@@ -1139,8 +1139,8 @@ empty_schema_inference_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1160,7 +1160,7 @@ empty_schema_inference_scenario = (
                 "data": {
                     "col1": "val11",
                     "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1169,7 +1169,7 @@ empty_schema_inference_scenario = (
                 "data": {
                     "col1": "val21",
                     "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1241,7 +1241,7 @@ schemaless_csv_scenario = (
             {
                 "data": {
                     "data": {"col1": "val11a", "col2": "val12a"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1249,7 +1249,7 @@ schemaless_csv_scenario = (
             {
                 "data": {
                     "data": {"col1": "val21a", "col2": "val22a"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1257,7 +1257,7 @@ schemaless_csv_scenario = (
             {
                 "data": {
                     "data": {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -1265,7 +1265,7 @@ schemaless_csv_scenario = (
             {
                 "data": {
                     "data": {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
                 "stream": "stream1",
@@ -1339,7 +1339,7 @@ schemaless_csv_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -1357,7 +1357,7 @@ schemaless_csv_multi_stream_scenario = (
             {
                 "data": {
                     "data": {"col1": "val11a", "col2": "val12a"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
@@ -1365,17 +1365,17 @@ schemaless_csv_multi_stream_scenario = (
             {
                 "data": {
                     "data": {"col1": "val21a", "col2": "val22a"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
                 "stream": "stream1",
             },
             {
-                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
             {
-                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+                "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
         ]
@@ -1513,7 +1513,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": "string"},
+                            "col3": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
