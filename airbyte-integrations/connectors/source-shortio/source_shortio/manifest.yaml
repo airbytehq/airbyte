@@ -27,6 +27,16 @@ definitions:
       header: "Authorization"
       api_token: "{{ config['secret_key'] }}"
 
+  base_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ last_records['nextPageToken'] }}"
+    page_token_option:
+      type: "RequestPath"
+      field_name: "pageToken"
+      inject_into: "request_parameter"
+
   v1_base_stream:
     type: DeclarativeStream
     retriever:
@@ -34,7 +44,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/v1_api_requester"
 
@@ -45,7 +55,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/v2_api_requester"
 
