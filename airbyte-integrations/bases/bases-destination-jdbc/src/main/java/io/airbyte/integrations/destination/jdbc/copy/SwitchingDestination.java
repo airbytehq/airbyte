@@ -64,7 +64,6 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
       throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
-    LOGGER.info("Using destination class: " + typeToDestination.get(destinationType));
     return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
   }
 

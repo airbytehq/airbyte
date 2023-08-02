@@ -16,7 +16,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
   }
-
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
