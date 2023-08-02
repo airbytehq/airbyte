@@ -79,7 +79,6 @@ class Auth0Stream(HttpStream, ABC):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        print(response)
         yield from response.json().get(self.resource_name)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
