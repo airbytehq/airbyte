@@ -235,16 +235,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       catalogParser = new CatalogParser(sqlGenerator);
     }
-    ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
 
     final BigQuery bigquery = getBigQuery(config);
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      parsedCatalog = catalogParser.parseCatalog(catalog);
       typerDeduper = new DefaultTyperDeduper<>(
           sqlGenerator,
           new BigQueryDestinationHandler(bigquery, datasetLocation),
           parsedCatalog);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
@@ -268,13 +270,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
-      StreamConfig parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+      final StreamConfig parsedStream;
 
       final String streamName = stream.getName();
       String targetTableName;
       if (use1s1t) {
+        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
         targetTableName = parsedStream.id().rawName();
       } else {
+        parsedStream = null;
         targetTableName = getTargetTableName(streamName);
       }
 
