@@ -1,4 +1,4 @@
-name: Publish connectors to PyPI
+name: (Experimental) Publish connectors to PyPI
 
 on:
   workflow_dispatch:
