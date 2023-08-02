@@ -31,7 +31,6 @@ from airbyte_protocol.models.airbyte_protocol import (
     AirbyteMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
-    Level,
     OrchestratorType,
     TraceType,
 )
@@ -126,7 +125,6 @@ class MessageGrouper:
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
-        had_error = False
 
         while records_count < limit and (message := next(messages, None)):
             json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None
@@ -134,7 +132,7 @@ class MessageGrouper:
                 raise ValueError(f"Expected log message to be a dict, got {json_object} of type {type(json_object)}")
             json_message: Optional[Dict[str, JsonType]] = json_object
             if self._need_to_close_page(at_least_one_page_in_group, message, json_message):
-                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, True)
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
                 current_page_request = None
                 current_page_response = None
 
@@ -172,12 +170,9 @@ class MessageGrouper:
                         current_page_request = self._create_request_from_log_message(json_message)
                         current_page_response = self._create_response_from_log_message(json_message)
                 else:
-                    if message.log.level == Level.ERROR:
-                        had_error = True
                     yield message.log
             elif message.type == MessageType.TRACE:
                 if message.trace.type == TraceType.ERROR:
-                    had_error = True
                     yield message.trace
             elif message.type == MessageType.RECORD:
                 current_page_records.append(message.record.data)
@@ -187,8 +182,9 @@ class MessageGrouper:
             elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
                 yield message.control
         else:
-            self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete=not had_error)
-            yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+            if current_page_request or current_page_response or current_page_records:
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
@@ -224,15 +220,10 @@ class MessageGrouper:
         return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
-    def _close_page(current_page_request: Optional[HttpRequest], current_page_response: Optional[HttpResponse], current_slice_pages: List[StreamReadPages], current_page_records: List[Mapping[str, Any]], validate_page_complete: bool) -> None:
+    def _close_page(current_page_request: Optional[HttpRequest], current_page_response: Optional[HttpResponse], current_slice_pages: List[StreamReadPages], current_page_records: List[Mapping[str, Any]]) -> None:
         """
         Close a page when parsing message groups
-        @param validate_page_complete: in some cases, we expect the CDK to not return a response. As of today, this will only happen before
-        an uncaught exception and therefore, the assumption is that `validate_page_complete=True` only on the last page that is being closed
         """
-        if validate_page_complete and (not current_page_request or not current_page_response):
-            raise ValueError("Every message grouping should have at least one request and response")
-
         current_slice_pages.append(
             StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))  # type: ignore
         )

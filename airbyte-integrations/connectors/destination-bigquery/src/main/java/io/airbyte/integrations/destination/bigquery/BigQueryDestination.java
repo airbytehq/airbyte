@@ -16,7 +16,6 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -76,7 +75,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
-  public static final String RAW_NAMESPACE_OVERRIDE = "raw_data_dataset";
+  private static final String RAW_DATA_DATASET = "raw_data_dataset";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -230,8 +230,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
     final CatalogParser catalogParser;
-    if (config.hasNonNull(RAW_NAMESPACE_OVERRIDE) && !Strings.isNullOrEmpty(config.get(RAW_NAMESPACE_OVERRIDE).asText())) {
-      catalogParser = new CatalogParser(sqlGenerator, config.get(RAW_NAMESPACE_OVERRIDE).asText());
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
     } else {
       catalogParser = new CatalogParser(sqlGenerator);
     }

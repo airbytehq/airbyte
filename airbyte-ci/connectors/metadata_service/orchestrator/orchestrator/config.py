@@ -18,6 +18,11 @@ CONNECTOR_TEST_SUMMARY_FOLDER = "test_summary"
 
 MAX_METADATA_PARTITION_RUN_REQUEST = 50
 
+HIGH_QUEUE_PRIORITY = "3"
+MED_QUEUE_PRIORITY = "2"
+LOW_QUEUE_PRIORITY = "1"
+NO_QUEUE_PRIORITY = "-1"
+
 
 def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:
     """Get the public URL to a file in the GCS bucket.

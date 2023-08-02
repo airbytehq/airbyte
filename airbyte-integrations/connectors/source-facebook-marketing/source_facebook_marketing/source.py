@@ -236,7 +236,6 @@ class SourceFacebookMarketing(AbstractSource):
                     },
                 ),
             ),
-            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
