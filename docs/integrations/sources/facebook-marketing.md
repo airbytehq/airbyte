@@ -65,33 +65,34 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 6. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
    :::note
-   To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook Marketing documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
+   To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
    :::
 
    To configure Custom Insights:
 
     1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
-    2. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
-    3. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
-    4. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
-    5. (Optional) For **Action Report Time**, enter the action report time you want to configure. The default value is `mixed`. The possible values are:
-        - `impression`: Actions are attributed to the time the ad was viewed.
-        - `conversion`: Actions are attributed to the time the action was taken.
-        - `mixed`: Actions are attributed to the time the ad was viewed and the time the action was taken.
-    6. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
-    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1. 
+    2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
+    3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
+    4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
+    5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
+    6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
+
+        - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
+        - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
+        - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+
+    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. 
     8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
     9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
-    10. (Optional) For **Custom Insights Lookback Window**, you may set a custom lookback (or attribution) window in days. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may still be subject to change. You can retrieve refreshed insights from the past by setting this parameter. If you have set a custom lookback window in your Facebook account, ensure you set the same value here. For more information on this topic, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+    10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
-   
    :::warning
    Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also adjust the connections that sync to these streams. Specifically, you should either disable these connections or refresh the source schema associated with them to reflect the changes.
    :::
    
 7. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
-8. (Optional) For **Insights Window Lookback**, you may set an attribution window. Facebook freezes insights data 28 days after it was generated, which means that all data from the past 28 days may still be subject to change. You can retrieve refreshed insights from the past by setting this parameter. If you've already set a custom lookback window value in your Facebook account, please ensure you set the same value here. For more information on this topic, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
-9. (Optional) You can set a **Maximum size of Batched Requests** for the connector. This is the maximum number of records that will be sent in a single request to the Facebook Marketing API. Most users do not need to configure this field, as the default value of 50 is the maximum number allowed by the Facebook API. More information on this topic can be found in the [Facebook documentation](https://developers.facebook.com/docs/graph-api/batch-requests).
+8. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+9. (Optional) You can set a **Maximum size of Batched Requests** for the connector. This is the maximum number of records that will be sent in a single request to the Facebook Marketing API. Most users do not need to configure this field, unless specific issues arise of there are unique use cases that require tuning the connector's settings. The maximum number of requests per batch allowed by the API is 50. More information on this topic can be found in the [Facebook documentation](https://developers.facebook.com/docs/graph-api/batch-requests).
 10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -156,7 +157,7 @@ Please note that not all fields, such as `conversions` and `conversion_values`, 
 
 ## Facebook Marketing Attribution Reporting
 
-The Facebook Marketing connector uses the `lookback_window` parameter (also known as the attribution window) to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date. You can change this date window by adjusting the `lookback_window` parameter when setting up the source. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
 ## Data type mapping
 
