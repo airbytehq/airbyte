@@ -34,6 +34,7 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
     success_user_provided_schema_scenario,
 )
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_autogenerate_column_names_scenario,
     csv_custom_bool_values_scenario,
     csv_custom_delimiter_in_double_quotes_scenario,
     csv_custom_delimiter_with_escape_char_scenario,
@@ -195,6 +196,7 @@ discover_scenarios = [
     multiple_streams_avro_scenario,
     avro_file_with_decimal_as_float_scenario,
     csv_newline_in_values_not_quoted_scenario,
+    csv_autogenerate_column_names_scenario,
 ]
 
 

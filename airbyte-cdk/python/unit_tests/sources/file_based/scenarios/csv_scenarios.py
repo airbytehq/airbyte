@@ -2608,7 +2608,7 @@ csv_autogenerate_column_names_scenario = (
                     "format": {
                         "csv": {
                             "filetype": "csv",
-                            "auto_generate_column_names": True,
+                            "autogenerate_column_names": True,
                         }
                     }
                 }
@@ -2636,10 +2636,10 @@ csv_autogenerate_column_names_scenario = (
                         "type": "object",
                         "properties": {
                             "f0": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "f1": {
-                                "type": "string"
+                                "type": ["null", "string"]
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string"
