@@ -101,14 +101,7 @@ class CsvParser(FileTypeParser):
         cast it to a string. Downstream, the user's validation policy will determine whether the
         record should be emitted.
         """
-        if schema:
-            property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            cast_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] = partial(
-                cast_types, property_types=property_types, config_format=config_format, logger=logger
-            )
-        else:
-            # If no schema is provided, yield the rows as they are
-            cast_fn = _no_cast
+        cast_fn = CsvParser._get_cast_function(schema, config_format, logger)
         for i, row in enumerate(reader):
             if i < config_format.skip_rows_after_header:
                 continue
@@ -117,6 +110,17 @@ class CsvParser(FileTypeParser):
                 raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
             else:
                 yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
+
+    @staticmethod
+    def _get_cast_function(schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger):
+        if schema:
+            property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
+            return partial(
+                cast_types, property_types=property_types, config_format=config_format, logger=logger
+            )
+        else:
+            # If no schema is provided, yield the rows as they are
+            return _no_cast
 
     @staticmethod
     def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Dict[str, Optional[str]]:
