@@ -17,4 +17,8 @@ data:
   tags:
     - language:low-code
     - language:python
+  _ab_internal:
+    _sl: 100
+    _ql: 200
+  supportLevel: community
 metadataSpecVersion: "1.0"
