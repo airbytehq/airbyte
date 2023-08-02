@@ -61,9 +61,9 @@ _base_user_input_schema_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
         ]
     )
@@ -338,18 +338,18 @@ _base_multi_stream_user_input_schema_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
             # The files in b.csv are emitted despite having an invalid schema
-            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
-            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
         ]
     )
@@ -536,17 +536,17 @@ multi_stream_user_input_schema_scenario_emit_nonconforming_records = (
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
-            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
         ]
     )
@@ -675,17 +675,17 @@ multi_stream_user_input_schema_scenario_skip_nonconforming_records = (
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            # {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
             #           "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            # {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
             #           "_ab_source_file_url": "b.csv"}, "stream": "stream2"},
-            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
-            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
         ]
     )
