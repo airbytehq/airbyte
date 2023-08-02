@@ -823,7 +823,7 @@ class DatetimeBasedCursor(BaseModel):
     cursor_datetime_formats: Optional[List[str]] = Field(
         None,
         description="The possible formats for the cursor field",
-        title="Cursor Datetime Format",
+        title="Cursor Datetime Formats",
     )
     cursor_granularity: Optional[str] = Field(
         None,
