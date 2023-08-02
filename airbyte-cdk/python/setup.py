@@ -50,7 +50,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
-        "airbyte-protocol-models==0.3.6",
+        "airbyte-protocol-models==0.4.0",
         "backoff",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
@@ -58,7 +58,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "genson==1.2.2",
-        "pydantic~=1.9.2",
+        "pydantic>=1.9.2,<2.0.0",
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests",
