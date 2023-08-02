@@ -120,8 +120,8 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
   @Override
   protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws InterruptedException {
     List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    String cdcDeletedAtDecl = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
-    String cdcDeletedAtName = includeCdcDeletedAt ? "`_ab_cdc_deleted_at`," : "";
+    String cdcDeletedAtDecl = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at` TIMESTAMP" : "";
+    String cdcDeletedAtName = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at`" : "";
     String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> columnNames.stream()
@@ -161,7 +161,6 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       `id1`,
                       `id2`,
                       `updated_at`,
-                      ${cdc_deleted_at_name}
                       `struct`,
                       `array`,
                       `string`,
@@ -174,6 +173,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       `time_without_timezone`,
                       `date`,
                       `unknown`
+                      ${cdc_deleted_at_name}
                     )
                     select
                       _airbyte_raw_id,
@@ -182,7 +182,6 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       cast(`id1` as int64),
                       cast(`id2` as int64),
                       `updated_at`,
-                      ${cdc_deleted_at_name}
                       parse_json(`struct`),
                       parse_json(`array`),
                       `string`,
@@ -195,6 +194,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       `time_without_timezone`,
                       `date`,
                       parse_json(`unknown`)
+                      ${cdc_deleted_at_name}
                     from unnest([
                       STRUCT<
                         _airbyte_raw_id STRING,
@@ -203,7 +203,6 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                         `id1` STRING,
                         `id2` STRING,
                         `updated_at` TIMESTAMP,
-                        ${cdc_deleted_at_decl}
                         `struct` STRING,
                         `array` STRING,
                         `string` STRING,
@@ -216,6 +215,7 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                         `time_without_timezone` TIME,
                         `date` DATE,
                         `unknown` STRING
+                        ${cdc_deleted_at_decl}
                       >
                       ${records}
                     ])

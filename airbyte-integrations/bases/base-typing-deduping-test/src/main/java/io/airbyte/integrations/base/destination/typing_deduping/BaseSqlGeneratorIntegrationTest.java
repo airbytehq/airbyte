@@ -312,22 +312,21 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void cdcImmediateDeletion() throws Exception {
     createRawTable(streamId);
     createFinalTable(true, streamId, "");
-    List<JsonNode> records = singletonList(Jsons.deserialize(
-        """
-            {
-              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
-              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {
-                "id1": 1,
-                "id2": 100,
-                "updated_at": "2023-01-01T00:00:00Z",
-                "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
-            }
-            """));
     insertRawTableRecords(
         streamId,
-        records);
+        singletonList(Jsons.deserialize(
+            """
+                {
+                  "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "updated_at": "2023-01-01T00:00:00Z",
+                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+                  }
+                }
+                """)));
 
     final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
     destinationHandler.execute(sql);
@@ -336,6 +335,30 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         1,
         dumpRawTableRecords(streamId),
         0,
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  @Test
+  public void cdcComplexUpdate() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_raw.jsonl"));
+    insertFinalTableRecords(
+        true,
+        streamId,
+        "",
+        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_final.jsonl"));
+
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        // We keep the newest raw record per PK
+        6,
+        dumpRawTableRecords(streamId),
+        5,
         dumpFinalTableRecords(streamId, ""));
   }
 
