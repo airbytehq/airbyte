@@ -571,8 +571,8 @@ def manifest_declarative_source():
 
 def test_list_streams(manifest_declarative_source):
     manifest_declarative_source.streams.return_value = [
-        create_mock_declarative_stream(create_mock_http_stream("a name", "https://a-url-base.com", "a-path")),
-        create_mock_declarative_stream(create_mock_http_stream("another name", "https://another-url-base.com", "another-path")),
+        create_mock_declarative_stream(create_mock_retriever("a name", "https://a-url-base.com", "a-path")),
+        create_mock_declarative_stream(create_mock_retriever("another name", "https://another-url-base.com", "another-path")),
     ]
 
     result = list_streams(manifest_declarative_source, {})
@@ -634,7 +634,7 @@ def test_list_streams_integration_test():
     }
 
 
-def create_mock_http_stream(name, url_base, path):
+def create_mock_retriever(name, url_base, path):
     http_stream = mock.Mock(spec=SimpleRetriever, autospec=True)
     http_stream.name = name
     http_stream.requester = MagicMock()
@@ -704,12 +704,12 @@ def _create_response(body, request):
     return response
 
 
-def _create_page(response_body):
+def _create_page_response(response_body):
     request = _create_request()
     return _create_response(response_body, request)
 
 
-@patch.object(requests.Session, "send", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
+@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -750,7 +750,7 @@ def test_read_source(mock_http_stream):
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
 
 
-@patch.object(requests.Session, "send", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
+@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
 def test_read_source_single_page_single_slice(mock_http_stream):
     max_records = 100
     max_pages_per_slice = 1
