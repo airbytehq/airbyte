@@ -19,7 +19,7 @@ run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build
 jobs:
   test_connectors:
     name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for GA and Beta connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
-    timeout-minutes: 480 # 8 hours
+    timeout-minutes: 720 # 12 hours
     runs-on: ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}
     steps:
       - name: Checkout Airbyte

@@ -17,6 +17,7 @@ MAIN_REQUIREMENTS = [
     "typing_extensions==4.5.0",
     "pydantic==1.10.8",
     "pandas==1.4.2",
+    "chromadb==0.4.3",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]

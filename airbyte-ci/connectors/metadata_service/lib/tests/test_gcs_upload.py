@@ -84,7 +84,7 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
 def test_upload_metadata_to_gcs_valid_metadata(
     mocker, valid_metadata_upload_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash
 ):
-    mocker.spy(gcs_upload, "_prerelease_upload")
+    mocker.spy(gcs_upload, "_version_upload")
     mocker.spy(gcs_upload, "_latest_upload")
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
@@ -100,40 +100,40 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
         # Call function under tests
 
-        uploaded, blob_id = gcs_upload.upload_metadata_to_gcs(
+        upload_info = gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
         )
 
         # Assertions
 
-        gcs_upload._prerelease_upload.assert_not_called()
+        gcs_upload._version_upload.assert_called()
         gcs_upload._latest_upload.assert_called()
 
         gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
         mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
         mocks["mock_bucket"].blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
-        assert blob_id == mocks["mock_version_blob"].id
+        assert upload_info.version_blob_id == mocks["mock_version_blob"].id
 
         if not version_blob_exists:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if not latest_blob_exists:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if version_blob_md5_hash != local_file_md5_hash:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         if latest_blob_md5_hash != local_file_md5_hash:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert uploaded
+            assert upload_info.uploaded
 
         # clear the call count
         gcs_upload._latest_upload.reset_mock()
-        gcs_upload._prerelease_upload.assert_not_called()
+        gcs_upload._version_upload.reset_mock()
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
@@ -173,14 +173,14 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
 def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files):
     # Arrange
     setup_upload_mocks(mocker, "new_md5_hash1", "new_md5_hash2", "new_md5_hash3")
-    mocker.patch("metadata_service.gcs_upload._latest_upload", return_value=None)
-    mocker.patch("metadata_service.gcs_upload.upload_file_if_changed", return_value=None)
-    mocker.spy(gcs_upload, "_prerelease_upload")
+    mocker.patch("metadata_service.gcs_upload._latest_upload", return_value=(True, "someid"))
+    mocker.patch("metadata_service.gcs_upload.upload_file_if_changed", return_value=(True, "someid"))
+    mocker.spy(gcs_upload, "_version_upload")
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
         # Assuming there is a valid metadata file in the list, if not, you might need to create one
         metadata_file_path = pathlib.Path(valid_metadata_upload_file)
-        prerelease_image_tag = "prerelease_image_tag"
+        prerelease_image_tag = "1.5.6-dev.f80318f754"
 
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
@@ -190,18 +190,16 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
 
         gcs_upload._latest_upload.assert_not_called()
 
-        # Assert that _prerelease_upload is called and the third argument is prerelease_image_tag
+        # Assert that _version_upload is called and the third argument is prerelease_image_tag
         # Ignore the first and second arguments (_ and __ are often used as placeholder variable names in Python when you don't care about the value)
-        _, __, prerelease_tag = gcs_upload._prerelease_upload.call_args[0]
-        assert prerelease_tag == prerelease_image_tag
+        _, __, tmp_metadata_file_path = gcs_upload._version_upload.call_args[0]
+        assert prerelease_image_tag in str(tmp_metadata_file_path)
 
         # Verify the tmp metadata is overridden
-        metadata, error = gcs_upload.validate_and_load(metadata_file_path, [])
-        expected_tmp_metadata_file_path = pathlib.Path("/tmp") / metadata.data.dockerRepository / prerelease_image_tag / METADATA_FILE_NAME
-        assert expected_tmp_metadata_file_path.exists(), f"{expected_tmp_metadata_file_path} does not exist"
+        assert tmp_metadata_file_path.exists(), f"{tmp_metadata_file_path} does not exist"
 
         # verify that the metadata is overrode
-        tmp_metadata, error = gcs_upload.validate_and_load(expected_tmp_metadata_file_path, [])
+        tmp_metadata, error = gcs_upload.validate_and_load(tmp_metadata_file_path, [])
         tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
         assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
         for registry in get(tmp_metadata_dict, "data.registries", {}).values():

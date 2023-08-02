@@ -30,6 +30,63 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 
 ### Indexing
 
+#### Pinecone vector store
+
+For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. Both OpenAI and Fake embeddings are produced with 1536 vector dimensions, make sure to configure the index accordingly.
+
+To initialize a langchain QA chain based on the indexed data, use the following code (set the open API key and pinecone key and environment as `OPENAI_API_KEY`, `PINECONE_KEY` and `PINECONE_ENV` env variables):
+
+```python
+from langchain import OpenAI
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+from langchain.vectorstores import Pinecone
+from langchain.embeddings import OpenAIEmbeddings
+import pinecone
+import os
+
+embeddings = OpenAIEmbeddings()
+pinecone.init(api_key=os.environ["PINECONE_KEY"], environment=os.environ["PINECONE_ENV"])
+index = pinecone.Index("<your pinecone index name>")
+vector_store = Pinecone(index, embeddings.embed_query, "text")
+
+qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
+```
+
+#### Chroma vector store
+
+The [Chroma vector store](https://trychroma.com) is running the Chroma embedding database as persistent client and stores the vectors in a local file.
+
+The `destination_path` has to start with `/local`. Any directory nesting within local will be mapped onto the local mount.
+
+By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
+
+The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` is substituted by `/tmp/airbyte_local` by default.
+
+To initialize a langchain QA chain based on the indexed data, use the following code (set the openai API key as `OPENAI_API_KEY` env variable):
+
+```python
+from langchain import OpenAI
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings()
+vector_store = Chroma(embedding_function=embeddings, persist_directory="/tmp/airbyte_local/<your configured directory>")
+
+qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
+```
+
+:::caution
+
+Chroma is meant to be used on a local workstation and won't work on Kubernetes.
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
+
+
 #### DocArrayHnswSearch vector store
 
 For local testing, the [DocArrayHnswSearch](https://python.langchain.com/docs/modules/data_connection/vectorstores/integrations/docarray_hnsw) is recommended - it stores the vectors in a local file with a sqlite database for metadata. It is not suitable for production use, but it is the easiest to set up for testing and development purposes.
@@ -71,33 +128,12 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 :::
 
-#### Pinecone vector store
-
-For production use, use the pinecone vector store. Use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. Both OpenAI and Fake embeddings are produced with 1536 vector dimensions, make sure to configure the index accordingly.
-
-To initialize a langchain QA chain based on the indexed data, use the following code (set the open API key and pinecone key and environment as `OPENAI_API_KEY`, `PINECONE_KEY` and `PINECONE_ENV` env variables):
-
-```python
-from langchain import OpenAI
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
-from langchain.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
-import pinecone
-import os
-
-embeddings = OpenAIEmbeddings()
-pinecone.init(api_key=os.environ["PINECONE_KEY"], environment=os.environ["PINECONE_ENV"])
-index = pinecone.Index("<your pinecone index name>")
-vector_store = Pinecone(index, embeddings.embed_query, "text")
-
-qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
-```
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.5   | 2023-07-25 | [#28605](https://github.com/airbytehq/airbyte/pull/28605)     | Add Chroma support  |
 | 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556)     | Correctly dedupe records with composite and nested primary keys  |
 | 0.0.3   | 2023-07-20 | [#28509](https://github.com/airbytehq/airbyte/pull/28509)     | Change the base image to python:3.9-slim to fix build  |
 | 0.0.2   | 2023-07-18 | [#26184](https://github.com/airbytehq/airbyte/pull/28398)     | Adjust python dependencies and release on cloud  |

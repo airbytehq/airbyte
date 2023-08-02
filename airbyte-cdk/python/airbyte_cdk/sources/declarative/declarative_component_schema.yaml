@@ -624,6 +624,16 @@ definitions:
         examples:
           - "2020-01-1T00:00:00Z"
           - "{{ config['start_time'] }}"
+      cursor_datetime_formats:
+        title: Cursor Datetime Formats
+        description: The possible formats for the cursor field
+        type: array
+        items:
+          type: string
+          examples:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%d"
+            - "%s"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -1050,7 +1060,7 @@ definitions:
           - "PT1H"
           - "P1D"
       request_authentication:
-        title: Data request authentication
+        title: Data Request Authentication
         description: Authentication method to use for requests sent to the API, specifying how to inject the session token.
         anyOf:
           - "$ref": "#/definitions/SessionTokenRequestApiKeyAuthenticator"
@@ -1800,7 +1810,7 @@ definitions:
           - segment_id
       inject_into:
         title: Inject Into
-        description: Configures where the descriptor should be set on the HTTP requests.
+        description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
         enum:
           - request_parameter
           - header

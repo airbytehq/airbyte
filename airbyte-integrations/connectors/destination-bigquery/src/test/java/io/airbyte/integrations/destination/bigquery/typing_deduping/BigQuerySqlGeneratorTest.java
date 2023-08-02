@@ -19,12 +19,16 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -88,6 +92,23 @@ public class BigQuerySqlGeneratorTest {
             null,
             DestinationSyncMode.OVERWRITE,
             null,
+            null,
+            null);
+    Assertions.assertTrue(generator.clusteringMatches(stream, existingTable));
+
+    // Clustering only the first 3 PK columns (See https://github.com/airbytehq/oncall/issues/2565)
+    final var expectedStreamColumnNames = List.of("a", "b", "c");
+    Mockito.when(existingTable.getClustering())
+            .thenReturn(Clustering.newBuilder().setFields(
+                    Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
+                            .collect(Collectors.toList()))
+                    .build());
+    stream = new StreamConfig(null,
+            null,
+            DestinationSyncMode.APPEND_DEDUP,
+            Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
+                    .map(name -> new ColumnId(name, "foo", "bar"))
+                    .collect(Collectors.toList()),
             null,
             null);
     Assertions.assertTrue(generator.clusteringMatches(stream, existingTable));
