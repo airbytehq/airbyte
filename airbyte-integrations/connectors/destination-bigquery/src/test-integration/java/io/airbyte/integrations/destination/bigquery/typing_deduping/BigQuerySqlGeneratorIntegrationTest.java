@@ -22,6 +22,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -39,16 +40,19 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterEach;
@@ -816,6 +820,47 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
+  @Test
+  public void testMigrateFromV1toV2() throws InterruptedException {
+    createV1RawTable();
+    final StreamId aStreamId = new StreamId(null, null, testDataset, "_users_v2_raw", null, null);
+    final StreamConfig stream = new StreamConfig(aStreamId, null, null, null, null, null);
+    final AirbyteStreamNameNamespacePair v1RawNameNamespacePair = new AirbyteStreamNameNamespacePair("_users_v1_raw", testDataset);
+    // Load data into v1 raw table
+    Map<String, String> replacementValues = new HashMap<>();
+    replacementValues.put("dataset", testDataset);
+    IntStream.range(0, 2).forEach(i -> replacementValues.put("id_%d".formatted(i), UUID.randomUUID().toString()));
+    bqExecuteQuery(replacementValues, """
+        INSERT INTO ${dataset}._users_v1_raw (`_airbyte_ab_id`, `_airbyte_data`, `_airbyte_emitted_at`) VALUES
+        ('${id_0}', '{"hello": "world"}', '2023-01-01T00:00:00Z'),
+        ('${id_1}', '{"hello": "world"}', '2023-01-01T00:00:00Z');
+        """);
+    final String migration = GENERATOR.migrateFromV1toV2(stream, v1RawNameNamespacePair);
+    destinationHandler.execute(migration);
+    // Get v1 raw table, make sure it still exists
+    final var v1RawRows = bqExecuteQuery(Map.of("dataset", testDataset), "SELECT * FROM ${dataset}._users_v1_raw;").getTotalRows();
+    assertEquals(2, v1RawRows);
+    // Get v2 raw table, make sure it exists and has the correct schema
+    final var v2RawRows = bqExecuteQuery(Map.of("dataset", testDataset), "SELECT * FROM ${dataset}._users_v2_raw;").getTotalRows();
+    assertEquals(2, v2RawRows);
+    final var expectedV2Schema = Map.of(
+        "_airbyte_raw_id", LegacySQLTypeName.STRING,
+        "_airbyte_data", LegacySQLTypeName.JSON,
+        "_airbyte_extracted_at", LegacySQLTypeName.TIMESTAMP,
+        "_airbyte_loaded_at", LegacySQLTypeName.TIMESTAMP
+    );
+    bq.getTable(TableId.of(testDataset, "_users_v2_raw")).getDefinition().getSchema().getFields().stream()
+        .allMatch(field -> field.getType().equals(expectedV2Schema.get(field.getName())));
+    // Verify that all ids from v1 are present in v2
+    final var missingIds = bqExecuteQuery(Map.of("dataset", testDataset), """
+        SELECT v1._airbyte_ab_id as id from `${dataset}._users_v1_raw` as v1
+        LEFT JOIN `${dataset}._users_v2_raw` as v2
+        ON v1._airbyte_ab_id = v2._airbyte_raw_id
+        WHERE v2._airbyte_raw_id is null
+        """).getTotalRows();
+    assertEquals(0, missingIds);
+  }
+
   private StreamConfig incrementalDedupStreamConfig() {
     return new StreamConfig(
         streamId,
@@ -953,9 +998,19 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build());
   }
 
+  private void createV1RawTable() throws InterruptedException {
+    bqExecuteQuery(Map.of("dataset", testDataset), """
+        CREATE TABLE ${dataset}._users_v1_raw (
+          _airbyte_ab_id STRING NOT NULL,
+          _airbyte_data STRING NOT NULL,
+          _airbyte_emitted_at TIMESTAMP
+        );
+        """);
+  }
+
   /**
-   * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory).
-   * That's annoying for us since we're working with small test data, so just pull everything into a list.
+   * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all into memory). That's annoying for us since we're
+   * working with small test data, so just pull everything into a list.
    */
   public static List<JsonNode> toJsonRecords(final TableResult result) {
     return result.streamAll().map(row -> toJson(result.getSchema(), row)).toList();
@@ -993,6 +1048,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
       }
     }
     return json;
+  }
+
+  private TableResult bqExecuteQuery(final Map<String, String> valueMap, final String templateString) throws InterruptedException {
+    return bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(valueMap).replace(templateString)).build());
   }
 
 }
