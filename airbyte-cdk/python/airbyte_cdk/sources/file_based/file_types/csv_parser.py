@@ -112,13 +112,13 @@ class CsvParser(FileTypeParser):
                 yield CsvParser._to_nullable(cast_fn(row), config_format.null_values)
 
     @staticmethod
-    def _get_cast_function(schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger):
+    def _get_cast_function(
+        schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger
+    ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if schema:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            return partial(
-                cast_types, property_types=property_types, config_format=config_format, logger=logger
-            )
+            return partial(cast_types, property_types=property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are
             return _no_cast
