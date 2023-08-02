@@ -12,10 +12,10 @@ inputs:
     required: true
   docker_hub_username:
     description: "Dockerhub username"
-    required: true
+    required: false
   docker_hub_password:
     description: "Dockerhub password"
-    required: true
+    required: false
   options:
     description: "Options for the subcommand"
     required: false
@@ -62,6 +62,12 @@ inputs:
     required: false
   ci_job_key:
     description: "CI job key"
+    required: false
+  pypi_username:
+    description: "PyPI username"
+    required: false
+  pypi_password:
+    description: "PyPI password"
     required: false
 runs:
   using: "composite"
@@ -120,4 +126,6 @@ runs:
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
         DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
         DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
+        PYPI_USERNAME: ${{ inputs.pypi_username }}
+        PYPI_PASSWORD: ${{ inputs.pypi_password }}
         CI: "True"
