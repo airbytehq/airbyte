@@ -2,25 +2,84 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/typeform",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Typeform Spec",
+    "title": "Source Typeform Spec",
     "type": "object",
-    "required": ["token", "start_date"],
+    "required": ["credentials"],
     "additionalProperties": true,
     "properties": {
-      "token": {
-        "type": "string",
-        "description": "The API Token for a Typeform account.",
-        "title": "API Token",
-        "airbyte_secret": true,
-        "order": 0
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "order": 0,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "access_token",
+              "token_expiry_date"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0"
+              },
+              "client_id": {
+                "type": "string",
+                "description": "The Client ID of the Typeform developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "The Client Secret the Typeform developer application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "token_expiry_date": {
+                "type": "string",
+                "description": "The date-time when the access token should be refreshed.",
+                "format": "date-time"
+              },
+              "refresh_token": {
+                "type": "string",
+                "description": "The key to refresh the expired access_token.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Private Token",
+            "type": "object",
+            "required": ["access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "access_token"
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Private Token",
+                "description": "Log into your Typeform account and then generate a personal Access Token.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
       "start_date": {
         "type": "string",
-        "description": "UTC date and time in the format: YYYY-MM-DDTHH:mm:ss[Z]. Any data before this date will not be replicated.",
         "title": "Start Date",
-        "examples": ["2020-01-01T00:00:00Z"],
+        "description": "The date from which you'd like to replicate data for Typeform API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "order": 1,
+        "order": 2,
         "format": "date-time"
       },
       "form_ids": {
@@ -31,8 +90,58 @@
           "type": "string"
         },
         "uniqueItems": true,
-        "order": 2
+        "order": 3
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          },
+          "token_expiry_date": {
+            "type": "string",
+            "format": "date-time",
+            "path_in_connector_config": ["credentials", "token_expiry_date"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
       }
     }
   }
 }
+

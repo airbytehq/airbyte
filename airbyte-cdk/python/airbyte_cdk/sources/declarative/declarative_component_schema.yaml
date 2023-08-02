@@ -613,6 +613,27 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+      start_datetime:
+        title: Start Datetime
+        description: The datetime that determines the earliest record that should be synced.
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
+        examples:
+          - "2020-01-1T00:00:00Z"
+          - "{{ config['start_time'] }}"
+      cursor_datetime_formats:
+        title: Cursor Datetime Formats
+        description: The possible formats for the cursor field
+        type: array
+        items:
+          type: string
+          examples:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%d"
+            - "%s"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -633,28 +654,14 @@ definitions:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
           - "{{ day_delta(-1) }}"
-      start_datetime:
-        title: Start Datetime
-        description: The datetime that determines the earliest record that should be synced.
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/MinMaxDatetime"
-        interpolation_context:
-          - config
-        examples:
-          - "2020-01-1T00:00:00Z"
-          - "{{ config['start_time'] }}"
-      step:
-        title: Step
-        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
-        type: string
-        examples:
-          - "P1W"
-          - "{{ config['step_increment'] }}"
       end_time_option:
         title: Inject End Time Into Outgoing HTTP Request
         description: Optionally configures how the end datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      is_data_feed:
+        title: Whether the target API is formatted as a data feed
+        description: A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.
+        type: boolean
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -680,6 +687,13 @@ definitions:
         title: Inject Start Time Into Outgoing HTTP Request
         description: Optionally configures how the start datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
+      step:
+        title: Step
+        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
+        type: string
+        examples:
+          - "P1W"
+          - "{{ config['step_increment'] }}"
       $parameters:
         type: object
         additionalProperties: true
@@ -864,6 +878,8 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
+      # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
+      # compatibility reason. We should eventually move this to align with the code.
       transformations:
         title: Transformations
         description: A list of transformations to be applied to each output record.
@@ -1004,6 +1020,81 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  SessionTokenAuthenticator:
+    type: object
+    required:
+      - type
+      - login_requester
+      - session_token_path
+      - request_authentication
+    properties:
+      type:
+        type: string
+        enum: [SessionTokenAuthenticator]
+      login_requester:
+        title: Login Requester
+        description: Description of the request to perform to obtain a session token to perform data requests. The response body is expected to be a JSON object with a session token property.
+        "$ref": "#/definitions/HttpRequester"
+        examples:
+          - type: HttpRequester
+            url_base: "https://my_api.com"
+            path: "/login"
+            authenticator:
+              type: BasicHttpAuthenticator
+              username: "{{ config.username }}"
+              password: "{{ config.password }}"
+      session_token_path:
+        title: Session Token Path
+        description: The path in the response body returned from the login requester to the session token.
+        examples:
+          - ["access_token"]
+          - ["result", "token"]
+        type: array
+        items:
+          type: string
+      expiration_duration:
+        title: Expiration Duration
+        description: The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.
+        type: string
+        examples:
+          - "PT1H"
+          - "P1D"
+      request_authentication:
+        title: Data Request Authentication
+        description: Authentication method to use for requests sent to the API, specifying how to inject the session token.
+        anyOf:
+          - "$ref": "#/definitions/SessionTokenRequestApiKeyAuthenticator"
+          - "$ref": "#/definitions/SessionTokenRequestBearerAuthenticator"
+      $parameters:
+        type: object
+        additionalProperties: true
+  SessionTokenRequestApiKeyAuthenticator:
+    type: object
+    title: API Key Authenticator
+    description: Authenticator for requests using the session token as an API key that's injected into the request.
+    required:
+      - type
+      - inject_into
+    properties:
+      type:
+        enum: [ApiKey]
+      inject_into:
+        title: Inject API Key Into Outgoing HTTP Request
+        description: Configure how the API Key will be sent in requests to the source API.
+        "$ref": "#/definitions/RequestOption"
+        examples:
+          - inject_into: header
+            field_name: Authorization
+          - inject_into: request_parameter
+            field_name: authKey
+  SessionTokenRequestBearerAuthenticator:
+    title: Bearer Authenticator
+    description: Authenticator for requests using the session token as a standard bearer token.
+    required:
+      - type
+    properties:
+      type:
+        enum: [Bearer]
   HttpRequester:
     title: HTTP Requester
     description: Requester submitting HTTP requests and extracting records from the response.
@@ -1051,6 +1142,7 @@ definitions:
           - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
+          - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.
@@ -1073,7 +1165,7 @@ definitions:
           - POST
       request_body_data:
         title: Request Body Payload (Non-JSON)
-        description: Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.
+        description: Specifies how to populate the body of the request with a non-JSON payload. Plain text will be sent as is, whereas objects will be converted to a urlencoded form.
         anyOf:
           - type: string
           - type: object
@@ -1718,7 +1810,7 @@ definitions:
           - segment_id
       inject_into:
         title: Inject Into
-        description: Configures where the descriptor should be set on the HTTP requests.
+        description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
         enum:
           - request_parameter
           - header
@@ -1734,9 +1826,9 @@ definitions:
     description: The stream schemas representing the shape of the data emitted by the stream.
     type: object
     additionalProperties: true
-  SessionTokenAuthenticator:
+  LegacySessionTokenAuthenticator:
     title: Session Token Authenticator
-    description: Authenticator for requests authenticated using session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session.
+    description: Deprecated - use SessionTokenAuthenticator instead. Authenticator for requests authenticated using session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session.
     type: object
     required:
       - type
@@ -1747,7 +1839,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SessionTokenAuthenticator]
+        enum: [LegacySessionTokenAuthenticator]
       header:
         title: Session Request Header
         description: The name of the session token header that will be injected in the request

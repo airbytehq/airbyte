@@ -105,6 +105,12 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "preferred_locales": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

@@ -42,30 +42,22 @@ def test_source_streams():
     with open("sample_files/config.json") as f:
         config = json.load(f)
     streams = SourceStripe().streams(config=config)
-    assert len(streams) == 43
-
-
-@pytest.fixture(name="config")
-def config_fixture():
-    config = {"client_secret": "sk_test(live)_<secret>",
-              "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}
-    return config
-
-
-@pytest.fixture(name="logger_mock")
-def logger_mock_fixture():
-    return patch("source_tiktok_marketing.source.logger")
+    assert len(streams) == 46
 
 
 @patch.object(source_stripe.source, "stripe")
-def test_source_check_connection_ok(mocked_client, config, logger_mock):
-    assert SourceStripe().check_connection(
-        logger_mock, config=config) == (True, None)
+def test_source_check_connection_ok(mocked_client, config):
+    assert SourceStripe().check_connection(None, config=config) == (True, None)
 
 
 @patch.object(source_stripe.source, "stripe")
-def test_source_check_connection_failure(mocked_client, config, logger_mock):
+def test_source_check_connection_failure(mocked_client, config):
     exception = Exception("Test")
     mocked_client.Account.retrieve = Mock(side_effect=exception)
-    assert SourceStripe().check_connection(
-        logger_mock, config=config) == (False, exception)
+    assert SourceStripe().check_connection(None, config=config) == (False, exception)
+
+
+@patch.object(source_stripe.source, "stripe")
+def test_streams_are_unique(mocked_client, config):
+    streams = [s.name for s in SourceStripe().streams(config)]
+    assert sorted(streams) == sorted(set(streams))

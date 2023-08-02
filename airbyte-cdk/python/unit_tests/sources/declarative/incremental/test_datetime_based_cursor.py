@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.types import Record
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
@@ -20,6 +21,7 @@ end_date_now = InterpolatedString(string="{{ today_utc() }}", parameters={})
 cursor_field = "created"
 timezone = datetime.timezone.utc
 NO_STATE = {}
+ANY_SLICE = {}
 
 
 class MockedNowDatetime(datetime.datetime):
@@ -336,54 +338,90 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, last_record, expected_state",
+    "test_name, previous_cursor, stream_slice, latest_record_data, expected_state",
     [
         (
-            "test_update_state_with_state_equals_record",
-            None,
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            "test_close_slice_previous_cursor_is_highest",
+            "2023-01-01",
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2021-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_slice_not_matching_record_than_use_record_cursor_field",
-            None,
-            {"start_time": "2021-01-03T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            "test_close_slice_stream_slice_partition_end_is_highest",
+            "2021-01-01",
+            {"end_time": "2023-01-01"},
+            {cursor_field: "2021-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_state_less_than_record",
-            None,
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            "test_close_slice_latest_record_cursor_value_is_highest",
+            "2021-01-01",
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2023-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_state_less_than_previous_cursor",
-            "2021-01-03T00:00:00.000000+0000",
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
-            {},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            "test_close_slice_without_latest_record",
+            "2021-01-01",
+            {"end_time": "2022-01-01"},
+            None,
+            {cursor_field: "2022-01-01"},
+        ),
+        (
+            "test_close_slice_without_cursor",
+            None,
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2023-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
     ],
 )
-def test_update_state(test_name, previous_cursor, stream_slice, last_record, expected_state):
-    slicer = DatetimeBasedCursor(
+def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_data, expected_state):
+    cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
-        step="P1D",
         cursor_field=InterpolatedString(string=cursor_field, parameters={}),
-        datetime_format=datetime_format,
-        cursor_granularity=cursor_granularity,
-        lookback_window=InterpolatedString(string="0d", parameters={}),
+        datetime_format="%Y-%m-%d",
         config=config,
         parameters={},
     )
-    slicer._cursor = previous_cursor
-    slicer.update_state(stream_slice, last_record)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+    cursor._cursor = previous_cursor
+    cursor.close_slice(stream_slice, Record(latest_record_data, stream_slice) if latest_record_data else None)
+    updated_state = cursor.get_stream_state()
+    assert updated_state == expected_state
+
+
+def test_given_different_format_and_slice_is_highest_when_close_slice_then_slice_datetime_format():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=cursor_field,
+        datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
+        cursor_datetime_formats=["%Y-%m-%d"],
+        config=config,
+        parameters={},
+    )
+
+    _slice = {"end_time": "2023-01-04T17:30:19.000Z"}
+    record_cursor_value = "2023-01-03"
+    cursor.close_slice(_slice, Record({cursor_field: record_cursor_value}, _slice))
+
+    assert cursor.get_stream_state()[cursor_field] == "2023-01-04T17:30:19.000Z"
+
+
+def test_given_partition_end_is_specified_and_greater_than_record_when_close_slice_then_use_partition_end():
+    partition_field_end = "partition_field_end"
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        partition_field_end=partition_field_end,
+        config=config,
+        parameters={},
+    )
+    stream_slice = {partition_field_end: "2025-01-01"}
+    cursor.close_slice(stream_slice, Record({cursor_field: "2020-01-01"}, stream_slice))
+    updated_state = cursor.get_stream_state()
+    assert {cursor_field: "2025-01-01"} == updated_state
 
 
 @pytest.mark.parametrize(
@@ -445,9 +483,6 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-
-    slicer.set_initial_state(stream_slice)
-
     assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
     assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
@@ -474,7 +509,7 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         ("test_parse_date_number", "20210101", "%Y%m%d", "P1D", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
     ],
 )
-def test_parse_date(test_name, input_date, date_format, date_format_granularity, expected_output_date):
+def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(test_name, input_date, date_format, date_format_granularity, expected_output_date):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
@@ -488,6 +523,48 @@ def test_parse_date(test_name, input_date, date_format, date_format_granularity,
     )
     output_date = slicer.parse_date(input_date)
     assert expected_output_date == output_date
+
+
+@pytest.mark.parametrize(
+    "test_name, input_date, date_formats, expected_output_date",
+    [
+        (
+            "test_match_first_format",
+            "2021-01-01T00:00:00.000000+0000",
+            ["%Y-%m-%dT%H:%M:%S.%f%z", "%s"],
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            "test_match_second_format",
+            "1609459200",
+            ["%Y-%m-%dT%H:%M:%S.%f%z", "%s"],
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
+    ],
+)
+def test_parse_date(test_name, input_date, date_formats, expected_output_date):
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=date_formats,
+        config=config,
+        parameters={},
+    )
+    assert slicer.parse_date(input_date) == expected_output_date
+
+
+def test_given_unknown_format_when_parse_date_then_raise_error():
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=["%Y-%m-%d", "%s"],
+        config=config,
+        parameters={},
+    )
+    with pytest.raises(ValueError):
+        slicer.parse_date("2021-01-01T00:00:00.000000+0000")
 
 
 @pytest.mark.parametrize(
@@ -541,6 +618,20 @@ def test_cursor_granularity_but_no_step():
         )
 
 
+def test_given_multiple_cursor_datetime_format_then_slice_using_first_format():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        end_datetime=MinMaxDatetime("2023-01-10", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"],
+        config=config,
+        parameters={},
+    )
+    stream_slices = cursor.stream_slices()
+    assert stream_slices == [{"start_time": "2021-01-01", "end_time": "2023-01-10"}]
+
+
 def test_no_cursor_granularity_and_no_step_then_only_return_one_slice():
     cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
@@ -564,6 +655,119 @@ def test_no_end_datetime(mock_datetime_now):
     )
     stream_slices = cursor.stream_slices()
     assert stream_slices == [{"start_time": "2021-01-01", "end_time": FAKE_NOW.strftime("%Y-%m-%d")}]
+
+
+def test_given_no_state_and_start_before_cursor_value_when_should_be_synced_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_no_state_and_start_after_cursor_value_when_should_be_synced_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2022-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.should_be_synced(Record({cursor_field: "2021-01-01"}, ANY_SLICE))
+
+
+def test_given_state_earliest_to_start_datetime_when_should_be_synced_then_use_state_as_earliest_boundary():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    cursor.set_initial_state({cursor_field: "2023-01-01"})
+    assert not cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_start_datetime_earliest_to_state_when_should_be_synced_then_use_start_datetime_as_earliest_boundary():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2023-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    cursor.set_initial_state({cursor_field: "2021-01-01"})
+    assert not cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_end_datetime_before_cursor_value_when_should_be_synced_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2023-01-01", parameters={}),
+        end_datetime=MinMaxDatetime("2025-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.should_be_synced(Record({cursor_field: "2030-01-01"}, ANY_SLICE))
+
+
+def test_given_record_without_cursor_value_when_should_be_synced_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.should_be_synced(Record({"record without cursor value": "any"}, ANY_SLICE))
+
+
+def test_given_first_greater_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2023-01-01"}, {}), Record({"cursor_field": "2021-01-01"}, {}))
+
+
+def test_given_first_lesser_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({"cursor_field": "2023-01-01"}, {}))
+
+
+def test_given_no_cursor_value_for_second_than_second_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.is_greater_than_or_equal(Record({"cursor_field": "2021-01-01"}, {}), Record({}, {}))
+
+
+def test_given_no_cursor_value_for_first_than_second_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field="cursor_field",
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.is_greater_than_or_equal(Record({}, {}), Record({"cursor_field": "2021-01-01"}, {}))
 
 
 if __name__ == "__main__":

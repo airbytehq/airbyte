@@ -369,6 +369,10 @@ class ExponentialBackoffStrategy(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class SessionTokenRequestBearerAuthenticator(BaseModel):
+    type: Literal["Bearer"]
+
+
 class HttpMethodEnum(Enum):
     GET = "GET"
     POST = "POST"
@@ -618,7 +622,7 @@ class RequestOption(BaseModel):
     )
     inject_into: InjectInto = Field(
         ...,
-        description="Configures where the descriptor should be set on the HTTP requests.",
+        description="Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.",
         examples=["request_parameter", "header", "body_data", "body_json"],
         title="Inject Into",
     )
@@ -631,8 +635,8 @@ class Schemas(BaseModel):
         extra = Extra.allow
 
 
-class SessionTokenAuthenticator(BaseModel):
-    type: Literal["SessionTokenAuthenticator"]
+class LegacySessionTokenAuthenticator(BaseModel):
+    type: Literal["LegacySessionTokenAuthenticator"]
     header: str = Field(
         ...,
         description="The name of the session token header that will be injected in the request",
@@ -810,6 +814,17 @@ class DatetimeBasedCursor(BaseModel):
         examples=["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d", "%s"],
         title="Cursor Field Datetime Format",
     )
+    start_datetime: Union[str, MinMaxDatetime] = Field(
+        ...,
+        description="The datetime that determines the earliest record that should be synced.",
+        examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
+        title="Start Datetime",
+    )
+    cursor_datetime_formats: Optional[List[str]] = Field(
+        None,
+        description="The possible formats for the cursor field",
+        title="Cursor Datetime Formats",
+    )
     cursor_granularity: Optional[str] = Field(
         None,
         description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",
@@ -822,22 +837,15 @@ class DatetimeBasedCursor(BaseModel):
         examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )
-    start_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the earliest record that should be synced.",
-        examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
-        title="Start Datetime",
-    )
-    step: Optional[str] = Field(
-        None,
-        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
-        examples=["P1W", "{{ config['step_increment'] }}"],
-        title="Step",
-    )
     end_time_option: Optional[RequestOption] = Field(
         None,
         description="Optionally configures how the end datetime will be sent in requests to the source API.",
         title="Inject End Time Into Outgoing HTTP Request",
+    )
+    is_data_feed: Optional[bool] = Field(
+        None,
+        description="A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.",
+        title="Whether the target API is formatted as a data feed",
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -861,6 +869,12 @@ class DatetimeBasedCursor(BaseModel):
         None,
         description="Optionally configures how the start datetime will be sent in requests to the source API.",
         title="Inject Start Time Into Outgoing HTTP Request",
+    )
+    step: Optional[str] = Field(
+        None,
+        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
+        examples=["P1W", "{{ config['step_increment'] }}"],
+        title="Step",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -934,6 +948,19 @@ class DpathExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class SessionTokenRequestApiKeyAuthenticator(BaseModel):
+    type: Literal["ApiKey"]
+    inject_into: RequestOption = Field(
+        ...,
+        description="Configure how the API Key will be sent in requests to the source API.",
+        examples=[
+            {"inject_into": "header", "field_name": "Authorization"},
+            {"inject_into": "request_parameter", "field_name": "authKey"},
+        ],
+        title="Inject API Key Into Outgoing HTTP Request",
+    )
+
+
 class ListPartitionRouter(BaseModel):
     type: Literal["ListPartitionRouter"]
     cursor_field: str = Field(
@@ -997,93 +1024,6 @@ class CompositeErrorHandler(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class HttpRequester(BaseModel):
-    type: Literal["HttpRequester"]
-    url_base: str = Field(
-        ...,
-        description="Base URL of the API source. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.",
-        examples=[
-            "https://connect.squareup.com/v2",
-            "{{ config['base_url'] or 'https://app.posthog.com'}}/api/",
-        ],
-        title="API Base URL",
-    )
-    path: str = Field(
-        ...,
-        description="Path the specific API endpoint that this stream represents. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.",
-        examples=[
-            "/products",
-            "/quotes/{{ stream_partition['id'] }}/quote_line_groups",
-            "/trades/{{ config['symbol_id'] }}/history",
-        ],
-        title="URL Path",
-    )
-    authenticator: Optional[
-        Union[
-            ApiKeyAuthenticator,
-            BasicHttpAuthenticator,
-            BearerAuthenticator,
-            CustomAuthenticator,
-            OAuthAuthenticator,
-            NoAuth,
-            SessionTokenAuthenticator,
-        ]
-    ] = Field(
-        None,
-        description="Authentication method to use for requests sent to the API.",
-        title="Authenticator",
-    )
-    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = Field(
-        None,
-        description="Error handler component that defines how to handle errors.",
-        title="Error Handler",
-    )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        "GET",
-        description="The HTTP method used to fetch data from the source (can be GET or POST).",
-        examples=["GET", "POST"],
-        title="HTTP Method",
-    )
-    request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
-        examples=[
-            '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_interval[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
-        ],
-        title="Request Body Payload (Non-JSON)",
-    )
-    request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
-        None,
-        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
-        examples=[
-            {"sort_order": "ASC", "sort_field": "CREATED_AT"},
-            {"key": "{{ config['value'] }}"},
-            {"sort": {"field": "updated_at", "order": "ascending"}},
-        ],
-        title="Request Body JSON Payload",
-    )
-    request_headers: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.",
-        examples=[{"Output-Format": "JSON"}, {"Version": "{{ config['version'] }}"}],
-        title="Request Headers",
-    )
-    request_parameters: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.",
-        examples=[
-            {"unit": "day"},
-            {
-                "query": 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
-            },
-            {"searchIn": "{{ ','.join(config.get('search_in', [])) }}"},
-            {"sort_by[asc]": "updated_at"},
-        ],
-        title="Query Parameters",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class DeclarativeSource(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -1127,6 +1067,133 @@ class DeclarativeStream(BaseModel):
         None,
         description="A list of transformations to be applied to each output record.",
         title="Transformations",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
+class SessionTokenAuthenticator(BaseModel):
+    type: Literal["SessionTokenAuthenticator"]
+    login_requester: HttpRequester = Field(
+        ...,
+        description="Description of the request to perform to obtain a session token to perform data requests. The response body is expected to be a JSON object with a session token property.",
+        examples=[
+            {
+                "type": "HttpRequester",
+                "url_base": "https://my_api.com",
+                "path": "/login",
+                "authenticator": {
+                    "type": "BasicHttpAuthenticator",
+                    "username": "{{ config.username }}",
+                    "password": "{{ config.password }}",
+                },
+            }
+        ],
+        title="Login Requester",
+    )
+    session_token_path: List[str] = Field(
+        ...,
+        description="The path in the response body returned from the login requester to the session token.",
+        examples=[["access_token"], ["result", "token"]],
+        title="Session Token Path",
+    )
+    expiration_duration: Optional[str] = Field(
+        None,
+        description="The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.",
+        examples=["PT1H", "P1D"],
+        title="Expiration Duration",
+    )
+    request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
+        ...,
+        description="Authentication method to use for requests sent to the API, specifying how to inject the session token.",
+        title="Data Request Authentication",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
+class HttpRequester(BaseModel):
+    type: Literal["HttpRequester"]
+    url_base: str = Field(
+        ...,
+        description="Base URL of the API source. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.",
+        examples=[
+            "https://connect.squareup.com/v2",
+            "{{ config['base_url'] or 'https://app.posthog.com'}}/api/",
+        ],
+        title="API Base URL",
+    )
+    path: str = Field(
+        ...,
+        description="Path the specific API endpoint that this stream represents. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.",
+        examples=[
+            "/products",
+            "/quotes/{{ stream_partition['id'] }}/quote_line_groups",
+            "/trades/{{ config['symbol_id'] }}/history",
+        ],
+        title="URL Path",
+    )
+    authenticator: Optional[
+        Union[
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
+            CustomAuthenticator,
+            OAuthAuthenticator,
+            NoAuth,
+            SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
+        ]
+    ] = Field(
+        None,
+        description="Authentication method to use for requests sent to the API.",
+        title="Authenticator",
+    )
+    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = Field(
+        None,
+        description="Error handler component that defines how to handle errors.",
+        title="Error Handler",
+    )
+    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
+        "GET",
+        description="The HTTP method used to fetch data from the source (can be GET or POST).",
+        examples=["GET", "POST"],
+        title="HTTP Method",
+    )
+    request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Specifies how to populate the body of the request with a non-JSON payload. Plain text will be sent as is, whereas objects will be converted to a urlencoded form.",
+        examples=[
+            '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_interval[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
+        ],
+        title="Request Body Payload (Non-JSON)",
+    )
+    request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
+        None,
+        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
+        examples=[
+            {"sort_order": "ASC", "sort_field": "CREATED_AT"},
+            {"key": "{{ config['value'] }}"},
+            {"sort": {"field": "updated_at", "order": "ascending"}},
+        ],
+        title="Request Body JSON Payload",
+    )
+    request_headers: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.",
+        examples=[{"Output-Format": "JSON"}, {"Version": "{{ config['version'] }}"}],
+        title="Request Headers",
+    )
+    request_parameters: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.",
+        examples=[
+            {"unit": "day"},
+            {
+                "query": 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
+            },
+            {"searchIn": "{{ ','.join(config.get('search_in', [])) }}"},
+            {"sort_by[asc]": "updated_at"},
+        ],
+        title="Query Parameters",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -1196,4 +1263,5 @@ class SubstreamPartitionRouter(BaseModel):
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
 DeclarativeStream.update_forward_refs()
+SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

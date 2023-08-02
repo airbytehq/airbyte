@@ -23,6 +23,8 @@
   --ifm-alert-shadow: none;
   --ifm-menu-color: var(--ifm-color-emphasis-900);
   --ifm-hover-overlay: rgb(0 0 0 / 2%);
+  --color-active-nav-item-background: #f4f4ff;
+  --color-active-nav-item-text: var(--ifm-color-primary-darker);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -35,6 +37,8 @@ html[data-theme="dark"] {
   --ifm-color-primary-light: #8381ff;
   --ifm-color-primary-lighter: #9492ff;
   --ifm-color-primary-lightest: #c8c7ff;
+  --color-active-nav-item-background: #272729;
+  --color-active-nav-item-text: var(--ifm-color-primary-lighter);
 }
 
 .docusaurus-highlight-code-line {
@@ -75,10 +79,12 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
 }
 
 .navbar__category {
-  font-weight: 200;
+  font-weight: 700;
   font-size: 0.8em;
-  opacity: 0.8;
-  padding: 1em var(--ifm-menu-link-padding-horizontal) 0;
+  padding: .4em 0 .4em .4em;
+  margin-top: 1.1em;
+  color: var(--docsearch-text-color);
+  background-color: var(--ifm-hover-overlay);
 }
 
 .codeBlockContainer_I0IT {
@@ -99,3 +105,15 @@ img {
   background: var(--ifm-menu-link-sublist-icon) 50%/2rem 2rem;
   min-width: 1.25rem;
 }
+
+ /* These properties set the color of the active item in the navbar (background and text).
+ The variables for them have been added to :root at the top of this file */
+ 
+ .menu__link--active,
+ .menu__link--active:not(.menu__link--sublist),
+ .menu__list-item-collapsible--active,
+ .menu__list-item-collapsible--active:hover {
+   background: var(--color-active-nav-item-background);
+   color: var(--color-active-nav-item-text);
+ }
+ 

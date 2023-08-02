@@ -39,6 +39,23 @@
       "type": "string",
       "description": "Type of permissions"
     },
+    "conditions":{
+      "type": ["null", "object"],
+      "properties": {
+        "included": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
     "created": {
       "format": "date-time",
       "type": "string"

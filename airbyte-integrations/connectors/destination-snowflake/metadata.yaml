@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 1.0.6
+  dockerImageTag: 1.2.6
   dockerRepository: airbyte/destination-snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg
-  license: MIT
+  license: ELv2
   name: Snowflake
   normalizationConfig:
     normalizationIntegrationType: snowflake
@@ -28,4 +28,8 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  _ab_internal:
+    _sl: 200
+    _ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

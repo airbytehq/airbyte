@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -140,6 +140,8 @@ class SubstreamPartitionRouter(StreamSlicer):
                                 parent_record = parent_record.record.data
                             else:
                                 continue
+                        elif isinstance(parent_record, Record):
+                            parent_record = parent_record.data
                         try:
                             stream_state_value = dpath.util.get(parent_record, parent_field)
                         except KeyError:

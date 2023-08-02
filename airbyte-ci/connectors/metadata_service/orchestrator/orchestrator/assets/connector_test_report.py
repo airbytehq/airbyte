@@ -121,6 +121,7 @@ def compute_connector_nightly_report_history(
 
     return matrix_df
 
+
 # ASSETS
 
 
@@ -200,7 +201,9 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
     all_connector_names = last_10_connector_test_results["connector_name"].unique()
     for connector_name in all_connector_names:
         all_connector_test_results = last_10_connector_test_results[last_10_connector_test_results["connector_name"] == connector_name]
-        connector_test_summary = all_connector_test_results[["timestamp", "connector_version", "success", "gha_workflow_run_url", "html_report_url"]]
+        connector_test_summary = all_connector_test_results[
+            ["timestamp", "connector_version", "success", "gha_workflow_run_url", "html_report_url"]
+        ]
 
         # Order by timestamp descending
         connector_test_summary = connector_test_summary.sort_values("timestamp", ascending=False)

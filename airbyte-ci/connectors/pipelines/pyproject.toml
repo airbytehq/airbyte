@@ -1,0 +1,33 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "pipelines"
+version = "0.3.2"
+description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
+authors = ["Airbyte <contact@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+dagger-io = "^0.6.4"
+asyncer = "^0.0.2"
+anyio = "^3.4.1"
+more-itertools = "^8.11.0"
+docker = "^5.0.3"
+semver = "^3.0.1"
+airbyte-protocol-models = "*"
+tabulate = "^0.8.9"
+jinja2 = "^3.0.2"
+requests = "^2.28.2"
+connector-ops = {path = "../connector_ops"}
+toml = "^0.10.2"
+sentry-sdk = "^1.28.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^6.2.5"
+pytest-mock = "^3.10.0"
+
+[tool.poetry.scripts]
+airbyte-ci-internal = "pipelines.commands.airbyte_ci:airbyte_ci"
+airbyte-ci =  "pipelines.dagger_run:main"

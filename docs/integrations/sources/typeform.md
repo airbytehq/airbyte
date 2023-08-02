@@ -4,23 +4,40 @@ This page guides you through the process of setting up the Typeform source conne
 
 ## Prerequisites
 
-* token - The Typeform API key token.
-* start\_date - Date to start fetching Responses stream data from.
-* form_ids (Optional) - List of Form Ids to sync. If not passed - sync all account`s forms.
+- [Typeform Account](https://www.typeform.com/)
+- Form IDs (Optional) - If you want to sync data for specific forms, you'll need to have the IDs of those forms. If you want to sync data for all forms in your account you don't need any IDs. Form IDs can be found in the URLs to the forms in Typeform Admin Panel (for example, for URL `https://admin.typeform.com/form/12345/` a `12345` part would your Form ID)
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+- OAuth
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+- Personal Access Token (see [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/))
+<!-- /env:oss -->
 
 ## Setup guide
 
-### Step 1: Set up Typeform
+### Step 1: Obtain an API token 
 
+<!-- env:oss -->
+**For Airbyte Open Source:**
 To get the API token for your application follow this [steps](https://developer.typeform.com/get-started/personal-access-token/)
-
 * Log in to your account at Typeform.
 * In the upper-right corner, in the drop-down menu next to your profile photo, click My Account.
 * In the left menu, click Personal tokens.
 * Click Generate a new token.
 * In the Token name field, type a name for the token to help you identify it.
-* Choose needed scopes \(API actions this token can perform - or permissions it has\). See here for more details on scopes.
+* Choose needed scopes \(API actions this token can perform - or permissions it has\). See [here](https://www.typeform.com/developers/get-started/scopes/) for more details on scopes.
 * Click Generate token.
+<!-- /env:oss -->
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+This step is not needed in Airbyte Cloud. Skip to the next step. 
+<!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -28,20 +45,23 @@ To get the API token for your application follow this [steps](https://developer.
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
-4. Fill-in 'API Token' and 'Start Date'
-5. click `Set up source`.
+4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.
+5. Log in and Authorize to the Typeform account.
+6. **Start date (Optional)** - Date to start fetching Responses stream data from. If start date is not set, Responses stream will fetch data from a year ago from today.
+7. **Form IDs (Optional)** - List of Form Ids to sync. If not passed - sync all account`s forms.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Fill-in 'API Token' and 'Start Date'
-5. click `Set up source`.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
+3. On the Set up the source page, enter the name for the connector and select **Typeform** from the Source type dropdown.
+4. Fill-in **API Token** and **Start Date**
+5. click **Set up source**
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -70,6 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 1.0.0  | 2023-06-26 | [27240](https://github.com/airbytehq/airbyte/pull/27240) | Add OAuth support                                                   |
 | 0.3.0  | 2023-06-23 | [27653](https://github.com/airbytehq/airbyte/pull/27653) | Add `form_id` to records of `responses` stream                                                   |
 | 0.2.0  | 2023-06-17 | [27455](https://github.com/airbytehq/airbyte/pull/27455) | Add missing schema fields in `forms`, `themes`, `images`, `workspaces`, and `responses` streams                                                   |
 | 0.1.12  | 2023-02-21 | [22824](https://github.com/airbytehq/airbyte/pull/22824) | Specified date formatting in specification                                                   |
