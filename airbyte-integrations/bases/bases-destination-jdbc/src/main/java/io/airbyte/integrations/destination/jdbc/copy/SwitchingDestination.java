@@ -71,9 +71,10 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
-          throws Exception {
+      throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
     return typeToDestination.get(destinationType).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
+
 }

@@ -55,8 +55,8 @@ public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<Stri
   void close() throws Exception;
 
   /**
-    * Append a function to be called on {@link SerializedAirbyteMessageConsumer#close}.
-    */
+   * Append a function to be called on {@link SerializedAirbyteMessageConsumer#close}.
+   */
   static SerializedAirbyteMessageConsumer appendOnClose(final SerializedAirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
     return new SerializedAirbyteMessageConsumer() {
 
@@ -78,4 +78,5 @@ public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<Stri
 
     };
   }
+
 }
