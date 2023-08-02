@@ -1,4 +1,4 @@
-# Langchain
+# Vector Database (powered by LangChain)
 
 
 ## Overview
