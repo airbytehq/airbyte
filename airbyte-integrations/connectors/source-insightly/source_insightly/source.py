@@ -19,7 +19,6 @@ from requests.auth import AuthBase
 PAGE_SIZE = 500
 BASE_URL = "https://api.insightly.com/v3.1/"
 
-
 # Basic full refresh stream
 class InsightlyStream(HttpStream, ABC):
     total_count: int = 0

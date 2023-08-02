@@ -1,0 +1,675 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "statusDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "userData": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchantFundingCurrency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DispositionKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "documentIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disputeAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tokenResponseIndKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "binId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "referenceNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "previousTransferToMerchant": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "captureMethod": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "origTranCurrency": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "sendMode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "receivedDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "adjDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "reversedToIssuer": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "categoryKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "softDescriptor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responseReceived": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "relevance": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "origSlipNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "externalMid": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "debitedMerchant": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last4": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "airlineTicketNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "merchantFUndingAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "terminalId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "omnipayClienNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "itemSlipNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "submittedMerchantId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "adjustmentAmountSign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ppolProgramData": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reasonCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "tokenResponseInd": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "disputeAltID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "respondedDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "workTypeKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "svcCd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preDisputeIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "transactionType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "submittedTxnCurrencyCodeKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "partialAmountFlag": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currencyKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "recurringKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reversedByMerchant": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "sendModeKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "preDisputeIndicatorKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "winLoss": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authRecordSequence": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "merchantSettleAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "orderNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "winLossKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "memberMessageText": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dueDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "networkSettleCurrencyKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "dispositionDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "first6": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "networkSettleCurrency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "centralProcessingDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "backendProcessorKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "debitNetworkId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "networkSettleAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "disputeID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "statusKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "siteID": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "chargebackReferenceId": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "trackingNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "originalChargebackSlipNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "batchNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "mobileIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nonFinancialKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "recurring": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authNetwork": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchantCategoryKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "batchDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "vmeAdditionalAuthMethod": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paypalTransactionID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Disposition": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentMethod": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authNetworkKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "merchantCategory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vmeAdditionalAuthReasonCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "merchantFundingCurrencyKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "adjustmentAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "Reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ECIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "chargebackAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ReasonKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "transactionTypeKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "receivedFromIssuer": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "transactionAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "invoiceNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ECIndicatorKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "backendProcessor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transactionDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "customTracking": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentMethodKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "retrievalRequestId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "mobileWalletKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "nonFinancial": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniqueTransactionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mobileWallet": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relevanceKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "workType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "submittedTxnCurrencyCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

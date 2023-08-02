@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1ac16b7d-15bf-4f1a-b5f9-326fd80f8a4a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-fiserv
+  githubIssueLabel: source-fiserv
+  icon: fiserv.svg
+  license: MIT
+  name: Fiserv
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fiserv
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

@@ -1,0 +1,1020 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "BYOM": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "BYOMKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ECIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ECIndicatorKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "accountNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accountType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accountTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "acsReferenceNumber3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "acsTransactionId3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "amount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "apiKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "apiTraceID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "approvalCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "approvalCodeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authenticationAttemptResult": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authenticationStatus3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authorizationTypeIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authorizationTypeIndicatorKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billPaymentType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billPaymentTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingAddress": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingCity": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingCountry": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingFirstName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingHouse": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingLastName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingStPrvnc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billingZip": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardExpiryDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cavv": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "challengeStatus": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "channel3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "clientRequestID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "currencyKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "custIPAddress": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "customerName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "customerServiceNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "directedRoutingNetwork": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "directedRoutingNetworkKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "dsTranID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "eci3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptBlock": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptDeviceType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptDeviceTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptTarget": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptTargetKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encryptTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "errorCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "errorMessage": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fallbackReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "idpClientRequestID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "idpEntryPoint": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "idpOriginalTransactionID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "idpTransactionID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "merchantCity": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantCountry": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantHouse": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "merchantID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantMCC": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantMCCKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantPostalCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantState": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantStreet": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "messageCategory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mobileInteraction": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mobileInteractionKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mobileWallet": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mobileWalletKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mrchInvcNum": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mrchOrdrID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mrchTokenType": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mrchTranID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nativeTxnType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "network": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkAVSCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkCVVCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "networkRouted": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkRoutedKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "orderID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "origProcessorName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "origProcessorPlatform": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "origin": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "originKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "originalRouteType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentMethod": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentMethodKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "posConditionCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "posConditionCodeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "primTranID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "processingCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "processor": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processorHost": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processorMerchantId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processorTerminalId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "reauthorizationInitiator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reauthorizationInitiatorKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reauthorizationReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reauthorizationReasonKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recurringTypeInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recurringTypeIndKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "refundType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "refundTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "requestAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "respCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "respMsg": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "routeType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "routeTypeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safAttemptNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safAttemptStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safAttemptStatusKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safDownstreamResponse": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safDownstreamResponseKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safDownstreamSystem": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safDownstreamSystemKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safMaxAttempts": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safSourceSystem": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safSourceSystemKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safTxnStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "safTxnStatusKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serverTransactionId3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceEntitlement": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "serviceProvider3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceProviderTransactionId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "statusReason3DS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "storeID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tavv": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "terminalID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "threeDSVersion": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenNumber6": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider1Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider2Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider3Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider4Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider5Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider6": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenProvider6Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "track2Data": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionInitiator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionTime": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "txnMode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnModeKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnState": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnStateKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "txnType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnTypeDetail": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnTypeDetailKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "xid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "NativeDebitNetworkID": {
+      "type": ["integer", "null"]
+    },
+    "Reason": {
+      "type": ["string", "null"]
+    },
+    "ReasonKey": {
+      "type": ["integer", "null"]
+    },
+    "UserData2": {
+      "type": ["string", "null"]
+    },
+    "accountNumber": {
+      "type": ["string", "null"]
+    },
+    "acquirer": {
+      "type": ["string", "null"]
+    },
+    "acquirerKey": {
+      "type": ["integer", "null"]
+    },
+    "airlineTicketNumber": {
+      "type": ["string", "null"]
+    },
+    "authCode": {
+      "type": ["string", "null"]
+    },
+    "authNetwork": {
+      "type": ["string", "null"]
+    },
+    "authNetworkKey": {
+      "type": ["integer", "null"]
+    },
+    "backendProcessor": {
+      "type": ["string", "null"]
+    },
+    "backendProcessorKey": {
+      "type": ["integer", "null"]
+    },
+    "batchNumber": {
+      "type": ["integer", "null"]
+    },
+    "binId": {
+      "type": ["integer", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "currencyKey": {
+      "type": ["integer", "null"]
+    },
+    "debitNetworkID": {
+      "type": ["string", "null"]
+    },
+    "debitNetworkIDKey": {
+      "type": ["integer", "null"]
+    },
+    "disputeAmount": {
+      "type": ["number", "null"]
+    },
+    "disputeID": {
+      "type": ["integer", "null"]
+    },
+    "ecIndicator": {
+      "type": ["string", "null"]
+    },
+    "ecIndicatorKey": {
+      "type": ["integer", "null"]
+    },
+    "externalMid": {
+      "type": ["integer", "null"]
+    },
+    "first6": {
+      "type": ["integer", "null"]
+    },
+    "fulfillmentSlipNumber": {
+      "type": ["integer", "null"]
+    },
+    "invoiceNumber": {
+      "type": ["integer", "null"]
+    },
+    "issuerNo": {
+      "type": ["integer", "null"]
+    },
+    "itemSlipNumber": {
+      "type": ["integer", "null"]
+    },
+    "last4": {
+      "type": ["integer", "null"]
+    },
+    "merchSettleAmount": {
+      "type": ["number", "null"]
+    },
+    "merchSettleCurrency": {
+      "type": ["integer", "null"]
+    },
+    "merchantCategory": {
+      "type": ["string", "null"]
+    },
+    "merchantCategoryKey": {
+      "type": ["integer", "null"]
+    },
+    "mobileIndicator": {
+      "type": ["string", "null"]
+    },
+    "multiClearingSequenceCount": {
+      "type": ["integer", "null"]
+    },
+    "multiClearingSequenceNumber": {
+      "type": ["integer", "null"]
+    },
+    "networkSettleAmount": {
+      "type": ["number", "null"]
+    },
+    "networkSettleCurrency": {
+      "type": ["integer", "null"]
+    },
+    "omniPayClientNumber": {
+      "type": ["integer", "null"]
+    },
+    "orderNumber": {
+      "type": ["string", "null"]
+    },
+    "orgRsnCode": {
+      "type": ["string", "null"]
+    },
+    "origSlipNumber": {
+      "type": ["integer", "null"]
+    },
+    "paypalTransactionID": {
+      "type": ["string", "null"]
+    },
+    "processedTransactionAmount": {
+      "type": ["number", "null"]
+    },
+    "referenceNumber": {
+      "type": ["string", "null"]
+    },
+    "rentalAgreementNo": {
+      "type": ["integer", "null"]
+    },
+    "retrievalRequestType": {
+      "type": ["string", "null"]
+    },
+    "retrievalRequestTypeKey": {
+      "type": ["integer", "null"]
+    },
+    "siteID": {
+      "type": ["integer", "null"]
+    },
+    "softDescriptor": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "statusKey": {
+      "type": ["integer", "null"]
+    },
+    "storeNumber": {
+      "type": ["integer", "null"]
+    },
+    "subMerchantID": {
+      "type": ["integer", "null"]
+    },
+    "submittedCurrencyCode": {
+      "type": ["integer", "null"]
+    },
+    "submittedTransactionAmount": {
+      "type": ["number", "null"]
+    },
+    "svcCd": {
+      "type": ["integer", "null"]
+    },
+    "terminalId": {
+      "type": ["string", "null"]
+    },
+    "trackingNumber": {
+      "type": ["integer", "null"]
+    },
+    "uniqueTransactionIdentifier": {
+      "type": ["string", "null"]
+    }
+  }
+}

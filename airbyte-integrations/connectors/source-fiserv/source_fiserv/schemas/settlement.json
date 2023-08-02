@@ -1,0 +1,1934 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "userData": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "switchFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "batchSlipNumber": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "discountAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "subMerchantName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenRequesterId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mcSecurityProtocol": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "rejectReason": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ECIIndicatorKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardSchemeDescription": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "foreignCurrAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "surChargeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "newAuthFee": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "panSequenceNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "captureMethod": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "transactionCountry": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "rentalMaxFreeMileKm": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cbaFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "visaPrdtId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bbQualifiedCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cbaFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "nonAugmentPlanFlag": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "isaFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "rentalRatePerMileKm": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "settleSpendQualifiedIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processor": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cvc2Result": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "nonAugPlanCodeDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postingChargeDesc2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "baseRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "postingChargeDesc1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionModeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "pinlessIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postingChargeDesc4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postingChargeDesc3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postingChargeDesc5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionCharges": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "switchFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "adminFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bbReasonDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mcpConfigTypKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "realTimeClearingIndicatorKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "last4": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "nonAugNetAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "authorizationAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "bbClearingCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cbaFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "entryModeSource": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "trckrNbr": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ECIIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "owdChargeAmt": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "instalmentRegistrationId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "adminFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "netSalesCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "networkSecurityFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "recordDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nonAugmentPlanFlagKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "visaTranId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "afdCompletionCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "odometerReading": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "weeklyRentalRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "avsFlag": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "transactionStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "augNetAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "downgradeRejectReasonCD": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "processedRejectAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "planCdValidator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "switchFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "dbaName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accountNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lodgingLaundryChargeAmt": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "markerID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "catureMethodHBKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processedNetAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "reclassCdKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "RejectReasonCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invalidTxnInd": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "productCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "salesTaxAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "currencyKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "terminalTransactionDt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "maximum": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "areaOfEvent": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkSecurityFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "augNetSalesAm": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "orderNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "submittedRejectAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "acquirer": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceID1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceID3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "surchargeCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "serviceID2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceID5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceID4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "siteID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "visaPurchaseIdentifierFormat": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "isaFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "iCFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "batchNo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processedInterchangeSavings": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "cardUsage": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "retailerFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "entryModeSourceKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "icFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "networkSecurityFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "isaFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "feeBase": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "siteIDKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentMethod": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantCategory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tokenType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "origPlanCodeDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bbReasonDescKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tranType5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "acquirerFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "rateDifference": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lodgingBarChargeAmt": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "adminFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fundedDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "platformID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "feeCategory3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "feeCategory2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "feeCategory1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "expiryDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "feeCategory5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "feeCategory4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "processedRefundAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "chipConditionCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "serviceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tranType3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "infrastructureFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "tranType4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fpi": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "multiClearingSequenceCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "receiptNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "tranType1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tranType2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mcPrdtId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "tipAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "transactionMode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "convinienceFee": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "clientNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "transactionDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "customTracking": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "primaryStopReason": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paymentMethodKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "catLevel": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bankReferenceNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mcBnkNetRefNbr": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mobileWalletKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "debitTerminalTime": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mobileWallet": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "downgradeRejectDescKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "infrastructureFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "acquirerRefNo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "refundCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "storeNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardScheme": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardholderIDMethod": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "isaFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "originalPlanCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "refSeqID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "flatRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "surChargeInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "driverID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "globalTranId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "RejectReasonCodeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authorizationType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lodgingGiftshopChargeAmt": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "vehicleNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "acquirerFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lodgingOtherServicesChargeAmt": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "catureMethodHB": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lodgingOtherServicesCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardPresenceIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "expnTrmnId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "integrityClass": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "pinlessFlag": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "pcTerminalCapability": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "rentalMileKmInd": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "transactionStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "debitTerminalDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "planCdValidatorKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardUsageDescKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "submittedInterchangeSavings": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "icFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "externalMID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ddaLast4": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "postingMethod": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tranUID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionSource": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "subMerchantID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authSource": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "retailerFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardServiceType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "serviceCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ddaLength": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cvv2Result": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "networkSecurityFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "debitNetworkIdDscKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "chrgTierLevel": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "debitNetwork": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "custRefNr": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reclassCd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "perTranDifference": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "downgradeRejectReasonFlag": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lodgingPhoneNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "trmnBtchClosDt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "AVSResponse": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "trmnBtchNr": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mcCardholderAuthentication": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "productCodeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "terminalID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "merchantService": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "realTimeClearingIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "rejectCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "tokenFlag": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "batchSequenceID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fileTypeInKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recordID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "debitNetworkKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ifFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "pcTaxAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "rejectIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "minimum": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "effectiveDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "cardholderNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "retailerFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "salesCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "acquirerKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authorizationDate": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "multiClearingSequenceNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "readTerminalCapacity": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "authorizationTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "augAverageDis": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionTime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "batchDescription": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "first6": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "downgradeRejectReasonFlagKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "defCharge": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantReferenceNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "switchFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "retailerFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "nativeDebitNetworkId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "billBackReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceNo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lodgingRestaurentRoomServCharge": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "mobileIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cbaFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "infrastructureFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "pinlessIndicatorKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "acquirerFeePerTranRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "airLineTicketNumber": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "chargeType4": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "debitCashBackAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "merchantCategoryKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "batchDate": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "chargeType5": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardUsageDscKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "chargeType2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "experienceProvider": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "chargeType3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authCurrencyKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "chargeType1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "realTimeClearingNetworkId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "nonAugIcFeeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "processedTransactionAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "batchUID": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nonAugPlanCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "AVSResponseKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "trmnBtchClosTm": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "debitNetworkIdDsc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "adminFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "tranId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "foreignCurrRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fileTypeIn": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authCurrency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "submittedNetAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "bbAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "percent": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "network": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "acquirerFeeCapInd": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "chargeAmount4": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "chargeAmount5": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "submittedRefundAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lodgingPhoneCallCharge": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "agreementId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "totalAuthAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "cashBackAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "visaServiceDevelop": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mcpConfigTyp": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bbReasonCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "realTimeClearingFPI": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "chargeAmount2": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "chargeAmount3": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "processorKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "chargeAmount1": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "dda": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postedIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "planCodeDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "icCardConditonCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "typeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "downgradeRejectDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "rentalCountry": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "purchaseIdentifier": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bbCount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "planCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "authorizationResponseCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nonAugAverageDis": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "binId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "marketSpecificIndicator": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardExpirationDate": {
+            "type": [
+                "integer",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "submittedTransactionAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "tokenFlagKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "posEntryMode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "icFeePerTranAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        }
+    }
+}

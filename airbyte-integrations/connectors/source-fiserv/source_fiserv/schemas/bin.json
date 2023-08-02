@@ -1,0 +1,336 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "affn": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "country": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cu24Key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "regulated": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bin": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "pulseKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "issuer": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardSubTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "athKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "visaKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ath": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "interlinkKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cu24": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "details": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "id": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardBrand": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ebtKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardClassKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardClass": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "binMapKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "lowacct": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "highacct": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "shazamKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "active": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cardBrandKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "interlink": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "countryKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "nyceKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "starKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "reloadable": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "interac": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "EBTState": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "maestroKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "reloadableKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "jeanie": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accelKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "nyce": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "shazam": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "binMap": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "typeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "star": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cardSubType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "affnKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "accel": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "jeanieKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "interacKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "detailsKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "EBTStateKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "ebt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "issuerKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "regulatedKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "visa": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "pulse": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "maestro": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

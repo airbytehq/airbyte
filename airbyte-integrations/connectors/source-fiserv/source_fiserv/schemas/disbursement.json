@@ -1,0 +1,612 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "accountLastFour": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "accountNo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accountType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "accountTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "approvalCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "approvalCodeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "bankName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "batchOrigId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "batchRecipientId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "batchTransactionId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "checkAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "checkID": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "checkNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "checkStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "checkStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "city": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "clientName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "comments": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "controlNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "country": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "currencyKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "email": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "expiryDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "feeAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fsPaymentTime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fundingAccount": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "fundsMerchantName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fundsPaymentStatusCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "merchantStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "mid": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "nameOnCheck": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "origId": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paymentAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "paymentChannel": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentChannelKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paymentId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentRecipientId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paymentTime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "paymentTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paymentVendorId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "postalCode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientClient": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientComments": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientCompany": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientExtension": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientFName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientGuest": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientGuestKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientIdentifier": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientIdentifierValue": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientLName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientPhone": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientReasonKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "recipientTin": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "recipientTypeKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "referenceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "returnCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "routingNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "settlementStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "settlementStatusKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "state": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "stateKey": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "streetOne": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "streetTwo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxAccountEmail": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxAgentType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxDeviceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxFuzzyDeviceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxJsOs": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxPolicyScore": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxReviewStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxRiskRating": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxRules": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxSessionId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxSummaryRiskScore": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxTrueIp": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxTrueIpGeo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxTrueIpIsp": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "tmxUsOs": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionAmount": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "transactionClaimNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionPaymentNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionPaymentType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "transactionStatusKey": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnDesc": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "txnEmail": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "vendorId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

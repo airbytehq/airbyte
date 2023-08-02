@@ -1,0 +1,340 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "feesAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tranTypeCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountCurrency": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "depositAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "adjustmentsAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "accountID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referenceNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "bankReferenceNo": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "majorCategoryKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "siteID": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "tranCategoryCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "batchNo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "airLineTicketNumber": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "batchDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "debitAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "majorCategory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "processor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "depositTypeCd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tranCategoryDesc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paidByOthersAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ddaLast4": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "accountNetAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "creditAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "depositTypeCdKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reversalIndicator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ddaLength": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "fundedDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "minorCategory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "addendumARN": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "amountPaid": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "netSalesAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "relatedSourceTran": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "valDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "recordDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "feeSeqDesc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "processorKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "paymentStatus": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dda": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referenceNo": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "minorCategoryKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "interchangeCD": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "productCodeKey": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "paymentRefNo": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "itemCount": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "icChargesAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "chargebackAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "productCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "feeSeqCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "currencyKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountCurrentNet": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tranAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ServiceChangesAmt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "localAmount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}

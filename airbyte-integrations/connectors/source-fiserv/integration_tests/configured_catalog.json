@@ -1,0 +1,21 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "chargeback",
+        "cursor_field": ["last_sync_at"],
+        "json_schema": {},
+        "supported_sync_modes": 
+          "incremental"
+        ,
+        "source_defined_primary_key": [["chargebackReferenceId"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
+
+
+
+     
