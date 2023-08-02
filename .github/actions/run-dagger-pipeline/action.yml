@@ -12,10 +12,10 @@ inputs:
     required: true
   docker_hub_username:
     description: "Dockerhub username"
-    required: false
+    required: true
   docker_hub_password:
     description: "Dockerhub password"
-    required: false
+    required: true
   options:
     description: "Options for the subcommand"
     required: false
