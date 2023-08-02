@@ -15,6 +15,8 @@ dependencies {
     implementation libs.jackson.databind
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
+    // source-relational-db is where all the state-management code is located, should be renamed
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation libs.airbyte.protocol
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 

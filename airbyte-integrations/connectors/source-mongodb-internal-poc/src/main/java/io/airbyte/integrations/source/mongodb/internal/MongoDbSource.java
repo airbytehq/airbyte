@@ -12,19 +12,26 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,12 +76,43 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
+    /*
+    namespace is [database].[collection]
+    database ->  collection -> document
+    cole_research -> colors -> ObjectId
+    database -> table -> row
+     */
+
+    final var emittedAt = Instant.now();
+    final StateManager stateManager = StateManagerFactory.createStateManager(
+        AirbyteStateType.STREAM,
+        StateGeneratorUtils.deserializeInitialState(state, true, AirbyteStateType.STREAM),
+        catalog);
+
+    try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
+      final var database = mongoClient.getDatabase("TODO");
+
+//      final List<AutoCloseableIterator<AirbyteMessage>> incIter = incrIters(database, )
+      final List<AutoCloseableIterator<AirbyteMessage>> fullIter = fullIter(database, catalog, null, stateManager, emittedAt);
+    }
     return null;
   }
 
   @Override
   public void close() throws Exception {
 
+  }
+
+  private List<AutoCloseableIterator<AirbyteMessage>> fullIter(final MongoDatabase database, final ConfiguredAirbyteCatalog catalog, final String TODO, final StateManager stateManager, final Instant emittedAt) {
+    final List<AutoCloseableIterator<AirbyteMessage>> iterList = new ArrayList<>();
+    catalog.getStreams()
+        .stream()
+        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.FULL_REFRESH))
+        .forEach(airbyteStream -> {
+          final var stream = airbyteStream.getStream();
+          final var collectionName = "TODO";
+
+        });
   }
 
   private Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
@@ -157,7 +195,7 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   }
 
   private boolean isSupportedCollection(final String collectionName) {
-    return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
+    return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
   }
 
 }
