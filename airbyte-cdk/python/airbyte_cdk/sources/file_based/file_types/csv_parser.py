@@ -68,32 +68,27 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
         schema: Mapping[str, Any] = config.input_schema  # type: ignore
-        config_format = config.format.get(config.file_type) if config.format else None
-        if config_format:
-            if not isinstance(config_format, CsvFormat):
-                raise ValueError(f"Invalid format config: {config_format}")
-            # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
-            # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
-            dialect_name = config.name + DIALECT_NAME
-            csv.register_dialect(
-                dialect_name,
-                delimiter=config_format.delimiter,
-                quotechar=config_format.quote_char,
-                escapechar=config_format.escape_char,
-                doublequote=config_format.double_quote,
-                quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
-            )
-            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
-                # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
-                #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
-                self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
-                field_names = self._auto_generate_headers(fp, config_format) if config_format.autogenerate_column_names else None
-                reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, config_format, logger)
-        else:
-            with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
-                reader = csv.DictReader(fp)  # type: ignore
-                yield from self._read_and_cast_types(reader, schema, CsvFormat(), logger)
+        config_format = config.format.get(config.file_type) if config.format else CsvFormat()
+        if not isinstance(config_format, CsvFormat):
+            raise ValueError(f"Invalid format config: {config_format}")
+        # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
+        # Wwe don't unregister the dialect because we are lazily parsing each csv file to generate records
+        dialect_name = config.name + DIALECT_NAME
+        csv.register_dialect(
+            dialect_name,
+            delimiter=config_format.delimiter,
+            quotechar=config_format.quote_char,
+            escapechar=config_format.escape_char,
+            doublequote=config_format.double_quote,
+            quoting=config_to_quoting.get(config_format.quoting_behavior, csv.QUOTE_MINIMAL),
+        )
+        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+            # todo: the existing InMemoryFilesSource.open_file() test source doesn't currently require an encoding, but actual
+            #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
+            self._skip_rows_before_header(fp, config_format.skip_rows_before_header)
+            field_names = self._auto_generate_headers(fp, config_format) if config_format.autogenerate_column_names else None
+            reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=field_names)  # type: ignore
+            yield from self._read_and_cast_types(reader, schema, config_format, logger)
 
     @property
     def file_read_mode(self) -> FileReadMode:
