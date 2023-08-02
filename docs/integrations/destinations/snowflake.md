@@ -271,6 +271,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                                | Subject                                                                                                                                             |
 |:----------------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.6           | 2023-08-01 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618)  | Reduce logging noise                                                                                                                                |
 | 1.2.5           | 2023-07-24 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618)  | Add hooks in preparation for destinations v2 implementation                                                                                         |
 | 1.2.4           | 2023-07-21 | [\#28584](https://github.com/airbytehq/airbyte/pull/28584)  | Install dependencies in preparation for destinations v2 work                                                                                        |
 | 1.2.3           | 2023-07-21 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Pull in async framework minor bug fix for race condition on state emission                                                                          |

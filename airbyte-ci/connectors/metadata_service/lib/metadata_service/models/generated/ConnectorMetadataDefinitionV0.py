@@ -11,6 +11,22 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
+class ReleaseStage(BaseModel):
+    __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="ReleaseStage",
+    )
+
+
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
+    )
+
+
 class AllowedHosts(BaseModel):
     class Config:
         extra = Extra.allow
@@ -90,6 +106,14 @@ class VersionBreakingChange(BaseModel):
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
+
+
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    field_sl: Literal[100, 200, 300] = Field(..., alias="_sl")
+    field_ql: Literal[100, 200, 300, 400, 500, 600] = Field(..., alias="_ql")
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -188,7 +212,8 @@ class Data(BaseModel):
     connectorSubtype: Literal[
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
-    releaseStage: Literal["alpha", "beta", "generally_available", "source"]
+    releaseStage: ReleaseStage
+    supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
@@ -199,6 +224,7 @@ class Data(BaseModel):
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
+    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
