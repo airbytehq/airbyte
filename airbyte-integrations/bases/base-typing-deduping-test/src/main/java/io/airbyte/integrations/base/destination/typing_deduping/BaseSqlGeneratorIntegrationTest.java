@@ -62,9 +62,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       Pair.of("_ab_cdc_lsn", AirbyteProtocolType.INTEGER)
   );
 
+  protected StreamConfig incrementalDedupStream;
+  protected StreamConfig cdcIncrementalDedupStream;
+
+  protected SqlGenerator<DialectTableDefinition> generator;
+  protected DestinationHandler<DialectTableDefinition> destinationHandler;
+  protected String namespace;
+
   private JsonNode config;
-  private SqlGenerator<DialectTableDefinition> generator;
-  private DestinationHandler<DialectTableDefinition> destinationHandler;
   private ColumnId id1;
   private ColumnId id2;
   private List<ColumnId> primaryKey;
@@ -72,10 +77,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   private ColumnId cdcCursor;
   private LinkedHashMap<ColumnId, AirbyteType> columns;
   private LinkedHashMap<ColumnId, AirbyteType> cdcColumns;
-  private String namespace;
   private StreamId streamId;
-  private StreamConfig incrementalDedupStream;
-  private StreamConfig cdcIncrementalDedupStream;
 
   protected abstract JsonNode generateConfig() throws Exception;
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
@@ -88,10 +90,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
   protected abstract List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception;
   protected abstract void teardownNamespace(String namespace);
-
-  protected JsonNode getConfig() {
-    return config;
-  }
 
   @BeforeEach
   public void setup() throws Exception {
@@ -202,6 +200,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    *   <li>A JSON null value</li>
    *   <li>An invalid value</li>
    * </ul>
+   *
+   * In practice, incremental streams never write to a suffixed table, but SqlGenerator isn't allowed
+   * to make that assumption (and we might as well exercise that code path).
    */
   @Test
   public void testFullUpdateAllTypes() throws Exception {
@@ -218,7 +219,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_expectedrecords.jsonl"),
         dumpFinalTableRecords(streamId, "_foo"));
     // We're not making stringent assertions on the raw table, under the assumption that T+D will only
-    // modify loaded_at or delete entire rows.
+    // modify loaded_at or delete entire rows. I.e. it won't modify the data itself.
     List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     assertAll(
         () -> assertEquals(4, actualRawRecords.size()),

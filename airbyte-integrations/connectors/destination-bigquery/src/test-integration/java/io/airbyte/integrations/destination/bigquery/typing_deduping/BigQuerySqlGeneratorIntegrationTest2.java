@@ -1,16 +1,27 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
 import static java.util.stream.Collectors.joining;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import java.nio.file.Files;
@@ -19,8 +30,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest2.class);
 
   private BigQuery bq;
 
@@ -262,5 +277,63 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
   @Override
   protected void teardownNamespace(String namespace) {
     bq.delete(namespace, BigQuery.DatasetDeleteOption.deleteContents());
+  }
+
+  @Test
+  public void testCreateTableIncremental() throws Exception {
+    destinationHandler.execute(generator.createTable(incrementalDedupStream, ""));
+
+    final Table table = bq.getTable(namespace, "users_final");
+    // The table should exist
+    assertNotNull(table);
+    final Schema schema = table.getDefinition().getSchema();
+    // And we should know exactly what columns it contains
+    assertEquals(
+        // Would be nice to assert directly against StandardSQLTypeName, but bigquery returns schemas of
+        // LegacySQLTypeName. So we have to translate.
+        Schema.of(
+            Field.newBuilder("_airbyte_raw_id", legacySQLTypeName(StandardSQLTypeName.STRING)).setMode(Field.Mode.REQUIRED).build(),
+            Field.newBuilder("_airbyte_extracted_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)).setMode(Field.Mode.REQUIRED).build(),
+            Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Field.Mode.REQUIRED).build(),
+            Field.of("id1", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("id2", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
+            Field.of("struct", legacySQLTypeName(StandardSQLTypeName.JSON)),
+            Field.of("array", legacySQLTypeName(StandardSQLTypeName.JSON)),
+            Field.of("string", legacySQLTypeName(StandardSQLTypeName.STRING)),
+            Field.of("number", legacySQLTypeName(StandardSQLTypeName.NUMERIC)),
+            Field.of("integer", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("boolean", legacySQLTypeName(StandardSQLTypeName.BOOL)),
+            Field.of("timestamp_with_timezone", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
+            Field.of("timestamp_without_timezone", legacySQLTypeName(StandardSQLTypeName.DATETIME)),
+            Field.of("time_with_timezone", legacySQLTypeName(StandardSQLTypeName.STRING)),
+            Field.of("time_without_timezone", legacySQLTypeName(StandardSQLTypeName.TIME)),
+            Field.of("date", legacySQLTypeName(StandardSQLTypeName.DATE)),
+            Field.of("unknown", legacySQLTypeName(StandardSQLTypeName.JSON))),
+        schema);
+    // TODO this should assert partitioning/clustering configs
+  }
+
+  @Test
+  public void testCreateTableInOtherRegion() throws InterruptedException {
+    BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
+    // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
+    bq.getDataset(namespace).delete();
+
+    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(incrementalDedupStream, ""));
+
+    // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
+    // Give ourselves 2 minutes just in case.
+    for (int i = 0; i < 120; i++) {
+      final Dataset dataset = bq.getDataset(DatasetId.of(bq.getOptions().getProjectId(), namespace));
+      if (dataset == null) {
+        LOGGER.info("Sleeping and trying again... ({})", i);
+        Thread.sleep(1000);
+      } else {
+        assertEquals("asia-east1", dataset.getLocation());
+        return;
+      }
+    }
+    fail("Dataset does not exist");
   }
 }
