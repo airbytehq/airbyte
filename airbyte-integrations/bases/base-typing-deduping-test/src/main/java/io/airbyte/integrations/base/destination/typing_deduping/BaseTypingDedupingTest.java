@@ -138,6 +138,13 @@ public abstract class BaseTypingDedupingTest {
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
   /**
+   * Destinations which need to clean up resources after an entire test finishes should override this
+   * method. For example, if you want to gracefully close a database connection, you should do that
+   * here.
+   */
+  protected void globalTeardown() throws Exception {}
+
+  /**
    * @return A suffix which is different for each concurrent test, but stable within a single test.
    */
   protected synchronized String getUniqueSuffix() {
@@ -165,6 +172,7 @@ public abstract class BaseTypingDedupingTest {
     for (final AirbyteStreamNameNamespacePair streamId : streamsToTearDown) {
       teardownStreamAndNamespace(streamId.getNamespace(), streamId.getName());
     }
+    globalTeardown();
   }
 
   /**

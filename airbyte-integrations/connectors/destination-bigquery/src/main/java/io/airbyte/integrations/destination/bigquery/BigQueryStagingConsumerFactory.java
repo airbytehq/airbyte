@@ -88,7 +88,8 @@ public class BigQueryStagingConsumerFactory {
     return (streamId) -> {
       if (!valve.containsKey(streamId)) {
         valve.addStream(streamId);
-      } else if (valve.readyToTypeAndDedupe(streamId)) {
+      }
+      if (valve.readyToTypeAndDedupe(streamId)) {
         typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
         valve.updateTimeAndIncreaseInterval(streamId);
       }

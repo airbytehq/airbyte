@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -59,8 +62,21 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", ATLAS.getType())
+        .put("cluster_url", credentialsJson.get("cluster_url").asText())
+        .build());
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("user", credentialsJson.get("user").asText())
+        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put("instance_type", instanceConfig)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
@@ -68,7 +84,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
         config.get("instance_type").get("cluster_url").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    database = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
+    database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
     final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
@@ -118,11 +134,11 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
-    final String badClusterUrl = "cluster0.iqgf8.mongodb.netfail";
-    config.withObject("/instance_type").put("cluster_url", badClusterUrl);
+    ((ObjectNode) config).with("instance_type")
+        .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
     final AirbyteConnectionStatus status = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().matches("State code: -\\d+.*"));
+    assertTrue(status.getMessage().contains("State code: -4"));
   }
 
   @Test
