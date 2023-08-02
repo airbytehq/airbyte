@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
@@ -12,6 +14,7 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.BaseConnector;
@@ -36,7 +39,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDbSource extends BaseConnector implements Source, AutoCloseable {
+public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
@@ -54,8 +57,34 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return null;
+  public AirbyteConnectionStatus check(final JsonNode config) {
+    try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
+      final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+
+      /*
+       * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
+       * needs to actually execute a command in order to fetch the cluster description. Querying for the
+       * authorized collections guarantees that the cluster description will be available to the driver.
+       */
+      if (getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+        return new AirbyteConnectionStatus()
+            .withMessage("Target MongoDB database does not contain any authorized collections.")
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
+      }
+      if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
+        return new AirbyteConnectionStatus()
+            .withMessage("Target MongoDB instance is not a replica set cluster.")
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to perform source check operation.", e);
+      return new AirbyteConnectionStatus()
+          .withMessage(e.getMessage())
+          .withStatus(AirbyteConnectionStatus.Status.FAILED);
+    }
+
+    LOGGER.info("The source passed the check operation test!");
+    return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   @Override
@@ -70,11 +99,6 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
                                                     final JsonNode state)
       throws Exception {
     return null;
-  }
-
-  @Override
-  public void close() throws Exception {
-
   }
 
   private Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
@@ -108,9 +132,10 @@ public class MongoDbSource extends BaseConnector implements Source, AutoCloseabl
   private List<AirbyteStream> discoverInternal(final JsonNode config) {
     final List<AirbyteStream> streams = new ArrayList<>();
     try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
-      final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, config.get("database").asText());
+      final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+      final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
       authorizedCollections.parallelStream().forEach(collectionName -> {
-        final List<Field> fields = getFields(mongoClient.getDatabase(config.get("database").asText()).getCollection(collectionName));
+        final List<Field> fields = getFields(mongoClient.getDatabase(databaseName).getCollection(collectionName));
         streams.add(CatalogHelpers.createAirbyteStream(collectionName, "", fields));
       });
       return streams;
