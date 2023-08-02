@@ -84,8 +84,27 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/addresses_stream"
         parent_key: sid
-        partition_field: address_id
+        partition_field: id
+      - stream: "#/definitions/addresses_stream"
+        parent_key: account_sid
+        partition_field: account_id
   
+  
+  dependent_phone_numbers_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "dependent_phone_numbers"
+      path: "/Accounts/{{stream_slice.account_id}}/Addresses/{{stream_slice.id}}/DependentPhoneNumbers.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/addresses_partition_router"
+
   alerts_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -128,7 +147,7 @@ definitions:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_number_countries"
-      path: "/Accounts/{{stream_ slice.id}}/AvailablePhoneNumbers.json"
+      path: "Accounts/{{stream_slice.id}}/AvailablePhoneNumbers.json"
       primary_key: "country_code"
     retriever:
       $ref: "#/definitions/retriever"
@@ -145,12 +164,15 @@ definitions:
       - stream: "#/definitions/available_phone_number_countries_stream"
         parent_key: "country_code"
         partition_field: country_code
+      - stream: "#/definitions/available_phone_number_countries_stream"
+        parent_key: "account_id"
+        partition_field: id
 
   available_phone_numbers_local_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers_local"
-      path: "/Accounts/{{stream_slice.account_id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Local.json"
+      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Local.json"
       primary_key: "iso_country"
     retriever:
       $ref: "#/definitions/retriever"
@@ -165,7 +187,7 @@ definitions:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers_mobile"
-      path: "/Accounts/{{stream_slice.account_id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Mobile.json"
+      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Mobile.json"
       primary_key: "iso_country"
     retriever:
       $ref: "#/definitions/retriever"
@@ -180,7 +202,7 @@ definitions:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers"
-      path: "/Accounts/{{stream_slice.account_id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/TollFree.json"
+      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/TollFree.json"
       primary_key: "iso_country"
     retriever:
       $ref: "#/definitions/retriever"
@@ -243,7 +265,7 @@ definitions:
   conference_participants_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
-      name: "conferences_participants"
+      name: "conference_participants"
       path: "/Accounts/{{stream_slice.id}}/Conferences/{{ stream_slice.conferences_id}}/Participants.json"
       primary_key: "sid"
     retriever:
@@ -312,21 +334,6 @@ definitions:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/conversations_partition_router"
-    
-  dependent_phone_numbers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "dependent_phone_numbers"
-      path: "/2010-04-01/Accounts/{{stream_slice.id}}/Addresses/{{stream_slice.address_id}}/DependentPhoneNumbers.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/addresses_partition_router"
   
   incoming_phone_numbers_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -681,14 +688,14 @@ definitions:
   users_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
-      - stream: "#/definitions/user_conversations_stream"
+      - stream: "#/definitions/users_stream"
         parent_key: sid
         partition_field: user_id
   
   user_conversations_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
-      name: "user_conversation"
+      name: "user_conversations"
       path: "/Users/{{stream_slice.user_id}}/Conversations"
       primary_key: "user_sid"
     requester:
@@ -745,21 +752,24 @@ check:
   stream_names:
     - "accounts"
     - "addresses"
-    - "alerts"
-    - "applications"
     - "available_phone_number_countries"
     - "available_phone_numbers_local"
     - "available_phone_numbers_mobile"
     - "available_phone_numbers_toll_free"
+    - "alerts"
     - "calls"
-    - "conference_participants"
     - "conferences"
+    - "conference_participants"
     - "conversation_messages"
     - "conversation_participants"
     - "conversations"
     - "dependent_phone_numbers"
-    - "executions"
+    - "usage_triggers"
+    - "message_media"
+    - "step"
+    - "applications"
     - "flows"
+    - "executions"
     - "incoming_phone_numbers"
     - "keys"
     - "outgoing_caller_ids"
@@ -767,16 +777,14 @@ check:
     - "recordings"
     - "transcriptions"
     - "usage_records"
-    - "usage_triggers"
     - "messages"
-    - "message_media"
-    - "step"
-    - "roles"
     - "services"
+    - "roles"
     - "verify_services"
     - "trunks"
     - "users"
     - "user_conversations"
+
 
 spec:
   type: Spec

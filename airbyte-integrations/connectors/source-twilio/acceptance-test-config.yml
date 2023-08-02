@@ -25,7 +25,7 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
   incremental: 
-    bypass_reason: "This connector does not implement incremental sync"
+    #bypass_reason: "This connector does not implement incremental sync"
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
