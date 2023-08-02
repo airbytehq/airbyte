@@ -191,171 +191,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createFinalTable(false, streamId, "_foo");
     insertRawTableRecords(
         streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                    {
-                      "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 1,
-                        "id2": 100,
-                        "updated_at": "2023-01-01T01:00:00Z",
-                        "array": [
-                          "foo"
-                        ],
-                        "struct": {
-                          "foo": "bar"
-                        },
-                        "string": "foo",
-                        "number": 42.1,
-                        "integer": 42,
-                        "boolean": true,
-                        "timestamp_with_timezone": "2023-01-23T12:34:56Z",
-                        "timestamp_without_timezone": "2023-01-23T12:34:56",
-                        "time_with_timezone": "12:34:56Z",
-                        "time_without_timezone": "12:34:56",
-                        "date": "2023-01-23",
-                        "unknown": {}
-                      }
-                    }
-                    """),
-            Jsons.deserialize(
-                """
-                    {
-                      "_airbyte_raw_id": "53ce75a5-5bcc-47a3-b45c-96c2015cfe35",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 2,
-                        "id2": 100,
-                        "updated_at": "2023-01-01T01:00:00Z",
-                        "array": null,
-                        "struct": null,
-                        "string": null,
-                        "number": null,
-                        "integer": null,
-                        "boolean": null,
-                        "timestamp_with_timezone": null,
-                        "timestamp_without_timezone": null,
-                        "time_with_timezone": null,
-                        "time_without_timezone": null,
-                        "date": null,
-                        "unknown": null
-                      }
-                    }
-                    """),
-            Jsons.deserialize(
-                """
-                    {
-                      "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fbe",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 3,
-                        "id2": 100,
-                        "updated_at": "2023-01-01T01:00:00Z"
-                      }
-                    }
-                    """),
-            Jsons.deserialize(
-                """
-                    {
-                      "_airbyte_raw_id": "84242b60-3a34-4531-ad75-a26702960a9a",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {
-                        "id1": 4,
-                        "id2": 100,
-                        "updated_at": "2023-01-01T01:00:00Z",
-                        "array": {},
-                        "struct": [],
-                        "string": {},
-                        "number": {},
-                        "integer": {},
-                        "boolean": {},
-                        "timestamp_with_timezone": {},
-                        "timestamp_without_timezone": {},
-                        "time_with_timezone": {},
-                        "time_without_timezone": {},
-                        "date": {},
-                        "unknown": null
-                      }
-                    }
-                    """)));
+        BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_inputrecords.jsonl"));
 
     String sql = generator.updateTable(incrementalDedupStream, "_foo");
     destinationHandler.execute(sql);
 
-    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "_foo");
     DIFFER.diffFinalTableRecords(
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "id1": 1,
-                  "id2": 100,
-                  "updated_at": "2023-01-01T01:00:00Z",
-                  "array": ["foo"],
-                  "struct": {"foo": "bar"},
-                  "string": "foo",
-                  "number": 42.1,
-                  "integer": 42,
-                  "boolean": true,
-                  "timestamp_with_timezone": "2023-01-23T12:34:56Z",
-                  "timestamp_without_timezone": "2023-01-23T12:34:56",
-                  "time_with_timezone": "12:34:56Z",
-                  "time_without_timezone": "12:34:56",
-                  "date": "2023-01-23",
-                  "unknown": {},
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_meta": {"errors": []}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "id1": 2,
-                  "id2": 100,
-                  "updated_at": "2023-01-01T01:00:00Z",
-                  "unknown": null,
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_meta": {"errors": []}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "id1": 3,
-                  "id2": 100,
-                  "updated_at": "2023-01-01T01:00:00Z",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_meta": {"errors": []}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "id1": 4,
-                  "id2": 100,
-                  "updated_at": "2023-01-01T01:00:00Z",
-                  "unknown": null,
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_meta": {
-                    "errors": [
-                      "Problem with `struct`",
-                      "Problem with `array`",
-                      "Problem with `string`",
-                      "Problem with `number`",
-                      "Problem with `integer`",
-                      "Problem with `boolean`",
-                      "Problem with `timestamp_with_timezone`",
-                      "Problem with `timestamp_without_timezone`",
-                      "Problem with `time_with_timezone`",
-                      "Problem with `time_without_timezone`",
-                      "Problem with `date`"
-                    ]
-                  }
-                }
-                """)),
-        actualFinalRecords);
+        BaseTypingDedupingTest.readRecords("sqlgenerator/fullupdate_alltypes_expectedrecords.jsonl"),
+        dumpFinalTableRecords(streamId, "_foo"));
     List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     assertAll(
         () -> assertEquals(4, actualRawRecords.size()),
@@ -367,4 +210,5 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         )
     );
   }
+
 }
