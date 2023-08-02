@@ -224,7 +224,7 @@ class Data(BaseModel):
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
+    fieldab_internal: Optional[AirbyteInternal] = Field(None, alias="ab_internal")
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

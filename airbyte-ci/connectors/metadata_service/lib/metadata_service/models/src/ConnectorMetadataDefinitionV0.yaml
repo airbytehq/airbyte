@@ -105,5 +105,5 @@ properties:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
-      _ab_internal:
+      ab_internal:
         "$ref": AirbyteInternal.yaml

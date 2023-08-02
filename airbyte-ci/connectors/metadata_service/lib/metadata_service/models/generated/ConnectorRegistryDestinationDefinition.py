@@ -190,4 +190,4 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     )
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
-    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
+    fieldab_internal: Optional[AirbyteInternal] = Field(None, alias="ab_internal")

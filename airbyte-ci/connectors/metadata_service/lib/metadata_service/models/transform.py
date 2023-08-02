@@ -11,7 +11,7 @@ def _apply_default_pydantic_kwargs(kwargs: dict) -> dict:
         dict: the kwargs with defaults applied
     """
     default_kwargs = {
-        "by_alias": True, # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. _ab_internal)
+        "by_alias": True, # Ensure that the original field name from the jsonschema is used in the event it begins with an underscore (e.g. ab_internal)
         "exclude_none": True, # Exclude fields that are None
     }
 

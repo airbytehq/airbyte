@@ -179,4 +179,4 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
     )
     releases: Optional[ConnectorReleases] = None
-    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
+    fieldab_internal: Optional[AirbyteInternal] = Field(None, alias="ab_internal")
