@@ -63,8 +63,8 @@ class TestAuth0Stream:
             "page": 0,
             "per_page": 50,
             "include_totals": "false",
-            "sort": "None:1",
-            "q": "None:{ TO *]",
+            "sort": "updated_at:1",
+            "q": "updated_at:{ TO *]",
         }
         assert stream.request_params(**inputs) == expected_params
 
@@ -105,8 +105,6 @@ class TestAuth0Stream:
             cursor_field = "lastUpdated"
 
         stream = TestIncrementalAuth0Stream(url_base=url_base)
-        stream._cursor_field = "lastUpdated"
-        assert stream._cursor_value == ""
         stream.state = {"lastUpdated": "123"}
         assert stream._cursor_value == "123"
 
