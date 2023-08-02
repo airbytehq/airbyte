@@ -53,7 +53,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
-| 0.2.0   | 2023-08-02 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type                                                                                              |
+| 1.0.0   | 2023-08-02 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type                                                                                              |
 | 0.1.13  | 2023-07-19 | [28461](https://github.com/airbytehq/airbyte/pull/28461) | Fixed EventsSimpleRetriever declaration                                                                            |
 | 0.1.12  | 2023-06-28 | [27764](https://github.com/airbytehq/airbyte/pull/27764) | Update following state breaking changes                                                                            |
 | 0.1.11  | 2023-06-09 | [27135](https://github.com/airbytehq/airbyte/pull/27135) | Fix custom EventsSimpleRetriever                                                                                   |
