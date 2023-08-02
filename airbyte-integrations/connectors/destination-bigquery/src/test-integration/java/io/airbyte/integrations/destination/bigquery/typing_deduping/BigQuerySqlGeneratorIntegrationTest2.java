@@ -147,17 +147,19 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
 
     bq.query(QueryJobConfiguration.newBuilder(
             new StringSubstitutor(Map.of(
-                "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
+                "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
                 "cdc_deleted_at_name", cdcDeletedAtName,
                 "cdc_deleted_at_decl", cdcDeletedAtDecl,
                 "records", recordsText)).replace(
                 // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in parse_json().
+                // There's also a bunch of casting, because bigquery doesn't coerce strings to e.g. int
                 """
-                    insert into ${raw_table_id} (
+                    insert into ${final_table_id} (
                       _airbyte_raw_id,
                       _airbyte_extracted_at,
                       _airbyte_meta,
-                      `id`,
+                      `id1`,
+                      `id2`,
                       `updated_at`,
                       ${cdc_deleted_at_name}
                       `struct`,
@@ -176,16 +178,17 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                     select
                       _airbyte_raw_id,
                       _airbyte_extracted_at,
-                      _airbyte_meta,
-                      `id`,
+                      parse_json(_airbyte_meta),
+                      cast(`id1` as int64),
+                      cast(`id2` as int64),
                       `updated_at`,
                       ${cdc_deleted_at_name}
                       parse_json(`struct`),
                       parse_json(`array`),
                       `string`,
-                      `number`,
-                      `integer`,
-                      `boolean`,
+                      cast(`number` as numeric),
+                      cast(`integer` as int64),
+                      cast(`boolean` as boolean),
                       `timestamp_with_timezone`,
                       `timestamp_without_timezone`,
                       `time_with_timezone`,
@@ -196,22 +199,23 @@ public class BigQuerySqlGeneratorIntegrationTest2 extends BaseSqlGeneratorIntegr
                       STRUCT<
                         _airbyte_raw_id STRING,
                         _airbyte_extracted_at TIMESTAMP,
-                        _airbyte_meta JSON,
-                        `id` INT64,
+                        _airbyte_meta STRING,
+                        `id1` STRING,
+                        `id2` STRING,
                         `updated_at` TIMESTAMP,
                         ${cdc_deleted_at_decl}
-                        `struct` JSON,
-                        `array` JSON,
+                        `struct` STRING,
+                        `array` STRING,
                         `string` STRING,
-                        `number` NUMERIC,
-                        `integer` INT64,
-                        `boolean` BOOL,
+                        `number` STRING,
+                        `integer` STRING,
+                        `boolean` STRING,
                         `timestamp_with_timezone` TIMESTAMP,
                         `timestamp_without_timezone` DATETIME,
                         `time_with_timezone` STRING,
                         `time_without_timezone` TIME,
                         `date` DATE,
-                        `unknown` JSON
+                        `unknown` STRING
                       >
                       ${records}
                     ])

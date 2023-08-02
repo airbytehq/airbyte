@@ -1,8 +1,10 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,7 +34,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       "_airbyte_raw_id",
       "_airbyte_extracted_at",
       "_airbyte_meta",
-      "id",
+      "id1",
+      "id2",
       "updated_at",
       "struct",
       "array",
@@ -64,6 +67,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   );
 
   protected StreamConfig incrementalDedupStream;
+  /**
+   * We intentionally don't have full refresh overwrite/append streams. Those actually
+   * behave identically in the sqlgenerator. Overwrite mode is actually handled in
+   * {@link DefaultTyperDeduper}.
+   */
+  protected StreamConfig incrementalAppendStream;
   protected StreamConfig cdcIncrementalDedupStream;
 
   protected SqlGenerator<DialectTableDefinition> generator;
@@ -148,6 +157,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         primaryKey,
         Optional.of(cursor),
         columns);
+    incrementalAppendStream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
+        primaryKey,
+        Optional.of(cursor),
+        columns);
+
     cdcIncrementalDedupStream = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
@@ -251,6 +268,50 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  @Test
+  public void incrementalAppend() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(false, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+
+    String sql = generator.updateTable(incrementalAppendStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        3,
+        dumpRawTableRecords(streamId),
+        3,
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  @Test
+  public void testRenameFinalTable() throws Exception {
+    createFinalTable(false, incrementalAppendStream.id(), "_tmp");
+    List<JsonNode> records = singletonList(Jsons.deserialize(
+        """
+            {
+              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_meta": {},
+              "id1": 1
+            }
+            """));
+    insertFinalTableRecords(
+        false,
+        incrementalAppendStream.id(),
+        "_tmp",
+        records);
+
+    final String sql = generator.overwriteFinalTable(incrementalAppendStream.id(), "_tmp");
+    destinationHandler.execute(sql);
+
+    DIFFER.diffFinalTableRecords(
+        records,
+        dumpFinalTableRecords(incrementalAppendStream.id(), ""));
+  }
+
   private void verifyRecords(String expectedRawRecordsFile, List<JsonNode> actualRawRecords, String expectedFinalRecordsFile, List<JsonNode> actualFinalRecords) {
     assertAll(
         () -> DIFFER.diffRawTableRecords(
@@ -264,6 +325,21 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> DIFFER.diffFinalTableRecords(
             BaseTypingDedupingTest.readRecords(expectedFinalRecordsFile),
             actualFinalRecords));
+  }
+
+  private void verifyRecordCounts(int expectedRawRecords, List<JsonNode> actualRawRecords, int expectedFinalRecords, List<JsonNode> actualFinalRecords) {
+    assertAll(
+        () -> assertEquals(
+            expectedRawRecords,
+            actualRawRecords.size()),
+        () -> assertEquals(
+            0,
+            actualRawRecords.stream()
+                .filter(record -> !record.hasNonNull("_airbyte_loaded_at"))
+                .count()),
+        () -> assertEquals(
+            expectedFinalRecords,
+            actualFinalRecords.size()));
   }
 
 }
