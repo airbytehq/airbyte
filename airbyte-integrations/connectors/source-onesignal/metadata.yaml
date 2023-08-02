@@ -4,13 +4,13 @@ data:
       - https://onesignal.com/
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: c6845678-4653-4c25-87e2-de7647ee2010
-  dockerImageTag: 1.1.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-onesignal
   githubIssueLabel: source-onesignal
   icon: onesignal.svg
