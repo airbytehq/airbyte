@@ -1,4 +1,4 @@
-# CDK CI
+# CI Tools for Java CDK
 
 ## Installation
 
