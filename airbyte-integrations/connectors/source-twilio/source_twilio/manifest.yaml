@@ -211,7 +211,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         cursor_granularity: "PT0.000001S"
         step: "P1D"
-  
+
   conferences_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -400,6 +400,30 @@ definitions:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/flows_partition_router"
+    
+  executions_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+    - stream: "#/definitions/executions_stream"
+      parent_key: sid
+      partition_field: execution_id
+  
+  step_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "step"
+      path: "/Flows/{{stream_slice.flow_id}}/Executions/{{stream_slice.execution_id}}/Steps"
+      primary_key: "sid"
+    requester:
+      url_base: "https://studio.twilio.com/v1"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/executions_partition_router"
   
   outgoing_caller_ids_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -558,6 +582,125 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         cursor_granularity: "PT0.000001S"
         step: "P1D"
+    
+  services_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "services"
+      path: "/Services"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://chat.twilio.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+
+  services_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/services_stream"
+        parent_key: sid
+        partition_field: service_id
+  
+  roles_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "roles"
+      path: "/Services/{{stream_slice.service_id}}"
+      primary_key: "service_sid"
+    requester:
+      url_base: "https://conversations.twilio.com/v1"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/users_partition_router"
+  
+  trunks_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "trunks"
+      path: "/Trunks"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://trunking.twilio.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+
+  verify_services_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "verify_services"
+      path: "/Services"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        page_size: 100
+      requester:
+        type: HttpRequester
+        url_base: "https://verify.twilio.com/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+
+  users_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "users"
+      path: "/Users"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://conversations.twilio.com/v1"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+
+  users_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/user_conversations_stream"
+        parent_key: sid
+        partition_field: user_id
+  
+  user_conversations_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "user_conversation"
+      path: "/Users/{{stream_slice.user_id}}/Conversations"
+      primary_key: "user_sid"
+    requester:
+      url_base: "https://conversations.twilio.com/v1"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/users_partition_router"
   
 
 streams:
@@ -588,6 +731,14 @@ streams:
   - "#/definitions/transcriptions_stream"
   - "#/definitions/usage_records_stream"
   - "#/definitions/usage_triggers_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/user_conversations_stream"
+  - "#/definitions/trunks_stream"
+  - "#/definitions/roles_stream"
+  - "#/definitions/services_stream"
+  - "#/definitions/step_stream"
+  - "#/definitions/verify_services_stream"
+
 
 
 check:
@@ -619,6 +770,13 @@ check:
     - "usage_triggers"
     - "messages"
     - "message_media"
+    - "step"
+    - "roles"
+    - "services"
+    - "verify_services"
+    - "trunks"
+    - "users"
+    - "user_conversations"
 
 spec:
   type: Spec
