@@ -15,8 +15,9 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    RecordParseError,
     SchemaInferenceError,
-    StopSyncPerValidationPolicy, RecordParseError,
+    StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
@@ -128,7 +129,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         level=Level.ERROR,
                         message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
                         stack_trace=traceback.format_exc(),
-                    )
+                    ),
                 )
 
             except Exception:
