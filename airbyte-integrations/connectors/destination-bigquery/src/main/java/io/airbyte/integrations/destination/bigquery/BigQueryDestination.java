@@ -240,12 +240,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final BigQuery bigquery = getBigQuery(config);
     TyperDeduper typerDeduper;
-    BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bigquery, datasetLocation);
     if (TypingAndDedupingFlag.isDestinationV2()) {
       BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
       typerDeduper = new DefaultTyperDeduper<>(
           sqlGenerator,
-          destinationHandler,
+          new BigQueryDestinationHandler(bigquery, datasetLocation),
           parsedCatalog,
           migrator);
     } else {

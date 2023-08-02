@@ -67,7 +67,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
     // _airbyte_tmp table.
     for (StreamConfig stream : parsedCatalog.streams()) {
-      // Migrate the Raw Tables if this is the first v2 sync
+      // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
       v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {

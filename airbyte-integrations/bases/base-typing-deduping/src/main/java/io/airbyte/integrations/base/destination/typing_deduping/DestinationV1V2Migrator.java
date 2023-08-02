@@ -16,8 +16,9 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
     Logger LOGGER = LoggerFactory.getLogger(DestinationV1V2Migrator.class);
 
     /**
-     * This is the primary entrypoint to this interface Determine whether a migration is necessary for a given stream and if so, migrate the raw table
-     * and rebuild the final table with a soft reset
+     * This is the primary entrypoint to this interface
+     * <p>
+     * Determine whether a migration is necessary for a given stream and if so, migrate the raw table and rebuild the final table with a soft reset
      *
      * @param sqlGenerator       the class to use to generate sql
      * @param destinationHandler the handler to execute the sql statements

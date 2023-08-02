@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringSubstitutor;
@@ -849,8 +850,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
         "_airbyte_extracted_at", LegacySQLTypeName.TIMESTAMP,
         "_airbyte_loaded_at", LegacySQLTypeName.TIMESTAMP
     );
-    bq.getTable(TableId.of(testDataset, "_users_v2_raw")).getDefinition().getSchema().getFields().stream()
-        .allMatch(field -> field.getType().equals(expectedV2Schema.get(field.getName())));
+    final var matchedColumns = bq.getTable(TableId.of(testDataset, "_users_v2_raw")).getDefinition().getSchema().getFields().stream()
+        .filter(field -> field.getType().equals(expectedV2Schema.get(field.getName()))).collect(Collectors.toSet());
+    assertEquals(expectedV2Schema.size(), matchedColumns.size());
     // Verify that all ids from v1 are present in v2
     final var missingIds = bqExecuteQuery(Map.of("dataset", testDataset), """
         SELECT v1._airbyte_ab_id as id from `${dataset}._users_v1_raw` as v1
