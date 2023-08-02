@@ -268,6 +268,7 @@ class SimpleRetriever(Retriever):
             ),
         )
 
+    # This logic is similar to _read_pages in the HttpStream class. When making changes here, consider making changes there as well.
     def _read_pages(
         self,
         records_generator_fn: Callable[[Optional[requests.Response], Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]],
