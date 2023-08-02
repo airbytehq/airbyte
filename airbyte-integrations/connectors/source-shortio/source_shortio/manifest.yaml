@@ -59,9 +59,25 @@ definitions:
       requester:
         $ref: "#/definitions/v2_api_requester"
 
+  incremental_base:
+    type: DatetimeBasedCursor
+    cursor_field: "updatedAt"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P31D"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+
   links_stream:
     $ref: "#/definitions/v1_base_stream"
     name: "links"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"   
     primary_key: "id"
     $parameters:
       extractor_path: "links"

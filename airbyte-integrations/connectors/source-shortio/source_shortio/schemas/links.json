@@ -3,6 +3,9 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
+    "lcpath":{
+      "type": ["null", "string"]
+    },
     "passwordContact": {
       "type": ["null", "string"]
     },

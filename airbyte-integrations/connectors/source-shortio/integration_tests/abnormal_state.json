@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "createdAt": "2023-07-31T03:43:59.244Z" },
+      "stream_state": { "updatedAt": "2099-07-31T03:43:59.244Z" },
       "stream_descriptor": { "name": "links" }
     }
   },
