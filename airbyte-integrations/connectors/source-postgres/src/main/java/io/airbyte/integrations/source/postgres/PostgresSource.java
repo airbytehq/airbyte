@@ -600,7 +600,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
 
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap =
-          getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager);
+          getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager, getQuoteString());
 
       final PostgresCtidHandler cursorBasedCtidHandler =
           new PostgresCtidHandler(sourceConfig,
