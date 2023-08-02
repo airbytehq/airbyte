@@ -62,8 +62,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
-      Pair.of("_ab_cdc_lsn", AirbyteProtocolType.INTEGER)
+      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
   );
 
   protected StreamConfig incrementalDedupStream;
@@ -84,7 +83,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   private ColumnId id2;
   private List<ColumnId> primaryKey;
   private ColumnId cursor;
-  private ColumnId cdcCursor;
   private LinkedHashMap<ColumnId, AirbyteType> columns;
   private LinkedHashMap<ColumnId, AirbyteType> cdcColumns;
   private StreamId streamId;
@@ -121,7 +119,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     id2 = generator.buildColumnId("id2");
     primaryKey = List.of(id1, id2);
     cursor = generator.buildColumnId("updated_at");
-    cdcCursor = generator.buildColumnId("_ab_cdc_lsn");
 
     columns = new LinkedHashMap<>();
     columns.put(id1, AirbyteProtocolType.INTEGER);
@@ -170,7 +167,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
-        Optional.of(cdcCursor),
+        Optional.of(cursor),
         cdcColumns);
 
     LOGGER.info("Running with namespace {}", namespace);
@@ -288,7 +285,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   @Test
   public void overwriteFinalTable() throws Exception {
-    createFinalTable(false, incrementalAppendStream.id(), "_tmp");
+    createFinalTable(false, streamId, "_tmp");
     List<JsonNode> records = singletonList(Jsons.deserialize(
         """
             {
@@ -299,16 +296,47 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             """));
     insertFinalTableRecords(
         false,
-        incrementalAppendStream.id(),
+        streamId,
         "_tmp",
         records);
 
-    final String sql = generator.overwriteFinalTable(incrementalAppendStream.id(), "_tmp");
+    final String sql = generator.overwriteFinalTable(streamId, "_tmp");
     destinationHandler.execute(sql);
 
     DIFFER.diffFinalTableRecords(
         records,
-        dumpFinalTableRecords(incrementalAppendStream.id(), ""));
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  @Test
+  public void cdcImmediateDeletion() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    List<JsonNode> records = singletonList(Jsons.deserialize(
+        """
+            {
+              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 100,
+                "updated_at": "2023-01-01T00:00:00Z",
+                "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+              }
+            }
+            """));
+    insertRawTableRecords(
+        streamId,
+        records);
+
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        1,
+        dumpRawTableRecords(streamId),
+        0,
+        dumpFinalTableRecords(streamId, ""));
   }
 
   private void verifyRecords(String expectedRawRecordsFile, List<JsonNode> actualRawRecords, String expectedFinalRecordsFile, List<JsonNode> actualFinalRecords) {
