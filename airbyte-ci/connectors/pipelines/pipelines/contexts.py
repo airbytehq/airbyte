@@ -173,13 +173,13 @@ class PipelineContext:
         return self.slack_webhook is not None and self.reporting_slack_channel is not None
 
     @property
-    def is_dagger_cloud(self) -> bool:
+    def has_dagger_cloud_token(self) -> bool:
         return bool(os.getenv("_EXPERIMENTAL_DAGGER_CLOUD_TOKEN"))
 
     @property
     def dagger_cloud_url(self) -> str:
         """Gets the link to the Dagger Cloud runs page for the current commit."""
-        if self.is_local or not self.is_dagger_cloud:
+        if self.is_local or not self.has_dagger_cloud_token:
             return None
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
