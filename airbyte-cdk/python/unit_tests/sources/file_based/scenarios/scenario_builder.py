@@ -7,12 +7,14 @@ from dataclasses import dataclass, field
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_availability_strategy import (
+    AbstractFileBasedAvailabilityStrategy,
+)
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
@@ -32,9 +34,9 @@ class TestScenario:
             expected_spec: Optional[Mapping[str, Any]],
             expected_check_status: Optional[str],
             expected_catalog: Optional[Mapping[str, Any]],
-            expected_logs: Optional[Mapping[str, Mapping[str, Any]]],
+            expected_logs: Optional[Mapping[str, List[Mapping[str, Any]]]],
             expected_records: List[Mapping[str, Any]],
-            availability_strategy: Optional[AvailabilityStrategy],
+            availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
             discovery_policy: Optional[AbstractDiscoveryPolicy],
             validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
             parsers: Mapping[str, FileTypeParser],
@@ -56,7 +58,6 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
-        self.expected_logs = expected_logs
         self.source = InMemoryFilesSource(
             files,
             file_type,
@@ -113,7 +114,7 @@ class TestScenarioBuilder:
         self._expected_catalog: Mapping[str, Any] = {}
         self._expected_logs: Optional[Mapping[str, Any]] = None
         self._expected_records: List[Mapping[str, Any]] = []
-        self._availability_strategy: Optional[AvailabilityStrategy] = None
+        self._availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None
         self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
         self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
         self._parsers = default_parsers
@@ -165,7 +166,7 @@ class TestScenarioBuilder:
         self._parsers = parsers
         return self
 
-    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy) -> "TestScenarioBuilder":
+    def set_availability_strategy(self, availability_strategy: AbstractFileBasedAvailabilityStrategy) -> "TestScenarioBuilder":
         self._availability_strategy = availability_strategy
         return self
 

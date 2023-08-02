@@ -9,8 +9,9 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser
+from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
@@ -27,6 +28,10 @@ class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
         return 1
 
 
+class LowInferenceBytesJsonlParser(JsonlParser):
+    MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1
+
+
 class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamReader):
     def get_matching_files(
         self,
@@ -37,7 +42,7 @@ class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamRea
 
 
 class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
-    def open_file(self, file: RemoteFile) -> IOBase:
+    def open_file(self, file: RemoteFile, file_read_mode: FileReadMode, logger: logging.Logger) -> IOBase:
         raise Exception("Error opening file")
 
 

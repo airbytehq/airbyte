@@ -4,34 +4,25 @@
 
 package io.airbyte.integrations.destination.teradata;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TeradataDestinationTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationTest.class);
-
   private JsonNode config;
   final TeradataDestination destination = new TeradataDestination();
 
-  private static String EXPECTED_JDBC_URL = "jdbc:teradata://localhost/";
-  private static String EXPECTED_JDBC_ESCAPED_URL = "jdbc:teradata://localhost/";
+  private final String EXPECTED_JDBC_URL = "jdbc:teradata://localhost/";
 
+  private final String EXTRA_JDBC_PARAMS = "key1=value1&key2=value2&key3=value3";
   private String getUserName() {
     return config.get(JdbcUtils.USERNAME_KEY).asText();
   }
@@ -44,112 +35,161 @@ public class TeradataDestinationTest {
     return config.get(JdbcUtils.HOST_KEY).asText();
   }
 
-  private JsonNode buildConfigNoJdbcParameters() {
-    return Jsons.jsonNode(ImmutableMap.of(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText(),
-        JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText(), JdbcUtils.DATABASE_KEY,
-        config.get(JdbcUtils.PASSWORD_KEY).asText()));
+  private String getSchemaName() {
+    return config.get(JdbcUtils.SCHEMA_KEY).asText();
   }
+
 
   @BeforeEach
   void setup() {
+      this.config = createConfig();
+  }
+   private JsonNode createConfig() {
+    return Jsons.jsonNode(baseParameters());
+  }
 
-    try {
-      this.config = Jsons.clone(Jsons.deserialize(Files.readString(Paths.get("secrets/config.json"))));
-      this.EXPECTED_JDBC_URL = String.format("jdbc:teradata://%s/", config.get(JdbcUtils.HOST_KEY).asText());
-      this.EXPECTED_JDBC_ESCAPED_URL = String.format("jdbc:teradata://%s/",
-          config.get(JdbcUtils.HOST_KEY).asText());
-    } catch (Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "setup failed");
+  private JsonNode createConfig(boolean sslEnable) {
+    JsonNode jsonNode;
+    if(sslEnable) {
+      jsonNode = Jsons.jsonNode(sslBaseParameters());
+    } else {
+      jsonNode = createConfig();
     }
+    return jsonNode;
   }
 
-  @AfterAll
-  static void cleanUp() {}
-
-  private JsonNode buildConfigEscapingNeeded() {
-    return Jsons.jsonNode(ImmutableMap.of(JdbcUtils.HOST_KEY, getHostName(), JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.DATABASE_KEY, "db/foo"));
+  private JsonNode createConfig(final String sslMethod) {
+    Map<String, Object> additionalParameters = getAdditionalParams(sslMethod);
+    return Jsons.jsonNode(MoreMaps.merge(sslBaseParameters(), additionalParameters));
   }
 
+  private Map<String, Object> getAdditionalParams(final String sslMethod) {
+    Map<String, Object> additionalParameters;
+    switch (sslMethod) {
+      case "verify-ca", "verify-full" -> {
+        additionalParameters = ImmutableMap.of(
+                TeradataDestination.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                        TeradataDestination.PARAM_MODE, sslMethod,
+                        TeradataDestination.CA_CERT_KEY, "dummycertificatecontent")));
+      }
+      default -> {
+        additionalParameters = ImmutableMap.of(
+                TeradataDestination.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                        TeradataDestination.PARAM_MODE, sslMethod)));
+      }
+    }
+    return additionalParameters;
+  }
+
+  private Map<String, Object> baseParameters() {
+    return ImmutableMap.<String, Object>builder()
+            .put(JdbcUtils.HOST_KEY, "localhost")
+            .put(JdbcUtils.SCHEMA_KEY, "db")
+            .put(JdbcUtils.USERNAME_KEY, "username")
+            .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+            .build();
+  }
+
+  private Map<String, Object> sslBaseParameters() {
+    return ImmutableMap.<String, Object>builder()
+            .put(TeradataDestination.PARAM_SSL, "true")
+            .put(JdbcUtils.HOST_KEY, getHostName())
+            .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
+            .put(JdbcUtils.USERNAME_KEY, getUserName())
+            .put(JdbcUtils.PASSWORD_KEY, getPassword())
+            .build();
+  }
+
+  private JsonNode buildConfigNoJdbcParameters() {
+    return Jsons.jsonNode(baseParameters());
+  }
+
+  private JsonNode buildConfigDefaultSchema() {
+    return Jsons.jsonNode(ImmutableMap.of(
+            JdbcUtils.HOST_KEY, getHostName(),
+            JdbcUtils.USERNAME_KEY, getUserName(),
+            JdbcUtils.PASSWORD_KEY,
+            getPassword()));
+  }
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
-    return Jsons.jsonNode(ImmutableMap.of(JdbcUtils.HOST_KEY, getHostName(), JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.DATABASE_KEY, "db", JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+    return Jsons.jsonNode(ImmutableMap.of(
+            JdbcUtils.HOST_KEY, getHostName(),
+            JdbcUtils.USERNAME_KEY, getUserName(),
+            JdbcUtils.SCHEMA_KEY, getSchemaName(),
+            JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
+
+
 
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
-    final JsonNode jdbcConfig = new TeradataDestination().toJdbcConfig(buildConfigNoJdbcParameters());
+    final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters());
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-  }
-
-  @Test
-  void testJdbcUrlWithEscapedDatabaseName() {
-    final JsonNode jdbcConfig = new TeradataDestination().toJdbcConfig(buildConfigEscapingNeeded());
-    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
   }
 
   @Test
   void testJdbcUrlEmptyExtraParams() {
-    final JsonNode jdbcConfig = new TeradataDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
+    final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals("", jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
   }
+
 
   @Test
   void testJdbcUrlExtraParams() {
-    final String extraParam = "key1=value1&key2=value2&key3=value3";
-    final JsonNode jdbcConfig = new TeradataDestination()
-        .toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
+
+    final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(EXTRA_JDBC_PARAMS));
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals(EXTRA_JDBC_PARAMS, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
   }
 
   @Test
-  void testCheckIncorrectPasswordFailure() {
-    final var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    final TeradataDestination destination = new TeradataDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    // State code: 28000; Error code: 8017; Message: [Teradata Database] [TeraJDBC
-    // 17.20.00.12] [Error 8017] [SQLState 28000] The UserId, Password or Account is
-    // invalid."}}
-    assertTrue(status.getMessage().contains("SQLState 28000"));
+  void testDefaultSchemaName() {
+    final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigDefaultSchema());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals(TeradataDestination.DEFAULT_SCHEMA_NAME, jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
   }
 
   @Test
-  public void testCheckIncorrectUsernameFailure() {
-    final var config = buildConfigNoJdbcParameters();
-    LOGGER.info(" config in testCheckIncorrectUsernameFailure -   " + config);
-    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "dummy");
-    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    final TeradataDestination destination = new TeradataDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    // State code: 28000; Error code: 8017; Message: [Teradata Database] [TeraJDBC
-    // 17.20.00.12] [Error 8017] [SQLState 28000] The UserId, Password or Account is
-    // invalid."}}
-    assertTrue(status.getMessage().contains("SQLState 28000"));
+  void testSSLDisable() {
+    final JsonNode jdbcConfig = createConfig(false);
+    final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
+    assertNull(properties.get(TeradataDestination.PARAM_SSLMODE));
+  }
+  @Test
+  void testSSLDefaultMode() {
+    final JsonNode jdbcConfig = createConfig(true);
+    final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
+    assertEquals(TeradataDestination.REQUIRE, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
+  }
+  @Test
+  void testSSLAllowMode() {
+    final JsonNode jdbcConfig = createConfig(TeradataDestination.ALLOW);
+    final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
+    assertEquals(TeradataDestination.ALLOW, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
   }
 
   @Test
-  public void testCheckIncorrectHostFailure() {
-    final var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    final TeradataDestination destination = new TeradataDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    assertTrue(status.getMessage().contains("SQLState 08S01"));
+  void testSSLVerfifyCAMode() {
+    final JsonNode jdbcConfig = createConfig(TeradataDestination.VERIFY_CA);
+    final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
+    assertEquals(TeradataDestination.VERIFY_CA, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
+    assertNotNull(properties.get(TeradataDestination.PARAM_SSLCA).toString());
   }
 
   @Test
-  public void testCheckIncorrectDataBaseFailure() {
-    final var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    final TeradataDestination destination = new TeradataDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    // State code: 28000; Error code: 8017; Message: [Teradata Database] [TeraJDBC
-    // 17.20.00.12] [Error 8017] [SQLState 28000] The UserId, Password or Account is
-    // invalid."}}
-    assertTrue(status.getMessage().contains("SQLState 28000"));
+  void testSSLVerfifyFullMode() {
+    final JsonNode jdbcConfig = createConfig(TeradataDestination.VERIFY_FULL);
+    final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
+    assertEquals(TeradataDestination.VERIFY_FULL, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
+    assertNotNull(properties.get(TeradataDestination.PARAM_SSLCA).toString());
   }
 
 }

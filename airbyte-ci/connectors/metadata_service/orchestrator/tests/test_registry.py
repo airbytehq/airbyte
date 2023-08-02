@@ -87,6 +87,26 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
             [],
             ["oss", "cloud"],
         ),
+        (
+            {"oss": {"enabled": False}, "cloud": None},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": False}},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            None,
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": True}},
+            ["oss"],
+            ["cloud"],
+        ),
     ],
 )
 def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
@@ -305,7 +325,7 @@ def test_migration_documentation_url_default():
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
             "registries": {"oss": {"enabled": True}},
-            "releases": {"breakingChanges": {"1.0.0": {}}},
+            "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
         }
     }
 

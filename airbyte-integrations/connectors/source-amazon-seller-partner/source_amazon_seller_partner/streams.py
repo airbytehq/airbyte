@@ -441,6 +441,31 @@ class FbaOrdersReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
+class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
+    """
+
+    name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+
+
+class OrderReportDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
+    """
+
+    name = "GET_ORDER_REPORT_DATA_SHIPPING"
+
+    def parse_document(self, document):
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
+        result = []
+        for report in reports:
+            result.append(report.get("OrderReport", {}))
+
+        return result
+
+
 class FbaShipmentsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100

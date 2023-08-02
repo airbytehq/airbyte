@@ -1,6 +1,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidFeatureFlags.CDC_VIA_CTID;
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -102,10 +103,10 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
       if (i <= indexTillWhichExpectCtidState) {
-        assertTrue(streamState.getStreamState().has("state_type"));
-        assertEquals("ctid", streamState.getStreamState().get("state_type").asText());
+        assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
+        assertEquals("ctid", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else {
-        assertFalse(streamState.getStreamState().has("state_type"));
+        assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
     }
   }
@@ -131,9 +132,9 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
-          assertEquals("ctid", streamState.get("state_type").asText());
+          assertEquals("ctid", streamState.get(STATE_TYPE_KEY).asText());
         } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
-          assertFalse(streamState.has("state_type"));
+          assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
         }
@@ -154,7 +155,7 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
     assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
-      assertFalse(streamState.has("state_type"));
+      assertFalse(streamState.has(STATE_TYPE_KEY));
     });
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
@@ -238,29 +239,29 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
         // First 4 state messages are ctid state
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
-        assertTrue(streamState.getStreamState().has("state_type"));
-        assertEquals("ctid", streamState.getStreamState().get("state_type").asText());
+        assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
+        assertEquals("ctid", streamState.getStreamState().get(STATE_TYPE_KEY).asText());
       } else if (i == 5) {
         // 5th state message is the final state message emitted for the stream
         assertEquals(1, global.getStreamStates().size());
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
-        assertFalse(streamState.getStreamState().has("state_type"));
+        assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       } else if (i <= 10) {
         // 6th to 10th is the ctid state message for the 2nd stream but final state message for 1st stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
-            assertFalse(c.getStreamState().has("state_type"));
+            assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
-            assertTrue(c.getStreamState().has("state_type"));
-            assertEquals("ctid", c.getStreamState().get("state_type").asText());
+            assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
+            assertEquals("ctid", c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
         // last 2 state messages don't contain ctid info cause ctid sync should be complete
         assertEquals(2, global.getStreamStates().size());
-        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has("state_type")));
+        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }
 
@@ -295,15 +296,15 @@ public class CtidEnabledCdcPostgresSourceTest extends CdcPostgresSourceTest {
         global.getStreamStates().forEach(c -> {
           // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
-            assertFalse(c.getStreamState().has("state_type"));
+            assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
-            assertTrue(c.getStreamState().has("state_type"));
-            assertEquals("ctid", c.getStreamState().get("state_type").asText());
+            assertTrue(c.getStreamState().has(STATE_TYPE_KEY));
+            assertEquals("ctid", c.getStreamState().get(STATE_TYPE_KEY).asText());
           }
         });
       } else {
         // last 2 state messages don't contain ctid info cause ctid sync should be complete
-        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has("state_type")));
+        global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }
 

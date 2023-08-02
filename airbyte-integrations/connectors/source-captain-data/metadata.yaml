@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fa290790-1dca-43e7-8ced-6a40b2a66099
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-captain-data
+  githubIssueLabel: source-captain-data
+  icon: captain-data.svg
+  license: MIT
+  name: Captain Data
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/captain-data
+  tags:
+    - language:low-code
+    - language:python
+  _ab_internal:
+    _sl: 100
+    _ql: 200
+  supportLevel: community
+metadataSpecVersion: "1.0"

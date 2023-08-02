@@ -17,6 +17,24 @@
                 },
                 "name": {
                     "type": ["null", "string" ]
+                },
+                "order": {
+                    "type": ["null", "integer"]
+                },
+                "businessUnitId": {
+                    "type": ["null", "integer"]
+                },
+                "internal": {
+                    "type": ["null", "boolean"]
+                },
+                "internalName": {
+                    "type": ["null", "string"]
+                },
+                "category": {
+                    "type": ["null", "string"]
+                },
+                "channel": {
+                    "type": ["null", "string"]
                 }
     }
 }
