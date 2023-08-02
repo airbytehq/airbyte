@@ -35,7 +35,7 @@ class InsightConfig(BaseModel):
 
     level: str = Field(
         title="Level", 
-        description="The desired granularity level for data retrieval of the custom insight from the API.", 
+        description="The granularity level for data retrieval of the custom insight from the API.", 
         default="ad",
         enum=["ad", "adset", "campaign", "account"],
         order=1
@@ -108,7 +108,9 @@ class InsightConfig(BaseModel):
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
-        description="Also known as the attribution window, this determines the period of days for which you wish to retrieve updated insights from Facebook. "
+        description="The number of days to revisit data during syncing to capture updated conversion data from the API. "
+        "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
+        "If you have set a custom attribution window in your Facebook account, please set the same value here. "
         "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value.",
         maximum=28,
         mininum=1,
@@ -151,8 +153,8 @@ class ConnectorConfig(BaseConfig):
         title="End Date",
         order=2,
         description=(
-            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z."
-            " All data generated between the start date and this end date will be replicated. "
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
+            "All data generated between the start date and this end date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
@@ -202,7 +204,7 @@ class ConnectorConfig(BaseConfig):
         default=100,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. "
-            "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
+            "Most users do not need to set this field unless they need to tune the connector to address specific issues or use cases."
         ),
     )
 
@@ -210,10 +212,10 @@ class ConnectorConfig(BaseConfig):
         title="Insights Lookback Window",
         order=8,
         description=(
-            "The attribution window. Facebook freezes insight data 28 days after it was generated, "
-            "which means that all data from the past 28 days may be subject to change. "
-            "You can retrieve refreshed insights from the past by setting this parameter. "
-            "If you set a custom lookback window value in your Facebook account, please provide the same value here."
+            "The number of days to revisit data during syncing to capture updated conversion data from the API. "
+        "Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad."
+        "If you have set a custom attribution window in your Facebook account, please set the same value here. "
+        "Refer to the <a href='https://docs.airbyte.com/integrations/sources/facebook-marketing'>docs</a> for more information on this value."
         ),
         maximum=28,
         mininum=1,
@@ -221,12 +223,14 @@ class ConnectorConfig(BaseConfig):
     )
 
     max_batch_size: Optional[PositiveInt] = Field(
-        title="Maximum size of Batched Requests",
+        title="Maximum Size of Batched Requests",
         order=9,
         description=(
             "Maximum batch size used when sending batch requests to Facebook API. "
-            "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
+            "Most users do not need to set this field unless they need to tune the connector to address specific issues or use cases. "
+            "Batch requests are limited to a maximum of 50 requests per batch by Facebook."
         ),
+        maximum=50,
         default=50,
     )
 
