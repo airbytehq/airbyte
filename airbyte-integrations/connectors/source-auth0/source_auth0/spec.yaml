@@ -68,6 +68,8 @@ connectionSpecification:
               type: string
               title: Authentication Method
               const: oauth2_access_token
+              examples:
+                - "oauth2_access_token"
               order: 0
             access_token:
               title: OAuth2 Access Token

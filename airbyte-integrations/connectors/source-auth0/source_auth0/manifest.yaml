@@ -1,0 +1,54 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  clients_stream:
+    $ref: "#/definitions/base_stream"
+    name: "clients"
+    primary_key: "client_id"
+    $parameters:
+      path: "clients"
+
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    name: "users"
+    primary_key: "user_id"
+    $parameters:
+      path: "users"
+
+streams:
+  - "#/definitions/clients_stream"
+  - "#/definitions/users_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "clients"
+    - "users"

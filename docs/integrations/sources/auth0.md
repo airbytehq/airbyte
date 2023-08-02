@@ -42,6 +42,7 @@ The Auth0 source connector supports the following [sync modes](https://docs.airb
 ## Supported Streams
 
 - [Users](https://auth0.com/docs/api/management/v2#!/Users/get_users)
+- [Clients](https://auth0.com/docs/api/management/v2/clients/get-clients)
 
 ## Performance considerations
 
@@ -51,6 +52,7 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.2.0  | 2023-05-23 | 26445 | Add Clients stream |
-| 0.1.0  | 2022-10-21 | TBD | Add Auth0 and Users stream |
+|  1.0.0  | 2023-08-03 | [*****](https://github.com/airbytehq/airbyte/pull/*****) | Migrate to Low-Code CDK                                                        |
+|  0.2.0  | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream                                                             |
+|  0.1.0  | 2022-10-21 | TBD                                                      | Add Auth0 and Users stream                                                     |
 
