@@ -24,5 +24,5 @@ ENV APPLICATION source-postgres
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=2.0.33
+LABEL io.airbyte.version=2.0.34
 LABEL io.airbyte.name=airbyte/source-postgres

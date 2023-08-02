@@ -41,16 +41,19 @@ jobs:
       build: ${{ steps.filter.outputs.build }}
       cdk: ${{ steps.filter.outputs.cdk }}
       cli: ${{ steps.filter.outputs.cli }}
-      connectors: ${{ steps.filter.outputs.connectors }}
+      connectors_base: ${{ steps.filter.outputs.connectors_base }}
       db: ${{ steps.filter.outputs.db }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      any_change: ${{ steps.filter.outputs.any_change }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          # Note, the following glob expression within a filters are ORs.
+          # Note: The following glob expression within a filters are ORs.
+          # Note: If no filters match, the steps are all skipped WITHOUT reported their status check back to github.
+          #       This can cause required checks to go unreported blocking PRs from being merged
+          #       and this is why we have the any_change filter.
           filters: |
             build:
               - '.github/**'
@@ -64,12 +67,14 @@ jobs:
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
-            connectors:
+            connectors_base:
               - 'airbyte-integrations/bases/**'
               - 'airbyte-integrations/connectors-templates/**'
               - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
+            any_change:
+              - '**/*'
 
   # Uncomment to debug.
   #  changes-output:
@@ -217,7 +222,7 @@ jobs:
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
+      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors_base == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:

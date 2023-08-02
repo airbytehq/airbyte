@@ -66,6 +66,7 @@ def get_modified_files(
 @click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
+@click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
@@ -80,6 +81,7 @@ def airbyte_ci(
     ci_context: str,
     pipeline_start_timestamp: int,
     pull_request_number: int,
+    ci_git_user: str,
     ci_github_access_token: str,
     ci_report_bucket_name: str,
     ci_job_key: str,
@@ -95,6 +97,8 @@ def airbyte_ci(
     )
     ctx.obj["ci_context"] = ci_context
     ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
+    ctx.obj["ci_git_user"] = ci_git_user
+    ctx.obj["ci_github_access_token"] = ci_github_access_token
     ctx.obj["ci_job_key"] = ci_job_key
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
 

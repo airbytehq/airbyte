@@ -168,6 +168,7 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
 - Log-based replication only works for master instances of Postgres.  CDC cannot be run from a read-replica of your primary database.
+- An Airbyte database source using CDC replication can only be used with a single Airbyte destination.  This is due to how Postgres CDC is implemented - each destination would recieve only part of the data available in the replication slot.
 - Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
   - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
   - If you stop syncing a CDC-configured Postgres instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
@@ -399,6 +400,7 @@ Some larger tables may encounter an error related to the temporary file size lim
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.34  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                   |
 | 2.0.33  | 2023-06-01 | [26873](https://github.com/airbytehq/airbyte/pull/26873) | Add prepareThreshold=0 to JDBC url to mitigate PGBouncer prepared statement [X] already exists.                                                                            |
 | 2.0.32  | 2023-05-31 | [26810](https://github.com/airbytehq/airbyte/pull/26810) | Remove incremental sync estimate from Postgres to increase performance.                                                                                                    |
 | 2.0.31  | 2023-05-25 | [26633](https://github.com/airbytehq/airbyte/pull/26633) | Collect and log information related to full vacuum operation in db                                                                                                         |

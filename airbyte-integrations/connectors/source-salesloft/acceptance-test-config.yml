@@ -1,51 +1,54 @@
 acceptance_tests:
   basic_read:
     tests:
-    - config_path: secrets/config.json
-      expect_records:
-        path: integration_tests/expected_records.jsonl
-      ignored_fields:
-        people:
-        - name: locale_utc_offset
-          bypass_reason: volatile data
-        users:
-        - name: locale_utc_offset
-          bypass_reason: volatile data
-      fail_on_extra_columns: false
-    - config_path: secrets/config_oauth.json
-      expect_records:
-        path: integration_tests/expected_records.jsonl
-      fail_on_extra_columns: false
+      - config_path: secrets/config.json
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+        ignored_fields:
+          actions:
+            - name: updated_at
+              bypass_reason: auto-updated by provider
+          people:
+            - name: locale_utc_offset
+              bypass_reason: volatile data
+          users:
+            - name: locale_utc_offset
+              bypass_reason: volatile data
+        fail_on_extra_columns: false
+      - config_path: secrets/config_oauth.json
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+        fail_on_extra_columns: false
   connection:
     tests:
-    - config_path: secrets/config.json
-      status: succeed
-    - config_path: secrets/config_oauth.json
-      status: succeed
-    - config_path: integration_tests/invalid_config.json
-      status: failed
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: secrets/config_oauth.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
   discovery:
     tests:
-    - config_path: secrets/config.json
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.6"
-    - config_path: secrets/config_oauth.json
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.6"
+      - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
+      - config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
   full_refresh:
     tests:
-    - config_path: secrets/config.json
-      configured_catalog_path: integration_tests/configured_catalog.json
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
   incremental:
     tests:
-    - config_path: secrets/config.json
-      configured_catalog_path: integration_tests/incremental_catalog.json
-      future_state:
-        future_state_path: integration_tests/abnormal_state.json
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/incremental_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
   spec:
     tests:
-    - spec_path: source_salesloft/spec.json
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.6"
+      - spec_path: source_salesloft/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
 connector_image: airbyte/source-salesloft:dev
 test_strictness_level: high

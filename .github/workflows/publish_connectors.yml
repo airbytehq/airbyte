@@ -18,40 +18,37 @@ jobs:
   publish_connectors:
     name: Publish connectors
     runs-on: large-runner
-    env:
-      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-      METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-      METADATA_SERVICE_BUCKET_NAME: prod-airbyte-cloud-connector-metadata-service
-      SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
-      SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-      CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
-      SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Login to DockerHub
-        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+        uses: actions/checkout@v3
       - name: Publish modified connectors [On merge to master]
         id: publish-modified-connectors
         if: github.event_name == 'push'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          # Only pre-release images are published until the correct behavior is observed in prod.
-          # Setting concurrency to 1 for safety:
-          # High concurrency can lead to resource issues for java connectors.
-          # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
           context: "master"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
+
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           context: "manual"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"

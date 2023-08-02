@@ -14,6 +14,7 @@ import anyio
 import click
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
+from ci_connector_ops.pipelines.format import run_connectors_format_pipelines
 from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
@@ -445,4 +446,61 @@ def list(
         table.add_row(modified, connector_name, language, release_stage, version, folder)
 
     console.print(table)
+    return True
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
+@click.pass_context
+def format(ctx: click.Context) -> bool:
+
+    if ctx.obj["modified"]:
+        # We only want to format the connector that with modified files on the current branch.
+        connectors_and_files_to_format = [
+            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items() if modified_files
+        ]
+    else:
+        # We explicitly want to format specific connectors
+        connectors_and_files_to_format = [
+            (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
+        ]
+
+    if connectors_and_files_to_format:
+        click.secho(
+            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}.",
+            fg="green",
+        )
+    else:
+        click.secho("No connectors to format.", fg="yellow")
+
+    connectors_contexts = [
+        ConnectorContext(
+            pipeline_name=f"Format connector {connector.technical_name}",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            report_output_prefix=ctx.obj["report_output_prefix"],
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
+            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_git_user=ctx.obj["ci_git_user"],
+            ci_github_access_token=ctx.obj["ci_github_access_token"],
+        )
+        for connector, modified_files in connectors_and_files_to_format
+    ]
+
+    anyio.run(
+        run_connectors_format_pipelines,
+        connectors_contexts,
+        ctx.obj["ci_git_user"],
+        ctx.obj["ci_github_access_token"],
+        ctx.obj["git_branch"],
+        ctx.obj["is_local"],
+        ctx.obj["execute_timeout"],
+    )
+
     return True

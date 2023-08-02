@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   dockerRepository: airbyte/source-db2
   githubIssueLabel: source-db2
   icon: db2.svg

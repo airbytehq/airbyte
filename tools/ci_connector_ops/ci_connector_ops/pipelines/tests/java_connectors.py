@@ -14,7 +14,6 @@ from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorDist
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.gradle import GradleTask
-from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
@@ -101,10 +100,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
-    return await run_steps(
-        [
-            (IntegrationTestJava(context), (connector_image_tar_file, normalization_tar_file)),
-            (AcceptanceTests(context), (connector_image_tar_file)),
-        ],
-        results=step_results,
-    )
+    integration_tests_results = await IntegrationTestJava(context).run(connector_image_tar_file, normalization_tar_file)
+    step_results.append(integration_tests_results)
+
+    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
+    step_results.append(acceptance_tests_results)
+    return step_results

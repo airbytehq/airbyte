@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from .brands_report import SponsoredBrandsReportStream
 from .brands_video_report import SponsoredBrandsVideoReportStream

@@ -230,6 +230,11 @@ def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
     return [f.filename for f in pull_request.get_files()]
 
 
+def get_last_commit_message() -> str:
+    """Retrieve the last commit message."""
+    return git.Repo().head.commit.message
+
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -249,7 +254,10 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
                 modified_file_parts = Path(modified_file).parts
                 # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
                 if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
-                    modified_connectors.setdefault(connector, []).append(modified_file)
+                    modified_connectors.setdefault(connector, [])
+                    connector_directory_parts = Path(connector.code_directory).parts
+                    if modified_file_parts[: len(connector_directory_parts)] == connector_directory_parts:
+                        modified_connectors[connector].append(modified_file)
     return modified_connectors
 
 

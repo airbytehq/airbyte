@@ -181,3 +181,103 @@ def test_check_connector_https_url_only_all_connectors():
 def test_is_comment(tmp_path, file_name, line, expect_is_comment):
     file_path = tmp_path / file_name
     assert qa_checks.is_comment(line, file_path) is expect_is_comment
+
+
+@pytest.mark.parametrize(
+    "connector, title_name, metadata_breaking_changes, migration_guide_breaking_changes, success, expected_in_stdout",
+    [
+        (
+            qa_checks.Connector("source-foobar"),
+            "foobar",
+            [],
+            ["0.0.0"],
+            True,
+            None,
+        ),
+        (
+            qa_checks.Connector("source-foobar"),
+            "foobar",
+            ["0.0.0"],
+            ["0.0.0"],
+            True,
+            None,
+        ),
+        (
+            qa_checks.Connector("source-foobar"),
+            "foobar",
+            [
+                "0.0.1",
+                "0.0.0",
+            ],
+            [
+                "0.0.1",
+                "0.0.0",
+            ],
+            True,
+            None,
+        ),
+        (qa_checks.Connector("source-foobar"), "badtitle", ["0.0.0"], ["0.0.0"], False, "does not start with the correct header"),
+        (
+            qa_checks.Connector("source-foobar"),
+            "foobar",
+            [
+                "0.0.1",
+                "0.0.0",
+            ],
+            ["0.0.0"],
+            False,
+            "has missing or misordered version headings",
+        ),
+        (
+            qa_checks.Connector("source-foobar"),
+            "foobar",
+            [
+                "0.0.1",
+                "0.0.0",
+            ],
+            [
+                "0.0.0",
+                "0.0.1",
+            ],
+            False,
+            "has missing or misordered version headings",
+        ),
+    ],
+)
+def test_check_migration_guide(
+    mocker,
+    tmp_path,
+    capsys,
+    connector,
+    title_name,
+    metadata_breaking_changes,
+    migration_guide_breaking_changes,
+    success,
+    expected_in_stdout,
+):
+    mock_documentation_directory_path = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
+
+    mock_breaking_change_value = {
+        "upgradeDeadline": "2021-01-01",
+        "message": "This is a breaking change",
+    }
+
+    # transform metadata_breaking_changes into a dictionary
+    mock_breaking_change_dict = {version: mock_breaking_change_value for version in metadata_breaking_changes}
+
+    mock_metadata_dict = {"documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
+
+    mock_migration_file = mock_documentation_directory_path / f"{connector.name}-migrations.md"
+    with open(mock_migration_file, "w") as f:
+        f.write(f"# {title_name} Migration Guide\n")
+        for version in migration_guide_breaking_changes:
+            f.write(f"## Upgrading to {version}\n")
+            f.write(f"{mock_breaking_change_value['message']}\n")
+
+    mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
+
+    assert qa_checks.check_migration_guide(connector) == success
+    if expected_in_stdout is not None:
+        stdout, _ = capsys.readouterr()
+        assert expected_in_stdout in stdout
