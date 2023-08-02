@@ -4,12 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -18,6 +12,12 @@ import com.mongodb.MongoDriverInformation;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
 
 /**
  * Helper utility for building a {@link MongoClient}.
@@ -32,11 +32,8 @@ public class MongoConnectionUtils {
    */
   public static MongoClient createMongoClient(final JsonNode config) {
     final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
-    final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
-    final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
 
-    final ConnectionString mongoConnectionString = new ConnectionString(connectionString + "?replicaSet=" +
-        replicaSet + "&retryWrites=false&provider=airbyte&tls=true");
+    final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
 
     final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
         .driverName("Airbyte")
@@ -55,4 +52,16 @@ public class MongoConnectionUtils {
     return MongoClients.create(mongoClientSettingsBuilder.build(), mongoDriverInformation);
   }
 
+  private static String buildConnectionString(final JsonNode config) {
+    final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
+    final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
+    final StringBuilder  builder = new StringBuilder();
+    builder.append(connectionString);
+    builder.append("?replicaSet=");
+    builder.append(replicaSet);
+    builder.append("&retryWrites=false");
+    builder.append("&provider=airbyte");
+    builder.append("&tls=true");
+    return builder.toString();
+  }
 }
