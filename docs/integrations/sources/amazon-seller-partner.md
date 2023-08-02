@@ -128,6 +128,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.4.1`  | 2023-07-25 | [\#27050](https://github.com/airbytehq/airbyte/pull/27050) | Fix - non vendor accounts connector create/check issue                                                                                                                              |
 | `1.4.0`  | 2023-07-21 | [\#27110](https://github.com/airbytehq/airbyte/pull/27110) | Add `GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING` and `GET_ORDER_REPORT_DATA_SHIPPING` streams  |
 | `1.3.0`  | 2023-06-09 | [\#27110](https://github.com/airbytehq/airbyte/pull/27110) | Removed `app_id` from `InputConfiguration`, refactored `spec`  |
 | `1.2.0`  | 2023-05-23 | [\#22503](https://github.com/airbytehq/airbyte/pull/22503) | Enabled stream attribute customization from Source configuration  |
