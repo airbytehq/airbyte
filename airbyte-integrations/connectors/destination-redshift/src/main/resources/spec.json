@@ -209,16 +209,30 @@
               },
               "file_buffer_count": {
                 "title": "File Buffer Count",
-                "type": "integer",
-                "minimum": 10,
-                "maximum": 50,
-                "default": 10,
-                "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
-                "examples": ["10"]
+                "type" : "integer",
+                "minimum" : 10,
+                "maximum" : 50,
+                "default" : 10,
+                "description" : "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+                "examples" : [
+                  "10"
+                ]
               }
             }
           }
         ]
+      },
+      "use_1s1t_format" : {
+        "type" : "boolean",
+        "description" : "(Early Access) Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
+        "title" : "Use Destinations V2 (Early Access)",
+        "order" : 8
+      },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "(Early Access) The schema to write raw tables into",
+        "title" : "Destinations V2 Raw Table Schema (Early Access)",
+        "order" : 9
       }
     }
   }

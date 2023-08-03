@@ -12,6 +12,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -54,11 +56,22 @@ public class JdbcBufferedConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final JdbcDatabase database,
-                                              final SqlOperations sqlOperations,
-                                              final NamingConventionTransformer namingResolver,
-                                              final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog) {
+      final JdbcDatabase database,
+      final SqlOperations sqlOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog) {
+    return create(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, null);
+  }
+
+
+  public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
+      final JdbcDatabase database,
+      final SqlOperations sqlOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final TyperDeduper typerDeduper) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
@@ -67,7 +80,8 @@ public class JdbcBufferedConsumerFactory {
         new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
         onCloseFunction(),
         catalog,
-        sqlOperations::isValidData);
+        sqlOperations::isValidData,
+        DestinationConfig.getInstance().getTextValue("schema"));
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,

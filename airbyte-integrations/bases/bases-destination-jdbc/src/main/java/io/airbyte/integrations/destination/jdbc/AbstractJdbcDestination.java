@@ -18,7 +18,14 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -201,6 +208,18 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator();
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      // TODO verify the string for the raw data schema
+      final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride("raw_data_schema")
+          .map(override -> new CatalogParser(sqlGenerator, override))
+          .orElse(new CatalogParser(sqlGenerator))
+          .parseCatalog(catalog);
+
+      final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog);
+      return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
+          catalog, typerDeduper);
+    }
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
         catalog);
   }
