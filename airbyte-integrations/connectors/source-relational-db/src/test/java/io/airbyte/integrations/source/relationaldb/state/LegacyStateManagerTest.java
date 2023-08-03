@@ -4,23 +4,25 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAMESPACE;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAMESPACE;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME3;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.models.CdcState;
+import io.airbyte.integrations.source.db.models.DbState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
+import io.airbyte.integrations.source.db.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -41,7 +43,8 @@ public class LegacyStateManagerTest {
   @Test
   void testGetters() {
     final DbState state = new DbState().withStreams(List.of(
-        new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+        new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                CURSOR_FIELD1))
             .withCursor(CURSOR),
         new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE)));
 
@@ -84,9 +87,11 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD1))
                 .withCursor("a"),
-            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2)),
+            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                CURSOR_FIELD2)),
             new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
@@ -95,9 +100,11 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD1))
                 .withCursor("a"),
-            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2))
+            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD2))
                 .withCursor("b"),
             new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
@@ -120,7 +127,8 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD1))
                 .withCursor("a"),
             new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
@@ -147,7 +155,8 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD1))
                 .withCursor(null),
             new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of()))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
@@ -157,7 +166,8 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(
+                    CURSOR_FIELD1))
                 .withCursor(null),
             new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of())
                 .withCursor(null))

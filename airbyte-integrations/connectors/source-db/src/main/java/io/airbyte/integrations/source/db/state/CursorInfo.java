@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb;
+package io.airbyte.integrations.source.db.state;
 
 import java.util.Objects;
 

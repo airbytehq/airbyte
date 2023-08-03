@@ -2,21 +2,20 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb.state;
+package io.airbyte.integrations.source.db.state;
 
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_RECORD_COUNT;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getCatalog;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getState;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getStream;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_RECORD_COUNT;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.getCatalog;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.getState;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.getStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Collections;
 import java.util.Optional;
@@ -51,7 +50,8 @@ public class CursorManagerTest {
 
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorFieldButNoCursor() {
-    final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, null, NAME_NAMESPACE_PAIR1);
+    final CursorManager<DbStreamState> cursorManager = createCursorManager(
+        CURSOR_FIELD1, null, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
         getState(CURSOR_FIELD1, null),
@@ -130,7 +130,8 @@ public class CursorManagerTest {
 
   @Test
   void testGetters() {
-    final CursorManager cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
+    final CursorManager cursorManager = createCursorManager(
+        CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actualCursorInfo = new CursorInfo(CURSOR_FIELD1, CURSOR, null, null);
 
     assertEquals(Optional.of(actualCursorInfo), cursorManager.getCursorInfo(NAME_NAMESPACE_PAIR1));

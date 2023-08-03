@@ -77,7 +77,6 @@ import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
-import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils;
 import io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.CursorBasedStreams;
 import io.airbyte.integrations.source.postgres.cursor_based.PostgresCursorBasedStateManager;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;

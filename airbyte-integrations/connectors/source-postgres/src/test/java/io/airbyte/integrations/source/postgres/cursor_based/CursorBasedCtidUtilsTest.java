@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -109,7 +108,7 @@ public class CursorBasedCtidUtilsTest {
     final StreamStateManager streamStateManager = new StreamStateManager(Collections.emptyList(), configuredCatalog);
     final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
-    List<AirbyteStreamNameNamespacePair> reclassify = Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
+    final List<AirbyteStreamNameNamespacePair> reclassify = Collections.singletonList(new AirbyteStreamNameNamespacePair(STREAM_1.getStream().getName(), STREAM_1.getStream().getNamespace()));
     reclassifyCategorisedCtidStreams(streamsCategorised, reclassify);
     assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
     assertEquals(1, streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());

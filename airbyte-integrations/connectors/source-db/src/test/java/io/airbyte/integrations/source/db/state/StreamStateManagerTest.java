@@ -2,17 +2,18 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb.state;
+package io.airbyte.integrations.source.db.state;
 
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAMESPACE;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.CURSOR_FIELD2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAMESPACE;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME1;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME2;
+import static io.airbyte.integrations.source.db.state.StateTestConstants.STREAM_NAME3;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -20,8 +21,8 @@ import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.models.DbState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;

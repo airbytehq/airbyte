@@ -2,17 +2,17 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb.state;
+package io.airbyte.integrations.source.db.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.configoss.StateType;
 import io.airbyte.configoss.StateWrapper;
 import io.airbyte.configoss.helpers.StateMessageHelper;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.models.CdcState;
+import io.airbyte.integrations.source.db.models.DbState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;

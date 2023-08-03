@@ -19,6 +19,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+    implementation project(path: ':airbyte-integrations:connectors:source-relational-db')
 
     testImplementation libs.connectors.testcontainers.mongodb
 

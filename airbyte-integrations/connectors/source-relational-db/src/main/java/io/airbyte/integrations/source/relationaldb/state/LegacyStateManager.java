@@ -5,9 +5,12 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.CdcStateManager;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.models.DbState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
+import io.airbyte.integrations.source.db.state.AbstractStateManager;
+import io.airbyte.integrations.source.db.state.CdcStateManager;
+import io.airbyte.integrations.source.db.state.StateGeneratorUtils;
+import io.airbyte.integrations.source.db.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

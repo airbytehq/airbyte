@@ -8,9 +8,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.db.state.StateManager;
+import io.airbyte.integrations.source.db.state.StreamStateManager;
+import io.airbyte.integrations.source.db.models.CdcState;
+import io.airbyte.integrations.source.db.models.DbState;
+import io.airbyte.integrations.source.db.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;

@@ -2,16 +2,14 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb.state;
+package io.airbyte.integrations.source.db.state;
 
-import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
-import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FUNCTION;
-import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
-import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
+import static io.airbyte.integrations.source.db.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
+import static io.airbyte.integrations.source.db.state.StateGeneratorUtils.CURSOR_FUNCTION;
+import static io.airbyte.integrations.source.db.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
+import static io.airbyte.integrations.source.db.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.CdcStateManager;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

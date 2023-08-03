@@ -2,11 +2,12 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb;
+package io.airbyte.integrations.source.db;
 
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.db.state.CursorInfo;
+import io.airbyte.integrations.source.db.state.StateManager;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
