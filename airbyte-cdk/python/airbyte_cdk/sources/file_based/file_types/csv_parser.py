@@ -118,7 +118,7 @@ class CsvParser(FileTypeParser):
         # Only cast values if the schema is provided
         if schema:
             property_types = {col: prop["type"] for col, prop in schema["properties"].items()}
-            return partial(cast_types, property_types=property_types, config_format=config_format, logger=logger)
+            return partial(_cast_types, property_types=property_types, config_format=config_format, logger=logger)
         else:
             # If no schema is provided, yield the rows as they are
             return _no_cast
@@ -159,7 +159,7 @@ class CsvParser(FileTypeParser):
         return [f"f{i}" for i in range(number_of_columns)]
 
 
-def cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
+def _cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
     """
     Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 

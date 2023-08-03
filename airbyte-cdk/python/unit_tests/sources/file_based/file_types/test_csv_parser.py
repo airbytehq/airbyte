@@ -6,7 +6,7 @@ import logging
 
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
-from airbyte_cdk.sources.file_based.file_types.csv_parser import cast_types
+from airbyte_cdk.sources.file_based.file_types.csv_parser import _cast_types
 
 PROPERTY_TYPES = {
     "col1": "null",
@@ -70,4 +70,4 @@ logger = logging.getLogger()
 )
 def test_cast_to_python_type(row, true_values, false_values, expected_output):
     csv_format = CsvFormat(true_values=true_values, false_values=false_values)
-    assert cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
+    assert _cast_types(row, PROPERTY_TYPES, csv_format, logger)==expected_output
