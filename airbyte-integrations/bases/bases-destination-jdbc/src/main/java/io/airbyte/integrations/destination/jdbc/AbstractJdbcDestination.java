@@ -39,8 +39,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
   private final String driverClass;
-  private final NamingConventionTransformer namingResolver;
-  private final SqlOperations sqlOperations;
+  protected final NamingConventionTransformer namingResolver;
+  protected final SqlOperations sqlOperations;
 
   protected NamingConventionTransformer getNamingResolver() {
     return namingResolver;

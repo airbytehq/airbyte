@@ -26,6 +26,13 @@ public class NonStagingAsyncFlush implements DestinationFlushFunction {
     public NonStagingAsyncFlush(Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                                 SqlOperations sqlOperations,
                                 JdbcDatabase database,
+                                ConfiguredAirbyteCatalog catalog) {
+        this(streamDescToWriteConfig, sqlOperations, database, catalog, 50 * 1024 * 1024);
+    }
+
+    public NonStagingAsyncFlush(Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
+                                SqlOperations sqlOperations,
+                                JdbcDatabase database,
                                 ConfiguredAirbyteCatalog catalog,
                                 long optimalBatchSizeBytes) {
         this.streamDescToWriteConfig = streamDescToWriteConfig;

@@ -14,11 +14,17 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.JdbcBufferedConsumerFactory;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
@@ -80,4 +86,15 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config,
+                                                                       ConfiguredAirbyteCatalog catalog,
+                                                                       Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    return JdbcBufferedConsumerFactory.createAsync(outputRecordCollector,
+            getDatabase(getDataSource(config)),
+            sqlOperations,
+            namingResolver,
+            config,
+            catalog);
+  }
 }

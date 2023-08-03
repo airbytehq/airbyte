@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -22,6 +23,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.integrations.destination.staging.NonStagingAsyncFlush;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -80,25 +82,25 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations::isValidData);
   }
 
-  public static AirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final JdbcDatabase database,
-                                              final SqlOperations sqlOperations,
-                                              final NamingConventionTransformer namingResolver,
-                                              final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog) {
+  public static SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                             final JdbcDatabase database,
+                                                             final SqlOperations sqlOperations,
+                                                             final NamingConventionTransformer namingResolver,
+                                                             final JsonNode config,
+                                                             final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
+
+    final DestinationFlushFunction flusher = new NonStagingAsyncFlush(streamDescToWriteConfig,
+            sqlOperations,
+            database,
+            catalog);
 
     return new AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs),
             () -> onCloseFunction(),
-            new NonStagingAsyncFlush(
-                    streamDescToWriteConfig,
-                    sqlOperations,
-                    database,catalog,
-                    50 * 1024 * 1024
-            ),
+            flusher,
             catalog,
             new BufferManager());
   }
