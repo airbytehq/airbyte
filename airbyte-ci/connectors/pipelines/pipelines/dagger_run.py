@@ -89,7 +89,7 @@ def check_dagger_cli_install() -> str:
 def main():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
-    if sys.argv[1] == "--no-tui":
+    if len(sys.argv) > 1 and sys.argv[1] == "--no-tui":
         command = ["airbyte-ci-internal"] + sys.argv[2:]
     else:
         dagger_path = check_dagger_cli_install()

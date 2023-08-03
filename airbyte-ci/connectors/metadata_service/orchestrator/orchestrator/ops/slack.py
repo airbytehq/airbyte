@@ -34,4 +34,8 @@ def send_slack_message(context: OpExecutionContext, channel: str, message: str):
         message (str): The message to send.
     """
     if os.getenv("SLACK_TOKEN"):
-        context.resources.slack.get_client().chat_postMessage(channel=channel, text=message)
+        # Ensure that a failure to send a slack message does not cause the pipeline to fail
+        try:
+            context.resources.slack.get_client().chat_postMessage(channel=channel, text=message)
+        except Exception as e:
+            context.log.info(f"Failed to send slack message: {e}")

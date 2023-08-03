@@ -32,10 +32,15 @@
       "type": ["string", "null"]
     },
     "identities": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["object", "null"],
-        "additionalProperties": true
+        "additionalProperties": true,
+        "properties": {
+          "connection": {
+            "type": ["string", "null"]
+          }
+        }
       }
     },
     "app_metadata": {
@@ -56,8 +61,11 @@
       "type": ["string", "null"]
     },
     "multifactor": {
-      "type": ["object", "null"],
-      "additionalProperties": true
+      "type": ["null", "array"],
+      "additionalProperties": true,
+      "items": {
+        "type": ["string", "null"]
+      }
     },
     "last_ip": {
       "type": ["string", "null"]
