@@ -54,13 +54,13 @@ def github_metadata_file_md5s(context):
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def stale_github_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
+def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
     """
     Return a list of all metadata files in the github repo and denote whether they are stale or not.
 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
-    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    latest_gcs_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
     latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_metadata_file_blobs}
 
