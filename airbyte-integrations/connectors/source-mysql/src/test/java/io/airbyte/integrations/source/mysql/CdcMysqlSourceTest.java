@@ -195,7 +195,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
-    properties.set(CDC_DEFAULT_CURSOR, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, numberType);
   }
 
   @Override
