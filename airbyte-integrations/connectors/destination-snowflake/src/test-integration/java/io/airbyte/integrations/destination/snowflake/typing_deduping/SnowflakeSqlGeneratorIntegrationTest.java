@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -128,6 +127,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception {
     List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
     String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> columnNames.stream()
@@ -152,7 +152,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Map.of(
           "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
           "cdc_deleted_at_name", cdcDeletedAtName,
-          "cdc_deleted_at_extract", "column19",
+          "cdc_deleted_at_extract", cdcDeletedAtExtract,
           "records", recordsText),
         "#{",
         "}"

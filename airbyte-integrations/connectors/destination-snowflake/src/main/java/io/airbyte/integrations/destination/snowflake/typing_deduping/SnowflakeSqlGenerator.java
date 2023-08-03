@@ -19,7 +19,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
@@ -130,9 +129,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private String updateTable(StreamConfig stream, String finalSuffix, boolean verifyPrimaryKeys) {
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // TODO fix this
 //      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -228,7 +228,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
             col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -252,18 +252,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
-    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       cdcConditionalOrIncludeStatement = """
       OR (
-        _airbyte_loaded_at IS NOT NULL
+        "_airbyte_loaded_at" IS NOT NULL
         AND "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
       )
       """;
     }
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
+        "raw_table_id", stream.id().rawTableId(QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -415,7 +415,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
-            UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL;
+            UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
             """);
   }
 
