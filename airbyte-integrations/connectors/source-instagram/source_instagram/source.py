@@ -33,19 +33,15 @@ class ConnectorConfig(BaseModel):
         ),
         airbyte_secret=True,
     )
-    
+
     client_id: Optional[str] = Field(
-        description=(
-            "The Client ID for your Oauth application"
-        ),
+        description=("The Client ID for your Oauth application"),
         airbyte_secret=True,
         airbyte_hidden=True,
     )
-    
+
     client_secret: Optional[str] = Field(
-        description=(
-            "The Client Secret for your Oauth application"
-        ),
+        description=("The Client Secret for your Oauth application"),
         airbyte_secret=True,
         airbyte_hidden=True,
     )
