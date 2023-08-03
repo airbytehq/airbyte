@@ -6,9 +6,17 @@ acceptance_tests:
 #        path: integration_tests/expected_records/v4_csv_custom_format.jsonl
 #      configured_catalog_path: integration_tests/configured_catalogs/csv.json
 #      timeout_seconds: 1800
-    - config_path: secrets/legacy_csv_custom_format_config.json
+#    - config_path: secrets/legacy_csv_custom_format_config.json
+#      expect_records:
+#        path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
+#    - config_path: secrets/legacy_csv_datatypes_config.json
+#      expect_records:
+#        path: integration_tests/expected_records/legacy_csv_datatypes.jsonl
+#      configured_catalog_path: integration_tests/configured_catalogs/csv.json
+#      timeout_seconds: 1800
+    - config_path: secrets/v4_csv_datatypes_config.json
       expect_records:
-        path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
+        path: integration_tests/expected_records/v4_csv_datatypes.jsonl
       configured_catalog_path: integration_tests/configured_catalogs/csv.json
       timeout_seconds: 1800
 #    - config_path: secrets/config.json
