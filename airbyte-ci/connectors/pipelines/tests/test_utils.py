@@ -140,3 +140,28 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
     else:
         assert not_modified_java_connector not in modified_connectors
     assert modified_java_connector in modified_connectors
+
+
+def test_get_connector_modified_files():
+    connector = pick_a_random_connector()
+    other_connector = pick_a_random_connector(other_picked_connectors=[connector])
+
+    all_modified_files = {
+        connector.code_directory / "setup.py",
+        other_connector.code_directory / "README.md",
+    }
+
+    result = utils.get_connector_modified_files(connector, all_modified_files)
+    assert result == frozenset({connector.code_directory / "setup.py"})
+
+
+def test_no_modified_files_in_connector_directory():
+    connector = pick_a_random_connector()
+    other_connector = pick_a_random_connector(other_picked_connectors=[connector])
+
+    all_modified_files = {
+        other_connector.code_directory / "README.md",
+    }
+
+    result = utils.get_connector_modified_files(connector, all_modified_files)
+    assert result == frozenset()
