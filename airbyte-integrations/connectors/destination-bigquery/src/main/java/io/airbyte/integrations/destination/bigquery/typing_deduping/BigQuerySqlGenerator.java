@@ -451,7 +451,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
