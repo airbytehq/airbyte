@@ -1,0 +1,196 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  selector_campaigns:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["campaigns"]
+  selector_customers:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data","subscribers"]
+  selector_companies:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data","companies"]
+  selector_feedback:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data","responses"]
+  selector_outbox:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data","surveys"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://app.retently.com/api/v2/"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "api_key={{config['ApiKey'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 20
+        start_from_page: 1
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  campaigns_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_campaigns"
+      paginator:
+        type: NoPagination
+    name: "campaigns"
+    primary_key: "id"
+    $parameters:
+      path: "campaigns"
+
+  companies_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_companies"
+    name: "companies"
+    primary_key: "id"
+    $parameters:
+      path: "companies"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_customers"
+    name: "customers"
+    primary_key: "id"
+    $parameters:
+      path: "nps/customers"
+  
+
+  feedback_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_feedback"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 10
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    name: "feedback"
+    primary_key: "id"
+    $parameters:
+      path: "feedback"
+
+  outbox_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_outbox"
+    name: "outbox"
+    $parameters:
+      path: "nps/outbox"
+
+  reports_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+    name: "reports"
+    $parameters:
+      path: "reports"
+
+  nps_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+    name: "nps"
+    $parameters:
+      path: "nps/score"
+
+  templates_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+    name: "templates"
+    primary_key: "id"
+    $parameters:
+      path: "templates"
+
+streams:
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/companies_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/feedback_stream"
+  - "#/definitions/outbox_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/nps_stream"
+  - "#/definitions/templates_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "customers"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/retently
+  connection_specification:
+    title: Retently Spec
+    type: object
+    required:
+      - ApiKey
+    additionalProperties: true
+    properties:
+      ApiKey:
+        type: string
+        description: Retently API Token. See the <a href=\"https://app.retently.com/settings/api/tokens\">docs</a> for more information on how to obtain this key
+        airbyte_secret: true
