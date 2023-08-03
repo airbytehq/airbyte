@@ -231,9 +231,9 @@ acceptance_tests:
 ##        future_state_path: integration_tests/v4_abnormal_state.json
 ##      timeout_seconds: 1800
 
-#  spec:
-#    tests:
-#    - spec_path: integration_tests/spec.json
+  spec:
+    tests:
+    - spec_path: integration_tests/spec.json
       # v4
 #    - spec_path: integration_tests/v4_spec.json
 

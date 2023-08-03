@@ -312,9 +312,9 @@ class TestSpec(BaseTest):
                 continue
             if type_value == "object":
                 property = schema_helper.get_parent(type_path)
-                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
+                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0) and not property.get("additionalProperties", False):
                     errors.append(
-                        f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties"
+                        f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties. Got: {property}"
                     )
         self._fail_on_errors(errors)
 
@@ -540,9 +540,10 @@ class TestSpec(BaseTest):
             actual_connector_spec.connectionSpecification, "additionalProperties"
         )
         if additional_properties_values:
+            additional_properties_values_list = [v for v in additional_properties_values]
             assert all(
-                [additional_properties_value is not False for additional_properties_value in additional_properties_values]
-            ), "When set, additionalProperties field value must be true for backward compatibility."
+                [additional_properties_value is True for additional_properties_value in additional_properties_values_list]
+            ), f"When set, additionalProperties field value must be true for backward compatibility. Got {additional_properties_values_list}"
 
     # This test should not be part of TestSpec because it's testing the connector's docker image content, not the spec itself
     # But it's cumbersome to declare a separate, non configurable, test class

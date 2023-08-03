@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema, type_mapping_to_jsonschema
 
 DIALECT_NAME = "_config_dialect"
 
@@ -66,7 +67,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema: Mapping[str, Any] = config.input_schema  # type: ignore
+        schema: Mapping[str, Any] = type_mapping_to_jsonschema(config.input_schema)  # type: ignore
         config_format = config.format.get(config.file_type) if config.format else None
         if config_format:
             if not isinstance(config_format, CsvFormat):

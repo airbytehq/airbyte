@@ -1394,7 +1394,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
                     "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "skip_record",
-                    "input_schema": {"col1": "string", "col2": "string", "col3": "string"},
+                    "input_schema": '{"col1": "string", "col2": "string", "col3": "string"}',
                     "schemaless": True,
                 }
             ]
