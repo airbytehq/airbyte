@@ -1,10 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from pathlib import Path
 from unittest import mock
 
 import pytest
+from connector_ops.utils import ConnectorLanguage
 from pipelines import utils
+from tests.utils import pick_a_random_connector
 
 
 @pytest.mark.parametrize(
@@ -118,3 +121,22 @@ from pipelines import utils
 )
 def test_render_report_output_prefix(ctx, expected):
     assert utils.DaggerPipelineCommand.render_report_output_prefix(ctx) == expected
+
+
+@pytest.mark.parametrize("enable_dependency_scanning", [True, False])
+def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable_dependency_scanning):
+    base_java_changed_file = Path("airbyte-integrations/bases/base-java/src/main/java/io/airbyte/integrations/BaseConnector.java")
+    modified_files = [base_java_changed_file]
+
+    not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)
+    modified_java_connector = pick_a_random_connector(
+        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector]
+    )
+    modified_files.append(modified_java_connector.code_directory / "foo.bar")
+
+    modified_connectors = utils.get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    if enable_dependency_scanning:
+        assert not_modified_java_connector in modified_connectors
+    else:
+        assert not_modified_java_connector not in modified_connectors
+    assert modified_java_connector in modified_connectors
