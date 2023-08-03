@@ -7,19 +7,21 @@ from abc import ABC
 from datetime import datetime
 from types import MappingProxyType
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_dz_zoho_books.auth import ZohoBooksAuthenticator
-
+from source_dz_zoho_books.datetimeutil import convert_to_utc
 from .api import ZohoBooksAPI
 
 
 # Basic full refresh stream
 class DzZohoBooksStream(HttpStream, ABC):
-    def __init__(self, start_date, base_url, **kwargs):
+    def __init__(self, start_date: datetime, base_url, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
         self.base_url = base_url
@@ -32,7 +34,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         next_page = response.json().get("page_context")
         if not next_page:
             return None
-        elif not next_page["has_more_page"]:
+        elif next_page["has_more_page"] == False:
             return None
         return {"page": next_page["page"] + 1, "per_page": next_page["per_page"]}
 
@@ -42,7 +44,10 @@ class DzZohoBooksStream(HttpStream, ABC):
         if next_page_token is None:
             return {}
         else:
-            return {"per_page": next_page_token["per_page"], **(next_page_token["page"] or {})}
+            return {
+                "per_page": next_page_token["per_page"],
+                **(next_page_token["page"] or {})
+            }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -51,9 +56,13 @@ class DzZohoBooksStream(HttpStream, ABC):
         data = response.json().get(self.name)
         if isinstance(data, list):
             for record in data:
-                yield self.transform(record=record, **kwargs)
+                date = convert_to_utc(record["last_modified_time"])
+                if date >= self._start_date:
+                    yield self.transform(record=record, **kwargs)
         else:
-            yield self.transform(record=data, **kwargs)
+            date = convert_to_utc(data["last_modified_time"])
+            if date >= self._start_date:
+                yield self.transform(record=data, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
@@ -70,60 +79,37 @@ class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
-        else:
-            time = self.start_date.strftime("%Y-%m-%dT%H:%M:%S%z")
-            return {self.cursor_field: datetime.strptime(time, "%Y-%m-%dT%H:%M:%S%z")}
+            return  {self.cursor_field: self._cursor_value}
+        else :
+            return  {self.cursor_field: self.start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(str(value[self.cursor_field]), "%Y-%m-%dT%H:%M:%S%z")
+        self._cursor_value = datetime.strptime(str(value[self.cursor_field]), '%Y-%m-%dT%H:%M:%S')
 
-    def find_index(self, records, last_modified_time) -> int:
-        low = 0
-        high = len(records) - 1
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+        records =  list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
 
-        required_index = -1
-        while low <= high:
-            mid = (low + high) // 2
-
-            time = records[mid][self.cursor_field]
-
-            if time == last_modified_time:
-                required_index = mid + 1
-                break
-            elif time > last_modified_time:
-                required_index = mid
-                high = mid - 1
-            else:
-                low = mid + 1
-
-        return required_index
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        records = list(super().read_records(*args, **kwargs))
+        latest_cursor_value : datetime = None
         if not self._cursor_value:
             for record in records:
-                current_cursor_value = (
-                    self._cursor_value if self._cursor_value else datetime.strptime(record[self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
-                )
-                latest_cursor_value = datetime.strptime(record[self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
-                self._cursor_value = max(current_cursor_value, latest_cursor_value)
+                current_record_cursor_value = convert_to_utc(record[self.cursor_field])
+                latest_cursor_value = max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
                 yield record
         else:
-            target_time = self._cursor_value.strftime("%Y-%m-%dT%H:%M:%S%z")
-            index = self.find_index(records, target_time)
+            for record in records:
+                current_record_cursor_value = convert_to_utc(record[self.cursor_field])
+                if current_record_cursor_value > self._cursor_value:
+                    latest_cursor_value = max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
+                    yield record
+                else:
+                    break
 
-            if index == -1:
-                return None
-
-            while index < len(records):
-                current_cursor_value = self._cursor_value
-                latest_cursor_value = datetime.strptime(records[index][self.cursor_field], "%Y-%m-%dT%H:%M:%S%z")
-                self._cursor_value = max(current_cursor_value, latest_cursor_value)
-                yield records[index]
-                index = index + 1
-
+        if latest_cursor_value:
+            self._cursor_value = latest_cursor_value
+            yield from []
+        else:
+            yield from []
 
 class Contacts(IncrementalDzZohoBooksStream):
     primary_key = "contact_id"
@@ -131,7 +117,7 @@ class Contacts(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/contacts?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/contacts?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Estimates(IncrementalDzZohoBooksStream):
@@ -140,7 +126,7 @@ class Estimates(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/estimates?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/estimates?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Salesorders(IncrementalDzZohoBooksStream):
@@ -149,7 +135,7 @@ class Salesorders(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/salesorders?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/salesorders?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Invoices(IncrementalDzZohoBooksStream):
@@ -158,7 +144,7 @@ class Invoices(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/invoices?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/invoices?sort_column={self.cursor_field}&sort_order=D"
 
 
 class RecurringInvoices(IncrementalDzZohoBooksStream):
@@ -167,7 +153,7 @@ class RecurringInvoices(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/recurringinvoices?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/recurringinvoices?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Creditnotes(IncrementalDzZohoBooksStream):
@@ -176,7 +162,7 @@ class Creditnotes(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/creditnotes?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/creditnotes?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Customerpayments(IncrementalDzZohoBooksStream):
@@ -185,7 +171,7 @@ class Customerpayments(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/customerpayments?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/customerpayments?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Expenses(DzZohoBooksStream):
@@ -204,6 +190,21 @@ class RecurringExpenses(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/recurringexpenses"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                date = convert_to_utc(record["last_modified_time"]) if record["last_modified_time"] != "" else convert_to_utc(record["created_time"])
+                if date >= self._start_date:
+                    yield self.transform(record=record, **kwargs)
+        else:
+            date = convert_to_utc(data["last_modified_time"]) if data["last_modified_time"] != "" else convert_to_utc(data["created_time"])
+            if date >= self._start_date:
+                yield self.transform(record=data, **kwargs)
 
 
 class Purchaseorders(IncrementalDzZohoBooksStream):
@@ -212,7 +213,7 @@ class Purchaseorders(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/purchaseorders?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/purchaseorders?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Bills(IncrementalDzZohoBooksStream):
@@ -221,7 +222,7 @@ class Bills(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/bills?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/bills?sort_column={self.cursor_field}&sort_order=D"
 
 
 class RecurringBills(DzZohoBooksStream):
@@ -239,7 +240,7 @@ class VendorCredits(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/vendorcredits?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/vendorcredits?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Vendorpayments(IncrementalDzZohoBooksStream):
@@ -248,7 +249,7 @@ class Vendorpayments(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/vendorpayments?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/vendorpayments?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Bankaccounts(DzZohoBooksStream):
@@ -258,6 +259,17 @@ class Bankaccounts(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/bankaccounts"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                yield super().transform(record=record, **kwargs)
+        else:
+            yield super().transform(record=data, **kwargs)
 
 
 class Banktransactions(DzZohoBooksStream):
@@ -267,6 +279,21 @@ class Banktransactions(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/banktransactions"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                date = convert_to_utc(record["date"])
+                if date >= self._start_date:
+                    yield super().transform(record=record, **kwargs)
+        else:
+            date = convert_to_utc(data["date"])
+            if date >= self._start_date:
+                yield super().transform(record=data, **kwargs)
 
 
 class Chartofaccounts(DzZohoBooksStream):
@@ -286,6 +313,21 @@ class Journals(DzZohoBooksStream):
     ) -> str:
         return "v3/journals"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                date = convert_to_utc(record["journal_date"])
+                if date >= self._start_date:
+                    yield super().transform(record=record, **kwargs)
+        else:
+            date = convert_to_utc(data["journal_date"])
+            if date >= self._start_date:
+                yield super().transform(record=data, **kwargs)
+
 
 class Projects(IncrementalDzZohoBooksStream):
     primary_key = "Project_id"
@@ -293,7 +335,7 @@ class Projects(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/projects?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/projects?sort_column={self.cursor_field}&sort_order=D"
 
 
 class TimeEntries(DzZohoBooksStream):
@@ -303,6 +345,21 @@ class TimeEntries(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/projects/timeentries"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                date = convert_to_utc(record["created_time"])
+                if date >= self._start_date:
+                    yield self.transform(record=record, **kwargs)
+        else:
+            date = convert_to_utc(data["created_time"])
+            if date >= self._start_date:
+                yield self.transform(record=data, **kwargs)
 
 
 class Items(IncrementalDzZohoBooksStream):
@@ -311,7 +368,7 @@ class Items(IncrementalDzZohoBooksStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v3/items?sort_column={self.cursor_field}&sort_order=A"
+        return f"v3/items?sort_column={self.cursor_field}&sort_order=D"
 
 
 class Users(DzZohoBooksStream):
@@ -321,6 +378,17 @@ class Users(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/users"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                yield super().transform(record=record, **kwargs)
+        else:
+            yield super().transform(record=data, **kwargs)
 
 
 class Currencies(DzZohoBooksStream):
@@ -330,6 +398,17 @@ class Currencies(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/settings/currencies"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get(self.name)
+        if isinstance(data, list):
+            for record in data:
+                yield super().transform(record=record, **kwargs)
+        else:
+            yield super().transform(record=data, **kwargs)
 
 
 # Source
@@ -347,24 +426,30 @@ class SourceDzZohoBooks(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+
         auth = ZohoBooksAuthenticator(
             token_refresh_endpoint="https://accounts.zoho.in/oauth/v2/token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
+            refresh_token=config["refresh_token"]
         )
 
-        start_date = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S%z")
+        start_date = convert_to_utc(config["start_date"])
+        
         _DC_REGION_TO_API_URL = MappingProxyType(
             {
                 "US": "https://www.zohoapis.com/books/",
                 "AU": "https://www.zohoapis.com.au/books/",
                 "EU": "https://www.zohoapis.eu/books/",
                 "IN": "https://www.zohoapis.in/books/",
-                "JP": "https://www.zohoapis.jp/books/",
+                "JP": "https://www.zohoapis.jp/books/"
             }
         )
-        init_params = {"authenticator": auth, "start_date": start_date, "base_url": _DC_REGION_TO_API_URL[config["dc_region"].upper()]}
+        init_params = {
+            "authenticator": auth,
+            "start_date": start_date,
+            "base_url": _DC_REGION_TO_API_URL[config['dc_region'].upper()]
+        }
 
         return [
             Contacts(**init_params),

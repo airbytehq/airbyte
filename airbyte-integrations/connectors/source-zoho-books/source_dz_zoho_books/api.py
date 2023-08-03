@@ -60,7 +60,6 @@ class ZohoBooksAPI:
 
     def check_connection(self) -> Tuple[bool, Any]:
         path = "v3/items"
-        print("authenticator :m ", self.authenticator.get_auth_header())
         response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
         try:
             response.raise_for_status()
