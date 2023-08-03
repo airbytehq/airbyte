@@ -103,13 +103,16 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if next_page_token:
             return dict(next_page_token)
 
-        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
+        params = {}
 
-        if self._replication_start_date and self.cursor_field:
-            start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
-            params.update({self.replication_start_date_field: start_date})
+        if self.replication_start_date_field is not None:
+            params.update({self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size})
 
-        if self._replication_end_date:
+            if self._replication_start_date and self.cursor_field:
+                start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
+                params.update({self.replication_start_date_field: start_date})
+
+        if self.replication_end_date_field is not None and self._replication_end_date:
             params[self.replication_end_date_field] = self._replication_end_date
 
         return params
@@ -827,12 +830,13 @@ class OrderItems(IncrementalAmazonSPStream):
     """
     name = "OrderItems"
     primary_key = "OrderItemId"
-    cursor_field = "OrderLastUpdateDate"
+    cursor_field = "OrderItemId"
+    parent_cursor_field = "LastUpdateDate"
     replication_start_date_field = None
     replication_end_date_field = None
     next_page_token_field = "NextToken"
     page_size_field = None
-    default_backoff_time = 60
+    default_backoff_time = 10
     cached_state: Dict = {}
 
     def __init__(self, *args, **kwargs):
@@ -845,16 +849,16 @@ class OrderItems(IncrementalAmazonSPStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         orders = Orders(**self.stream_kwargs)
         for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
-            self.cached_state[self.cursor_field] = order_record["LastUpdateDate"]
-            time.sleep(1)
+            self.cached_state[self.parent_cursor_field] = order_record["LastUpdateDate"]
             self.logger.info(f"OrderItems stream slice for order {order_record['AmazonOrderId']}")
-            yield {"AmazonOrderId": order_record["AmazonOrderId"], self.cursor_field: order_record["LastUpdateDate"]}
+            time.sleep(1)
+            yield {"AmazonOrderId": order_record["AmazonOrderId"], self.parent_cursor_field: order_record["LastUpdateDate"]}
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = self.cached_state[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        latest_benchmark = self.cached_state[self.parent_cursor_field]
+        if current_stream_state.get(self.parent_cursor_field):
+            return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
+        return {self.parent_cursor_field: latest_benchmark}
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
@@ -868,7 +872,7 @@ class OrderItems(IncrementalAmazonSPStream):
     ) -> Iterable[Mapping]:
         order_items_list = response.json().get(self.data_field, {})
         if order_items_list.get(self.next_page_token_field) is None:
-            self.cached_state[self.cursor_field] = stream_slice[self.cursor_field]
+            self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
         for order_item in order_items_list.get(self.name, []):
             order_item["AmazonOrderId"] = order_items_list.get('AmazonOrderId')
             yield order_item

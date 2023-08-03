@@ -23,6 +23,14 @@
         "QuantityOrdered": {
             "type": "integer"
         },
+        "ProductInfo": {
+            "type": "object",
+            "properties": {
+                "NumberOfItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "QuantityShipped": {
             "type": "integer"
         },
@@ -56,7 +64,79 @@
                 }
             }
         },
+        "PromotionIds": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "ItemTax": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
         "ShippingPrice": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "ShippingTax": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "ShippingDiscount": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "ShippingDiscountTax": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "PromotionDiscount": {
+            "type": "object",
+            "properties": {
+                "CurrencyCode": {
+                    "type": "string"
+                },
+                "Amount": {
+                    "type": "string"
+                }
+            }
+        },
+        "PromotionDiscountTax": {
             "type": "object",
             "properties": {
                 "CurrencyCode": {
@@ -86,6 +166,18 @@
                 }
             }
         },
+        "IsGift": {
+            "type": "boolean"
+        },
+        "ConditionNote": {
+            "type": "string"
+        },
+        "ConditionId": {
+            "type": "string"
+        },
+        "ConditionSubtypeId": {
+            "type": "string"
+        },
         "CODFeeDiscount": {
             "type": "object",
             "properties": {
@@ -96,6 +188,32 @@
                     "type": "string"
                 }
             }
+        },
+        "TaxCollection": {
+            "type": "object",
+            "properties": {
+                "Model": {
+                    "type": "string"
+                },
+                "ResponsibleParty": {
+                    "type": "string"
+                }
+            }
+        },
+        "IsTransparency": {
+            "type": "boolean"
+        },
+        "IossNumber": {
+            "type": "string"
+        },
+        "SerialNumberRequired": {
+            "type": "boolean"
+        },
+        "StoreChainStoreId": {
+            "type": "string"
+        },
+        "DeemedResellerCategory": {
+            "type": "string"
         },
         "PriceDesignation": {
             "type": "string"
