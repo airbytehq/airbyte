@@ -9,6 +9,7 @@ import yaml
 from pydash.objects import get
 
 from metadata_service import gcs_upload
+from metadata_service.validators.metadata_validator import ValidatorOptions
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.models.transform import to_json_sanitized_dict
@@ -185,7 +186,7 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            prerelease_image_tag,
+            ValidatorOptions(prerelease_tag=prerelease_image_tag),
         )
 
         gcs_upload._latest_upload.assert_not_called()
