@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: Set[Path] = field(default_factory=list)
+    modified_files: Set[Path] = field(default_factory=frozenset)
 
     @property
     def has_metadata_change(self) -> bool:
