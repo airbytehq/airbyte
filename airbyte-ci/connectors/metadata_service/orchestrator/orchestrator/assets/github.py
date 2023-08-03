@@ -6,6 +6,7 @@ from dagster import Output, asset, OpExecutionContext
 from github import Repository
 
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.logging import sentry
 
 
 GROUP_NAME = "github"
@@ -27,6 +28,7 @@ def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: 
 
 
 @asset(required_resource_keys={"github_connectors_directory"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def github_connector_folders(context):
     """
     Return a list of all the folders in the github connectors directory.
@@ -91,6 +93,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> 
 
 
 @asset(required_resource_keys={"github_connector_nightly_workflow_successes"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def github_connector_nightly_workflow_successes(context: OpExecutionContext) -> OutputDataFrame:
     """
     Return a list of all the latest nightly workflow runs for the connectors repo.
