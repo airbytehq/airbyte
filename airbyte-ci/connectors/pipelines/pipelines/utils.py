@@ -345,8 +345,8 @@ def _find_modified_connectors(
 
 def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
-    If dependency scanning is enable any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    It currently works for Java connectors only.
+    If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    It currently works only for Java connectors .
     It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
