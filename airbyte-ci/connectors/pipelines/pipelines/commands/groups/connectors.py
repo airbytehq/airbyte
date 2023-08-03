@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import Connector, ConnectorLanguage, console, get_all_connectors_in_repo
+from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -26,6 +26,8 @@ from rich.table import Table
 from rich.text import Text
 
 # HELPERS
+
+ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
@@ -48,14 +50,6 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
         )
 
 
-def validate_selected_connectors_exist(selected_connectors: Set[Connector], all_connectors: Set[Connector]) -> Set[Connector]:
-    """Check if the selected connectors exist."""
-    for connector in selected_connectors:
-        if connector not in all_connectors:
-            raise click.UsageError(f"Connector {connector} does not exist.")
-    return selected_connectors
-
-
 def get_selected_connectors_with_modified_files(
     selected_names: Tuple[str],
     selected_release_stages: Tuple[str],
@@ -76,18 +70,15 @@ def get_selected_connectors_with_modified_files(
     Returns:
         List[ConnectorWithModifiedFiles]: The connectors that match the selected criteria.
     """
-    all_connectors = get_all_connectors_in_repo()
 
     if metadata_changes_only and not modified:
         main_logger.info("--metadata-changes-only overrides --modified")
         modified = True
 
     selected_modified_connectors = get_modified_connectors(modified_files) if modified else set()
-    selected_connectors_by_name = validate_selected_connectors_exist(
-        {Connector(technical_name=name) for name in selected_names}, all_connectors
-    )
-    selected_connectors_by_release_stage = {connector for connector in all_connectors if connector.release_stage in selected_release_stages}
-    selected_connectors_by_language = {connector for connector in all_connectors if connector.language in selected_languages}
+    selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
+    selected_connectors_by_release_stage = {connector for connector in ALL_CONNECTORS if connector.release_stage in selected_release_stages}
+    selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
     non_empty_connector_sets = [
         connector_set
         for connector_set in [
@@ -120,7 +111,11 @@ def get_selected_connectors_with_modified_files(
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.option(
-    "--name", "names", multiple=True, help="Only test a specific connector. Use its technical name. e.g source-pokeapi.", type=str
+    "--name",
+    "names",
+    multiple=True,
+    help="Only test a specific connector. Use its technical name. e.g source-pokeapi.",
+    type=click.Choice([c.technical_name for c in ALL_CONNECTORS]),
 )
 @click.option("--language", "languages", multiple=True, help="Filter connectors to test by language.", type=click.Choice(ConnectorLanguage))
 @click.option(
