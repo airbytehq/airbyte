@@ -12,6 +12,7 @@ from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegis
 from metadata_service.models.transform import to_json_sanitized_dict
 
 from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.logging import sentry
 
 from typing import List
@@ -43,6 +44,7 @@ def persist_registry_to_json(
 
 @sentry_sdk.trace
 def generate_and_persist_registry(
+    context: OpExecutionContext,
     registry_entry_file_blobs: List[storage.Blob],
     registry_directory_manager: GCSFileManager,
     registry_name: str,
@@ -56,6 +58,12 @@ def generate_and_persist_registry(
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating {registry_name} registry...",
+    )
     registry_dict = {"sources": [], "destinations": []}
     for blob in registry_entry_file_blobs:
         registry_entry, connector_type = read_registry_entry_blob(blob)
@@ -75,13 +83,20 @@ def generate_and_persist_registry(
         "gcs_path": MetadataValue.url(file_handle.public_url),
     }
 
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.SUCCESS,
+        f"New {registry_name} registry available at {file_handle.public_url}",
+    )
+
     return Output(metadata=metadata, value=registry_model)
 
 
 # Registry Generation
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
@@ -92,13 +107,14 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
     latest_oss_registry_entries_file_blobs = context.resources.latest_oss_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_oss_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
     )
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
@@ -109,6 +125,7 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
     latest_cloud_registry_entries_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_cloud_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
