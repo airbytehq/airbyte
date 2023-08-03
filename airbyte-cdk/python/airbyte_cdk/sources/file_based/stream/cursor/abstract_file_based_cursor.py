@@ -11,7 +11,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.types import StreamState
 
 
-class FileBasedCursor(ABC):
+class AbstractFileBasedCursor(ABC):
     """
     Abstract base class for cursors used by file-based streams.
     """

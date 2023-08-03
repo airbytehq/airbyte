@@ -7,11 +7,11 @@ from datetime import datetime, timedelta
 from typing import Iterable, MutableMapping, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.abstract_file_based_cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
 
-class DefaultFileBasedCursor(FileBasedCursor):
+class DefaultFileBasedCursor(AbstractFileBasedCursor):
     DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 

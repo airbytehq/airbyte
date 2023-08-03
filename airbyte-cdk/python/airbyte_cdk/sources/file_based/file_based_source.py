@@ -19,6 +19,7 @@ from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
 from pydantic.error_wrappers import ValidationError
@@ -37,6 +38,7 @@ class FileBasedSource(AbstractSource, ABC):
         parsers: Mapping[str, FileTypeParser] = default_parsers,
         validation_policies: Mapping[str, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         max_history_size: int = DEFAULT_MAX_HISTORY_SIZE,
+        cursor: Optional[AbstractFileBasedCursor] = None,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -46,6 +48,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.validation_policies = validation_policies
         catalog = self.read_catalog(catalog_path) if catalog_path else None
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
+        self.cursor = cursor or None
         self.max_history_size = max_history_size
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
@@ -104,7 +107,7 @@ class FileBasedSource(AbstractSource, ABC):
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
-                        cursor=DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
+                        cursor=self.cursor or DefaultFileBasedCursor(self.max_history_size, stream_config.days_to_sync_if_history_is_full),
                     )
                 )
             return streams
