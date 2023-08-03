@@ -12,8 +12,7 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 public abstract class BaseConnector implements Integration {
 
   /**
-   * By convention the spec is stored as a resource for java connectors. That resource is called
-   * spec.json.
+   * By convention the spec is stored as a resource for java connectors. That resource is called spec.json.
    *
    * @return specification.
    * @throws Exception - any exception.
