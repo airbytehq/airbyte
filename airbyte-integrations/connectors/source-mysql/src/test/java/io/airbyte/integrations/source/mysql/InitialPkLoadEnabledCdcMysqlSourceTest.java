@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -17,7 +16,6 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlFeatureFlags;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -41,13 +39,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
-
-  @Override
-  protected JsonNode getConfig() {
-    final JsonNode config = super.getConfig();
-    ((ObjectNode) config).put(MySqlFeatureFlags.CDC_VIA_PK, true);
-    return config;
-  }
 
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
