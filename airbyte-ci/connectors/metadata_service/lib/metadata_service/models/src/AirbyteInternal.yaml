@@ -6,13 +6,13 @@ description: Fields for internal use only
 type: object
 additionalProperties: true
 properties:
-  _sl:
+  sl:
     type: integer
     enum:
       - 100
       - 200
       - 300
-  _ql:
+  ql:
     type: integer
     enum:
       - 100
