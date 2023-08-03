@@ -55,9 +55,14 @@ async def run_test(airbyte_ci_package_path: str) -> bool:
                 .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
                 .with_exec(["pipx", "install", "poetry"])
                 .with_mounted_directory(
-                    "/airbyte-ci", dagger_client.host().directory("airbyte-ci", exclude=["*/__pycache__", "*/.pytest_cache", "*.venv"])
+                    "/airbyte",
+                    dagger_client.host().directory(
+                        ".",
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/build", "**/.gradle"],
+                        include=["airbyte-ci", ".git", "airbyte-integrations"],
+                    ),
                 )
-                .with_workdir(f"/airbyte-ci/{airbyte_ci_package_path}")
+                .with_workdir(f"/airbyte/airbyte-ci/{airbyte_ci_package_path}")
                 .with_exec(["poetry", "install"])
                 .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
                 .with_exec(["poetry", "run", "pytest", "tests"])

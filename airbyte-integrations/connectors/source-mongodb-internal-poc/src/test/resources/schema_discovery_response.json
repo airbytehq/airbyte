@@ -1,0 +1,11 @@
+{
+  "fields": [{
+    "_id" : "string",
+    "name" : "string",
+    "last_updated" : "date",
+    "total" : "int",
+    "price" : "decimal",
+    "items" : "array",
+    "owners" : "object"
+  }]
+}
