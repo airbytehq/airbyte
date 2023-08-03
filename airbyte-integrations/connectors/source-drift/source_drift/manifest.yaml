@@ -1,0 +1,54 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://driftapi.com"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  accounts_stream:
+    $ref: "#/definitions/base_stream"
+    name: "accounts"
+    primary_key: "id"
+    $parameters:
+      path: "/accounts"
+
+  conversations_stream:
+    $ref: "#/definitions/base_stream"
+    name: "conversations"
+    primary_key: "id"
+    $parameters:
+      path: "/conversations"
+
+streams:
+  - "#/definitions/accounts_stream"
+  - "#/definitions/conversations_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "accounts"
+    - "conversations"
