@@ -13,6 +13,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v11.errors.types.query_error import QueryErrorEnum
 from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
@@ -122,6 +123,9 @@ class GoogleAdsStream(Stream, ABC):
                 raise
             for error in exc.failure.errors:
                 if error.error_code.authorization_error == AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED:
+                    self.base_sieve_logger.error(error.message)
+                    continue
+                if error.error_code.query_error == QueryErrorEnum.QueryError.REQUESTED_METRICS_FOR_MANAGER:
                     self.base_sieve_logger.error(error.message)
                     continue
                 # log and ignore only CUSTOMER_NOT_ENABLED error, otherwise - raise further
