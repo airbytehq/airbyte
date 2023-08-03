@@ -266,7 +266,7 @@ class EagerlyCachedStreamState:
     It's empty, once the sync has started and is being updated while sync operation takes place,
     It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
     """
-    
+
     cached_state: Dict = {}
 
     @staticmethod
