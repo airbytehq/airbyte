@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import os
 from typing import Optional
 
@@ -5,11 +8,11 @@ VALID_REGISTRIES = ["oss", "cloud"]
 REGISTRIES_FOLDER = "registries/v0"
 REPORT_FOLDER = "generated_reports"
 
-NIGHTLY_FOLDER = "airbyte-ci-internal/connectors/test/nightly_builds/master"
+NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/master"
 NIGHTLY_COMPLETE_REPORT_FILE_NAME = "complete.json"
 NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME = "output.json"
 NIGHTLY_GHA_WORKFLOW_ID = "connector_nightly_builds_dagger.yml"
-CI_TEST_REPORT_PREFIX = "airbyte-ci-internal/connectors/test"
+CI_TEST_REPORT_PREFIX = "airbyte-ci/connectors/test"
 CI_MASTER_TEST_OUTPUT_REGEX = f".*master.*output.json$"
 
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
