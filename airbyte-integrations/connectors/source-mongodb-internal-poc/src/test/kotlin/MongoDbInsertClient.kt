@@ -24,7 +24,7 @@ object MongoDbInsertClient {
         parser.parse(args)
 
         println("Enter password: ")
-        var password = readln()
+        val password = readln()
 
         var config = mapOf(MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
                 MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
@@ -34,7 +34,7 @@ object MongoDbInsertClient {
                 MongoConstants.PASSWORD_CONFIGURATION_KEY to password)
 
         MongoConnectionUtils.createMongoClient(Jsons.deserialize(Jsons.serialize(config))).use { mongoClient ->
-            var documents = mutableListOf<Document>()
+            val documents = mutableListOf<Document>()
             for (i in 0..numberOfDocuments) {
                 documents += Document().append("name", "Document $i")
                         .append("description", "This is document #$i")
