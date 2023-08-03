@@ -195,7 +195,8 @@ single_csv_scenario = (
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
-                                                                }
+                                                                },
+                                                                "uniqueItems": True
                                                             },
                                                             "skip_rows_before_header": {
                                                                 "title": "Skip Rows Before Header",
@@ -229,7 +230,8 @@ single_csv_scenario = (
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
-                                                                }
+                                                                },
+                                                                "uniqueItems": True
                                                             },
                                                             "false_values": {
                                                                 "title": "False Values",
@@ -245,7 +247,8 @@ single_csv_scenario = (
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
-                                                                }
+                                                                },
+                                                                "uniqueItems": True
                                                             }
                                                         }
                                                     },

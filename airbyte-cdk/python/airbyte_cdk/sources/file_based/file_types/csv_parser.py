@@ -7,7 +7,7 @@ import json
 import logging
 from functools import partial
 from io import IOBase
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat, QuotingBehavior
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -92,7 +92,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _read_and_cast_types(
-        reader: csv.DictReader[str], schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger
+        reader: csv.DictReader, schema: Optional[Mapping[str, Any]], config_format: CsvFormat, logger: logging.Logger  # type: ignore
     ) -> Iterable[Dict[str, Any]]:
         """
         If the user provided a schema, attempt to cast the record values to the associated type.
@@ -124,7 +124,7 @@ class CsvParser(FileTypeParser):
             return _no_cast
 
     @staticmethod
-    def _to_nullable(row: Mapping[str, str], null_values: List[str]) -> Dict[str, Optional[str]]:
+    def _to_nullable(row: Mapping[str, str], null_values: Set[str]) -> Dict[str, Optional[str]]:
         nullable = row | {k: None if v in null_values else v for k, v in row.items()}
         return nullable
 
@@ -221,7 +221,7 @@ def cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_forma
     return result
 
 
-def _value_to_bool(value: str, true_values: List[str], false_values: List[str]) -> bool:
+def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) -> bool:
     if value in true_values:
         return True
     if value in false_values:

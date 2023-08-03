@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Set
 
 from pydantic import BaseModel, Field, root_validator, validator
 from typing_extensions import Literal
@@ -50,7 +50,7 @@ class CsvFormat(BaseModel):
         default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
         description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
     )
-    null_values: List[str] = Field(
+    null_values: Set[str] = Field(
         title="Null Values",
         default=[],
         description="A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
@@ -68,10 +68,10 @@ class CsvFormat(BaseModel):
         default=False,
         description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header.",
     )
-    true_values: List[str] = Field(
+    true_values: Set[str] = Field(
         title="True Values", default=DEFAULT_TRUE_VALUES, description="A set of strings that should be interpreted as true values."
     )
-    false_values: List[str] = Field(
+    false_values: Set[str] = Field(
         title="False Values", default=DEFAULT_FALSE_VALUES, description="A set of strings that should be interpreted as false values."
     )
 
