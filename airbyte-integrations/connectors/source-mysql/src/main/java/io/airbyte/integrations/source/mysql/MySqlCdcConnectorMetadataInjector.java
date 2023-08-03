@@ -18,19 +18,21 @@ import java.time.Instant;
 
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
-  private final Instant emittedAt;
+  private final long emittedAtNano;
+  private long recordCounter = 1;
+  private static final long ONE_BILLION = 1_000_000_000;
 
   public MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
-    this.emittedAt = emittedAt;
+    this.emittedAtNano = emittedAt.getEpochSecond() * ONE_BILLION;
   }
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
-    final String cdcDefaultCursor =
-        String.format("%s_%s_%s", emittedAt.toString(), source.get("file").asText(), source.get("pos").asText());
+    final Long cdcDefaultCursor = this.emittedAtNano + recordCounter;
     event.put(CDC_LOG_FILE, source.get("file").asText());
     event.put(CDC_LOG_POS, source.get("pos").asLong());
     event.put(CDC_DEFAULT_CURSOR, cdcDefaultCursor);
+    recordCounter++;
   }
 
   @Override
