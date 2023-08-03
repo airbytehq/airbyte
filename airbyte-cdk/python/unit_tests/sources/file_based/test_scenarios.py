@@ -241,7 +241,7 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
         if "record" in actual:
             for key, value in actual["record"]["data"].items():
                 if isinstance(value, float):
-                    assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
+                    assert math.isclose(value, float(expected["data"][key]), abs_tol=1e-04)
                 else:
                     assert value == expected["data"][key]
             assert actual["record"]["stream"] == expected["stream"]

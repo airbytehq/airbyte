@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
 ## 0.47.3
 Connector Builder: Ensure we return when there are no slices
 

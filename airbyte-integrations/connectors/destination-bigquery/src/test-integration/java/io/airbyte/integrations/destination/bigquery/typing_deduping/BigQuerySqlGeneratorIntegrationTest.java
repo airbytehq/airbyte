@@ -249,7 +249,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """))
         .build());
 
-    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
+    final String sql = GENERATOR.insertNewRecords(incrementalDedupStreamConfig(), "", COLUMNS);
     destinationHandler.execute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
@@ -650,6 +650,41 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
+  /**
+   * Verify that running T+D twice is idempotent. Previously there was a bug where non-dedup syncs with
+   * an _ab_cdc_deleted_at column would duplicate "deleted" records on each run.
+   */
+  @Test
+  public void testCdcNonDedupIdempotent() throws InterruptedException {
+    createRawTable();
+    createFinalTableCdc();
+    bq.query(QueryJobConfiguration.newBuilder(
+            new StringSubstitutor(Map.of(
+                "dataset", testDataset)).replace(
+                """
+
+                INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+                  (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": null, "string": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "_ab_cdc_lsn": 10002, "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
+                """))
+        .build());
+
+    final String sql = GENERATOR.updateTable(cdcIncrementalAppendStreamConfig(), "");
+    // Execute T+D twice
+    destinationHandler.execute(sql);
+    destinationHandler.execute(sql);
+
+    // There were exactly two raw records, so there should be exactly two final records
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    assertEquals(2, finalRows);
+    // And the raw table should be untouched
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(2, rawRows); // we only keep the newest raw record for reach PK
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
   @Test
   public void testCdcUpdate() throws InterruptedException {
     createRawTable();
@@ -834,6 +869,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
         PRIMARY_KEY,
         // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be
         // exactly the same as this.
+        Optional.of(CDC_CURSOR),
+        CDC_COLUMNS);
+  }
+
+  private StreamConfig cdcIncrementalAppendStreamConfig() {
+    return new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        // This is the only difference between this and cdcStreamConfig.
+        DestinationSyncMode.APPEND,
+        PRIMARY_KEY,
         Optional.of(CDC_CURSOR),
         CDC_COLUMNS);
   }
