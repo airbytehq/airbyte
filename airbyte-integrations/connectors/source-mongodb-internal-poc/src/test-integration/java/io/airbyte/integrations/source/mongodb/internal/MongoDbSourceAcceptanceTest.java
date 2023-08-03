@@ -121,7 +121,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getState() {
-    return Jsons.jsonNode(new MongodbStreamState("", true));
+    return Jsons.jsonNode(new MongodbStreamState(""));
   }
 
 }
