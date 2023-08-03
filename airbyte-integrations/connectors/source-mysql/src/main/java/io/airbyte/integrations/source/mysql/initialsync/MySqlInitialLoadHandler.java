@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 public class MySqlInitialLoadHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadHandler.class);
 
+  private static final long RECORD_LOGGING_SAMPLE_RATE = 1_000_000;
   private final JsonNode config;
   private final JdbcDatabase database;
   private final MySqlInitialLoadSourceOperations sourceOperations;
@@ -194,7 +195,7 @@ public class MySqlInitialLoadHandler {
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
         r -> {
           final long count = recordCount.incrementAndGet();
-          if (count % 1_000_000 == 0) {
+          if (count % RECORD_LOGGING_SAMPLE_RATE == 0) {
             LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
           }
           return r;

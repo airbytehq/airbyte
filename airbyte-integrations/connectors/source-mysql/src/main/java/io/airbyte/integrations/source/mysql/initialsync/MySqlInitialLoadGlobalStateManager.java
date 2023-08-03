@@ -47,11 +47,10 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams, final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
-      if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream) || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
-        return;
+      if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream) && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+        streamsThatHaveCompletedSnapshot.add(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
       }
-      streamsThatHaveCompletedSnapshot.add(
-          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
     });
     return streamsThatHaveCompletedSnapshot;
   }

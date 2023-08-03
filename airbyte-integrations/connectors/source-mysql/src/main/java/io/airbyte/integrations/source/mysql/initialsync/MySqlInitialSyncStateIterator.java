@@ -28,7 +28,7 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
-  private boolean hasEmittedFinalState;
+  private boolean hasEmittedFinalState = false;
   private String lastPk;
   private final JsonNode streamStateForIncrementalRun;
   private final MySqlInitialLoadStateManager stateManager;
