@@ -279,10 +279,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
     final List<AirbyteRecordMessage> fullRefreshRecords = filterRecords(runRead(fullRefreshCatalog));
     final List<AirbyteRecordMessage> emptyStateRecords = filterRecords(runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>())));
-    final String assertionMessage = "Expected a full refresh sync and incremental sync with no input state to produce identical records";
-    assertFalse(fullRefreshRecords.isEmpty(), assertionMessage);
-    assertFalse(emptyStateRecords.isEmpty(), assertionMessage);
-    assertSameRecords(fullRefreshRecords, emptyStateRecords, assertionMessage);
+    assertFalse(fullRefreshRecords.isEmpty(), "Expected a full refresh sync to produce records");
+    assertFalse(emptyStateRecords.isEmpty(), "Expected state records to not be empty");
+    assertSameRecords(fullRefreshRecords, emptyStateRecords,
+        "Expected a full refresh sync and incremental sync with no input state to produce identical records");
   }
 
   /**
