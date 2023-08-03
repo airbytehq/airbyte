@@ -9,7 +9,6 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
-import logging
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 import pendulum
