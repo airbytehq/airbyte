@@ -4,9 +4,9 @@
 
 import codecs
 from enum import Enum
-from typing import Optional
+from typing import Any, Mapping, Optional, Set
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, root_validator, validator
 from typing_extensions import Literal
 
 
@@ -15,6 +15,10 @@ class QuotingBehavior(Enum):
     QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
     QUOTE_NONNUMERIC = "Quote Non-numeric"
     QUOTE_NONE = "Quote None"
+
+
+DEFAULT_TRUE_VALUES = ["y", "yes", "t", "true", "on", "1"]
+DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
@@ -46,10 +50,34 @@ class CsvFormat(BaseModel):
         default=QuotingBehavior.QUOTE_SPECIAL_CHARACTERS,
         description="The quoting behavior determines when a value in a row should have quote marks added around it. For example, if Quote Non-numeric is specified, while reading, quotes are expected for row values that do not contain numbers. Or for Quote All, every row value will be expecting quotes.",
     )
-
-    # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
-    # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks
-    # of using pyarrow
+    null_values: Set[str] = Field(
+        title="Null Values",
+        default=[],
+        description="A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
+    )
+    skip_rows_before_header: int = Field(
+        title="Skip Rows Before Header",
+        default=0,
+        description="The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
+    )
+    skip_rows_after_header: int = Field(
+        title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row."
+    )
+    autogenerate_column_names: bool = Field(
+        title="Autogenerate Column Names",
+        default=False,
+        description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header.",
+    )
+    true_values: Set[str] = Field(
+        title="True Values",
+        default=DEFAULT_TRUE_VALUES,
+        description="A set of case-sensitive strings that should be interpreted as true values.",
+    )
+    false_values: Set[str] = Field(
+        title="False Values",
+        default=DEFAULT_FALSE_VALUES,
+        description="A set of case-sensitive strings that should be interpreted as false values.",
+    )
 
     @validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:
@@ -78,3 +106,11 @@ class CsvFormat(BaseModel):
         except LookupError:
             raise ValueError(f"invalid encoding format: {v}")
         return v
+
+    @root_validator
+    def validate_option_combinations(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
+        skip_rows_before_header = values.get("skip_rows_before_header", 0)
+        auto_generate_column_names = values.get("autogenerate_column_names", False)
+        if skip_rows_before_header > 0 and auto_generate_column_names:
+            raise ValueError("Cannot skip rows before header and autogenerate column names at the same time.")
+        return values
