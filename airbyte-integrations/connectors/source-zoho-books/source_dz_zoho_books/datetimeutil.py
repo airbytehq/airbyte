@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import parser, tz
 
-def convert_to_utc(start_date):
-    dt = parser.parse(start_date)
+def convert_to_utc(date):
+    dt = parser.parse(date)
     dt_utc = dt.astimezone(tz.tzutc())
     utc_str = dt_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
