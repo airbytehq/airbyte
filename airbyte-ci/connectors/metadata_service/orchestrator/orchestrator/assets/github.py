@@ -1,12 +1,14 @@
 from dagster import Output, asset, OpExecutionContext
 import pandas as pd
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.logging import sentry
 
 
 GROUP_NAME = "github"
 
 
 @asset(required_resource_keys={"github_connectors_directory"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def github_connector_folders(context):
     """
     Return a list of all the folders in the github connectors directory.
@@ -18,6 +20,7 @@ def github_connector_folders(context):
 
 
 @asset(required_resource_keys={"github_connector_nightly_workflow_successes"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def github_connector_nightly_workflow_successes(context: OpExecutionContext) -> OutputDataFrame:
     """
     Return a list of all the latest nightly workflow runs for the connectors repo.
