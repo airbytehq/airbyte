@@ -3,5 +3,6 @@
   "credentials": {
     "auth_type": "oauth2_access_token",
     "access_token": "api-key-just-for-testing"
-  }
+  },
+  "start_date": "2023-08-02T04:20:02Z"
 }
