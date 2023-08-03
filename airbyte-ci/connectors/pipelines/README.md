@@ -96,7 +96,7 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 #### Options
 
 | Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
-|-----------------------------------------|---------------------------------|-------------------------------|---------------------------------------------------------------------------------------------|
+| --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
 | `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
 | `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
@@ -115,16 +115,16 @@ Available commands:
 * `airbyte-ci connectors publish`: Publish a connector to Airbyte's DockerHub.
 
 #### Options
-| Option                 | Multiple | Default value | Description                                                                                                                                                                                                                                                                                           |
-|------------------------|----------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--use-remote-secrets` | False    | True          | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
-| `--name`               | True     |               | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
-| `--release-stage`      | True     |               | Select connectors with a specific release stage: `alpha`, `beta`, `generally_available`.  Can be used multiple times to select multiple release stages.                                                                                                                                               |
-| `--language`           | True     |               | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
-| `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
-| `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
-| `--metadata-change-only/--not-metadata-change-only`        | False    | `--not-metadata-change-only`             | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                     |
-
+| Option                                                         | Multiple | Default value                    | Description                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
+| `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
+| `--release-stage`                                              | True     |                                  | Select connectors with a specific release stage: `alpha`, `beta`, `generally_available`.  Can be used multiple times to select multiple release stages.                                                                                                                                               |
+| `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
+| `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
+| `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+| `--metadata-change-only/--not-metadata-change-only`            | False    | `--not-metadata-change-only`     | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                                                                         |
+| `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                           |
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -285,7 +285,7 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 ### Options
 
 | Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                               |
-|--------------------------------------|----------|-----------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------ | -------- | --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
 | `--docker-hub-username`              | True     |                 | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                                                                                                                    |
 | `--docker-hub-password`              | True     |                 | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                                                                                                                    |
@@ -329,7 +329,7 @@ Validate all `metadata.yaml` files in the repo:
 
 #### Options
 | Option             | Default      | Description                                                                                                                |
-|--------------------|--------------|----------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files. |
 
 ### <a id="metadata-upload-command"></a>`metadata upload` command
@@ -341,7 +341,7 @@ Upload all the `metadata.yaml` files to a GCS bucket:
 
 #### Options
 | Option              | Required | Default      | Mapped environment variable | Description                                                                                                              |
-|---------------------|----------|--------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| ------------------- | -------- | ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `--gcs-credentials` | True     |              | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
 | `--modified/--all`  | True     | `--modified` |                             | Flag to upload the modified `metadata.yaml` files in the head commit or all the  `metadata.yaml`  files to a GCS bucket. |
 
@@ -379,7 +379,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 
 | Version | PR                                                        | Description                                                                                  |
-|---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| ------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033) | Disable dependency scanning for Java connectors.                                             |
 | 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
 | 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
 | 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                             |
