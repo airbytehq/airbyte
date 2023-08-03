@@ -1,48 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import os
-import random
-from pathlib import Path
 from typing import Callable
 
 import pytest
 from click.testing import CliRunner
-from connector_ops.utils import METADATA_FILE_NAME, Connector, ConnectorLanguage, get_all_connectors_in_repo
+from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.commands.groups import connectors
-
-
-@pytest.fixture(autouse=True, scope="module")
-def from_airbyte_root(airbyte_repo_path):
-    original_dir = Path.cwd()
-    os.chdir(airbyte_repo_path)
-    yield airbyte_repo_path
-    os.chdir(original_dir)
+from tests.utils import pick_a_random_connector
 
 
 @pytest.fixture(scope="session")
 def runner():
     return CliRunner()
-
-
-ALL_CONNECTORS = get_all_connectors_in_repo()
-
-
-def pick_a_random_connector(
-    language: ConnectorLanguage = None, release_stage: str = None, other_picked_connectors: list = None
-) -> Connector:
-    """Pick a random connector from the list of all connectors."""
-    all_connectors = list(ALL_CONNECTORS)
-    if language:
-        all_connectors = [c for c in all_connectors if c.language is language]
-    if release_stage:
-        all_connectors = [c for c in all_connectors if c.release_stage == release_stage]
-    picked_connector = random.choice(all_connectors)
-    if other_picked_connectors:
-        while picked_connector in other_picked_connectors:
-            picked_connector = random.choice(all_connectors)
-    return picked_connector
 
 
 def test_get_selected_connectors_by_name_no_file_modification():
