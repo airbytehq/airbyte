@@ -10,7 +10,7 @@ To review the sync summary:
 
     :::note 
     
-    Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
+    Airbyte will try to sync your data five times. After a fifth failure, it will stop attempting to sync.
     
     :::
     
@@ -21,12 +21,12 @@ To review the sync summary:
 | Data                            | Description                                                                                                                                             |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
-| x emitted records              | Number of records read from the source during the sync.                                                                                                 |
-| x committed records            | Number of records the destination confirmed it received.                                                                                                |
+| x extracted records              | Number of records read from the source during the sync.                                                                                                 |
+| x loaded records            | Number of records the destination confirmed it received.                                                                                                |
 | xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     | 
 
 :::note
 
-In a successful sync, the number of emitted records and committed records should be the same.
+In a successful sync, the number of extracted records and loaded records should be the same.
 
 ::: 
