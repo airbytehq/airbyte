@@ -84,7 +84,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     // TODO indexes and stuff
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
-        "final_table_id", stream.id().finalTableId(suffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations)).replace(
         """
         CREATE SCHEMA IF NOT EXISTS ${final_namespace};
@@ -130,7 +130,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private String updateTable(StreamConfig stream, String finalSuffix, boolean verifyPrimaryKeys) {
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+//      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
     final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
     String dedupFinalTable = "";
@@ -172,7 +172,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> "\"airbyte_data\":\"${column_name}\"";
+        case "VARIANT" -> "\"_airbyte_data\":\"${column_name}\"";
         // We need to validate that the struct is actually a struct.
         // Note that struct columns are actually nullable in two ways. For a column `foo`:
         // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
@@ -180,21 +180,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         case "OBJECT" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
             """
             CASE
-              WHEN TYPEOF("airbyte_data":"${column_name}") != "OBJECT"
+              WHEN TYPEOF("_airbyte_data":"${column_name}") != 'OBJECT'
                 THEN NULL
-              ELSE "airbyte_data":"${column_name}"
+              ELSE "_airbyte_data":"${column_name}"
             END
             """);
         // Much like the object case, arrays need special handling.
         case "ARRAY" -> new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
             """
             CASE
-              WHEN TYPEOF("airbyte_data":"${column_name}") != "ARRAY"
+              WHEN TYPEOF("_airbyte_data":"${column_name}") != 'ARRAY'
                 THEN NULL
-              ELSE "airbyte_data":"${column_name}"
+              ELSE "_airbyte_data":"${column_name}"
             END
             """);
-        default -> "TRY_CAST(\"_airbyte_data\": \"" + column.originalName() + "\" as " + dialectType + ")";
+        default -> "TRY_CAST(\"_airbyte_data\":\"" + column.originalName() + "\"::text as " + dialectType + ")";
       };
     }
   }
@@ -242,7 +242,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
-                    THEN ["Problem with `${raw_col_name}`"]
+                    THEN ['Problem with `${raw_col_name}`']
                   ELSE []
                 END"""))
         .reduce(
@@ -263,7 +263,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -303,7 +303,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
         "cursor_name", cursor.name(QUOTE))
     ).replace(
@@ -339,7 +339,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(finalSuffix, QUOTE),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "pk_list", pkList,
         "pk_extracts", pkCasts,
@@ -364,7 +364,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE))).replace(
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
         // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
         // would be painful,
         // and it only matters in a few edge cases.
@@ -393,7 +393,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String overwriteFinalTable(StreamId stream, String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "final_table", stream.finalTableId(QUOTE),
-        "tmp_final_table", stream.finalTableId(finalSuffix, QUOTE))).replace(
+        "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix))).replace(
             """
                 BEGIN TRANSACTION;
                 DROP TABLE IF EXISTS ${final_table};

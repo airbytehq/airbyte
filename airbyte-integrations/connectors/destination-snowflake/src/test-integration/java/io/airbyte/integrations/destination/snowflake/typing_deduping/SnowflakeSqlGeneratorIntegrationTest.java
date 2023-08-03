@@ -116,7 +116,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
         databaseName,
         namespace,
-        streamId.finalName());
+        streamId.finalName() + suffix);
   }
 
   @Override
