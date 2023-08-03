@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import os
 import copy
+import sentry_sdk
 
 from pydantic import ValidationError
 from google.cloud import storage
@@ -19,7 +20,10 @@ from orchestrator.utils.object_helpers import deep_copy_params
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
+from orchestrator.logging import sentry
+
 import orchestrator.hacks as HACKS
+
 from typing import List, Optional, Tuple, Union
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -39,6 +43,7 @@ class MissingCachedSpecError(Exception):
 # HELPERS
 
 
+@sentry_sdk.trace
 def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
     cached_connector_version = {
         (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
@@ -115,6 +120,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
 
 @deep_copy_params
+@sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
 
@@ -164,6 +170,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     return overridden_metadata_data
 
 
+@sentry_sdk.trace
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     json_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = json.loads(json_string)
@@ -192,6 +199,7 @@ def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_
     return os.path.join(metadata_folder, registry_name)
 
 
+@sentry_sdk.trace
 def persist_registry_entry_to_json(
     registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
@@ -216,6 +224,7 @@ def persist_registry_entry_to_json(
     return file_handle
 
 
+@sentry_sdk.trace
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
     cached_specs: OutputDataFrame,
@@ -282,6 +291,7 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
     return file_handle.public_url if file_handle else None
 
 
+@sentry_sdk.trace
 def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
     """
     Safely parse the metadata definition from the given metadata entry.
@@ -311,6 +321,7 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
     output_required=False,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
+@sentry.instrument_asset_op
 def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
@@ -365,6 +376,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
+@sentry.instrument_asset_op
 def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
