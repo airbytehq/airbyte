@@ -822,7 +822,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     cursor_datetime_formats: Optional[List[str]] = Field(
         None,
-        description="The possible formats for the cursor field",
+        description="The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. If not provided, the `datetime_format` will be used.",
         title="Cursor Datetime Formats",
     )
     cursor_granularity: Optional[str] = Field(
