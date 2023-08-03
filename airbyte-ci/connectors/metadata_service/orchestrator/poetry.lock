@@ -639,6 +639,21 @@ dagster = "1.4.3"
 pandas = "*"
 
 [[package]]
+name = "dagster-slack"
+version = "0.20.3"
+description = "A Slack client resource for posting to Slack"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dagster-slack-0.20.3.tar.gz", hash = "sha256:0a8fa894a596ff6398d4043c832199e4392d315a189e0ccd6dbdf7213ba6fe14"},
+    {file = "dagster_slack-0.20.3-py3-none-any.whl", hash = "sha256:558b3627193f30aa26be5326b357b9e1382c2c31e946c25ab206f03797ce71ae"},
+]
+
+[package.dependencies]
+dagster = "1.4.3"
+slack-sdk = "*"
+
+[[package]]
 name = "dagster-webserver"
 version = "1.4.3"
 description = "Web UI for dagster."
