@@ -11,9 +11,9 @@ streams:
       - date
     schema_loader:
       type: InlineSchemaLoader
+      additionalProperties: true
       schema:
         $schema: http://json-schema.org/schema#
-        additionalProperties: true
         properties:
           ad_keywords:
             type: number
@@ -470,6 +470,7 @@ streams:
           method: SerpstatDomainProcedure.getTopUrls
           params:
             se: '{{config[''region_id'']}}'
+            page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
             size: '{{config[''page_size'']}}'
             sort:
               '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
@@ -484,7 +485,15 @@ streams:
             - result
             - data
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: header
+          field_name: X-page
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{response.result.summary_info.page}}'
+          stop_condition: '{{response.result.summary_info.page > config[''pages_to_fetch''] - 1}}'
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -521,7 +530,7 @@ spec:
         title: Domains
         description: >-
           The list of domains that will be used in streams that support batch
-          operations
+          operations. You can set a single domain here.
       filter_by:
         type: string
         order: 4
