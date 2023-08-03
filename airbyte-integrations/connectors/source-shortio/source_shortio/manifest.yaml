@@ -72,12 +72,18 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     step: "P1M"
+    end_time_option:
+      field_name: "beforeDate"
+      inject_into: "request_parameter"
+    start_time_option:
+      field_name: "afterDate"
+      inject_into: "request_parameter"
 
   links_stream:
     $ref: "#/definitions/v1_base_stream"
     name: "links"
     incremental_sync:
-      $ref: "#/definitions/incremental_base"   
+      $ref: "#/definitions/incremental_base"
     primary_key: "id"
     $parameters:
       extractor_path: "links"

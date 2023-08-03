@@ -9,7 +9,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "dt": "2019-09-10T12:44:55.000Z" },
+      "stream_state": { "dt": "2099-09-10T12:44:55.000Z" },
       "stream_descriptor": { "name": "clicks" }
     }
   }
