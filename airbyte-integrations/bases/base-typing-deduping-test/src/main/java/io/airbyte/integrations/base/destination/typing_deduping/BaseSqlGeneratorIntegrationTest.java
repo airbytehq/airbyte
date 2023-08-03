@@ -72,6 +72,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   protected StreamConfig incrementalAppendStream;
   protected StreamConfig cdcIncrementalDedupStream;
+  /**
+   * This isn't particularly realistic, but it's technically possible.
+   */
+  protected StreamConfig cdcIncrementalAppendStream;
 
   protected SqlGenerator<DialectTableDefinition> generator;
   protected DestinationHandler<DialectTableDefinition> destinationHandler;
@@ -154,6 +158,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
+        primaryKey,
+        Optional.of(cursor),
+        cdcColumns);
+    cdcIncrementalAppendStream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
         primaryKey,
         Optional.of(cursor),
         cdcColumns);
@@ -326,6 +337,42 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+  /**
+   * Verify that running T+D twice is idempotent. Previously there was a bug where non-dedup syncs with
+   * an _ab_cdc_deleted_at column would duplicate "deleted" records on each run.
+   */
+  @Test
+  public void cdcIdempotent() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        singletonList(Jsons.deserialize(
+            """
+                {
+                  "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "updated_at": "2023-01-01T00:00:00Z",
+                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+                  }
+                }
+                """)));
+
+    final String sql = generator.updateTable(cdcIncrementalAppendStream, "");
+    // Execute T+D twice
+    destinationHandler.execute(sql);
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        1,
+        dumpRawTableRecords(streamId),
+        1,
+        dumpFinalTableRecords(streamId, ""));
+  }
+
   @Test
   public void cdcComplexUpdate() throws Exception {
     createRawTable(streamId);
@@ -347,6 +394,74 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         6,
         dumpRawTableRecords(streamId),
         5,
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * source operations:
+   * <ol>
+   * <li>insert id=1 (lsn 10000)</li>
+   * <li>delete id=1 (lsn 10001)</li>
+   * </ol>
+   * <p>
+   * But the destination writes lsn 10001 before 10000. We should still end up with no records in the
+   * final table.
+   * <p>
+   * All records have the same emitted_at timestamp. This means that we live or die purely based on
+   * our ability to use _ab_cdc_lsn.
+   */
+  @Test
+  public void testCdcOrdering_updateAfterDelete() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
+
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        1,
+        dumpRawTableRecords(streamId),
+        0,
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * source operations:
+   * <ol>
+   * <li>arbitrary history...</li>
+   * <li>delete id=1 (lsn 10001)</li>
+   * <li>reinsert id=1 (lsn 10002)</li>
+   * </ol>
+   * <p>
+   * But the destination receives LSNs 10002 before 10001. In this case, we should keep the reinserted
+   * record in the final table.
+   * <p>
+   * All records have the same emitted_at timestamp. This means that we live or die purely based on
+   * our ability to use _ab_cdc_lsn.
+   */
+  @Test
+  public void testCdcOrdering_insertAfterDelete() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_raw.jsonl"));
+    insertFinalTableRecords(
+        true,
+        streamId,
+        "",
+        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
+
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
+    destinationHandler.execute(sql);
+
+    verifyRecordCounts(
+        1,
+        dumpRawTableRecords(streamId),
+        1,
         dumpFinalTableRecords(streamId, ""));
   }
 
