@@ -30,8 +30,8 @@ import org.bson.conversions.Bson;
 public class MongoUtil {
 
   /**
-   * The maximum number of documents to retrieve when attempting to discover the unique keys/types
-   * for a collection.
+   * The maximum number of documents to retrieve when attempting to discover the unique keys/types for
+   * a collection.
    */
   private static final Integer DISCOVERY_LIMIT = 100;
 
@@ -95,7 +95,8 @@ public class MongoUtil {
        * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
        */
       final Set<Field> fields1 = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName), Optional.empty());
-      final Set<Field> fields2 = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName), Optional.of(DEFAULT_CURSOR_FIELD));
+      final Set<Field> fields2 =
+          getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName), Optional.of(DEFAULT_CURSOR_FIELD));
       fields1.addAll(fields2);
 
       streams.add(createAirbyteStream(collectionName, databaseName, new ArrayList<>(fields1)));
@@ -133,8 +134,8 @@ public class MongoUtil {
       while (cursor.hasNext()) {
         final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
         discoveredFields.addAll(fields.entrySet().stream()
-                .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
-                .collect(Collectors.toSet()));
+            .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
+            .collect(Collectors.toSet()));
       }
     }
 

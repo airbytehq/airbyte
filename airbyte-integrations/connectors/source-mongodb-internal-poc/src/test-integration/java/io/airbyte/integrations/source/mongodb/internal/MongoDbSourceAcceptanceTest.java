@@ -61,14 +61,14 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     mongoClient.getDatabase(DATABASE_NAME).createCollection(COLLECTION_NAME);
     final MongoCollection<Document> collection = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
     final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
-            .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
+        .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
     final var doc1 = new Document("id", "0001").append("name", "Test")
-            .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
-            .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
     final var doc2 =
-            new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
+        new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
     final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
-            .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
+        .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
