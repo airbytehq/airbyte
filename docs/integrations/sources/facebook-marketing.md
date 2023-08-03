@@ -42,7 +42,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
    <!-- /env:cloud -->
    <!-- env:oss -->
-   **For Airbyte Open Source**: Enter the access token you generated with your Facebook app.
+   **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
    <!-- /env:oss -->
 
 #### Facebook Marketing Source Settings:
