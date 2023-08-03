@@ -57,6 +57,7 @@ def get_selected_connectors_with_modified_files(
     modified: bool,
     metadata_changes_only: bool,
     modified_files: Set[Path],
+    enable_dependency_scanning: bool = False,
 ) -> List[ConnectorWithModifiedFiles]:
     """Get the connectors that match the selected criteria.
 
@@ -67,6 +68,7 @@ def get_selected_connectors_with_modified_files(
         modified (bool): Whether to select the modified connectors.
         metadata_changes_only (bool): Whether to select only the connectors with metadata changes.
         modified_files (Set[Path]): The modified files.
+        enable_dependency_scanning (bool): Whether to enable the dependency scanning.
     Returns:
         List[ConnectorWithModifiedFiles]: The connectors that match the selected criteria.
     """
@@ -75,7 +77,9 @@ def get_selected_connectors_with_modified_files(
         main_logger.info("--metadata-changes-only overrides --modified")
         modified = True
 
-    selected_modified_connectors = get_modified_connectors(modified_files) if modified else set()
+    selected_modified_connectors = (
+        get_modified_connectors(modified_files, ALL_CONNECTORS, enable_dependency_scanning) if modified else set()
+    )
     selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
     selected_connectors_by_release_stage = {connector for connector in ALL_CONNECTORS if connector.release_stage in selected_release_stages}
     selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
@@ -139,6 +143,12 @@ def get_selected_connectors_with_modified_files(
     default=None,
     type=int,
 )
+@click.option(
+    "--enable-dependency-scanning/--disable-dependency-scanning",
+    help="When enabled, the dependency scanning will be performed to detect the connectors to test according to a dependency change.",
+    default=False,
+    type=bool,
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -150,6 +160,7 @@ def connectors(
     metadata_changes_only: bool,
     concurrency: int,
     execute_timeout: int,
+    enable_dependency_scanning: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -159,7 +170,7 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, release_stages, languages, modified, metadata_changes_only, ctx.obj["modified_files"]
+        names, release_stages, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
