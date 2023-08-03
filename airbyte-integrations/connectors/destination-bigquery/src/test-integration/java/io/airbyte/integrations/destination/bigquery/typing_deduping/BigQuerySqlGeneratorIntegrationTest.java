@@ -293,6 +293,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     bq.delete(namespace, BigQuery.DatasetDeleteOption.deleteContents());
   }
 
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     destinationHandler.execute(generator.createTable(incrementalDedupStream, ""));

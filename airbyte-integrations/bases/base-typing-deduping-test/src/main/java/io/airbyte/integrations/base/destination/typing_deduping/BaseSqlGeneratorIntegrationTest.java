@@ -30,10 +30,24 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class exercises {@link SqlGenerator} implementations. All destinations should extend this
+ * class for their respective implementation. Subclasses are encouraged to add additional tests with
+ * destination-specific behavior (for example, verifying that datasets are created in the correct
+ * BigQuery region).
+ * <p>
+ * Subclasses should implement a {@link org.junit.jupiter.api.BeforeAll} method to load any secrets
+ * and connect to the destination. This test expects to be able to run {@link #getDestinationHandler()}
+ * in a {@link org.junit.jupiter.api.BeforeEach} method.
+ */
 @Execution(ExecutionMode.CONCURRENT)
 public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSqlGeneratorIntegrationTest.class);
+  /**
+   * This, along with {@link #FINAL_TABLE_COLUMN_NAMES_CDC}, is the list of columns that should be in
+   * the final table. They're useful for generating SQL queries to insert records into the final table.
+   */
   protected static final List<String> FINAL_TABLE_COLUMN_NAMES = List.of(
       "_airbyte_raw_id",
       "_airbyte_extracted_at",
@@ -61,11 +75,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
-  public static final RecordDiffer DIFFER = new RecordDiffer(
+  private static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
       Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
 
+  /**
+   * Subclasses may use these four StreamConfigs in their tests.
+   */
   protected StreamConfig incrementalDedupStream;
   /**
    * We intentionally don't have full refresh overwrite/append streams. Those actually behave
@@ -89,10 +106,22 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
+  /**
+   * Do any setup work to create a namespace for this test run. For example, this might create a BigQuery dataset, or a
+   * Snowflake schema.
+   */
   protected abstract void createNamespace(String namespace);
 
+  /**
+   * Create a raw table using the StreamId's rawTableId.
+   */
   protected abstract void createRawTable(StreamId streamId) throws Exception;
 
+  /**
+   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode the columns from
+   * {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The only difference between those two
+   * column lists is the inclusion of the _ab_cdc_deleted_at column, which is controlled by the includeCdcDeletedAt parameter.
+   */
   protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
 
   protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception;
@@ -100,11 +129,29 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records)
       throws Exception;
 
+  /**
+   * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with slightly different
+   * method signature. This test expects subclasses to respect the raw/finalTableId on the StreamId object, rather than
+   * hardcoding e.g. the airbyte_internal dataset.
+   */
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
 
   protected abstract List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception;
 
+  /**
+   * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset created in {@link #createNamespace(String)}.
+   */
   protected abstract void teardownNamespace(String namespace);
+
+  /**
+   * This test implementation is extremely destination-specific, but all destinations must implement it. This test should
+   * verify that creating a table using {@link #incrementalDedupStream} works as expected, including column types, indexing,
+   * partitioning, etc.
+   * <p>
+   * Note that subclasses must also annotate their implementation with @Test.
+   */
+  @Test
+  public abstract void testCreateTableIncremental() throws Exception;
 
   @BeforeEach
   public void setup() {
