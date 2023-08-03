@@ -20,8 +20,11 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MongoDbStateIterator implements Iterator<AirbyteMessage> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
   private final MongoCursor<Document> iter;
 
   private final ConfiguredAirbyteStream stream;
@@ -44,28 +47,33 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public boolean hasNext() {
+    LOGGER.info("!!! hasNext called");
     if (iter.hasNext()) {
+      LOGGER.info("!!! true 1");
       return true;
     }
     if (!finalStateNext) {
+      LOGGER.info("!!! true 2");
       finalStateNext = true;
       return true;
     }
-
+    LOGGER.info("!!! false");
     return false;
   }
 
   @Override
   public AirbyteMessage next() {
-    if (last != null && (count % batchSize == 0 || finalStateNext)) {
+    if ((count > 0 && count % batchSize == 0) || finalStateNext) {
       final var streamState = new AirbyteStreamState()
           .withStreamDescriptor(new StreamDescriptor()
               .withName(stream.getStream().getName())
               .withNamespace(stream.getStream().getNamespace())
-          )
-          .withStreamState(Jsons.jsonNode(
-              new MongodbStreamState(last.getObjectId("_id").toString())
-          ));
+          );
+      if (last != null) {
+        streamState.withStreamState(Jsons.jsonNode(
+            new MongodbStreamState(last.getObjectId("_id").toString())
+        ));
+      }
 
       final var stateMessage = new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
@@ -79,6 +87,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     final var jsonNode = MongoUtils.toJsonNode(document, fields);
 
     last = document;
+    LOGGER.info("document {} - {}", count, last);
 
     return new AirbyteMessage()
         .withType(Type.RECORD)
