@@ -137,11 +137,6 @@ public class MongoDbSource extends BaseConnector implements Source {
     }
   }
 
-//  @Override
-//  public void close() throws Exception {
-//
-//  }
-
   private List<AutoCloseableIterator<AirbyteMessage>> incrIters(final MongoDatabase database, final ConfiguredAirbyteCatalog catalog, final Instant emittedAt) {
     return catalog.getStreams()
         .stream()
