@@ -172,7 +172,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> "\"_airbyte_data\":\"${column_name}\"";
+        case "VARIANT" -> "\"_airbyte_data\":\"" + column.originalName() + "\"";
         // We need to validate that the struct is actually a struct.
         // Note that struct columns are actually nullable in two ways. For a column `foo`:
         // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
@@ -348,8 +348,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         """
         DELETE FROM ${final_table_id}
         WHERE
-          (${pk_list}) IN (
-            SELECT (
+          ARRAY_CONSTRUCT(${pk_list}) IN (
+            SELECT ARRAY_CONSTRUCT(
                 ${pk_extracts}
               )
             FROM  ${raw_table_id}
