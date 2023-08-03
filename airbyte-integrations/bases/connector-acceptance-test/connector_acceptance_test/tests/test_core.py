@@ -315,7 +315,11 @@ class TestSpec(BaseTest):
                 continue
             if type_value == "object":
                 property = schema_helper.get_parent(type_path)
-                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0) and not property.get("additionalProperties", False):
+                if (
+                    "oneOf" not in property
+                    and ("properties" not in property or len(property["properties"]) == 0)
+                    and not property.get("additionalProperties", False)
+                ):
                     errors.append(
                         f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties. Got: {property}"
                     )
