@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "airbyte-source-pokeapi"
+version = "0.1.0"
+description = ""
+authors = ["Michel Tricot <michel@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+airbyte-cdk = "~=0.4"
+
+[tool.poetry.group.lint.dependencies]
+black = "^22.12.0"
+ruff = "^0.0.280"
+mypy = "^1.4.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "~6"
+connector-acceptance-test = {path = "../../bases/connector-acceptance-test", develop = true}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 140
+target-version = ["py39"]
+
+[tool.ruff]
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+]
+line-length = 140
+
+[tool.mypy]
+ignore_missing_imports = "True"
+disallow_untyped_defs = "True"
+
+[[tool.mypy.overrides]]
+module = "unit_tests.*"
+disallow_untyped_defs = "False"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/unit_tests"
+]
