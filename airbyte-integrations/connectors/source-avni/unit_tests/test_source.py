@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock,patch
+from unittest.mock import patch
 
 from source_avni.source import SourceAvni
-
 
 
 def test_check_connection_success(mocker):
@@ -19,6 +18,7 @@ def test_check_connection_success(mocker):
         config_mock = {"username": "test_user", "password": "test_password", "start_date": "2000-06-27T04:18:36.914Z"}
         result,msg = source.check_connection(None, config_mock)
         assert result is True
+
 
 def test_streams(mocker):
 

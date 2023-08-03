@@ -4,13 +4,14 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from airbyte_cdk.sources.streams.core import StreamData
+
 import boto3
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import SyncMode
 
 
 class AvniStream(HttpStream, ABC):
@@ -23,7 +24,7 @@ class AvniStream(HttpStream, ABC):
 
     def __init__(self, start_date: str, auth_token: str, **kwargs):
         super().__init__(**kwargs)
-        
+
         self.start_date = start_date
         self.auth_token = auth_token
 
@@ -50,9 +51,14 @@ class AvniStream(HttpStream, ABC):
 
         yield from data
 
-    
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None,stream_slice: Mapping[str, Any] = None,stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
-    
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+
         records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         for record in records:
             last_modified_at = record["audit"]["Last modified at"]
@@ -63,7 +69,7 @@ class AvniStream(HttpStream, ABC):
 
         if self.last_record:
             updated_last_date = self.last_record["audit"]["Last modified at"]
-            if updated_last_date>self.state["last_modified_at"]:
+            if updated_last_date > self.state["last_modified_at"]:
                 self.state = {self.cursor_field: updated_last_date}
         self.last_record = None
 
@@ -108,52 +114,54 @@ class IncrementalAvniStream(AvniStream, IncrementalMixin, ABC):
 
 
 class Subjects(IncrementalAvniStream):
-    
+
     """
-        This implement Subject Stream in Source Avni
-        Api docs : https://avni.readme.io/docs/api-guide
-        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    This implement Subject Stream in Source Avni
+    Api docs : https://avni.readme.io/docs/api-guide
+    Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
     """
-    
+
     def path(self, **kwargs) -> str:
         return "subjects"
 
 
 class ProgramEnrolments(IncrementalAvniStream):
-    
+
     """
-        This implement ProgramEnrolments Stream in Source Avni
-        Api docs : https://avni.readme.io/docs/api-guide
-        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    This implement ProgramEnrolments Stream in Source Avni
+    Api docs : https://avni.readme.io/docs/api-guide
+    Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
     """
+
     def path(self, **kwargs) -> str:
         return "programEnrolments"
 
 
 class ProgramEncounters(IncrementalAvniStream):
-    
+
     """
-        This implement ProgramEncounters Stream in Source Avni
-        Api docs : https://avni.readme.io/docs/api-guide
-        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    This implement ProgramEncounters Stream in Source Avni
+    Api docs : https://avni.readme.io/docs/api-guide
+    Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
     """
+
     def path(self, **kwargs) -> str:
         return "programEncounters"
 
 
 class Encounters(IncrementalAvniStream):
-    
+
     """
-        This implement Encounters Stream in Source Avni
-        Api docs : https://avni.readme.io/docs/api-guide
-        Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
+    This implement Encounters Stream in Source Avni
+    Api docs : https://avni.readme.io/docs/api-guide
+    Api endpoints : https://app.swaggerhub.com/apis-docs/samanvay/avni-external/1.0.0
     """
+
     def path(self, **kwargs) -> str:
         return "encounters"
 
 
 class SourceAvni(AbstractSource):
-    
     def get_client_id(self):
 
         url_client = "https://app.avniproject.org/idp-details"
@@ -163,12 +171,12 @@ class SourceAvni(AbstractSource):
         return client["cognito"]["clientId"]
 
     def get_token(self, username: str, password: str, app_client_id: str) -> str:
-        
+
         """
         Avni Api Authentication : https://avni.readme.io/docs/api-guide#authentication
         AWS Cognito for authentication : https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cognito-idp/client/initiate_auth.html
         """
-        
+
         client = boto3.client("cognito-idp", region_name="ap-south-1")
         response = client.initiate_auth(
             ClientId=app_client_id, AuthFlow="USER_PASSWORD_AUTH", AuthParameters={"USERNAME": username, "PASSWORD": password}
@@ -190,7 +198,7 @@ class SourceAvni(AbstractSource):
             stream_kwargs = {"auth_token": auth_token, "start_date": config["start_date"]}
             next(Subjects(**stream_kwargs).read_records(SyncMode.full_refresh))
             return True, None
-        
+
         except Exception as error:
             return False, error
 
