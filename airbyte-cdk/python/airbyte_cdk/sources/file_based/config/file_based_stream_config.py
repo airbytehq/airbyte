@@ -11,7 +11,7 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
 
-PrimaryKeyType = Optional[str]
+PrimaryKeyType = Optional[Union[str, List[str]]]
 
 
 VALID_FILE_TYPES: Mapping[str, Type[BaseModel]] = {"avro": AvroFormat, "csv": CsvFormat, "jsonl": JsonlFormat, "parquet": ParquetFormat}
@@ -28,7 +28,7 @@ class FileBasedStreamConfig(BaseModel):
         title="Validation Policy",
         description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
     )
-    input_schema: Optional[str] = Field(
+    input_schema: Optional[Union[str, Mapping[str, Any]]] = Field(
         title="Input Schema",
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
@@ -99,3 +99,12 @@ class FileBasedStreamConfig(BaseModel):
                 f"Received legacy {filetype} file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
             )
         return {**config, **{"decimal_as_float": True}}
+
+    @validator("input_schema", pre=True)
+    def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
+        if v:
+            schema = type_mapping_to_jsonschema(v)
+            if not schema:
+                raise ValueError(f"Unable to create JSON schema from input schema {v}")
+            return schema
+        return None

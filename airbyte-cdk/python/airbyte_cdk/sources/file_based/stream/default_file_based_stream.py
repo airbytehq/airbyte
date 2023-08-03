@@ -4,7 +4,6 @@
 
 import asyncio
 import itertools
-import json
 import traceback
 from functools import cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
@@ -21,7 +20,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     StopSyncPerValidationPolicy,
 )
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema, type_mapping_to_jsonschema
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
@@ -74,7 +73,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         to sync the rest of the file.
         """
         schema = self.catalog_schema
-        self.logger.info(f"reading with schema: {self.catalog_schema}")
         if schema is None:
             # On read requests we should always have the catalog available
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
@@ -164,10 +162,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            schema = type_mapping_to_jsonschema(self.config.input_schema)
-            self.logger.info(f"Using provided input schema: {schema}")
-            if schema is None:
-                raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name)
+            return self.config.input_schema  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:

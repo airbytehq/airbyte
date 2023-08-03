@@ -3,7 +3,7 @@
 #
 
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 """
@@ -107,12 +107,9 @@ single_stream_user_input_schema_scenario_schema_is_invalid = (
         }
     )
     .set_expected_check_status("FAILED")
-    #.set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
-    .set_expected_discover_error(SchemaInferenceError, "Error inferring schema from file") # FIXME - this is not the right error
-    #.set_expected_read_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
-    .set_expected_records([])
-    # .set_expected_logs() FIXME: add the logs
-
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
+    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
+    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
 ).build()
 
 
@@ -425,22 +422,8 @@ multi_stream_user_input_schema_scenario_schema_is_invalid = (
     )
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
-    .set_expected_discover_error(SchemaInferenceError, "Error inferring schema from files") # FIXME: not right error type!
-    #.set_expected_read_error(SchemaInferenceError, "Error")
-    .set_expected_records(
-        [
-            {"data": {"col1": "val11a", "col2": 21, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            {"data": {"col1": "val12a", "col2": 22, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            # The files in b.csv are emitted despite having an invalid schema
-            {"data": {"col1": "val11c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
-            {"data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "c.csv"}, "stream": "stream3"},
-        ]
-    )
-    # FIXME: also need to check the logs
+    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
+    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
 ).build()
 
 

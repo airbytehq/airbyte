@@ -143,10 +143,12 @@ class CsvParser(AbstractFileParser):
         check_utf8 = self.format.encoding.lower().replace("-", "") == "utf8"
         additional_reader_options = get_value_or_json_if_empty_string(self.format.additional_reader_options)
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
-        return {
+        convert_options = {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
             **json.loads(additional_reader_options),
         }
+        self.logger.info(f"convert_options: {convert_options}")
+        return convert_options
 
     @wrap_exception((ValueError,))
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Mapping[str, Any]:
@@ -238,6 +240,7 @@ class CsvParser(AbstractFileParser):
         # when a schema is defined by user and there's no space to increase a block size.
         schema = self._get_schema_dict_without_inference(file)
         schema.update(self._master_schema)
+        self.logger.info(f"Using schema: {schema}")
 
         streaming_reader = pa_csv.open_csv(
             file,
