@@ -4,7 +4,7 @@
 
 import codecs
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Set
+from typing import Any, Mapping, Optional, Set
 
 from pydantic import BaseModel, Field, root_validator, validator
 from typing_extensions import Literal
@@ -69,10 +69,14 @@ class CsvFormat(BaseModel):
         description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header.",
     )
     true_values: Set[str] = Field(
-        title="True Values", default=DEFAULT_TRUE_VALUES, description="A set of case-sensitive strings that should be interpreted as true values."
+        title="True Values",
+        default=DEFAULT_TRUE_VALUES,
+        description="A set of case-sensitive strings that should be interpreted as true values.",
     )
     false_values: Set[str] = Field(
-        title="False Values", default=DEFAULT_FALSE_VALUES, description="A set of case-sensitive strings that should be interpreted as false values."
+        title="False Values",
+        default=DEFAULT_FALSE_VALUES,
+        description="A set of case-sensitive strings that should be interpreted as false values.",
     )
 
     @validator("delimiter")

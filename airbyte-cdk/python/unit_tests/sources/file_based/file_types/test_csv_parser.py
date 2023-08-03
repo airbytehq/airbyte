@@ -3,10 +3,12 @@
 #
 
 import logging
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
-from airbyte_cdk.sources.file_based.file_types.csv_parser import _cast_types
+from airbyte_cdk.sources.file_based.exceptions import RecordParseError
+from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser, _cast_types
 
 PROPERTY_TYPES = {
     "col1": "null",
@@ -70,4 +72,26 @@ logger = logging.getLogger()
 )
 def test_cast_to_python_type(row, true_values, false_values, expected_output):
     csv_format = CsvFormat(true_values=true_values, false_values=false_values)
-    assert _cast_types(row, PROPERTY_TYPES, csv_format, logger)==expected_output
+    assert _cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
+
+@pytest.mark.parametrize(
+    "reader_values, expected_rows", [
+        pytest.param([{"col1": "1", "col2": None}], None, id="raise_exception_if_any_value_is_none"),
+        pytest.param([{"col1": "1", "col2": "2"}], [{"col1": "1", "col2": "2"}], id="read_no_cast"),
+    ]
+)
+def test_read_and_cast_types(reader_values, expected_rows):
+    reader = MagicMock()
+    reader.__iter__.return_value = reader_values
+    schema = {}
+    config_format = CsvFormat()
+    logger = Mock()
+
+    parser = CsvParser()
+
+    expected_rows = expected_rows
+    if expected_rows is None:
+        with pytest.raises(RecordParseError):
+            list(parser._read_and_cast_types(reader, schema, config_format, logger))
+    else:
+        assert expected_rows == list(parser._read_and_cast_types(reader, schema, config_format, logger))
