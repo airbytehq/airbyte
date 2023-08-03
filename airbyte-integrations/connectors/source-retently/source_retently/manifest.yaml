@@ -39,7 +39,7 @@ definitions:
     authenticator:
       type: ApiKeyAuthenticator
       header: "Authorization"
-      api_token: "api_key={{config['ApiKey'] }}"
+      api_token: "api_key={{config['api_key'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -187,10 +187,10 @@ spec:
     title: Retently Spec
     type: object
     required:
-      - ApiKey
+      - api_key
     additionalProperties: true
     properties:
-      ApiKey:
+      api_key:
         type: string
         description: Retently API Token. See the <a href=\"https://app.retently.com/settings/api/tokens\">docs</a> for more information on how to obtain this key
         airbyte_secret: true
