@@ -16,7 +16,7 @@ from google.oauth2 import service_account
 
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
-from metadata_service.utils import to_json_sanitized_dict
+from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 from dataclasses import dataclass

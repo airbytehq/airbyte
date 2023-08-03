@@ -94,8 +94,8 @@ class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
 
-    field_sl: Optional[Literal[100, 200, 300]] = Field(None, alias="_sl")
-    field_ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = Field(None, alias="_ql")
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -179,4 +179,4 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
     )
     releases: Optional[ConnectorReleases] = None
-    field_ab_internal: Optional[AirbyteInternal] = Field(None, alias="_ab_internal")
+    ab_internal: Optional[AirbyteInternal] = None
