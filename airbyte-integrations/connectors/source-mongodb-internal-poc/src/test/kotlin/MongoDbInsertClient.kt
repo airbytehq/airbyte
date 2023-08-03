@@ -47,6 +47,6 @@ object MongoDbInsertClient {
             mongoClient.getDatabase(databaseName).getCollection(collectionName).insertMany(documents)
         }
 
-        println("Inserted $numberOfDocuments to $databaseName.$collectionName")
+        println("Inserted $numberOfDocuments document(s) to $databaseName.$collectionName")
     }
 }
