@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
  * BigQuery region).
  * <p>
  * Subclasses should implement a {@link org.junit.jupiter.api.BeforeAll} method to load any secrets
- * and connect to the destination. This test expects to be able to run {@link #getDestinationHandler()}
- * in a {@link org.junit.jupiter.api.BeforeEach} method.
+ * and connect to the destination. This test expects to be able to run
+ * {@link #getDestinationHandler()} in a {@link org.junit.jupiter.api.BeforeEach} method.
  */
 @Execution(ExecutionMode.CONCURRENT)
 public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
@@ -46,7 +46,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSqlGeneratorIntegrationTest.class);
   /**
    * This, along with {@link #FINAL_TABLE_COLUMN_NAMES_CDC}, is the list of columns that should be in
-   * the final table. They're useful for generating SQL queries to insert records into the final table.
+   * the final table. They're useful for generating SQL queries to insert records into the final
+   * table.
    */
   protected static final List<String> FINAL_TABLE_COLUMN_NAMES = List.of(
       "_airbyte_raw_id",
@@ -107,8 +108,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
   /**
-   * Do any setup work to create a namespace for this test run. For example, this might create a BigQuery dataset, or a
-   * Snowflake schema.
+   * Do any setup work to create a namespace for this test run. For example, this might create a
+   * BigQuery dataset, or a Snowflake schema.
    */
   protected abstract void createNamespace(String namespace);
 
@@ -118,9 +119,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void createRawTable(StreamId streamId) throws Exception;
 
   /**
-   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode the columns from
-   * {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The only difference between those two
-   * column lists is the inclusion of the _ab_cdc_deleted_at column, which is controlled by the includeCdcDeletedAt parameter.
+   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode
+   * the columns from {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The
+   * only difference between those two column lists is the inclusion of the _ab_cdc_deleted_at column,
+   * which is controlled by the includeCdcDeletedAt parameter.
    */
   protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
 
@@ -130,23 +132,24 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       throws Exception;
 
   /**
-   * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with slightly different
-   * method signature. This test expects subclasses to respect the raw/finalTableId on the StreamId object, rather than
-   * hardcoding e.g. the airbyte_internal dataset.
+   * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with
+   * slightly different method signature. This test expects subclasses to respect the raw/finalTableId
+   * on the StreamId object, rather than hardcoding e.g. the airbyte_internal dataset.
    */
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
 
   protected abstract List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception;
 
   /**
-   * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset created in {@link #createNamespace(String)}.
+   * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
+   * created in {@link #createNamespace(String)}.
    */
   protected abstract void teardownNamespace(String namespace);
 
   /**
-   * This test implementation is extremely destination-specific, but all destinations must implement it. This test should
-   * verify that creating a table using {@link #incrementalDedupStream} works as expected, including column types, indexing,
-   * partitioning, etc.
+   * This test implementation is extremely destination-specific, but all destinations must implement
+   * it. This test should verify that creating a table using {@link #incrementalDedupStream} works as
+   * expected, including column types, indexing, partitioning, etc.
    * <p>
    * Note that subclasses must also annotate their implementation with @Test.
    */
