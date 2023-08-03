@@ -34,20 +34,21 @@ class KoboToolStream(HttpStream, IncrementalMixin):
     # submission_date_format = "%Y-%m-%dT%H:%M:%S"
     # end_time_format = "%Y-%m-%dT%H:%M:%S.%.3f%z"
 
-    def __init__(self, config: Mapping[str, Any], form_id, schema, name, api_url, pagination_limit, auth_token, **kwargs):
+    def __init__(self, config: Mapping[str, Any], form_id, schema, name, pagination_limit, auth_token, **kwargs):
         super().__init__()
         self.form_id = form_id
         self.auth_token = auth_token
         self.schema = schema
         self.stream_name = name
-        self.API_URL = api_url
+        self.base_url = config['base_url']
         self.PAGINATION_LIMIT = pagination_limit
         self._cursor_value = None
         self.start_time = config["start_time"]
+        self.exclude_fields = config['exclude_fields'] if 'exclude_fields' in config else []
 
     @property
     def url_base(self) -> str:
-        return f"{self.API_URL}/assets/{self.form_id}/"
+        return f"{self.base_url}/api/v2/assets/{self.form_id}/"
 
     @property
     def name(self) -> str:
@@ -107,6 +108,9 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         result = json_response.get("results")
 
         for record in result:
+            for to_remove_field in self.exclude_fields:
+                if to_remove_field in record:
+                    record.pop(to_remove_field)
             yield record
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -116,8 +120,8 @@ class KoboToolStream(HttpStream, IncrementalMixin):
 
 
 class SourceKobotoolbox(AbstractSource):
-    API_URL = "https://kf.kobotoolbox.org/api/v2"
-    TOKEN_URL = "https://kf.kobotoolbox.org/token/?format=json"
+    # API_URL = "https://kf.kobotoolbox.org/api/v2"
+    # TOKEN_URL = "https://kf.kobotoolbox.org/token/?format=json"
     PAGINATION_LIMIT = 30000
 
     @classmethod
@@ -130,12 +134,12 @@ class SourceKobotoolbox(AbstractSource):
             return False, "password in credentials is not provided"
 
         return True, None
-
+    
     def get_access_token(self, config) -> Tuple[str, any]:
-        url = self.TOKEN_URL
+        token_url = f"{config['base_url']}/token/?format=json"
 
         try:
-            response = requests.post(url, auth=(config["username"], config["password"]))
+            response = requests.post(token_url, auth=(config["username"], config["password"]))
             response.raise_for_status()
             json_response = response.json()
             return (json_response.get("token", None), None) if json_response is not None else (None, None)
@@ -147,7 +151,7 @@ class SourceKobotoolbox(AbstractSource):
         if not is_valid_credentials:
             return is_valid_credentials, msg
 
-        url = f"{self.API_URL}/assets.json"
+        url = f"{config['base_url']}/api/v2/assets.json"
         response = requests.get(url, auth=(config["username"], config["password"]))
 
         try:
@@ -160,7 +164,7 @@ class SourceKobotoolbox(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
         # Fetch all assets(forms)
-        url = f"{self.API_URL}/assets.json"
+        url = f"{config['base_url']}/api/v2/assets.json"
         response = requests.get(url, auth=(config["username"], config["password"]))
         json_response = response.json()
         key_list = json_response.get("results")
@@ -173,15 +177,15 @@ class SourceKobotoolbox(AbstractSource):
         # Generate array of stream objects
         streams = []
         for form_dict in key_list:
-            stream = KoboToolStream(
-                config=config,
-                form_id=form_dict["uid"],
-                schema=stream_json_schema,
-                name=form_dict["name"],
-                api_url=self.API_URL,
-                pagination_limit=self.PAGINATION_LIMIT,
-                auth_token=auth_token,
-            )
-            streams.append(stream)
-
+            if form_dict['has_deployment']:
+                stream = KoboToolStream(
+                    config=config,
+                    form_id=form_dict["uid"],
+                    schema=stream_json_schema,
+                    name=form_dict["name"],
+                    pagination_limit=self.PAGINATION_LIMIT,
+                    auth_token=auth_token,
+                )
+                streams.append(stream)
+        
         return streams
