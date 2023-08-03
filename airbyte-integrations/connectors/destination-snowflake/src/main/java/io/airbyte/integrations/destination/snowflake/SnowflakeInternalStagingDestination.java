@@ -125,14 +125,16 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
     TyperDeduper typerDeduper;
     JdbcDatabase database = getDatabase(getDataSource(config));
     if (TypingAndDedupingFlag.isDestinationV2()) {
       String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
@@ -155,14 +157,16 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector) {
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
     TyperDeduper typerDeduper;
     JdbcDatabase database = getDatabase(getDataSource(config));
     if (TypingAndDedupingFlag.isDestinationV2()) {
       String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
