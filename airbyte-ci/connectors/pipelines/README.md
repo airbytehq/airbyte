@@ -96,7 +96,7 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 #### Options
 
 | Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
-| --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+|-----------------------------------------|---------------------------------|-------------------------------|---------------------------------------------------------------------------------------------|
 | `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
 | `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
@@ -123,6 +123,8 @@ Available commands:
 | `--language`           | True     |               | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+| `--metadata-change-only/--not-metadata-change-only`        | False    | `--not-metadata-change-only`             | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                     |
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -378,8 +380,11 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                              |
-| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                |
+| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
+| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
+| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                             |
+| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                                |
+| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                            |
 | 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI on local `airbyte-ci` execution                                |
 | 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                    |
 | 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |

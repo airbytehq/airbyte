@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.5
+Changing test output and adding diff to test_read
+
 ## 0.11.4
 Relax checking of `oneOf` common property and allow optional `default` keyword additional to `const` keyword.
 
