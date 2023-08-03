@@ -314,7 +314,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
         .build());
-    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
+    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     switchSnapshotIsolation(false, dbName);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
