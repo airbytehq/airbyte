@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.util.Collections;
@@ -45,30 +46,10 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception {
     String tableName = StreamId.concatenateRawTableName(streamNamespace, streamName);
     String schema = getRawSchema();
-    // TODO this was copied from SnowflakeInsertDestinationAcceptanceTest, refactor it maybe
-    return database.bufferedResultSetQuery(
-        connection -> {
-          try (final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
-            assertTrue(tableInfo.next());
-            // check that we're creating permanent tables. DBT defaults to transient tables, which have
-            // `TRANSIENT` as the value for the `kind` column.
-            assertEquals("TABLE", tableInfo.getString("kind"));
-            connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
-            return connection.createStatement()
-                .executeQuery(String.format(
-                    "SELECT %s,%s,%s,%s FROM %s.%s ORDER BY %s ASC;",
-                    // Explicitly quote column names to prevent snowflake from upcasing them
-                    '"' + JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toLowerCase() + '"',
-                    '"' + JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toLowerCase() + '"',
-                    '"' + JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT.toLowerCase() + '"',
-                    '"' + JavaBaseConstants.COLUMN_NAME_DATA.toLowerCase() + '"',
-                    schema,
-                    tableName,
-                    '"' + JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toLowerCase() + '"'));
-          }
-        },
-        new SnowflakeTestSourceOperations()::rowToJson);
+    return SnowflakeTestUtils.dumpRawTable(
+        database,
+        // Explicitly wrap in quotes to prevent snowflake from upcasing
+        '"'+ schema + "\".\"" + tableName + '"');
   }
 
   @Override
