@@ -150,11 +150,13 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
 
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
