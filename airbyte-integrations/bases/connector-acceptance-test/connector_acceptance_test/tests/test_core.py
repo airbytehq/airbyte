@@ -46,6 +46,7 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
+from connector_acceptance_test.utils.compare import diff_dicts
 from connector_acceptance_test.utils.json_schema_helper import (
     JsonSchemaHelper,
     get_expected_schema_structure,
@@ -130,6 +131,8 @@ class TestSpec(BaseTest):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
+        else:
+            pytest.skip("The spec.yaml or spec.json does not exist. Hence, comparison with the actual one can't be performed")
 
     def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
@@ -897,14 +900,8 @@ class TestBasicRead(BaseTest):
         for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
-            detailed_logger.log_json_list(actual)
-            detailed_logger.info(f"Expected records for stream {stream_name}:")
-            detailed_logger.log_json_list(expected)
-
+            detailed_logger.info(actual)
             ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
-            detailed_logger.info(f"Ignored fields for stream {stream_name}:")
-            detailed_logger.log_json_list(ignored_field_names)
-
             self.compare_records(
                 stream_name=stream_name,
                 actual=actual,
@@ -1063,16 +1060,30 @@ class TestBasicRead(BaseTest):
     ):
         """Compare records using combination of restrictions"""
         if exact_order:
-            for r1, r2 in zip(expected, actual):
+            if ignored_fields:
+                for item in actual:
+                    delete_fields(item, ignored_fields)
+                for item in expected:
+                    delete_fields(item, ignored_fields)
+
+            cleaned_actual = []
+            if extra_fields:
+                for r1, r2 in zip(expected, actual):
+                    if r1 and r2:
+                        cleaned_actual.append(TestBasicRead.remove_extra_fields(r2, r1))
+                    else:
+                        break
+
+            cleaned_actual = cleaned_actual or actual
+            complete_diff = "\n".join(diff_dicts(cleaned_actual, expected, use_markup=False))
+            for r1, r2 in zip(expected, cleaned_actual):
                 if r1 is None:
                     assert extra_records, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
                     break
-                if extra_fields:
-                    r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                if ignored_fields:
-                    delete_fields(r1, ignored_fields)
-                    delete_fields(r2, ignored_fields)
-                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
+
+                # to avoid printing the diff twice, we avoid the == operator here (see plugin.pytest_assertrepr_compare)
+                equals = r1 == r2
+                assert equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
         else:
             _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
             expected = set(map(_make_hashable, expected))

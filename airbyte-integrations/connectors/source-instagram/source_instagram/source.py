@@ -96,13 +96,6 @@ class SourceInstagram(AbstractSource):
                         "type": "object",
                         "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
                     },
-                    complete_oauth_server_output_specification={
-                        "type": "object",
-                        "properties": {
-                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
-                        },
-                    },
                 ),
             ),
         )
