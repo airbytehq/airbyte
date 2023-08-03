@@ -190,7 +190,7 @@ single_csv_scenario = (
                                                             },
                                                             "null_values": {
                                                                 "title": "Null Values",
-                                                                "description": "A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
                                                                 "default": [],
                                                                 "type": "array",
                                                                 "items": {
@@ -218,7 +218,7 @@ single_csv_scenario = (
                                                             },
                                                             "true_values": {
                                                                 "title": "True Values",
-                                                                "description": "A set of strings that should be interpreted as true values.",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as true values.",
                                                                 "default": [
                                                                     "y",
                                                                     "yes",
@@ -235,7 +235,7 @@ single_csv_scenario = (
                                                             },
                                                             "false_values": {
                                                                 "title": "False Values",
-                                                                "description": "A set of strings that should be interpreted as false values.",
+                                                                "description": "A set of case-sensitive strings that should be interpreted as false values.",
                                                                 "default": [
                                                                     "n",
                                                                     "no",

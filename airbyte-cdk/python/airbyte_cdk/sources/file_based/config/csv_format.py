@@ -53,7 +53,7 @@ class CsvFormat(BaseModel):
     null_values: Set[str] = Field(
         title="Null Values",
         default=[],
-        description="A set of strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
+        description="A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
     )
     skip_rows_before_header: int = Field(
         title="Skip Rows Before Header",
@@ -69,10 +69,10 @@ class CsvFormat(BaseModel):
         description="Whether to autogenerate column names if column_names is empty. If true, column names will be of the form “f0”, “f1”… If false, column names will be read from the first CSV row after skip_rows_before_header.",
     )
     true_values: Set[str] = Field(
-        title="True Values", default=DEFAULT_TRUE_VALUES, description="A set of strings that should be interpreted as true values."
+        title="True Values", default=DEFAULT_TRUE_VALUES, description="A set of case-sensitive strings that should be interpreted as true values."
     )
     false_values: Set[str] = Field(
-        title="False Values", default=DEFAULT_FALSE_VALUES, description="A set of strings that should be interpreted as false values."
+        title="False Values", default=DEFAULT_FALSE_VALUES, description="A set of case-sensitive strings that should be interpreted as false values."
     )
 
     @validator("delimiter")
