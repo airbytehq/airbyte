@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
@@ -24,11 +25,14 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunct
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
+import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -81,6 +85,45 @@ public class BigQueryStagingConsumerFactory {
         catalog,
         json -> true,
         defaultNamespace);
+  }
+
+  public SerializedAirbyteMessageConsumer createAsync(final JsonNode config,
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final Consumer<AirbyteMessage> outputRecordCollector,
+                                       final BigQueryStagingOperations bigQueryGcsOperations,
+                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                       final Function<String, String> tmpTableNameTransformer,
+                                       final Function<String, String> targetTableNameTransformer,
+                                       final TyperDeduper typerDeduper,
+                                       final ParsedCatalog parsedCatalog) {
+    final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigsByPair = createWriteConfigs(
+        config,
+        catalog,
+        parsedCatalog,
+        recordFormatterCreator,
+        tmpTableNameTransformer,
+        targetTableNameTransformer);
+
+    final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigsByDescriptor = writeConfigsByPair
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+            entry -> new StreamDescriptor()
+                .withName(entry.getKey().getName())
+                .withNamespace(entry.getKey().getNamespace()),
+            entry -> entry.getValue()));
+
+    final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
+        incrementalTypingAndDedupingStreamConsumer(typerDeduper);
+
+    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
+    return new AsyncStreamConsumer(
+        outputRecordCollector,
+        onStartFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper),
+        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByPair, typerDeduper).accept(false),
+        flusher,
+        catalog,
+        new BufferManager());
   }
 
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
