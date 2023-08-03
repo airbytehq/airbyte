@@ -319,7 +319,7 @@ class Connector:
 
     @functools.lru_cache(maxsize=2)
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
-        dependencies_paths = [self.code_directory]
+        dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
@@ -351,9 +351,18 @@ def get_changed_connectors(
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
 
-def get_all_released_connectors() -> Set:
+def get_all_connectors_in_repo() -> Set[Connector]:
+    """Retrieve a set of all Connectors in the repo.
+    We globe the connectors folder for metadata.yaml files and construct Connectors from the directory name.
+
+    Returns:
+        A set of Connectors.
+    """
+    repo = git.Repo(search_parent_directories=True)
+    repo_path = repo.working_tree_dir
+
     return {
         Connector(Path(metadata_file).parent.name)
-        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
         if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
     }
