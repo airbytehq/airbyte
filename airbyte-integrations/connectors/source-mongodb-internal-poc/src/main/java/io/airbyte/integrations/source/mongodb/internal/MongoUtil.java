@@ -92,9 +92,9 @@ public class MongoUtil {
 
   private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
     return CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields)
-            .withSourceDefinedCursor(true)
-            .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
-            .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
+        .withSourceDefinedCursor(true)
+        .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
+        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
   }
 
   private static List<Field> getFieldsInCollection(final MongoCollection collection) {
