@@ -62,7 +62,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> 
     """
     latest_gcs_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
-    latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_metadata_file_blobs}
+    latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_gcs_metadata_file_blobs}
 
     stale_report = [
         {
