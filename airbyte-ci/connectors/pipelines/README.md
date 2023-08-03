@@ -8,6 +8,12 @@ This is made possible thanks to the use of [Dagger](https://dagger.io), a CI/CD 
 Our pipeline are declared with Python code, the main entrypoint is [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/commands/airbyte_ci.py).
 This documentation should be helpful for both local and CI use of the CLI. We indeed [power connector testing in the CI with this CLI](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/connector_integration_test_single_dagger.yml#L78).
 
+## Prereqs
+
+To run many of the CI pipeline workflows locally, you'll need GSM credentials.
+
+See the related [CI Credentials Readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/ci_credentials) for instructions.
+
 ## How to install
 ### Requirements
 * A running Docker engine
