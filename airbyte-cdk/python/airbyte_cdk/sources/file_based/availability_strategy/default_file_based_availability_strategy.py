@@ -74,7 +74,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return files
 
     def _check_extensions(self, stream: AbstractFileBasedStream, files: List[RemoteFile]) -> None:
-        if not all(f.extension_agrees_with_file_type() for f in files):
+        if not all(f.extension_agrees_with_file_type(stream.config.file_type) for f in files):
             raise CheckAvailabilityError(FileBasedSourceError.EXTENSION_MISMATCH, stream=stream.name)
         return None
 

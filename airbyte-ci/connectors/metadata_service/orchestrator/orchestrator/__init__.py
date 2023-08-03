@@ -10,7 +10,6 @@ from orchestrator.assets import (
     connector_test_report,
     github,
     specs_secrets_mask,
-    spec_cache,
     registry,
     registry_report,
     registry_entry,
@@ -27,6 +26,7 @@ from orchestrator.jobs.registry import (
 from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor
+from orchestrator.logging.sentry import setup_dagster_sentry
 
 from orchestrator.config import (
     REPORT_FOLDER,
@@ -39,6 +39,7 @@ from orchestrator.config import (
     NIGHTLY_GHA_WORKFLOW_ID,
     CI_TEST_REPORT_PREFIX,
     CI_MASTER_TEST_OUTPUT_REGEX,
+    HIGH_QUEUE_PRIORITY,
 )
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
@@ -46,7 +47,6 @@ ASSETS = load_assets_from_modules(
     [
         github,
         specs_secrets_mask,
-        spec_cache,
         metadata,
         registry,
         registry_report,
@@ -157,7 +157,7 @@ SENSORS = [
 ]
 
 SCHEDULES = [
-    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="* * * * *"),
+    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/5 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
 ]
 
@@ -176,6 +176,9 @@ START HERE
 This is the entry point for the orchestrator.
 It is a list of all the jobs, assets, resources, schedules, and sensors that are available to the orchestrator.
 """
+
+setup_dagster_sentry()
+
 defn = Definitions(
     jobs=JOBS,
     assets=ASSETS,
