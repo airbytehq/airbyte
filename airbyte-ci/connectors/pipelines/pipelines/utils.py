@@ -41,6 +41,7 @@ METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
 ALL_CONNECTOR_DEPENDENCIES = [(connector, connector.get_local_dependency_paths()) for connector in get_all_connectors_in_repo()]
+STATIC_REPORT_PREFIX = "airbyte-ci"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -512,7 +513,12 @@ class DaggerPipelineCommand(click.Command):
         sanitized_branch = slugify(git_branch.replace("/", "_"))
 
         # get the command name for the current context, if a group then prepend the parent command name
-        cmd = ctx.command_path.replace(" ", "/") if ctx.command_path else None
+        if ctx.command_path:
+            cmd_components = ctx.command_path.split(" ")
+            cmd_components[0] = STATIC_REPORT_PREFIX
+            cmd = "/".join(cmd_components)
+        else:
+            cmd = None
 
         path_values = [
             cmd,
