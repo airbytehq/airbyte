@@ -43,7 +43,7 @@ public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTes
 
     @BeforeAll
     public static void getConnect() throws SQLException, ClassNotFoundException {
-        JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+        JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("secrets/config.json")));
         conn = SqlUtil.createJDBCConnection(config);
     }
 
@@ -59,7 +59,7 @@ public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTes
         // TODO: Generate the configuration JSON file to be used for running the destination during the test
         // configJson can either be static and read from secrets/config.json directly
         // or created in the setup method
-        configJson = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+        configJson = Jsons.deserialize(IOs.readFile(Paths.get("secrets/config.json")));
 
         return configJson;
     }
