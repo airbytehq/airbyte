@@ -37,11 +37,13 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
 1. Create `secrets/credentials.json` file
    1. Insert below json to the file with your configuration
        ```
-      {
-         "database": "database_name",
-         "user": "user",
-         "password": "password",
-         "cluster_url": "cluster_url"
+       {
+            "database": "database_name",
+            "user": "username",
+            "password": "password",
+            "connection_string": "mongodb+srv://cluster0.abcd1.mongodb.net/",
+            "replica_set": "atlas-abcdefg-shard-0",
+            "auth_source": "auth_database"
        }
       ```
 
