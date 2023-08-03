@@ -74,6 +74,7 @@ def test_cast_to_python_type(row, true_values, false_values, expected_output):
     csv_format = CsvFormat(true_values=true_values, false_values=false_values)
     assert _cast_types(row, PROPERTY_TYPES, csv_format, logger) == expected_output
 
+
 @pytest.mark.parametrize(
     "reader_values, expected_rows", [
         pytest.param([{"col1": "1", "col2": None}], None, id="raise_exception_if_any_value_is_none"),
