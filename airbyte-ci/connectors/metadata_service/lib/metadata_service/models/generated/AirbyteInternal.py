@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Extra
 from typing_extensions import Literal
 
 
@@ -13,5 +13,5 @@ class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
 
-    field_sl: Optional[Literal[100, 200, 300]] = Field(None, alias="_sl")
-    field_ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = Field(None, alias="_ql")
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
