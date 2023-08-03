@@ -380,6 +380,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                        | Description                                                                                  |
 |---------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
 | 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
 | 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                             |
 | 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                                |
