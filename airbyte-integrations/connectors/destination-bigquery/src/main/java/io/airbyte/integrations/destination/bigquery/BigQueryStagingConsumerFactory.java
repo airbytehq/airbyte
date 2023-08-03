@@ -107,7 +107,12 @@ public class BigQueryStagingConsumerFactory {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
 
           final AirbyteStream stream = configuredStream.getStream();
-          StreamConfig streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+          final StreamConfig streamConfig;
+          if (TypingAndDedupingFlag.isDestinationV2()) {
+             streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+          } else {
+            streamConfig = null;
+          }
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
