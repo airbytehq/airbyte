@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Streams;
@@ -463,6 +464,60 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         1,
         dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * Create a table which includes the _ab_cdc_deleted_at column, then soft reset it using the non-cdc
+   * stream config. Verify that the deleted_at column gets dropped.
+   */
+  @Test
+  public void softReset() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(true, streamId, "");
+    insertRawTableRecords(
+        streamId,
+        singletonList(Jsons.deserialize(
+            """
+                {
+                  "_airbyte_raw_id": "arst",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_loaded_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "id1": 1,
+                    "id2": 100,
+                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+                  }
+                }
+                """
+        )));
+    insertFinalTableRecords(
+        true,
+        streamId,
+        "",
+        singletonList(Jsons.deserialize(
+            """
+                {
+                  "_airbyte_raw_id": "arst",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_meta": {},
+                  "id1": 1,
+                  "id2": 100,
+                  "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+                }
+                """
+        )));
+
+    final String sql = generator.softReset(incrementalAppendStream);
+    destinationHandler.execute(sql);
+
+    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
+    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
+    assertAll(
+        () -> assertEquals(1, actualRawRecords.size()),
+        () -> assertEquals(1, actualFinalRecords.size()),
+        () -> assertTrue(
+            actualFinalRecords.stream().noneMatch(record -> record.has("_ab_cdc_deleted_at")),
+            "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords));
   }
 
   private void verifyRecords(String expectedRawRecordsFile, List<JsonNode> actualRawRecords, String expectedFinalRecordsFile, List<JsonNode> actualFinalRecords) {
