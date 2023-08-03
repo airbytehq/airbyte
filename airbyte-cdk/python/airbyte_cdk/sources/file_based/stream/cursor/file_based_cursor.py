@@ -5,7 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, MutableMapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.types import StreamState
@@ -32,7 +32,7 @@ class FileBasedCursor(ABC):
         """
 
     @abstractmethod
-    def get_state(self) -> Mapping[str, Any]:
+    def get_state(self) -> MutableMapping[str, Any]:
         """
         Get the state of the cursor.
         """

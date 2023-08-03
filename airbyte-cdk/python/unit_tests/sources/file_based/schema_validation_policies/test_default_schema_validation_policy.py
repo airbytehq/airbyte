@@ -48,7 +48,7 @@ def test_record_passes_validation_policy(
     schema: Mapping[str, Any],
     validation_policy: str,
     expected_result: bool
-):
+) -> None:
     if validation_policy == "wait_for_discover" and expected_result is False:
         with pytest.raises(StopSyncPerValidationPolicy):
             DEFAULT_SCHEMA_VALIDATION_POLICIES[validation_policy].record_passes_validation_policy(record, schema)

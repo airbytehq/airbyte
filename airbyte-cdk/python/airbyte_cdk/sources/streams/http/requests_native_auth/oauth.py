@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 import dpath
 import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
-from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
@@ -116,7 +116,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
         token_expiry_date_format: Optional[str] = None,
-        message_repository: MessageRepository = None,
+        message_repository: MessageRepository = NoopMessageRepository(),
     ):
         """
 
@@ -135,6 +135,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
             token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
             token_expiry_date_format (Optional[str]): Date format of the token expiry date field (set by expires_in_name). If not specified the token expiry date is interpreted as number of seconds until expiration.
+            message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
         """
         self._client_id = client_id if client_id is not None else dpath.util.get(connector_config, ("credentials", "client_id"))
         self._client_secret = (
@@ -146,7 +147,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         self._token_expiry_date_format = token_expiry_date_format
         self._refresh_token_name = refresh_token_name
         self._connector_config = connector_config
-        self._message_repository = message_repository
+        self.__message_repository = message_repository
         super().__init__(
             token_refresh_endpoint,
             self.get_client_id(),
@@ -214,10 +215,12 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             self.access_token = new_access_token
             self.set_refresh_token(new_refresh_token)
             self.set_token_expiry_date(new_token_expiry_date)
-            if self._message_repository:
+            # FIXME emit_configuration_as_airbyte_control_message as been deprecated in favor of package airbyte_cdk.sources.message
+            #  Usually, a class shouldn't care about the implementation details but to keep backward compatibility where we print the
+            #  message directly in the console, this is needed
+            if not isinstance(self._message_repository, NoopMessageRepository):
                 self._message_repository.emit_message(create_connector_config_control_message(self._connector_config))
             else:
-                # FIXME emit_configuration_as_airbyte_control_message as been deprecated in favor of package airbyte_cdk.sources.message
                 emit_configuration_as_airbyte_control_message(self._connector_config)
         return self.access_token
 
@@ -228,3 +231,10 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             response_json[self.get_expires_in_name()],
             response_json[self.get_refresh_token_name()],
         )
+
+    @property
+    def _message_repository(self) -> MessageRepository:
+        """
+        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """
+        return self.__message_repository

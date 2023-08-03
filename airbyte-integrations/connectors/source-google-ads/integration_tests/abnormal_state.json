@@ -96,5 +96,19 @@
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" }},
       "stream_descriptor": { "name": "campaign_budget" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" }},
+      "stream_descriptor": { "name": "campaign_bidding_strategies" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" }},
+      "stream_descriptor": { "name": "ad_group_bidding_strategies" }
+    }
   }
 ]

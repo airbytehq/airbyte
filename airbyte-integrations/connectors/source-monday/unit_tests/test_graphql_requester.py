@@ -98,7 +98,8 @@ def test_get_request_params(mocker, input_schema, graphql_query, stream_name, co
         authenticator=MagicMock(),
         error_handler=MagicMock(),
         limit="{{ parameters['items_per_page'] }}",
-        parameters={"name": stream_name, "items_per_page": 100},
+        nested_limit="{{ parameters.get('nested_items_per_page', 1) }}",
+        parameters={"name": stream_name, "items_per_page": 100, "nested_items_per_page": 100},
         config=config
     )
     assert requester.get_request_params(
