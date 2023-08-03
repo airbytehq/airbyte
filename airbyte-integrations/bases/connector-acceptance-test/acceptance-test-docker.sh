@@ -33,13 +33,13 @@ else
 fi
 
 # Pull latest acctest image
-docker pull airbyte/connector-acceptance-test:latest
+#docker pull airbyte/connector-acceptance-test:latest
 
 # Run
 docker run --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \
     -v "$CONNECTOR_DIR":/test_input \
-    airbyte/connector-acceptance-test \
+    cat_dev \
     --acceptance-test-config /test_input
 
