@@ -140,11 +140,13 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
 
     SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    ParsedCatalog parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog;
     TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      parsedCatalog = new CatalogParser(sqlGenerator).parseCatalog(catalog);
       typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, new SnowflakeDestinationHandler(getDatabase(getDataSource(config))), parsedCatalog);
     } else {
+      parsedCatalog = null;
       typerDeduper = new NoopTyperDeduper();
     }
 
