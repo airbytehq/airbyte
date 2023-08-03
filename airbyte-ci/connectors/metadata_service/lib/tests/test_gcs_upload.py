@@ -11,7 +11,7 @@ from pydash.objects import get
 from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.utils import to_json_sanitized_dict
+from metadata_service.models.transform import to_json_sanitized_dict
 
 # Version exists by default, but "666" is bad! (6.0.0 too since breaking changes regex tho)
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
