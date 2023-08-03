@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static java.util.Collections.emptyList;
@@ -48,27 +52,24 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       "time_with_timezone",
       "time_without_timezone",
       "date",
-      "unknown"
-  );
+      "unknown");
   protected static final List<String> FINAL_TABLE_COLUMN_NAMES_CDC;
 
   static {
     FINAL_TABLE_COLUMN_NAMES_CDC = Streams.concat(
         FINAL_TABLE_COLUMN_NAMES.stream(),
-        Stream.of("_ab_cdc_deleted_at")
-    ).toList();
+        Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
   public static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
-  );
+      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
 
   protected StreamConfig incrementalDedupStream;
   /**
-   * We intentionally don't have full refresh overwrite/append streams. Those actually
-   * behave identically in the sqlgenerator. Overwrite mode is actually handled in
+   * We intentionally don't have full refresh overwrite/append streams. Those actually behave
+   * identically in the sqlgenerator. Overwrite mode is actually handled in
    * {@link DefaultTyperDeduper}.
    */
   protected StreamConfig incrementalAppendStream;
@@ -96,7 +97,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception;
 
-  protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception;
+  protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records)
+      throws Exception;
 
   protected abstract List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception;
 
@@ -180,8 +182,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Test that T+D throws an error for an incremental-dedup sync where at least
-   * one record has a null primary key, and that we don't write any final records.
+   * Test that T+D throws an error for an incremental-dedup sync where at least one record has a null
+   * primary key, and that we don't write any final records.
    */
   @Test
   public void incrementalDedupInvalidPrimaryKey() throws Exception {
@@ -192,20 +194,20 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         List.of(
             Jsons.deserialize(
                 """
-                    {
-                      "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {}
-                    }
-                    """),
+                {
+                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {}
+                }
+                """),
             Jsons.deserialize(
                 """
-                    {
-                      "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                      "_airbyte_data": {"id1": 1, "id2": 100}
-                    }
-                    """)));
+                {
+                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {"id1": 1, "id2": 100}
+                }
+                """)));
 
     String sql = generator.updateTable(incrementalDedupStream, "");
     assertThrows(
@@ -217,13 +219,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Run a full T+D update for an incremental-dedup stream, writing to a final table with "_foo" suffix,
-   * with values for all data types. Verifies all behaviors for all types:
+   * Run a full T+D update for an incremental-dedup stream, writing to a final table with "_foo"
+   * suffix, with values for all data types. Verifies all behaviors for all types:
    * <ul>
-   *   <li>A valid, nonnull value</li>
-   *   <li>No value (i.e. the column is missing from the record)</li>
-   *   <li>A JSON null value</li>
-   *   <li>An invalid value</li>
+   * <li>A valid, nonnull value</li>
+   * <li>No value (i.e. the column is missing from the record)</li>
+   * <li>A JSON null value</li>
+   * <li>An invalid value</li>
    * </ul>
    * <p>
    * In practice, incremental streams never write to a suffixed table, but SqlGenerator isn't allowed
@@ -288,12 +290,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createFinalTable(false, streamId, "_tmp");
     List<JsonNode> records = singletonList(Jsons.deserialize(
         """
-            {
-              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
-              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_meta": {}
-            }
-            """));
+        {
+          "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+          "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+          "_airbyte_meta": {}
+        }
+        """));
     insertFinalTableRecords(
         false,
         streamId,
@@ -316,17 +318,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         singletonList(Jsons.deserialize(
             """
-                {
-                  "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {
-                    "id1": 1,
-                    "id2": 100,
-                    "updated_at": "2023-01-01T00:00:00Z",
-                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-                  }
-                }
-                """)));
+            {
+              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 100,
+                "updated_at": "2023-01-01T00:00:00Z",
+                "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+              }
+            }
+            """)));
 
     final String sql = generator.updateTable(cdcIncrementalDedupStream, "");
     destinationHandler.execute(sql);
@@ -339,8 +341,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that running T+D twice is idempotent. Previously there was a bug where non-dedup syncs with
-   * an _ab_cdc_deleted_at column would duplicate "deleted" records on each run.
+   * Verify that running T+D twice is idempotent. Previously there was a bug where non-dedup syncs
+   * with an _ab_cdc_deleted_at column would duplicate "deleted" records on each run.
    */
   @Test
   public void cdcIdempotent() throws Exception {
@@ -350,17 +352,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         singletonList(Jsons.deserialize(
             """
-                {
-                  "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {
-                    "id1": 1,
-                    "id2": 100,
-                    "updated_at": "2023-01-01T00:00:00Z",
-                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-                  }
-                }
-                """)));
+            {
+              "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 100,
+                "updated_at": "2023-01-01T00:00:00Z",
+                "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+              }
+            }
+            """)));
 
     final String sql = generator.updateTable(cdcIncrementalAppendStream, "");
     // Execute T+D twice
@@ -478,34 +480,32 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         singletonList(Jsons.deserialize(
             """
-                {
-                  "_airbyte_raw_id": "arst",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_loaded_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {
-                    "id1": 1,
-                    "id2": 100,
-                    "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-                  }
-                }
-                """
-        )));
+            {
+              "_airbyte_raw_id": "arst",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_loaded_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 100,
+                "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+              }
+            }
+            """)));
     insertFinalTableRecords(
         true,
         streamId,
         "",
         singletonList(Jsons.deserialize(
             """
-                {
-                  "_airbyte_raw_id": "arst",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_meta": {},
-                  "id1": 1,
-                  "id2": 100,
-                  "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-                }
-                """
-        )));
+            {
+              "_airbyte_raw_id": "arst",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_meta": {},
+              "id1": 1,
+              "id2": 100,
+              "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
+            }
+            """)));
 
     final String sql = generator.softReset(incrementalAppendStream);
     destinationHandler.execute(sql);
@@ -520,7 +520,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords));
   }
 
-  private void verifyRecords(String expectedRawRecordsFile, List<JsonNode> actualRawRecords, String expectedFinalRecordsFile, List<JsonNode> actualFinalRecords) {
+  private void verifyRecords(String expectedRawRecordsFile,
+                             List<JsonNode> actualRawRecords,
+                             String expectedFinalRecordsFile,
+                             List<JsonNode> actualFinalRecords) {
     assertAll(
         () -> DIFFER.diffRawTableRecords(
             BaseTypingDedupingTest.readRecords(expectedRawRecordsFile),
@@ -535,7 +538,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             actualFinalRecords));
   }
 
-  private void verifyRecordCounts(int expectedRawRecords, List<JsonNode> actualRawRecords, int expectedFinalRecords, List<JsonNode> actualFinalRecords) {
+  private void verifyRecordCounts(int expectedRawRecords,
+                                  List<JsonNode> actualRawRecords,
+                                  int expectedFinalRecords,
+                                  List<JsonNode> actualFinalRecords) {
     assertAll(
         () -> assertEquals(
             expectedRawRecords,
