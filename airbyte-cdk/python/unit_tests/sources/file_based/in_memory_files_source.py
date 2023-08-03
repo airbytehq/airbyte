@@ -100,7 +100,14 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 
     def _make_csv_file_contents(self, file_name: str) -> IOBase:
+
+        # Some tests define the csv as an array of strings to make it easier to validate the handling
+        # of quotes, delimiter, and escpare chars.
+        if isinstance(self.files[file_name]["contents"][0], str):
+            return io.StringIO("\n".join([s.strip() for s in self.files[file_name]["contents"]]))
+
         fh = io.StringIO()
+
         if self.file_write_options:
             csv.register_dialect("in_memory_dialect", **self.file_write_options)
             writer = csv.writer(fh, dialect="in_memory_dialect")
