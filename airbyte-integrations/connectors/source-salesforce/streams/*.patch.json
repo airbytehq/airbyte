@@ -1,0 +1,5 @@
+{
+  "reduce": {
+    "strategy": "merge"
+  }
+}

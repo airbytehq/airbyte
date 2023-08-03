@@ -269,6 +269,12 @@ impl AirbyteSourceInterceptor {
                     "{}/{}{}",
                     STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX
                 ))
+                .or_else(|_| {
+                    std::fs::read_to_string(format!(
+                        "{}/*{}",
+                        STREAM_PATCH_DIR_NAME, STREAM_PATCH_SUFFIX
+                    ))
+                })
                 .ok()
                 .map(|p| sj::from_str::<sj::Value>(&p))
                 .transpose()?;
