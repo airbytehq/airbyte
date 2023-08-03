@@ -88,6 +88,32 @@ from pipelines import utils
             ),
             f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
         ),
+        (
+            mock.MagicMock(
+                command_path="airbyte-ci command path",
+                obj={
+                    "git_branch": "my_branch/with/slashes#and!special@characters",
+                    "git_revision": "my_git_revision",
+                    "pipeline_start_timestamp": "my_pipeline_start_timestamp",
+                    "ci_context": "my_ci_context",
+                    "ci_job_key": "my_ci_job_key",
+                },
+            ),
+            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+        ),
+        (
+            mock.MagicMock(
+                command_path="airbyte-ci-internal command path",
+                obj={
+                    "git_branch": "my_branch/with/slashes#and!special@characters",
+                    "git_revision": "my_git_revision",
+                    "pipeline_start_timestamp": "my_pipeline_start_timestamp",
+                    "ci_context": "my_ci_context",
+                    "ci_job_key": "my_ci_job_key",
+                },
+            ),
+            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+        ),
     ],
 )
 def test_render_report_output_prefix(ctx, expected):
