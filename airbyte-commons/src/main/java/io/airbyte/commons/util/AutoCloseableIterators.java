@@ -205,4 +205,7 @@ public class AutoCloseableIterators {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
   }
 
+  public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators) {
+    return concatWithEagerClose(iterators, null);
+  }
 }
