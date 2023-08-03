@@ -189,7 +189,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
-    // airbyte_internal.testDataset_ab__ab_users.
+    // airbyte_internal.testDataset_raw__stream_users.
     streamId = new StreamId(namespace, "users_final", namespace, "users_raw", namespace, "users_final");
 
     incrementalDedupStream = new StreamConfig(
