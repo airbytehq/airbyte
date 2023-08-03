@@ -11,12 +11,12 @@ from pydash.objects import get
 
 
 @dataclass(frozen=True)
-class ValidatorContext:
-    prerelease: Optional[str] = None
+class ValidatorOptions:
+    prerelease_tag: Optional[str] = None
 
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
-Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorContext], ValidationResult]
+Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], ValidationResult]
 
 # TODO: Remove these when each of these connectors ship any new version
 ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
@@ -34,7 +34,7 @@ ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
 
 
 def validate_metadata_images_in_dockerhub(
-    metadata_definition: ConnectorMetadataDefinitionV0, validator_context: ValidatorContext
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
@@ -58,7 +58,7 @@ def validate_metadata_images_in_dockerhub(
         (normalization_docker_image, normalization_docker_version),
     ]
 
-    if not validator_context.prerelease:
+    if not validator_opts.prerelease_tag:
         possible_docker_images.extend([(base_docker_image, version) for version in breaking_change_versions])
 
     # Filter out tuples with None and remove duplicates
@@ -73,7 +73,7 @@ def validate_metadata_images_in_dockerhub(
 
 
 def validate_at_least_one_language_tag(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_context: ValidatorContext
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -84,7 +84,7 @@ def validate_at_least_one_language_tag(
 
 
 def validate_all_tags_are_keyvalue_pairs(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_context: ValidatorContext
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
     """Ensure that all tags are of the form <KEY>:<VALUE>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -102,7 +102,7 @@ def is_major_version(version: str) -> bool:
 
 
 def validate_major_version_bump_has_breaking_change_entry(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_context: ValidatorContext
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
     """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
     metadata_definition_dict = metadata_definition.dict()
@@ -147,7 +147,7 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 def validate_and_load(
     file_path: pathlib.Path,
     validators_to_run: List[Validator],
-    **kwargs,
+    validator_opts: ValidatorOptions = ValidatorOptions(),
 ) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
@@ -155,10 +155,6 @@ def validate_and_load(
     If the metadata file is valid, metadata_model will be populated.
     Otherwise, error_message will be populated with a string describing the error.
     """
-
-    # Initialize the validator context with the kwargs only if it is not empty
-    validator_context = ValidatorContext(**kwargs) if kwargs else ValidatorContext()
-
     try:
         # Load the metadata file - this implicitly runs jsonschema validation
         metadata = yaml.safe_load(file_path.read_text())
@@ -167,7 +163,7 @@ def validate_and_load(
         return None, f"Validation error: {e}"
 
     for validator in validators_to_run:
-        is_valid, error = validator(metadata_model, validator_context)
+        is_valid, error = validator(metadata_model, validator_opts)
         if not is_valid:
             return None, f"Validation error: {error}"
 
