@@ -17,7 +17,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -112,7 +111,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Do any setup work to create a namespace for this test run. For example, this might create a
    * BigQuery dataset, or a Snowflake schema.
    */
-  protected abstract void createNamespace(String namespace) throws SQLException;
+  protected abstract void createNamespace(String namespace) throws Exception;
 
   /**
    * Create a raw table using the StreamId's rawTableId.
@@ -145,7 +144,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
    * created in {@link #createNamespace(String)}.
    */
-  protected abstract void teardownNamespace(String namespace) throws SQLException;
+  protected abstract void teardownNamespace(String namespace) throws Exception;
 
   /**
    * This test implementation is extremely destination-specific, but all destinations must implement
@@ -158,7 +157,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public abstract void testCreateTableIncremental() throws Exception;
 
   @BeforeEach
-  public void setup() throws SQLException {
+  public void setup() throws Exception {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
     ColumnId id1 = generator.buildColumnId("id1");
@@ -190,7 +189,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
-    // airbyte_internal.testDataset_ab__ab_users.
+    // airbyte_internal.testDataset_raw__stream_users.
     streamId = new StreamId(namespace, "users_final", namespace, "users_raw", namespace, "users_final");
 
     incrementalDedupStream = new StreamConfig(
@@ -228,7 +227,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   @AfterEach
-  public void teardown() throws SQLException {
+  public void teardown() throws Exception {
     teardownNamespace(namespace);
   }
 

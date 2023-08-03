@@ -143,7 +143,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     if (messageOptional.isPresent()) {
       return messageOptional;
     }
-    throw new RuntimeException(String.format("Invalid serialized message: %s", messageString));
+    throw new RuntimeException("Invalid serialized message");
   }
 
   @Override
