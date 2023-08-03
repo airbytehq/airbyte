@@ -27,6 +27,8 @@ import org.bson.Document;
 
 public class MongoUtil {
 
+  public static final String DEFAULT_CURSOR_FIELD = "_id";
+
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
    * avoid access issues.
@@ -83,9 +85,16 @@ public class MongoUtil {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final List<Field> fields = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName));
-      streams.add(CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields));
+      streams.add(createAirbyteStream(collectionName, databaseName, fields));
     });
     return streams;
+  }
+
+  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
+    return CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields)
+            .withSourceDefinedCursor(true)
+            .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
+            .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
   }
 
   private static List<Field> getFieldsInCollection(final MongoCollection collection) {

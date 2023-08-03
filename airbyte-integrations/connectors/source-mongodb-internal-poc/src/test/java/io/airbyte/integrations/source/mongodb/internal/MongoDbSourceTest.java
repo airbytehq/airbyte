@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.bson.Document;
@@ -145,6 +146,9 @@ class MongoDbSourceTest {
     assertEquals("number", stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
     assertEquals("array", stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
     assertEquals("object", stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
+    assertEquals(true, stream.get().getSourceDefinedCursor());
+    assertEquals(List.of(MongoUtil.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
+    assertEquals(List.of(List.of(MongoUtil.DEFAULT_CURSOR_FIELD)), stream.get().getSourceDefinedPrimaryKey());
   }
 
   @Test
