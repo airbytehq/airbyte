@@ -26,6 +26,8 @@ import org.bson.Document;
 
 public class MongoUtil {
 
+  public static final String DEFAULT_CURSOR_FIELD = "_id";
+
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
    * avoid access issues.
