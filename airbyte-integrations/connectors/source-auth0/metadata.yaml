@@ -9,7 +9,7 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: 87395044-8c65-4903-bd62-c4c50e58bd93
+  definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
   dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-auth0
   githubIssueLabel: source-auth0
