@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
 ## 0.48.0
 Relax pydantic version requirement and update to protocol models version 0.4.0
 

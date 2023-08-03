@@ -7,7 +7,7 @@ data:
   githubIssueLabel: source-mongodb-internal-poc
   icon: mongodb.svg
   license: ELv2
-  name: MongoDb
+  name: MongoDb POC
   registries:
     cloud:
       enabled: true
