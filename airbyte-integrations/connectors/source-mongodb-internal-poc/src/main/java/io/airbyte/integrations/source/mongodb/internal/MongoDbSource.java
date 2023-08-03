@@ -15,21 +15,22 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -55,6 +56,11 @@ public class MongoDbSource extends BaseConnector implements Source {
    * avoid access issues.
    */
   private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
+
+  /**
+   * Number of documents to read at once.
+   */
+  private static final int BATCH_SIZE = 1000;
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -112,36 +118,50 @@ public class MongoDbSource extends BaseConnector implements Source {
     database -> table -> row
      */
 
+    final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final var emittedAt = Instant.now();
-    final StateManager stateManager = StateManagerFactory.createStateManager(
-        AirbyteStateType.STREAM,
-        StateGeneratorUtils.deserializeInitialState(state, true, AirbyteStateType.STREAM),
-        catalog);
+//    final StateManager stateManager = StateManagerFactory.createStateManager(
+//        AirbyteStateType.STREAM,
+//        StateGeneratorUtils.deserializeInitialState(state, true, AirbyteStateType.STREAM),
+//        catalog);
 
     try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
-      final var database = mongoClient.getDatabase("TODO");
+      final var database = mongoClient.getDatabase(databaseName);
 
 //      final List<AutoCloseableIterator<AirbyteMessage>> incIter = incrIters(database, )
-      final List<AutoCloseableIterator<AirbyteMessage>> fullIter = fullIter(database, catalog, null, stateManager, emittedAt);
+      final List<AutoCloseableIterator<AirbyteMessage>> incIters = incrIters(database, catalog, emittedAt);
+
+      return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(incIters, AirbyteTraceMessageUtility::emitStreamStatusTrace), ()-> {
+
+      });
     }
-    return null;
   }
 
-  @Override
-  public void close() throws Exception {
+//  @Override
+//  public void close() throws Exception {
+//
+//  }
 
-  }
-
-  private List<AutoCloseableIterator<AirbyteMessage>> fullIter(final MongoDatabase database, final ConfiguredAirbyteCatalog catalog, final String TODO, final StateManager stateManager, final Instant emittedAt) {
-    final List<AutoCloseableIterator<AirbyteMessage>> iterList = new ArrayList<>();
-    catalog.getStreams()
+  private List<AutoCloseableIterator<AirbyteMessage>> incrIters(final MongoDatabase database, final ConfiguredAirbyteCatalog catalog, final Instant emittedAt) {
+    return catalog.getStreams()
         .stream()
-        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.FULL_REFRESH))
-        .forEach(airbyteStream -> {
-          final var stream = airbyteStream.getStream();
-          final var collectionName = "TODO";
-
-        });
+        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+        .map(airbyteStream -> {
+          final var collection = database.getCollection(airbyteStream.getStream().getName());
+          // TODO verify that if all fields are selected that all fields are returned here
+          //  (or should this check and ignore them if all fields are selected)
+          final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
+          final var cursor = collection.find()
+              .projection(fields)
+              .sort(Sorts.ascending("_id"))
+              .batchSize(BATCH_SIZE)
+              .iterator();
+          final var closeableIterator = AutoCloseableIterators.fromIterator(
+              new MongoDbStateIterator(cursor, airbyteStream, emittedAt, BATCH_SIZE)
+          );
+          return AutoCloseableIterators.appendOnClose(closeableIterator, cursor::close);
+        })
+        .toList();
   }
 
   private Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
