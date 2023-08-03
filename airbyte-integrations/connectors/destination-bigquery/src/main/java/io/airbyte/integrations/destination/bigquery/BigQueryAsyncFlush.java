@@ -5,7 +5,9 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
@@ -29,28 +31,28 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   private final BigQueryStagingOperations stagingOperations;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
+  private final BufferCreateFunction createBuffer;
 
   public BigQueryAsyncFlush(
       final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
       final BigQueryStagingOperations stagingOperations,
       final ConfiguredAirbyteCatalog catalog,
-      final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer
+      final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer,
+      final BufferCreateFunction createBuffer
   ) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;
     this.incrementalTypingAndDedupingStreamConsumer = incrementalTypingAndDedupingStreamConsumer;
+    this.createBuffer = createBuffer;
   }
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     // TODO: this should be an avro writer I think
-    final CsvSerializedBuffer writer;
+    final SerializableBuffer writer;
     try {
-      writer = new CsvSerializedBuffer(
-          new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-          new StagingDatabaseCsvSheetGenerator(),
-          true);
+      writer = createBuffer.apply(new AirbyteStreamNameNamespacePair(decs.getName(), decs.getNamespace()), catalog);
 
       stream.forEach(record -> {
         try {
