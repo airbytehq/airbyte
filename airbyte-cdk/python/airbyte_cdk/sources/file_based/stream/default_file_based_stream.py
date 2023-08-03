@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
@@ -104,6 +105,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     ),
                 )
                 break
+
+            except RecordParseError:
+                # Increment line_no because the exception was raised before we could increment it
+                line_no += 1
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.ERROR,
+                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                        stack_trace=traceback.format_exc(),
+                    ),
+                )
 
             except Exception:
                 yield AirbyteMessage(
