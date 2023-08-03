@@ -411,6 +411,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
+    // test
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("Using ctid + CDC");
