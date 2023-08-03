@@ -78,4 +78,4 @@ async def run_test(airbyte_ci_package_path: str) -> bool:
         except dagger.ExecError as e:
             logger.error("Tests failed")
             logger.error(e.stderr)
-            return False
+            sys.exit(1)
