@@ -448,7 +448,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         // We keep the newest raw record per PK
         6,
         dumpRawTableRecords(streamId),
-        5,
+        4,
         dumpFinalTableRecords(streamId, ""));
   }
 
