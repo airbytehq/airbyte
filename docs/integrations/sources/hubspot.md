@@ -106,7 +106,7 @@ There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-   :::
+:::
 
 ## Supported streams
 
