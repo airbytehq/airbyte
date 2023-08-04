@@ -272,7 +272,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert not captured.out
         assert authenticator.access_token == access_token == "new_access_token"
 
-    def test_given_message_repository_when_get_access_token_emit_message(self, mocker, connector_config):
+    def test_given_message_repository_when_get_access_token_then_emit_message(self, mocker, connector_config):
         message_repository = Mock()
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
@@ -296,6 +296,23 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert emitted_message.control.connectorConfig.config["credentials"]["client_id"] == "my_client_id"
         assert emitted_message.control.connectorConfig.config["credentials"]["client_secret"] == "my_client_secret"
 
+    def test_given_message_repository_when_get_access_token_then_log_request(self, mocker, connector_config):
+        message_repository = Mock()
+        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config,
+            token_refresh_endpoint="foobar",
+            client_id=connector_config["credentials"]["client_id"],
+            client_secret=connector_config["credentials"]["client_secret"],
+            message_repository=message_repository,
+        )
+        mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.requests.request")
+        mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.format_http_message", return_value="formatted json")
+        authenticator.token_has_expired = mocker.Mock(return_value=True)
+
+        authenticator.get_access_token()
+
+        assert message_repository.log_message.call_count == 1
+
     def test_refresh_access_token(self, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
@@ -314,7 +331,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert authenticator.refresh_access_token() == ("new_access_token", "42", "new_refresh_token")
 
 
-def mock_request(method, url, json, headers):
-    if url == "refresh_end" and headers == {"Content-Type": "application/json"}:
+def mock_request(method, url, data):
+    if url == "refresh_end":
         return resp
-    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {json}, {headers}")
+    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}")

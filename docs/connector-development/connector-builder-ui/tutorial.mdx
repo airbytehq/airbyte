@@ -112,10 +112,10 @@ The detected schema tab indicates the schema that was detected by analyzing the 
 
 <div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/9fa4f22914db48a1876413f67cd6e2f0" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
 
-The exchange rate API supports configuring a different base currency via request parameter - let's make this part of the user inputs that can be controlled by the user of the connector when configuring a source, similar to the API key.
+The exchange rate API supports configuring a different base currency via query parameter - let's make this part of the user inputs that can be controlled by the user of the connector when configuring a source, similar to the API key.
 
 To do so, follow these steps:
-* Scroll down to the "Request parameters" section and add a new request parameter
+* Scroll down to the "Query Parameters" section and add a new query parameter
 * Set the key to `base`
 * For the value, click the user icon in the input and select "New user input"
 * Set the name to "Base"
@@ -151,13 +151,13 @@ In this section, we'll update the source to read historical data instead of only
 According to the API documentation, we can read the exchange rate for a specific date range by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 To configure your connector to request every day individually, follow these steps:
-* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
+* On top of the form, change the "URL Path" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
 * Set the "Cursor Field" to `date` - this is the property in our records to check what date got synced last
 * Set the "Cursor Field Datetime Format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
 * Leave start time to "User input" so the end user can set the desired start time for syncing data
 * Leave end time to "Now" to always sync exchange rates up to the current date
-* In a lot of cases the start and end date are injected into the request body or request parameters. However in the case of the exchange rate API it needs to be added to the path of the request, so disable the "Inject start/end time into outgoing HTTP request" options
+* In a lot of cases the start and end date are injected into the request body or query parameters. However in the case of the exchange rate API it needs to be added to the path of the request, so disable the "Inject start/end time into outgoing HTTP request" options
 * Open the "Advanced" section and enable "Split up interval" so that the connector will partition the dataset into chunks
 * Set "Step" to `P1D` to configure the connector to do one separate request per day
 * Set the "Cursor granularity" to `P1D` to tell the connector the API only supports daily increments

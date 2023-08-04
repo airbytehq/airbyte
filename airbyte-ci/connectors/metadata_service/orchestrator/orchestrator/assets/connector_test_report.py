@@ -20,6 +20,7 @@ from orchestrator.templates.render import (
     render_connector_test_badge,
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.logging import sentry
 
 
 T = TypeVar("T")
@@ -44,7 +45,7 @@ def json_blob_to_model(blob: storage.Blob, Model: Type[T]) -> T:
 
 def blobs_to_typed_df(blobs: List[storage.Blob], Model: Type[T]) -> pd.DataFrame:
     # read each blob into a model
-    models = [json_blob_to_model(blob, Model) for blob in blobs]
+    models = [json_blob_to_model(blob, Model).dict() for blob in blobs]
 
     # convert to dataframe
     models_df = pd.DataFrame(models)
@@ -126,6 +127,7 @@ def compute_connector_nightly_report_history(
 
 
 @asset(required_resource_keys={"latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]:
     """
     Generate the Connector Nightly Report from the latest 10 nightly runs
@@ -140,14 +142,12 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
     nightly_report_complete_df = blobs_to_typed_df(latest_10_nightly_complete_file_blobs, ConnectorNightlyReport)
     nightly_report_test_output_df = blobs_to_typed_df(relevant_nightly_test_output_file_blobs, ConnectorPipelineReport)
-
     nightly_report_connector_matrix_df = compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df)
 
     nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
-
     slack_webhook_url = os.getenv("NIGHTLY_REPORT_SLACK_WEBHOOK_URL")
     if slack_webhook_url:
-        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
+        send_slack_webhook(slack_webhook_url, nightly_report_complete_md, wrap_in_code_block=True)
 
     return Output(
         nightly_report_connector_matrix_df,
@@ -156,6 +156,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
 
 @asset(required_resource_keys={"all_connector_test_output_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
     gcs_file_blobs = context.resources.all_connector_test_output_file_blobs
 
@@ -187,14 +188,16 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
     report_status["model"] = report_status["blob"].apply(lambda blob: json_blob_to_model(blob, ConnectorPipelineReport))
     report_status["success"] = report_status["model"].apply(lambda model: model.success)
     report_status["gha_workflow_run_url"] = report_status["model"].apply(lambda model: model.gha_workflow_run_url)
+    report_status["html_report_url"] = report_status["model"].apply(lambda model: model.html_report_url)
 
-    # Drop the blob column
+    # Drop the blob and model column
     report_status = report_status.drop(columns=["blob", "model"])
 
     return output_dataframe(report_status)
 
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_connector_test_results: OutputDataFrame) -> OutputDataFrame:
     registry_report_directory_manager = context.resources.registry_report_directory_manager
 
@@ -202,7 +205,9 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
     all_connector_names = last_10_connector_test_results["connector_name"].unique()
     for connector_name in all_connector_names:
         all_connector_test_results = last_10_connector_test_results[last_10_connector_test_results["connector_name"] == connector_name]
-        connector_test_summary = all_connector_test_results[["timestamp", "connector_version", "success", "gha_workflow_run_url"]]
+        connector_test_summary = all_connector_test_results[
+            ["timestamp", "connector_version", "success", "gha_workflow_run_url", "html_report_url"]
+        ]
 
         # Order by timestamp descending
         connector_test_summary = connector_test_summary.sort_values("timestamp", ascending=False)

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
 import io.airbyte.integrations.destination.iceberg.config.storage.GCSConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.ServerManagedStorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
 import javax.annotation.Nonnull;
@@ -39,7 +40,10 @@ public class IcebergCatalogConfigFactory {
     IcebergCatalogConfig icebergCatalogConfig = genIcebergCatalogConfig(catalogConfigJson);
     icebergCatalogConfig.formatConfig = formatConfig;
     icebergCatalogConfig.storageConfig = storageConfig;
-    icebergCatalogConfig.setDefaultOutputDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
+    JsonNode defaultDb = catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY);
+    if (null != defaultDb) {
+      icebergCatalogConfig.setDefaultOutputDatabase(defaultDb.asText());
+    }
 
     return icebergCatalogConfig;
   }
@@ -55,6 +59,8 @@ public class IcebergCatalogConfigFactory {
         return S3Config.fromDestinationConfig(storageConfigJson);
       case GCS:
         return GCSConfig.fromDestinationConfig(storageConfigJson);
+      case MANAGED:
+        return ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
       case HDFS:
       default:
         throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
@@ -74,6 +80,7 @@ public class IcebergCatalogConfigFactory {
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
       case BIGLAKE -> new BigLakeCatalogConfig(catalogConfigJson);
+      case REST -> new RESTCatalogConfig(catalogConfigJson);
       default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
     };
   }

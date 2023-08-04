@@ -5,11 +5,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.2.1
   dockerRepository: airbyte/source-google-search-console
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
-  license: MIT
+  license: Elv2
   name: Google Search Console
   registries:
     cloud:
@@ -20,4 +20,8 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   tags:
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

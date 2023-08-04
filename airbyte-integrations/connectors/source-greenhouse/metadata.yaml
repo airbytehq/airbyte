@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.2
   dockerRepository: airbyte/source-greenhouse
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
@@ -21,4 +21,8 @@ data:
   tags:
     - language:low-code
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

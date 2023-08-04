@@ -100,11 +100,14 @@ def calculated_report_columns(row: pd.Series) -> dict:
     only_failed_last_build = last_build_status == False and second_to_last_build_status == True
     failed_last_build_two_builds = last_build_status == False and second_to_last_build_status == False
 
+    test_report_url = f"https://connectors.airbyte.com/files/generated_reports/test_summary/{row.name}/index.html"
+
     return {
         "past_runs": past_runs,
         "last_build_status": last_build_status,
         "only_failed_last_build": only_failed_last_build,
         "failed_last_build_two_builds": failed_last_build_two_builds,
+        "test_report_url": test_report_url,
     }
 
 
@@ -118,7 +121,7 @@ def enhance_nightly_report(nightly_report_df: pd.DataFrame) -> str:
 
 
 def nightly_report_df_to_md(nightly_report_df: pd.DataFrame) -> str:
-    return nightly_report_df[["past_runs"]].to_markdown(index=True)
+    return nightly_report_df[["past_runs", "test_report_url"]].to_markdown(index=True)
 
 
 def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, connector_type: str) -> str:
@@ -208,6 +211,11 @@ def render_connector_test_summary_html(connector_name: str, connector_test_summa
         {
             "column": "success",
             "title": "Success",
+        },
+        {
+            "column": "html_report_url",
+            "title": "Test report",
+            "formatter": simple_link_html,
         },
         {
             "column": "gha_workflow_run_url",

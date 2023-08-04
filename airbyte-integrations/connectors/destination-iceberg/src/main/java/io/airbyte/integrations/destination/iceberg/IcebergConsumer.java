@@ -10,10 +10,10 @@ import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import io.airbyte.commons.json.Jsons;
-
 import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.iceberg.config.WriteConfig;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

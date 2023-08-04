@@ -30,6 +30,7 @@ def test_get_updated_state(patch_incremental_base_class):
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 3000, "hasMore": True}
     resp.status_code = 200
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1234,
         "snapshot_has_more": True,
@@ -37,6 +38,7 @@ def test_get_updated_state(patch_incremental_base_class):
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "snapshot": 3000, "hasMore": False}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
@@ -44,6 +46,7 @@ def test_get_updated_state(patch_incremental_base_class):
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 8000, "hasMore": True}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
@@ -52,6 +55,7 @@ def test_get_updated_state(patch_incremental_base_class):
     assert stream._delta_has_more is True
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 9000, "hasMore": False}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,

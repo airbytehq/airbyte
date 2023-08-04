@@ -3,8 +3,11 @@
 #
 
 
+import argparse
 import calendar
 import datetime
+import json
+import sys
 from typing import Dict
 
 import jsonschema
@@ -114,3 +117,21 @@ def check_invalid_property_error(exc: jsonschema.ValidationError) -> str:
     for property in mapper:
         if property in exc.schema_path:
             return mapper[property]
+
+
+def get_source_defined_primary_key(stream):
+    """
+    https://github.com/airbytehq/airbyte/pull/26283
+    It's not a very elegant way to get source_defined_primary_key inside the stream.
+    It's used only for a smooth transition to the new primary key.
+    As soon as the transition will complete we can remove this function.
+    """
+    if len(sys.argv) > 1 and "read" == sys.argv[1]:
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
+        read_subparser = subparsers.add_parser("read")
+        read_subparser.add_argument("--catalog", type=str, required=True)
+        args, unknown = parser.parse_known_args()
+        catalog = json.loads(open(args.catalog).read())
+        res = {s["stream"]["name"]: s["stream"].get("source_defined_primary_key") for s in catalog["streams"]}
+        return res.get(stream)

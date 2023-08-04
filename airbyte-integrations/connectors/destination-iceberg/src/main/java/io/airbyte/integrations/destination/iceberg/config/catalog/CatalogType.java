@@ -12,4 +12,5 @@ public enum CatalogType {
   HADOOP,
   JDBC,
   BIGLAKE,
+  REST;
 }

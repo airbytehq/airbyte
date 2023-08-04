@@ -67,6 +67,18 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "lastProcessingFinishedAt": {
+      "type": ["null", "integer"]
+    },
+    "lastProcessingStateChangeAt": {
+      "type": ["null", "integer"]
+    },
+    "lastProcessingStartedAt": {
+      "type": ["null", "integer"]
+    },
+    "processingState": {
+      "type": ["null", "string"]
+    },
     "name": {
       "type": ["null", "string"]
     },

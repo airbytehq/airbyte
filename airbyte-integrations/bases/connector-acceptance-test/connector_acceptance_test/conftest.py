@@ -140,9 +140,12 @@ def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, 
 
 
 @pytest.fixture(name="connector_spec")
-def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
-    spec_obj = load_yaml_or_json_path(connector_spec_path)
-    return ConnectorSpecification.parse_obj(spec_obj)
+def connector_spec_fixture(connector_spec_path) -> Optional[ConnectorSpecification]:
+    try:
+        spec_obj = load_yaml_or_json_path(connector_spec_path)
+        return ConnectorSpecification.parse_obj(spec_obj)
+    except FileNotFoundError:
+        return None
 
 
 @pytest.fixture(name="docker_runner")
@@ -396,3 +399,8 @@ def pytest_sessionfinish(session, exitstatus):
     except Exception as e:
         logger.info(e)  # debug
         pass
+
+
+@pytest.fixture(name="connector_metadata")
+def connector_metadata_fixture(base_path) -> dict:
+    return load_yaml_or_json_path(base_path / "metadata.yaml")
