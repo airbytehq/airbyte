@@ -34,7 +34,7 @@ dependencies {
 
 Replace `0.0.1-SNAPSHOT` with the version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `-SNAPSHOT` suffix to reference a bumped version number. (See below for version bump instructions.)
 
-## Developing a connector alongside the SDK
+## Developing a connector alongside the CDK
 
 You can iterate on changes in the CDK local and test them in the connector without needing to publish the CDK changes publicly.
 
