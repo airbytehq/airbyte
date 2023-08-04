@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 
-public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
+public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Long> {
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {

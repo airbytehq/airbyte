@@ -100,6 +100,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("sync_checkpoint_records", 1)
         .put("is_test", true)
         .build());
   }
@@ -116,7 +117,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     executeQuery("GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO " + container.getUsername() + "@'%';");
   }
 
-  private void purgeAllBinaryLogs() {
+  protected void purgeAllBinaryLogs() {
     executeQuery("RESET MASTER;");
   }
 
@@ -212,7 +213,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
