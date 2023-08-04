@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.SUPPORTED_SYNC_MODES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -28,6 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -96,25 +101,27 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("_id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of("_id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaType.STRING),
-                Field.of("id", JsonSchemaType.STRING),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("test", JsonSchemaType.STRING),
-                Field.of("test_array", JsonSchemaType.ARRAY),
-                Field.of("empty_test", JsonSchemaType.STRING),
-                Field.of("double_test", JsonSchemaType.NUMBER),
-                Field.of("int_test", JsonSchemaType.NUMBER),
-                Field.of("object_test", JsonSchemaType.OBJECT))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
-                .withDefaultCursorField(List.of("_id")))));
+    final List<Field> fields = List.of(
+            Field.of(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING),
+            Field.of("id", JsonSchemaType.STRING),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("test", JsonSchemaType.STRING),
+            Field.of("test_array", JsonSchemaType.ARRAY),
+            Field.of("empty_test", JsonSchemaType.STRING),
+            Field.of("double_test", JsonSchemaType.NUMBER),
+            Field.of("int_test", JsonSchemaType.NUMBER),
+            Field.of("object_test", JsonSchemaType.OBJECT)
+    );
+    final List<AirbyteStream> airbyteStreams = List.of(
+            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
+            MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
+
+    return new ConfiguredAirbyteCatalog().withStreams(
+            List.of(
+              convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
+              convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)
+            )
+        );
   }
 
   @Override
@@ -122,4 +129,11 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
+    return new ConfiguredAirbyteStream()
+            .withSyncMode(syncMode)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withCursorField(List.of(DEFAULT_CURSOR_FIELD))
+            .withStream(airbyteStream);
+  }
 }
