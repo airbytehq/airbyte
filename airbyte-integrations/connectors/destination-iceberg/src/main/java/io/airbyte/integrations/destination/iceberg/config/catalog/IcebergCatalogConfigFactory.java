@@ -14,6 +14,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBE
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.storage.GCSConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.ServerManagedStorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
@@ -56,6 +57,8 @@ public class IcebergCatalogConfigFactory {
     switch (storageType) {
       case S3:
         return S3Config.fromDestinationConfig(storageConfigJson);
+      case GCS:
+        return GCSConfig.fromDestinationConfig(storageConfigJson);
       case MANAGED:
         return ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
       case HDFS:
@@ -76,6 +79,7 @@ public class IcebergCatalogConfigFactory {
       case HIVE -> new HiveCatalogConfig(catalogConfigJson);
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
+      case BIGLAKE -> new BigLakeCatalogConfig(catalogConfigJson);
       case REST -> new RESTCatalogConfig(catalogConfigJson);
       default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
     };

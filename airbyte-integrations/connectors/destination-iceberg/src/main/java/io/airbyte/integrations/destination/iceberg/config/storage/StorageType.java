@@ -9,6 +9,7 @@ package io.airbyte.integrations.destination.iceberg.config.storage;
  */
 public enum StorageType {
   S3,
+  GCS,
   HDFS,
   MANAGED;
 }
