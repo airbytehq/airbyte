@@ -18,8 +18,7 @@ class SourceSurvicate(AbstractSource):
         if "start_datetime" in config:
             start_datetime = _parse_datetime(config["start_datetime"])
         auth = TokenAuthenticator(config["api_key"], auth_method='Basic')
-        for r in Responses(config["survey_id"], start_datetime, authenticator=auth).read_records(SyncMode.incremental):
-            continue
+        Responses(config["survey_id"], start_datetime, authenticator=auth).read_records(SyncMode.incremental)
         return (True, None)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
