@@ -19,6 +19,9 @@ class AbstractFileBasedCursor(ABC):
 
     @abstractmethod
     def __init__(self, stream_config: FileBasedStreamConfig, **kwargs: Any):
+        """
+        Common interface for all cursors.
+        """
         ...
 
     @abstractmethod
