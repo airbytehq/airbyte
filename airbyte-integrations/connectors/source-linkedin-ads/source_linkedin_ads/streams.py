@@ -44,7 +44,6 @@ class LinkedinAdsStream(HttpStream, ABC):
         schema = self.get_json_schema()
         return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
-
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""

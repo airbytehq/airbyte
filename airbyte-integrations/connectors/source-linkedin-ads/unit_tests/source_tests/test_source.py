@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from source_linkedin_ads.source import (
     Accounts,
     AccountUsers,
@@ -17,7 +17,6 @@ from source_linkedin_ads.source import (
     CampaignGroups,
     Campaigns,
     Creatives,
-    LinkedinAdsOAuth2Authenticator,
     SourceLinkedinAds,
 )
 from source_linkedin_ads.streams import LINKEDIN_VERSION_API
@@ -302,7 +301,7 @@ def test_retry_get_access_token(requests_mock):
         "https://www.linkedin.com/oauth/v2/accessToken",
         [{"status_code": 429}, {"status_code": 429}, {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}],
     )
-    auth = LinkedinAdsOAuth2Authenticator(
+    auth = Oauth2Authenticator(
         token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
         client_id="client_id",
         client_secret="client_secret",
