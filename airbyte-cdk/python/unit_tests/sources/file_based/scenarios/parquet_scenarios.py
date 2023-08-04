@@ -474,10 +474,8 @@ parquet_file_with_decimal_as_string_scenario = (
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
-                        "parquet": {
-                            "filetype": "parquet",
-                            "decimal_as_float": False
-                        }
+                        "filetype": "parquet",
+                        "decimal_as_float": False
                     }
                 }
             ]
@@ -531,65 +529,9 @@ parquet_file_with_decimal_as_float_scenario = (
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
-                        "parquet": {
-                            "filetype": "parquet",
-                            "decimal_as_float": True
-                        }
-                    }
-                }
-            ]
-        }
-    )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
-    .set_file_type("parquet")
-    .set_expected_records(
-        [
-            {"data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
-    )
-    .set_expected_catalog(
-        {
-            "streams": [
-                {
-                    "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "col1": {
-                                "type": ["null", "number"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
-                    },
-                    "name": "stream1",
-                    "source_defined_cursor": True,
-                    "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
-    )
-).build()
-
-parquet_file_with_decimal_legacy_config_scenario = (
-    TestScenarioBuilder()
-    .set_name("parquet_file_with_decimal_legacy_config")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "file_type": "parquet",
-                    "format": {
                         "filetype": "parquet",
-                    },
-                    "globs": ["*"],
-                    "validation_policy": "Emit Record",
+                        "decimal_as_float": True
+                    }
                 }
             ]
         }

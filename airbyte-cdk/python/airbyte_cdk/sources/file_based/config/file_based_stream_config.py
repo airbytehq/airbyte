@@ -48,7 +48,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Mapping[str, Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat]]] = Field(
+    format: Optional[Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat]] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )
@@ -62,25 +62,6 @@ class FileBasedStreamConfig(BaseModel):
     def validate_file_type(cls, v: str) -> str:
         if v not in VALID_FILE_TYPES:
             raise ValueError(f"Format filetype {v} is not a supported file type")
-        return v
-
-    @validator("format", pre=True)
-    def transform_format(cls, v: Mapping[str, str]) -> Any:
-        # The difference between legacy and new format is that the new format is a mapping of file type to format
-        # This allows us to support multiple file types for a single stream
-        if isinstance(v, Mapping):
-            file_type = v.get("filetype", "")
-            if file_type:
-                return cls._transform_legacy_config(v, file_type)
-            else:
-                if len(v) > 1:
-                    raise ValueError(
-                        f"Format can only have one file type specified, got {v}"
-                    )  # FIXME: remove this check when we support multiple file types for a single stream
-                try:
-                    return {key: VALID_FILE_TYPES[key.casefold()].parse_obj(val) for key, val in v.items()}
-                except KeyError as e:
-                    raise ValueError(f"Format filetype {e.args[0]} is not a supported file type")
         return v
 
     @classmethod

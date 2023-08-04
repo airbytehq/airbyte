@@ -635,10 +635,8 @@ avro_file_with_decimal_as_float_scenario = (
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
-                        "avro": {
-                            "filetype": "avro",
-                            "decimal_as_float": True
-                        }
+                        "filetype": "avro",
+                        "decimal_as_float": True
                     }
                 }
             ]
