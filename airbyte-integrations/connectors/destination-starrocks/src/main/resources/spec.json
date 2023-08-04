@@ -1,0 +1,70 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starrocks",
+  "supportsIncremental": false,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append", "overwrite"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "StarRocks Destination Spec",
+    "type": "object",
+    "required": ["host"],
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the StarRocks.",
+        "type": "string",
+        "order": 0
+      },
+      "http_port": {
+        "title": "HttpPort",
+        "description": "Http Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 8030,
+        "examples": ["8030"],
+        "order": 1
+      },
+      "query_port": {
+        "title": "QueryPort",
+        "description": "Query(SQL) Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 9030,
+        "examples": ["9030"],
+        "order": 2
+      },
+      "database": {
+        "title": "DataBase Name",
+        "description": "Name of the database.",
+        "type": "string",
+        "default": "airbyte",
+        "order": 3
+      },
+      "username": {
+        "title": "UserName",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "default": "root",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "default": "",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "ssl": {
+        "title": "SSL",
+        "description": "Use SSL connection.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
+      }
+    }
+  }
+}
