@@ -109,7 +109,7 @@ class SourceStripe(AbstractSource):
             PaymentIntents(**incremental_args),
             PaymentMethods(**args),
             Payouts(**incremental_args),
-            Persons(**incremental_args),
+            Persons(**args),
             Plans(**incremental_args),
             Prices(**incremental_args),
             Products(**incremental_args),

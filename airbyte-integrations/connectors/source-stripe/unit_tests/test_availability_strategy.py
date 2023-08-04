@@ -24,15 +24,15 @@ def test_traverse_over_substreams(mocker):
 
     child_1 = mocker.Mock()
     child_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1.get_parent_stream_instance.return_value = root
+    child_1.parent = root
 
     child_1_1 = mocker.Mock()
     child_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1.get_parent_stream_instance.return_value = child_1
+    child_1_1.parent = child_1
 
     child_1_1_1 = mocker.Mock()
     child_1_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1_1.get_parent_stream_instance.return_value = child_1_1
+    child_1_1_1.parent = child_1_1
 
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())
@@ -65,15 +65,15 @@ def test_traverse_over_substreams_failure(mocker):
 
     child_1 = mocker.Mock()
     child_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1.get_parent_stream_instance.return_value = root
+    child_1.parent = root
 
     child_1_1 = mocker.Mock()
     child_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1.get_parent_stream_instance.return_value = child_1
+    child_1_1.parent = child_1
 
     child_1_1_1 = mocker.Mock()
     child_1_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1_1.get_parent_stream_instance.return_value = child_1_1
+    child_1_1_1.parent = child_1_1
 
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())

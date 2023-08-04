@@ -22,7 +22,6 @@ from source_stripe.streams import (
     Disputes,
     EarlyFraudWarnings,
     Events,
-    ExternalAccount,
     ExternalAccountBankAccounts,
     ExternalAccountCards,
     InvoiceItems,
@@ -172,7 +171,7 @@ def test_sub_stream(requests_mock):
         (InvoiceLineItems, {"stream_slice": {"invoice_id": "I1"}}, "invoices/I1/lines"),
         (InvoiceItems, {}, "invoiceitems"),
         (Payouts, {}, "payouts"),
-        (Persons, {"stream_slice": {"id": "A1"}}, "accounts/A1/persons"),
+        (Persons, {"stream_slice": {"parent": {"id": "A1"}}}, "accounts/A1/persons"),
         (Plans, {}, "plans"),
         (Prices, {}, "prices"),
         (Products, {}, "products"),
@@ -186,7 +185,8 @@ def test_sub_stream(requests_mock):
         (CheckoutSessions, {}, "checkout/sessions"),
         (CheckoutSessionsLineItems, {"stream_slice": {"checkout_session_id": "CS1"}}, "checkout/sessions/CS1/line_items"),
         (PromotionCodes, {}, "promotion_codes"),
-        (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
+        (ExternalAccountBankAccounts, {}, "accounts/<account_id>/external_accounts"),
+        (ExternalAccountCards, {}, "accounts/<account_id>/external_accounts"),
         (SetupIntents, {}, "setup_intents"),
         (ShippingRates, {}, "shipping_rates"),
     ],
@@ -208,8 +208,8 @@ def test_path_and_headers(
     [
         (
             CustomerBalanceTransactions,
-            {"stream_state": {}, "stream_slice": {"created[gte]": 1596466368, "created[lte]": 1596552768}},
-            {"limit": 100, "created[gte]": 1596466368, "created[lte]": 1596552768},
+            {"stream_state": {}, "stream_slice": {"id": 1596466368}},
+            {"limit": 100},
         ),
         (
             Customers,
@@ -266,7 +266,8 @@ def test_request_params(
         PaymentIntents,
         CheckoutSessions,
         PromotionCodes,
-        ExternalAccount,
+        ExternalAccountBankAccounts,
+        ExternalAccountCards,
         SetupIntents,
         ShippingRates
     )

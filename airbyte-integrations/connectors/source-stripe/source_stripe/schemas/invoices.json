@@ -236,6 +236,14 @@
     "subscription": {
       "type": ["null", "string"]
     },
+    "subscription_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "metadata": {
+          "type": ["null", "object"]
+        }
+      }
+    },
     "status": {
       "type": ["null", "string"]
     },

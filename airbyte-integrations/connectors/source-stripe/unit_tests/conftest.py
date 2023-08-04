@@ -8,26 +8,14 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 @pytest.fixture(autouse=True)
 def disable_cache(mocker):
-    mocker.patch(
-        "source_stripe.streams.Customers.use_cache",
-        new_callable=mocker.PropertyMock,
-        return_value=False
-    )
-    mocker.patch(
-        "source_stripe.streams.Transfers.use_cache",
-        new_callable=mocker.PropertyMock,
-        return_value=False
-    )
-    mocker.patch(
-        "source_stripe.streams.Subscriptions.use_cache",
-        new_callable=mocker.PropertyMock,
-        return_value=False
-    )
-    mocker.patch(
-        "source_stripe.streams.SubscriptionItems.use_cache",
-        new_callable=mocker.PropertyMock,
-        return_value=False
-    )
+    for cls in [
+        "ApplicationFees", "Invoices", "CheckoutSessions", "Customers", "Accounts", "Transfers", "Subscriptions", "SubscriptionItems"
+    ]:
+        mocker.patch(
+            f"source_stripe.streams.{cls}.use_cache",
+            new_callable=mocker.PropertyMock,
+            return_value=False
+        )
 
 
 @pytest.fixture(name="config")
