@@ -8,12 +8,26 @@ import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTestUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SnowflakeTestSourceOperations extends JdbcSourceOperations {
+
+  @Override
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+    final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+    final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
+
+    if ("variant".equals(columnTypeName)) {
+      // jdbc converts VARIANT columns to serialized JSON, so we need to deserialize it
+      json.set(columnName, Jsons.deserialize(resultSet.getString(colIndex)));
+    } else {
+      super.copyToJsonField(resultSet, colIndex, json);
+    }
+  }
 
   @Override
   protected void putString(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
