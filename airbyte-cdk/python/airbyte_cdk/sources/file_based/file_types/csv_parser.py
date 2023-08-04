@@ -57,7 +57,11 @@ class _CsvReader:
             fp.seek(0)
             # we assume that if we autogenerate columns, it is because we don't have headers
             # if a user wants to autogenerate_column_names with a CSV having headers, he can skip rows
-            rows_to_skip = config_format.skip_rows_before_header + (0 if config_format.autogenerate_column_names else 1) + config_format.skip_rows_after_header
+            rows_to_skip = (
+                config_format.skip_rows_before_header
+                + (0 if config_format.autogenerate_column_names else 1)
+                + config_format.skip_rows_after_header
+            )
             self._skip_rows(fp, rows_to_skip)
 
             reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=headers)  # type: ignore
@@ -174,7 +178,9 @@ class CsvParser(FileTypeParser):
         return nullable
 
     @staticmethod
-    def _cast_types(row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger) -> Dict[str, Any]:
+    def _cast_types(
+        row: Dict[str, str], property_types: Dict[str, Any], config_format: CsvFormat, logger: logging.Logger
+    ) -> Dict[str, Any]:
         """
         Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 

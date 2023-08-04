@@ -8,14 +8,14 @@ import io
 import logging
 import unittest
 from typing import Any, Dict, Generator, List, Set
-from unittest.mock import Mock
 from unittest import TestCase
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_types.csv_parser import _CsvReader, CsvParser
+from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser, _CsvReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 PROPERTY_TYPES = {
