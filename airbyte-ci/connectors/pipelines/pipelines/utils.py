@@ -12,27 +12,27 @@ import os
 import re
 import sys
 import unicodedata
-
 from glob import glob
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
 from io import TextIOWrapper
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
 import click
 import git
-from pipelines import consts, main_logger, sentry_utils
-from pipelines.consts import GCS_PUBLIC_DOMAIN
-from connector_ops.utils import get_all_released_connectors, get_changed_connectors
+from connector_ops.utils import get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
+from pipelines import consts, main_logger, sentry_utils
+from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 if TYPE_CHECKING:
-    from pipelines.contexts import ConnectorContext
+    from connector_ops.utils import Connector
     from github import PullRequest
+    from pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -40,6 +40,7 @@ METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
+STATIC_REPORT_PREFIX = "airbyte-ci"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -66,7 +67,7 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     """Add a host environment variable as a secret in a container.
 
     Example:
-        >>> container.with_(secret_host_variable(client, "MY_SECRET"))
+        container.with_(secret_host_variable(client, "MY_SECRET"))
 
     Args:
         client (Client): The dagger client.
@@ -152,6 +153,9 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
     ExecError to handle errors. This is offered as a convenience when the exit code
     value is actually needed.
 
+    If the container has a file at /exit_code, the exit code will be read from it.
+    See hacks.never_fail_exec for more details.
+
     Args:
         container (Container): The container to execute.
 
@@ -159,7 +163,11 @@ async def get_exec_result(container: Container) -> Tuple[int, str, str]:
         Tuple[int, str, str]: The exit_code, stdout and stderr of the container, respectively.
     """
     try:
-        return 0, *(await get_container_output(container))
+        exit_code = 0
+        in_file_exit_code = await get_file_contents(container, "/exit_code")
+        if in_file_exit_code:
+            exit_code = int(in_file_exit_code)
+        return exit_code, *(await get_container_output(container))
     except ExecError as e:
         return e.exit_code, e.stdout, e.stderr
 
@@ -315,53 +323,49 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
-def _file_path_starts_with(given_file_path: Path, starts_with_path: Path) -> bool:
-    """Check if the file path starts with the connector dependency path."""
-    given_file_path_parts = given_file_path.parts
-    starts_with_path_parts = starts_with_path.parts
+def _find_modified_connectors(
+    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
+) -> Set[Connector]:
+    """Find all connectors impacted by the file change."""
+    modified_connectors = set()
 
-    return given_file_path_parts[: len(starts_with_path_parts)] == starts_with_path_parts
+    for connector in all_connectors:
+        if Path(file_path).is_relative_to(Path(connector.code_directory)):
+            main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
+            modified_connectors.add(connector)
 
-
-def _find_modified_connectors(file: Union[str, Path], all_dependencies: list) -> dict:
-    """Find all connectors whose dependencies were modified."""
-    modified_connectors = {}
-    for connector, connector_dependencies in all_dependencies:
-        for connector_dependency in connector_dependencies:
-            file_path = Path(file)
-
-            if _file_path_starts_with(file_path, connector_dependency):
-                # Add the connector to the modified connectors
-                modified_connectors.setdefault(connector, [])
-                connector_directory_path = Path(connector.code_directory)
-
-                # If the file is in the connector directory, add it to the modified files
-                if _file_path_starts_with(file_path, connector_directory_path):
-                    modified_connectors[connector].append(file)
-                else:
-                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file}'.")
-
+        if dependency_scanning:
+            for connector_dependency in connector.get_local_dependency_paths():
+                if Path(file_path).is_relative_to(Path(connector_dependency)):
+                    # Add the connector to the modified connectors
+                    modified_connectors.add(connector)
+                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
     return modified_connectors
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
+def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
-    As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
-    The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
+    If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    It currently works only for Java connectors .
     It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    all_connector_dependencies = [(connector, connector.get_local_dependency_paths()) for connector in get_all_released_connectors()]
-
     # Ignore files with certain extensions
-    modified_files = [file for file in modified_files if not _is_ignored_file(file)]
-
-    modified_connectors = {}
+    modified_connectors = set()
     for modified_file in modified_files:
-        modified_connectors.update(_find_modified_connectors(modified_file, all_connector_dependencies))
-
+        if not _is_ignored_file(modified_file):
+            modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
     return modified_connectors
+
+
+def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
+    connector_modified_files = set()
+    for modified_file in all_modified_files:
+        modified_file_path = Path(modified_file)
+        if modified_file_path.is_relative_to(connector.code_directory):
+            connector_modified_files.add(modified_file)
+    return frozenset(connector_modified_files)
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
@@ -511,7 +515,12 @@ class DaggerPipelineCommand(click.Command):
         sanitized_branch = slugify(git_branch.replace("/", "_"))
 
         # get the command name for the current context, if a group then prepend the parent command name
-        cmd = ctx.command_path.replace(" ", "/") if ctx.command_path else None
+        if ctx.command_path:
+            cmd_components = ctx.command_path.split(" ")
+            cmd_components[0] = STATIC_REPORT_PREFIX
+            cmd = "/".join(cmd_components)
+        else:
+            cmd = None
 
         path_values = [
             cmd,
@@ -612,3 +621,15 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     gcs_uri = f"gs://{bucket_name}/{object_name}"
     public_url = f"{GCS_PUBLIC_DOMAIN}/{bucket_name}/{object_name}"
     return gcs_uri, public_url
+
+
+def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
+    """Transform a list of string paths to a list of Path objects.
+
+    Args:
+        str_paths (List[str]): A list of string paths.
+
+    Returns:
+        List[Path]: A list of Path objects.
+    """
+    return [Path(str_path) for str_path in str_paths]

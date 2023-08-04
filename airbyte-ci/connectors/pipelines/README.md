@@ -88,7 +88,8 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
   * [Example](#example-3)
 - [`metadata test orchestrator` command](#metadata-test-orchestrator-command)
   * [Example](#example-4)
-
+- [`tests` command](#test-command)
+  * [Example](#example-5)
 ### <a id="airbyte-ci-command-group"></a>`airbyte-ci` command group
 **The main command group option has sensible defaults. In local use cases you're not likely to pass options to the `airbyte-ci` command group.**
 
@@ -96,6 +97,7 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 
 | Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
 | --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
 | `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
 | `--git-revision`                        | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
@@ -113,14 +115,16 @@ Available commands:
 * `airbyte-ci connectors publish`: Publish a connector to Airbyte's DockerHub.
 
 #### Options
-| Option                 | Multiple | Default value | Description                                                                                                                                                                                                                                                                                           |
-| ---------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--use-remote-secrets` | False    | True          | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
-| `--name`               | True     |               | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
-| `--release-stage`      | True     |               | Select connectors with a specific release stage: `alpha`, `beta`, `generally_available`.  Can be used multiple times to select multiple release stages.                                                                                                                                               |
-| `--language`           | True     |               | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
-| `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
-| `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+| Option                                                         | Multiple | Default value                    | Description                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
+| `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
+| `--release-stage`                                              | True     |                                  | Select connectors with a specific release stage: `alpha`, `beta`, `generally_available`.  Can be used multiple times to select multiple release stages.                                                                                                                                               |
+| `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
+| `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
+| `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+| `--metadata-change-only/--not-metadata-change-only`            | False    | `--not-metadata-change-only`     | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                                                                         |
+| `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                           |
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -366,10 +370,30 @@ This command runs tests for the metadata service orchestrator.
 #### Example
 `airbyte-ci metadata test orchestrator`
 
+### <a id="tests-command"></a>`tests` command
+This command runs the Python tests for a airbyte-ci poetry package.
+
+#### Example
+`airbyte-ci tests connectors/pipelines`
+
 ## Changelog
-| Version | PR  | Description                                                                                |
-| ------- | --- | ------------------------------------------------------------------------------------------ |
-| 0.1.0   |     | Alpha version not in production yet. All the commands described in this doc are available. |
+
+| Version | PR                                                        | Description                                                                                  |
+| ------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064) | Make connector modified files a frozen set.                                             |
+| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033) | Disable dependency scanning for Java connectors.                                             |
+| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030) | Make report path always have the same prefix: `airbyte-ci/`.                                 |
+| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855) | Improve the selected connectors detection for connectors commands.                           |
+| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947) | Show Dagger Cloud run URLs in CI                                                             |
+| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789) | Do not consider empty reports as successfull.                                                |
+| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938) | Handle 5 status code on MetadataUpload as skipped                                            |
+| 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869) | Enable the Dagger terminal UI on local `airbyte-ci` execution                                |
+| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907) | Make dagger-in-dagger work for `airbyte-ci tests` command                                    |
+| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897) | Sentry: Ignore error logs without exceptions from reporting                                  |
+| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                    |
+| 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package. |
+| 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                              |
+| 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available.   |
 
 ## More info
 This project is owned by the Connectors Operations team.

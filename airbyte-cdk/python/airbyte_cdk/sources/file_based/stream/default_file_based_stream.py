@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
@@ -34,6 +35,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
+    DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
@@ -78,7 +80,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         parser = self.get_parser(self.config.file_type)
         for file in stream_slice["files"]:
             # only serialize the datetime once
-            file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
+            file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
             n_skipped = line_no = 0
 
             try:
@@ -103,6 +105,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     ),
                 )
                 break
+
+            except RecordParseError:
+                # Increment line_no because the exception was raised before we could increment it
+                line_no += 1
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.ERROR,
+                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                        stack_trace=traceback.format_exc(),
+                    ),
+                )
 
             except Exception:
                 yield AirbyteMessage(
@@ -182,11 +196,29 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs or []))
+        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.logger))
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._infer_schema(files))
+        schema = loop.run_until_complete(self._infer_schema(files))
+        return self._fill_nulls(schema)
+
+    @staticmethod
+    def _fill_nulls(schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        if isinstance(schema, dict):
+            for k, v in schema.items():
+                if k == "type":
+                    if isinstance(v, list):
+                        if "null" not in v:
+                            schema[k] = ["null"] + v
+                    elif v != "null":
+                        schema[k] = ["null", v]
+                else:
+                    DefaultFileBasedStream._fill_nulls(v)
+        elif isinstance(schema, list):
+            for item in schema:
+                DefaultFileBasedStream._fill_nulls(item)
+        return schema
 
     async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         """
@@ -208,7 +240,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # number of concurrent tasks drops below the number allowed.
             done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
-                base_schema = merge_schemas(base_schema, task.result())
+                try:
+                    base_schema = merge_schemas(base_schema, task.result())
+                except Exception as exc:
+                    self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 
         return base_schema
 
