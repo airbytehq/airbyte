@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.50.11
+VERSION=0.50.13
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -53,6 +53,10 @@ Download()
 {
   ########## Check if we already have the assets we are looking for ##########
   for file in $all_files; do
+    # Account for the case where the file is in a subdirectory.
+    # Make sure the directory exists to keep curl happy.
+    dir_path=$(dirname "${file}")
+    mkdir -p "${dir_path}"
     if test -f $file; then
       # Check if the assets are old.  A possibly sharp corner
       if test $(find $file -type f -mtime +60 > /dev/null); then

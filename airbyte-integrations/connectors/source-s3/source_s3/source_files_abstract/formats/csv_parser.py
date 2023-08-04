@@ -67,6 +67,15 @@ class CsvParser(AbstractFileParser):
         if field_value in disallow_values:
             return f"{field_name} can not be {field_value}"
 
+    @staticmethod
+    def _validate_encoding(encoding: str) -> None:
+        try:
+            codecs.lookup(encoding)
+        except LookupError as e:
+            # UTF8 is the default encoding value, so there is no problem if `encoding` is not set manually
+            if encoding != "":
+                raise AirbyteTracedException(str(e), str(e), failure_type=FailureType.config_error)
+
     @classmethod
     def _validate_options(cls, validator: Callable, options_name: str, format_: Mapping[str, Any]) -> Optional[str]:
         options = format_.get(options_name, "{}")
@@ -98,10 +107,7 @@ class CsvParser(AbstractFileParser):
             if error_message:
                 raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
 
-        try:
-            codecs.lookup(format_.get("encoding"))
-        except LookupError:
-            raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
+        self._validate_encoding(format_.get("encoding", ""))
 
     def _read_options(self) -> Mapping[str, str]:
         """

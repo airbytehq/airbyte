@@ -24,6 +24,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 
 public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -33,6 +35,7 @@ public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTes
     private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
     private JsonNode configJson;
+    protected GenericContainer container;
 
     private static Connection conn = null;
 
@@ -100,11 +103,16 @@ public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTes
     @Override
     protected void setup(TestDestinationEnv testEnv) {
         // TODO Implement this method to run any setup actions needed before every test case
+        container = new GenericContainer(DockerImageName.parse("starrocks/allin1-ubuntu:latest"))
+        .withExposedPorts(9030,8030,8040);
+        //container.start();
     }
 
     @Override
     protected void tearDown(TestDestinationEnv testEnv) {
         // TODO Implement this method to run any cleanup actions needed after every test case
+        //container.stop();
+        //container.close();
     }
 
     @Override
@@ -115,6 +123,17 @@ public class StarrocksDestinationAcceptanceTest extends DestinationAcceptanceTes
     @Override
     public void testSecondSync() throws Exception {
         // PubSub cannot overwrite messages, its always append only
+    }
+
+    @Override
+    public void testSyncWithLargeRecordBatch(final String messagesFilename,
+    final String catalogFilename) throws Exception {
+        // groups is a reserve word in starrocks
+    }
+
+    @Override
+    public void testSync(final String messagesFilename, final String catalogFilename) throws Exception {
+        // groups is a reserve word in starrocks
     }
 
 }

@@ -13,6 +13,7 @@ dependencies {
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
     implementation 'com.alibaba:fastjson:1.2.75'
+    implementation libs.connectors.testcontainers
 
     implementation project(':airbyte-config-oss:config-models-oss')
     // implementation project(':airbyte-protocol:protocol-models')
@@ -20,6 +21,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation libs.airbyte.protocol
 
+    integrationTestJavaImplementation libs.connectors.testcontainers
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-starrocks')
 }

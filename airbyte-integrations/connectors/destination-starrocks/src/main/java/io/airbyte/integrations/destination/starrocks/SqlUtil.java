@@ -22,7 +22,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SqlUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SqlUtil.class);
+    
     public static Connection createJDBCConnection(JsonNode config) throws ClassNotFoundException, SQLException {
         String dbUrl = String.format(StarRocksConstants.PATTERN_JDBC_URL,
                 config.get(StarRocksConstants.KEY_FE_HOST).asText(),
@@ -54,21 +60,25 @@ public class SqlUtil {
 
     public static void createDatabaseIfNotExist(Connection conn, String db) throws SQLException {
         String sql = String.format("CREATE DATABASE IF NOT EXISTS %s;", db);
+        LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
     public static void truncateTable(Connection conn, String tableName) throws SQLException {
         String sql = String.format("TRUNCATE TABLE %s;", tableName);
+        LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
     public static void insertFromTable(Connection conn, String srcTableName, String dstTableName) throws SQLException {
         String sql = String.format("INSERT INTO %s SELECT * FROM %s;",  dstTableName, srcTableName);
+        LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
     public static void renameTable(Connection conn, String srcTableName, String dstTableName) throws SQLException {
         String sql = String.format("ALTER TABLE %s RENAME %s;", srcTableName, dstTableName);
+        LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
@@ -83,11 +93,13 @@ public class SqlUtil {
                 + "PROPERTIES ( \n"
                 + "\"replication_num\" = \"1\" \n"
                 + ");";
+                LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
     public static void dropTableIfExists(Connection conn, String tableName) throws SQLException {
         String sql = String.format("DROP TABLE IF EXISTS `%s`;", tableName);
+        LOG.info("SQL: {}", sql);
         execute(conn, sql);
     }
 
