@@ -11,10 +11,11 @@ from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_av
     AbstractFileBasedAvailabilityStrategy,
 )
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_MAX_HISTORY_SIZE, default_parsers
+from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
@@ -46,7 +47,7 @@ class TestScenario:
             expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
             incremental_scenario_config: Optional[IncrementalScenarioConfig],
             file_write_options: Mapping[str, Any],
-            max_history_size: int,
+            cursor_cls: Optional[Type[AbstractFileBasedCursor]],
     ):
         self.name = name
         self.config = config
@@ -68,7 +69,7 @@ class TestScenario:
             stream_reader,
             self.configured_catalog(SyncMode.incremental if incremental_scenario_config else SyncMode.full_refresh),
             file_write_options,
-            max_history_size,
+            cursor_cls,
         )
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()
@@ -124,7 +125,7 @@ class TestScenarioBuilder:
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
         self._file_write_options: Mapping[str, Any] = {}
-        self._max_history_size = DEFAULT_MAX_HISTORY_SIZE
+        self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
@@ -182,8 +183,8 @@ class TestScenarioBuilder:
         self._stream_reader = stream_reader
         return self
 
-    def set_max_history_size(self, max_history_size: int) -> "TestScenarioBuilder":
-        self._max_history_size = max_history_size
+    def set_cursor_cls(self, cursor_cls: AbstractFileBasedCursor) -> "TestScenarioBuilder":
+        self._cursor_cls = cursor_cls
         return self
 
     def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
@@ -232,5 +233,5 @@ class TestScenarioBuilder:
             self._expected_read_error,
             self._incremental_scenario_config,
             self._file_write_options,
-            self._max_history_size,
+            self._cursor_cls,
         )

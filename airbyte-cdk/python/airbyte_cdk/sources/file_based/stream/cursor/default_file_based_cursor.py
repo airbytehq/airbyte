@@ -4,26 +4,26 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Iterable, MutableMapping, Optional
+from typing import Any, Iterable, MutableMapping, Optional
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.abstract_file_based_cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
 
-class DefaultFileBasedCursor(FileBasedCursor):
+class DefaultFileBasedCursor(AbstractFileBasedCursor):
     DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
+    DEFAULT_MAX_HISTORY_SIZE = 10_000
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-    def __init__(self, max_history_size: int, days_to_sync_if_history_is_full: Optional[int]):
+    def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
+        super().__init__(stream_config)
         self._file_to_datetime_history: MutableMapping[str, str] = {}
-        self._max_history_size = max_history_size
         self._time_window_if_history_is_full = timedelta(
-            days=days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
+            days=stream_config.days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
         )
 
-        if self._max_history_size <= 0:
-            raise ValueError(f"max_history_size must be a positive integer, got {self._max_history_size}")
         if self._time_window_if_history_is_full <= timedelta():
             raise ValueError(f"days_to_sync_if_history_is_full must be a positive timedelta, got {self._time_window_if_history_is_full}")
 
@@ -37,7 +37,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
 
     def add_file(self, file: RemoteFile) -> None:
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(self.DATE_TIME_FORMAT)
-        if len(self._file_to_datetime_history) > self._max_history_size:
+        if len(self._file_to_datetime_history) > self.DEFAULT_MAX_HISTORY_SIZE:
             # Get the earliest file based on its last modified date and its uri
             oldest_file = self._compute_earliest_file_in_history()
             if oldest_file:
@@ -67,7 +67,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
         """
         Returns true if the state's history is full, meaning new entries will start to replace old entries.
         """
-        return len(self._file_to_datetime_history) >= self._max_history_size
+        return len(self._file_to_datetime_history) >= self.DEFAULT_MAX_HISTORY_SIZE
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         if file.uri in self._file_to_datetime_history:
