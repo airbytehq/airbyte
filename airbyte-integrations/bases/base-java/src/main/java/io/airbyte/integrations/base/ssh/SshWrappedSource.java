@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -78,6 +79,19 @@ public class SshWrappedSource implements Source {
       throw e;
     }
     return AutoCloseableIterators.appendOnClose(delegateRead, tunnel::close);
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+      throws Exception {
+    final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
+    try {
+      return delegate.readStreams(tunnel.getConfigInTunnel(), catalog, state);
+    } catch (final Exception e) {
+      LOGGER.error("Exception occurred while getting the delegate read stream iterators, closing SSH tunnel", e);
+      tunnel.close();
+      throw e;
+    }
   }
 
 }
