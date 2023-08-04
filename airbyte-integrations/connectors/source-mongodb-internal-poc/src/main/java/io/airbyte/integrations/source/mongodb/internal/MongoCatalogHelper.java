@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
@@ -11,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,5 +60,4 @@ public class MongoCatalogHelper {
     modifiedFields.add(new Field(DebeziumEventUtils.CDC_DELETED_AT, JsonSchemaType.STRING));
     return modifiedFields;
   }
-
 }
