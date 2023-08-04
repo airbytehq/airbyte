@@ -4,7 +4,7 @@
 
 import logging
 import traceback
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
@@ -12,14 +12,16 @@ from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, Fi
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
-from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 
 
 class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
-    def check_availability(self, stream: AbstractFileBasedStream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
+    def check_availability(self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
         """
         Perform a connection check for the stream (verify that we can list files from the stream).
 
@@ -33,7 +35,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return True, None
 
     def check_availability_and_parsability(
-        self, stream: AbstractFileBasedStream, logger: logging.Logger, _: Optional[Source]
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
     ) -> Tuple[bool, Optional[str]]:
         """
         Perform a connection check for the stream.
@@ -51,8 +53,6 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         - If the user provided a schema in the config, check that a subset of records in
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
-        if not isinstance(stream, AbstractFileBasedStream):
-            raise ValueError(f"Stream {stream.name} is not a file-based stream.")
         try:
             files = self._check_list_files(stream)
             self._check_extensions(stream, files)
@@ -62,7 +62,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
 
         return True, None
 
-    def _check_list_files(self, stream: AbstractFileBasedStream) -> List[RemoteFile]:
+    def _check_list_files(self, stream: "AbstractFileBasedStream") -> List[RemoteFile]:
         try:
             files = stream.list_files()
         except Exception as exc:
@@ -73,12 +73,12 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
 
         return files
 
-    def _check_extensions(self, stream: AbstractFileBasedStream, files: List[RemoteFile]) -> None:
+    def _check_extensions(self, stream: "AbstractFileBasedStream", files: List[RemoteFile]) -> None:
         if not all(f.extension_agrees_with_file_type(stream.config.file_type) for f in files):
             raise CheckAvailabilityError(FileBasedSourceError.EXTENSION_MISMATCH, stream=stream.name)
         return None
 
-    def _check_parse_record(self, stream: AbstractFileBasedStream, file: RemoteFile, logger: logging.Logger) -> None:
+    def _check_parse_record(self, stream: "AbstractFileBasedStream", file: RemoteFile, logger: logging.Logger) -> None:
         parser = stream.get_parser(stream.config.file_type)
 
         try:

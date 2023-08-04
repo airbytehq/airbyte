@@ -7,6 +7,7 @@ from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from freezegun import freeze_time
@@ -103,7 +104,7 @@ from freezegun import freeze_time
     ],
 )
 def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[datetime], expected_state_dict: Mapping[str, Any]) -> None:
-    cursor = DefaultFileBasedCursor(3, 3)
+    cursor = get_cursor(max_history_size=3, days_to_sync_if_history_is_full=3)
     assert cursor._compute_start_time() == datetime.min
 
     for index, f in enumerate(files_to_add):
@@ -160,7 +161,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
 ])
 def test_get_files_to_sync(files: List[RemoteFile], expected_files_to_sync: List[RemoteFile], max_history_size: int, history_is_partial: bool) -> None:
     logger = MagicMock()
-    cursor = DefaultFileBasedCursor(max_history_size, 3)
+    cursor = get_cursor(max_history_size, 3)
 
     files_to_sync = list(cursor.get_files_to_sync(files, logger))
     for f in files_to_sync:
@@ -173,7 +174,7 @@ def test_get_files_to_sync(files: List[RemoteFile], expected_files_to_sync: List
 @freeze_time("2023-06-16T00:00:00Z")
 def test_only_recent_files_are_synced_if_history_is_full() -> None:
     logger = MagicMock()
-    cursor = DefaultFileBasedCursor(2, 3)
+    cursor = get_cursor(2, 3)
 
     files_in_history = [
         RemoteFile(uri="b1.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
@@ -210,7 +211,7 @@ def test_only_recent_files_are_synced_if_history_is_full() -> None:
 ])
 def test_sync_file_already_present_in_history(modified_at_delta: timedelta, should_sync_file: bool) -> None:
     logger = MagicMock()
-    cursor = DefaultFileBasedCursor(2, 3)
+    cursor = get_cursor(2, 3)
     original_modified_at = datetime(2021, 1, 2)
     filename = "a.csv"
     files_in_history = [
@@ -245,7 +246,7 @@ def test_sync_file_already_present_in_history(modified_at_delta: timedelta, shou
 )
 def test_should_sync_file(file_name: str, last_modified: datetime, earliest_dt_in_history: datetime, should_sync_file: bool) -> None:
     logger = MagicMock()
-    cursor = DefaultFileBasedCursor(1, 3)
+    cursor = get_cursor(1, 3)
 
     cursor.add_file(RemoteFile(uri="b.csv", last_modified=earliest_dt_in_history, file_type="csv"))
     cursor._start_time = cursor._compute_start_time()
@@ -255,13 +256,13 @@ def test_should_sync_file(file_name: str, last_modified: datetime, earliest_dt_i
 
 
 def test_set_initial_state_no_history() -> None:
-    cursor = DefaultFileBasedCursor(1, 3)
+    cursor = get_cursor(1, 3)
     cursor.set_initial_state({})
 
 
-def test_instantiate_with_negative_values() -> None:
-    with pytest.raises(ValueError):
-        DefaultFileBasedCursor(-1, 3)
-
-    with pytest.raises(ValueError):
-        DefaultFileBasedCursor(1, -3)
+def get_cursor(max_history_size: int, days_to_sync_if_history_is_full: int) -> DefaultFileBasedCursor:
+    cursor_cls = DefaultFileBasedCursor
+    cursor_cls.DEFAULT_MAX_HISTORY_SIZE = max_history_size
+    config = FileBasedStreamConfig(
+        file_type="csv", name="test", validation_policy="emit_records", days_to_sync_if_history_is_full=days_to_sync_if_history_is_full)
+    return cursor_cls(config)
