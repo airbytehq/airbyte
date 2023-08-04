@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
 ## 0.50.0
 Low code CDK: Decouple SimpleRetriever and HttpStream
 
