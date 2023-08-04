@@ -40,6 +40,7 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 
 class AvroParser(FileTypeParser):
     ENCODING = None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
