@@ -25,7 +25,9 @@ public class DestinationV1V2MigratorTest {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 
-      final boolean v2SchemaMatches = true; // Don't throw an exception
+      // Don't throw an exception
+      final boolean v2SchemaMatches = true;
+
       return Stream.of(
           // Doesn't Migrate because of sync mode
           Arguments.of(DestinationSyncMode.OVERWRITE, makeMockMigrator(true, false, v2SchemaMatches, true, true), false),
@@ -71,7 +73,7 @@ public class DestinationV1V2MigratorTest {
     final var sqlGenerator = new MockSqlGenerator();
     final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);
-    final var sql = String.join("\n", sqlGenerator.migrateFromV1toV2(stream, "v1_raw_namespace", "v1_raw_table"), sqlGenerator.softReset(stream));
+    final var sql = String.join("\n", sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table"), sqlGenerator.softReset(stream));
     // All is well
     final var migrator = noIssuesMigrator();
     migrator.migrate(sqlGenerator, handler, stream);

@@ -599,14 +599,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String migrateFromV1toV2(StreamConfig stream, String namespace, String tableName) {
+  public String migrateFromV1toV2(StreamId streamId, String namespace, String tableName) {
     return new StringSubstitutor(Map.of(
-        "v2_raw_table", stream.id().rawTableId(QUOTE),
-        "v1_raw_table", wrapAndQuote(namespace, tableName))
+        "v2_raw_table", streamId.rawTableId(QUOTE),
+        "v1_raw_table", wrapAndQuote(namespace, tableName)
+    )
     ).replace(
-        """
-            BEGIN TRANSACTION;
-                        
+        """      
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data JSON,
@@ -623,8 +622,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
                 FROM ${v1_raw_table}
             );
-                        
-            COMMIT TRANSACTION;
             """);
   }
 

@@ -79,11 +79,11 @@ public interface SqlGenerator<DialectTableDefinition> {
   /**
    * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft reset.
    *
-   * @param stream    the stream to migrate
+   * @param streamId  the stream to migrate
    * @param namespace
    * @param tableName
    * @return a string containing the necessary sql to migrate
    */
-  String migrateFromV1toV2(StreamConfig stream, String namespace, String tableName);
+  String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
 
 }
