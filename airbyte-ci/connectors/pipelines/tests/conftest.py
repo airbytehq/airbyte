@@ -15,12 +15,12 @@ from pipelines import utils
 from tests.utils import ALL_CONNECTORS
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def dagger_client():
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
         yield client

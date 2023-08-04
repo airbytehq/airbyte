@@ -15,7 +15,7 @@ import unicodedata
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
@@ -359,13 +359,13 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     return modified_connectors
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> Set[Path]:
+def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
     connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
         if modified_file_path.is_relative_to(connector.code_directory):
             connector_modified_files.add(modified_file)
-    return connector_modified_files
+    return frozenset(connector_modified_files)
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
