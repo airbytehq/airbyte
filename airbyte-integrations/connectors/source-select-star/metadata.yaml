@@ -1,0 +1,30 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.selectstar.com"
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2bb7cf88-4f8c-468d-bde0-a5377827069d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-select-star
+  githubIssueLabel: source-select-star
+  icon: select-star.svg
+  license: MIT
+  name: Select Star
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/select-star
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

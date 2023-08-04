@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "breadcrumbs": {
+      "type": "array"
+    },
+    "columns": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "component_identifier": {
+      "type": "number"
+    },
+    "data_source_type": {
+      "type": "string"
+    },
+    "data_type": {
+      "type": "string"
+    },
+    "data_types": {
+      "properties": {
+        "data_source_type": {
+          "type": "string"
+        },
+        "data_type": {
+          "type": "string"
+        },
+        "object_type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "guid": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "object_type": {
+      "type": "string"
+    },
+    "popularity": {
+      "properties": {
+        "popularity": {
+          "type": "number"
+        },
+        "query_count": {
+          "type": "number"
+        },
+        "service_query_count": {
+          "type": "number"
+        },
+        "timeframe": {
+          "type": "number"
+        },
+        "user_count": {
+          "type": "number"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "rank": {
+      "type": "number"
+    },
+    "source_table_guids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tag_guids": {
+      "type": "array"
+    },
+    "target_table_guids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object"
+}

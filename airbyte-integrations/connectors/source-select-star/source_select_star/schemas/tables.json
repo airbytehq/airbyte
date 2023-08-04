@@ -1,0 +1,784 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "breadcrumbs": {
+      "items": {
+        "properties": {
+          "guid": {
+            "type": "string"
+          },
+          "ordinal": {
+            "type": "number"
+          },
+          "target_data_source_guid": {
+            "type": "string"
+          },
+          "target_data_source_type": {
+            "type": "string"
+          },
+          "target_data_type": {
+            "type": "string"
+          },
+          "target_guid": {
+            "type": "string"
+          },
+          "target_name": {
+            "type": "string"
+          },
+          "target_object_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "bytes": {
+      "type": "number"
+    },
+    "columns": {
+      "items": {
+        "properties": {
+          "contains_pii": {
+            "type": "boolean"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "data_types": {
+            "properties": {
+              "data_source_type": {
+                "type": "string"
+              },
+              "data_type": {
+                "type": "string"
+              },
+              "object_type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "external_type": {
+            "type": "string"
+          },
+          "field_type": {
+            "type": "string"
+          },
+          "guid": {
+            "type": "string"
+          },
+          "is_foreign_key": {
+            "type": "boolean"
+          },
+          "is_join_key": {
+            "type": "boolean"
+          },
+          "is_primary_key": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ordinal": {
+            "type": "number"
+          },
+          "popularity": {
+            "properties": {
+              "popularity": {
+                "type": "number"
+              },
+              "query_count": {
+                "type": "number"
+              },
+              "service_query_count": {
+                "type": "number"
+              },
+              "timeframe": {
+                "type": "number"
+              },
+              "user_count": {
+                "type": "number"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "tagged_items": {
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "created_on": {
+      "type": "string"
+    },
+    "data_type": {
+      "type": "string"
+    },
+    "data_types": {
+      "properties": {
+        "data_source_type": {
+          "type": "string"
+        },
+        "data_type": {
+          "type": "string"
+        },
+        "object_type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "database": {
+      "properties": {
+        "breadcrumbs": {
+          "items": {
+            "properties": {
+              "guid": {
+                "type": "string"
+              },
+              "ordinal": {
+                "type": "number"
+              },
+              "target_data_source_guid": {
+                "type": "string"
+              },
+              "target_data_source_type": {
+                "type": "string"
+              },
+              "target_data_type": {
+                "type": "string"
+              },
+              "target_guid": {
+                "type": "string"
+              },
+              "target_name": {
+                "type": "string"
+              },
+              "target_object_type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "data_source": {
+          "properties": {
+            "guid": {
+              "type": "string"
+            },
+            "last_ingested_on": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "data_types": {
+          "properties": {
+            "data_source_type": {
+              "type": "string"
+            },
+            "data_type": {
+              "type": "string"
+            },
+            "object_type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "description": {
+          "type": "string"
+        },
+        "guid": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "popularity": {
+          "properties": {
+            "popularity": {
+              "type": "number"
+            },
+            "query_count": {
+              "type": "number"
+            },
+            "service_query_count": {
+              "type": "number"
+            },
+            "timeframe": {
+              "type": "number"
+            },
+            "user_count": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "search_name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "db_created_on": {
+      "type": "string"
+    },
+    "description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "description_source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "downstream_objects_counts": {
+      "properties": {
+        "chart": {
+          "type": "number"
+        },
+        "column": {
+          "type": "number"
+        },
+        "dashboard": {
+          "type": "number"
+        },
+        "dashboardelement": {
+          "type": "number"
+        },
+        "explore": {
+          "type": "number"
+        },
+        "explorefield": {
+          "type": "number"
+        },
+        "lookmlfield": {
+          "type": "number"
+        },
+        "lookmlview": {
+          "type": "number"
+        },
+        "metabasecolumn": {
+          "type": "number"
+        },
+        "metabasetable": {
+          "type": "number"
+        },
+        "powerbicolumn": {
+          "type": "number"
+        },
+        "powerbitable": {
+          "type": "number"
+        },
+        "reportquery": {
+          "type": "number"
+        },
+        "source_table": {
+          "type": "number"
+        },
+        "table": {
+          "type": "number"
+        },
+        "tableaucolumn": {
+          "type": "number"
+        },
+        "tableaudatasource": {
+          "type": "number"
+        },
+        "tableaufield": {
+          "type": "number"
+        },
+        "tableautable": {
+          "type": "number"
+        },
+        "tableauview": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "dsuser_created_by": {
+      "properties": {
+        "data_source": {
+          "properties": {
+            "guid": {
+              "type": "string"
+            },
+            "last_ingested_on": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "guid": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "guid": {
+      "type": "string"
+    },
+    "ingested_description": {
+      "type": "string"
+    },
+    "is_hidden": {
+      "type": "boolean"
+    },
+    "last_queried_on": {
+      "type": "string"
+    },
+    "last_refreshed_on": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "last_updated_on": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "popularity": {
+      "properties": {
+        "popularity": {
+          "type": "number"
+        },
+        "query_count": {
+          "type": "number"
+        },
+        "service_query_count": {
+          "type": "number"
+        },
+        "timeframe": {
+          "type": "number"
+        },
+        "user_count": {
+          "type": "number"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "richtext_description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "row_count": {
+      "type": "number"
+    },
+    "schema": {
+      "properties": {
+        "breadcrumbs": {
+          "items": {
+            "properties": {
+              "guid": {
+                "type": "string"
+              },
+              "ordinal": {
+                "type": "number"
+              },
+              "target_data_source_guid": {
+                "type": "string"
+              },
+              "target_data_source_type": {
+                "type": "string"
+              },
+              "target_data_type": {
+                "type": "string"
+              },
+              "target_guid": {
+                "type": "string"
+              },
+              "target_name": {
+                "type": "string"
+              },
+              "target_object_type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "data_types": {
+          "properties": {
+            "data_source_type": {
+              "type": "string"
+            },
+            "data_type": {
+              "type": "string"
+            },
+            "object_type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "database": {
+          "properties": {
+            "breadcrumbs": {
+              "items": {
+                "properties": {
+                  "guid": {
+                    "type": "string"
+                  },
+                  "ordinal": {
+                    "type": "number"
+                  },
+                  "target_data_source_guid": {
+                    "type": "string"
+                  },
+                  "target_data_source_type": {
+                    "type": "string"
+                  },
+                  "target_data_type": {
+                    "type": "string"
+                  },
+                  "target_guid": {
+                    "type": "string"
+                  },
+                  "target_name": {
+                    "type": "string"
+                  },
+                  "target_object_type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "data_source": {
+              "properties": {
+                "guid": {
+                  "type": "string"
+                },
+                "last_ingested_on": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "data_types": {
+              "properties": {
+                "data_source_type": {
+                  "type": "string"
+                },
+                "data_type": {
+                  "type": "string"
+                },
+                "object_type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "description": {
+              "type": "string"
+            },
+            "guid": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "popularity": {
+              "properties": {
+                "popularity": {
+                  "type": "number"
+                },
+                "query_count": {
+                  "type": "number"
+                },
+                "service_query_count": {
+                  "type": "number"
+                },
+                "timeframe": {
+                  "type": "number"
+                },
+                "user_count": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "search_name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "description": {
+          "type": "string"
+        },
+        "guid": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "popularity": {
+          "properties": {
+            "popularity": {
+              "type": "number"
+            },
+            "query_count": {
+              "type": "number"
+            },
+            "service_query_count": {
+              "type": "number"
+            },
+            "timeframe": {
+              "type": "number"
+            },
+            "user_count": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "search_name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "search_name": {
+      "type": "string"
+    },
+    "suggested_description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "suggested_description_source": {
+      "type": "string"
+    },
+    "suggested_description_source_object": {
+      "properties": {
+        "obj": {
+          "properties": {
+            "breadcrumbs": {
+              "items": {
+                "properties": {
+                  "guid": {
+                    "type": "string"
+                  },
+                  "ordinal": {
+                    "type": "number"
+                  },
+                  "target_data_source_guid": {
+                    "type": "string"
+                  },
+                  "target_data_source_type": {
+                    "type": "string"
+                  },
+                  "target_data_type": {
+                    "type": "string"
+                  },
+                  "target_guid": {
+                    "type": "string"
+                  },
+                  "target_name": {
+                    "type": "string"
+                  },
+                  "target_object_type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "guid": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "object_type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "object_type": {
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "table_type": {
+      "type": "string"
+    },
+    "tagged_items": {
+      "items": {
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "suggested_source_kind": {
+            "type": "string"
+          },
+          "tag": {
+            "properties": {
+              "breadcrumbs": {
+                "type": "array"
+              },
+              "color": {
+                "type": "string"
+              },
+              "guid": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "visible": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "updated_on": {
+      "type": "string"
+    },
+    "upstream_objects_counts": {
+      "properties": {
+        "chart": {
+          "type": "number"
+        },
+        "column": {
+          "type": "number"
+        },
+        "dashboard": {
+          "type": "number"
+        },
+        "dashboardelement": {
+          "type": "number"
+        },
+        "explore": {
+          "type": "number"
+        },
+        "explorefield": {
+          "type": "number"
+        },
+        "lookmlfield": {
+          "type": "number"
+        },
+        "lookmlview": {
+          "type": "number"
+        },
+        "metabasecolumn": {
+          "type": "number"
+        },
+        "metabasetable": {
+          "type": "number"
+        },
+        "powerbicolumn": {
+          "type": "number"
+        },
+        "powerbitable": {
+          "type": "number"
+        },
+        "reportquery": {
+          "type": "number"
+        },
+        "source_table": {
+          "type": "number"
+        },
+        "table": {
+          "type": "number"
+        },
+        "tableaucolumn": {
+          "type": "number"
+        },
+        "tableaudatasource": {
+          "type": "number"
+        },
+        "tableaufield": {
+          "type": "number"
+        },
+        "tableautable": {
+          "type": "number"
+        },
+        "tableauview": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "user_description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  },
+  "type": "object"
+}

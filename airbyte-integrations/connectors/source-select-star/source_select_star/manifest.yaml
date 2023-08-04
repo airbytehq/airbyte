@@ -1,0 +1,74 @@
+version: "0.29.0"
+
+definitions:
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.production.selectstar.com/v1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "AUTHORIZATION"
+      api_token: "Token {{ config['token'] }}"
+
+  selectstar_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("next", {}) }}'
+      stop_condition: '{{ not response.get("next", {}) }}'
+
+  retriever:
+    requester:
+      $ref: "#/definitions/requester"
+
+  tables_stream:
+    primary_key: "guid"
+    retriever:
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+      paginator:
+        $ref: "#/definitions/selectstar_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+    $parameters:
+      name: "tables"
+      path: "/tables"
+
+
+  lineage_stream:
+    retriever:
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["table_lineage"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "lineage/{{ stream_slice.guid }}"
+        request_parameters:
+          max_depth: "1"
+          direction: "right"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tables_stream"
+            parent_key: "guid"
+            partition_field: "guid"
+    $parameters:
+      name: "lineage"
+  
+streams:
+  - "#/definitions/tables_stream"
+  - "#/definitions/lineage_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "tables"
+    - "lineage"
