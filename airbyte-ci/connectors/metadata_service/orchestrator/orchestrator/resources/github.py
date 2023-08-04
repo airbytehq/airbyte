@@ -61,7 +61,6 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
     } for github_file in repo_file_tree if _valid_metadata_file_path(github_file.path)]
 
     resource_context.log.info(f"finished retrieving github metadata files")
-    # import pdb; pdb.set_trace()
     return metadata_file_paths
 
 

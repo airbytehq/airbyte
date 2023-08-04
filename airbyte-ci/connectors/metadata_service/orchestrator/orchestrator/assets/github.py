@@ -21,11 +21,11 @@ def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: 
     """
     Return the md5 hash of a file in the github repo.
     """
-    context.log.info(f"retrieving contents of {path}")
+    context.log.debug(f"retrieving contents of {path}")
     file_contents = github_connector_repo.get_contents(path)
 
     # calculate the md5 hash of the file contents
-    context.log.info(f"calculating md5 hash of {path}")
+    context.log.debug(f"calculating md5 hash of {path}")
     md5_hash = hashlib.md5()
     md5_hash.update(file_contents.decoded_content)
     base_64_value = base64.b64encode(md5_hash.digest()).decode("utf8")
