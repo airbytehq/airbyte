@@ -100,6 +100,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     parquet_file_with_decimal_no_config_scenario,
     parquet_various_types_scenario,
     single_parquet_scenario,
+    parquet_with_invalid_config_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
@@ -197,6 +198,7 @@ discover_scenarios = [
     avro_file_with_decimal_as_float_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
+    parquet_with_invalid_config_scenario
 ]
 
 

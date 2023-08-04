@@ -6,6 +6,8 @@ import datetime
 import decimal
 
 import pyarrow as pa
+
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -627,5 +629,36 @@ parquet_file_with_decimal_legacy_config_scenario = (
                 }
             ]
         }
+    )
+).build()
+
+parquet_with_invalid_config_scenario = (
+    TestScenarioBuilder()
+    .set_name("parquet_with_invalid_config_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "parquet",
+                    "globs": ["*"],
+                    "validation_policy": "emit_record",
+                    "format": {
+                       "parquet": {
+                           "filetype": "csv",
+                       }
+                    }
+                }
+            ]
+        }
+    )
+    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+    .set_file_type("parquet")
+    .set_expected_read_error(ConfigValidationError, "Error creating stream config object. Contact Support if you need assistance.")
+    .set_expected_discover_error(ConfigValidationError, "Error creating stream config object. Contact Support if you need assistance.")
+    .set_expected_records(
+        [
+            # No records were read
+        ]
     )
 ).build()
