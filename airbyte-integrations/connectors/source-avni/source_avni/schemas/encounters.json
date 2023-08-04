@@ -60,7 +60,8 @@
           "type": ["null", "number"]
         },
         "Y": {
-          "type": ["null", "number"]
+          "type": ["null", "number"],
+          "example": 74.7364501
         }
       }
     },
@@ -71,6 +72,10 @@
     "cancelObservations": {
       "type": ["null", "object"],
       "additionalProperties": true
+    },
+    "last_modified_at":{
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
     },
     "audit": {
       "type": ["null", "object"],
