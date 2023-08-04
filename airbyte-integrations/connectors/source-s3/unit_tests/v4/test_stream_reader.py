@@ -1,8 +1,10 @@
 
+import io
 import logging
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
+from unittest.mock import patch, Mock, ANY
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -145,6 +147,30 @@ def test_open_file_without_config_raises_exception():
     with pytest.raises(ValueError):
         with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
             fp.read()
+    assert False
+
+@patch("smart_open.open")
+def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
+    smart_open_mock.return_value = io.BytesIO()
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    try:
+        reader.config = Config(
+            bucket="test",
+            aws_access_key_id="test",
+            aws_secret_access_key="test",
+            streams=[],
+            endpoint=None,
+        )
+    except Exception as exc:
+        raise exc
+
+    encoding = "utf8"
+    with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
+        fp.read()
+
+    smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
+
 
 
 def test_get_s3_client_without_config_raises_exception():
