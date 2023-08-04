@@ -118,6 +118,7 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
 }
 
 CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
     **GITHUB_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
