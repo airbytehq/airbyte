@@ -49,9 +49,10 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.6 | 2023-03-07 | [23810](https://github.com/airbytehq/airbyte/pull/23810) | Prepare for cloud |
-| 0.2.5 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated titles and descriptions |
-| 0.2.3 | 2021-10-25 | [7337](https://github.com/airbytehq/airbyte/pull/7337) | Added support of `OAuth 2.0` authorisation option |
-| `0.2.3` | 2021-10-27 | [7247](https://github.com/airbytehq/airbyte/pull/7247) | Migrate to the CDK |
+| Version | Date       | Pull Request | Subject                                                             |
+|:--------|:-----------| :--- |:--------------------------------------------------------------------|
+| 0.2.7   | 2023-06-09 | [27202](https://github.com/airbytehq/airbyte/pull/27202) | Remove authSpecification in favour of advancedAuth in specification |
+| 0.2.6   | 2023-03-07 | [23810](https://github.com/airbytehq/airbyte/pull/23810) | Prepare for cloud                                                   |
+| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated titles and descriptions                                     |
+| 0.2.3   | 2021-10-25 | [7337](https://github.com/airbytehq/airbyte/pull/7337) | Added support of `OAuth 2.0` authorisation option                   |
+| `0.2.3` | 2021-10-27 | [7247](https://github.com/airbytehq/airbyte/pull/7247) | Migrate to the CDK                                                  |

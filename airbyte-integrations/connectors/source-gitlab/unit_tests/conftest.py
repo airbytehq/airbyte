@@ -5,7 +5,7 @@
 import pytest
 
 
-@pytest.fixture(params=["gitlab.com", "https://gitlab.com", "https://gitlab.com/api/v4"])
+@pytest.fixture(params=["gitlab.com", "http://gitlab.com", "https://gitlab.com"])
 def config(request):
     return {
         "start_date": "2021-01-01T00:00:00Z",

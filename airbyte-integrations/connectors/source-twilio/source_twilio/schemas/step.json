@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Step Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "parent_step_sid": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "transitioned_to": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "context": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "transitioned_from": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "execution_sid": {
+      "type": ["null", "string"]
+    },
+    "flow_sid": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "step_context": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

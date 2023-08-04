@@ -23,7 +23,7 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 
 ### Requirements
 
-To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn about how to create one in the [MeiliSearch docs](https://docs.meilisearch.com/reference/features/installation.html#download-and-launch).
+To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn about how to create one in the [MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
 
 ### Setup guide
 

@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 1.0.5
+  dockerImageTag: 1.2.8
   dockerRepository: airbyte/destination-snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg
-  license: MIT
+  license: ELv2
   name: Snowflake
   normalizationConfig:
     normalizationIntegrationType: snowflake
@@ -22,10 +22,14 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 1Gi
-          memory_request: 1Gi
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   supportsDbt: true
   tags:
     - language:java
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

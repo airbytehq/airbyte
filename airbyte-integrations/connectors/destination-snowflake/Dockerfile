@@ -16,9 +16,12 @@ FROM airbyte/integration-base-java:dev
 #  rm /tmp/YourKit-JavaProfiler-2021.3-docker.zip
 
 # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
+RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
+  # these two lines are a workaround for https://github.com/yaml/pyyaml/issues/601
+  pip3 install wheel && \
+  pip3 install "Cython<3.0" "pyyaml==5.4" --no-build-isolation && \
   pip3 install dbt-snowflake==1.0.0 "urllib3<2"
 
 COPY --from=airbyte/normalization-snowflake:dev /airbyte /airbyte
@@ -45,7 +48,8 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 ENV ENABLE_SENTRY true
 
-LABEL io.airbyte.version=1.0.5
+
+LABEL io.airbyte.version=1.2.8
 LABEL io.airbyte.name=airbyte/destination-snowflake
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"

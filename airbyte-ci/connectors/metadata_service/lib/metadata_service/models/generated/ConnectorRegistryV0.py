@@ -19,6 +19,14 @@ class ReleaseStage(BaseModel):
     )
 
 
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
+    )
+
+
 class ResourceRequirements(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -86,8 +94,16 @@ class VersionBreakingChange(BaseModel):
     )
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
-        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}/migration_guide#${version}",
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
+
+
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
 class SuggestedStreams(BaseModel):
@@ -136,7 +152,7 @@ class ConnectorReleases(BaseModel):
     breakingChanges: ConnectorBreakingChanges
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
-        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}/migration_guide",
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
     )
 
 
@@ -165,6 +181,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
@@ -180,6 +197,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
     )
     releases: Optional[ConnectorReleases] = None
+    ab_internal: Optional[AirbyteInternal] = None
 
 
 class ConnectorRegistryDestinationDefinition(BaseModel):
@@ -206,6 +224,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
@@ -225,6 +244,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     )
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
+    ab_internal: Optional[AirbyteInternal] = None
 
 
 class ConnectorRegistryV0(BaseModel):

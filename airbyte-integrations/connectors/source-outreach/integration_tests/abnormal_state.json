@@ -31,5 +31,17 @@
   },
   "calls": {
     "updatedAt": "2040-11-16T00:00:00Z"
+  },
+  "users": {
+    "updatedAt": "2040-11-16T00:00:00Z"
+  },
+  "tasks": {
+    "updatedAt": "2040-11-16T00:00:00Z"
+  },
+  "templates": {
+    "updatedAt": "2040-11-16T00:00:00Z"
+  },
+  "snippets": {
+    "updatedAt": "2040-11-16T00:00:00Z"
   }
 }

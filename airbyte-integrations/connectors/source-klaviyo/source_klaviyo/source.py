@@ -25,10 +25,10 @@ class SourceKlaviyo(AbstractSource):
             original_error_message = repr(e)
 
             # Regular expression pattern to match the API key
-            pattern = r'api_key=\b\w+\b'
+            pattern = r"api_key=\b\w+\b"
 
             # Remove the API key from the error message
-            error_message = re.sub(pattern, 'api_key=***', original_error_message)
+            error_message = re.sub(pattern, "api_key=***", original_error_message)
 
             return False, error_message
         return True, None

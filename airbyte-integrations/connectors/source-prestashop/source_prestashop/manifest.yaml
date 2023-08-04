@@ -28,6 +28,9 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_prestashop.components.CustomFieldTransformation
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:

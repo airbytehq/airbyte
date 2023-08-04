@@ -240,7 +240,7 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: |
             docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
@@ -293,10 +293,11 @@ jobs:
       - name: Update CDK version
         run: |
           PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/Dockerfile
-          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/requirements.in
+          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
+          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" airbyte-connector-builder-server-wrapped/Dockerfile
+          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-atelier-server
+          cd oss/airbyte-connector-builder-server
           pip install pip-tools
           pip-compile --upgrade
       - name: Create Pull Request

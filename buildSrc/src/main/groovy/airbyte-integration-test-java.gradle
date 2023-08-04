@@ -53,6 +53,11 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
             jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
+
+            systemProperties = [
+                // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
+                'junit.jupiter.execution.parallel.enabled': 'true'
+            ]
         }
 
         // make sure we create the integrationTest task once in case a standard source test was already initialized

@@ -35,12 +35,35 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
+        # the list of error patterns to track,
+        # in order to reduce the requestt page size and retry
+        error_patterns = [
+            "Please reduce the amount of data you're asking for, then retry your request",
+            "An unknown error occurred",
+        ]
         if (
             details.get("kwargs", {}).get("params", {}).get("limit")
             and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
-            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+            and exc.api_error_message() in error_patterns
         ):
+            # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
+            # set the flag to the api class that the last api call failed
+            details.get("args")[0].last_api_call_is_successfull = False
+            # set the flag to the api class that the `limit` param was reduced
+            details.get("args")[0].request_record_limit_is_reduced = True
+
+    def revert_request_record_limit(details):
+        """
+        This method is triggered `on_success` after successfull retry,
+        sets the internal class flags to provide the logic to restore the previously reduced
+        `limit` param.
+        """
+        # reference issue: https://github.com/airbytehq/airbyte/issues/25383
+        # set the flag to the api class that the last api call was ssuccessfull
+        details.get("args")[0].last_api_call_is_successfull = True
+        # set the flag to the api class that the `limit` param is restored
+        details.get("args")[0].request_record_limit_is_reduced = False
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
@@ -68,6 +91,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         exception,
         jitter=None,
         on_backoff=[log_retry_attempt, reduce_request_record_limit],
+        on_success=[revert_request_record_limit],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )

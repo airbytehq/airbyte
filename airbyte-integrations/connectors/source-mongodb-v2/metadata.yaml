@@ -2,15 +2,15 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-mongodb-v2
   githubIssueLabel: source-mongodb-v2
   icon: mongodb.svg
-  license: MIT
+  license: ELv2
   name: MongoDb
   registries:
     cloud:
-      dockerImageTag: 0.1.7
+      dockerImageTag: 0.2.5
       dockerRepository: airbyte/source-mongodb-strict-encrypt
       enabled: true
     oss:
@@ -20,4 +20,8 @@ data:
   tags:
     - language:java
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

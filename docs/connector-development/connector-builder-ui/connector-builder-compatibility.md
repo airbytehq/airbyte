@@ -1,6 +1,7 @@
 # Compatibility Guide
 Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
 - [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-an-http-api-returning-a-collection-of-records-synchronously)
+- [ ] [Are data endpoints fixed?](#are-data-endpoints-fixed)
 - [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)
     - [Basic HTTP](#basic-http)
     - [API key injected in request header or query parameter](#api-key)
@@ -79,6 +80,14 @@ Examples:
 
 If the integration is not an HTTP API returning the records synchronously, use the Python CDK.
 
+## Are data endpoints fixed?
+
+The connector builder requires the data endpoints to be fixed. This means the data endpoints representing separate streams are not dynamically generated based on the data or user configuration, but specified as part of the API documentation.
+
+For example, the [Congress API](https://api.congress.gov/#/) specifies the data endpoints as part of the documentation, while the [Salesforce API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_discoveryresource.htm) features a dynamic and configurable list of resources that can't be known in advance.
+
+If an integration has a dynamic list of data endpoints representing separate streams, use the Python CDK.
+
 ## What type of authentication is required?
 Look up the authentication mechanism in the API documentation, and identify which type it is.
 
@@ -104,28 +113,16 @@ Are requests authenticated using an OAuth2.0 flow with a refresh token grant typ
 
 Examples: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
 
-#### Is the OAuth refresh token long-lived?
-Using [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html) as an example, you can tell it uses an ephemeral refresh token because the authorization request returns a new refresh token in addition to the access token. This indicates a new refresh token should be used next time.
+If the refresh request requires custom query parameters or request headers, use the Python CDK.<br/>
+If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token" or "Client Credentials", such as an Authorization Code, or a PKCE, use the Python CDK.<br/>
+If the authentication mechanism is OAuth flow 2.0 with refresh token or client credentials and does not require custom query params, it is compatible with the Connector Builder.
 
-Example response:
-```
-{
-    "access_token": "de6780bc506a0446309bd9362820ba8aed28aa506c71eedbe1c5c4f9dd350e54",
-    "token_type": "bearer",
-    "expires_in": 7200,
-    "refresh_token": "8257e65c97202ed1726cf9571600918f3bffb2544b26e00a61df9897668c33a1",
-    "created_at": 1607635748
-}
-```
+### Session Token
+Are data requests authenticated using a temporary session token that is obtained through a separate request?
 
-Example:
-- Yes: [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html)
-- No: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
+Examples: [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token), [Splunk](https://dev.splunk.com/observability/reference/api/sessiontokens/latest)
 
-If the OAuth flow requires a single-use refresh token, use the Python CDK.
-If the refresh request requires custom query parameters or request headers, use the Python CDK.
-If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token", such as an Authorization Code, or a PKCE, use the Python CDK. 
-If the authentication mechanism is OAuth flow 2.0 with refresh token and does not require refreshing the refresh token or custom query params, it is compatible with the Connector Builder.
+If the authentication mechanism is a session token obtained through calling a separate endpoint, and which expires after some amount of time and needs to be re-obtained, it is compatible with the Connector Builder.
 
 ### Other
 AWS endpoints are examples of APIs requiring a non-standard authentication mechanism. You can tell from [the documentation](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome) that requests need to be signed with a hash.

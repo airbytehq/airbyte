@@ -1,63 +1,63 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delivery_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delivery_date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_discount_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_discount_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_products": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_products_wt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shipping_tax_computation_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_wrapping_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_wrapping_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shop_address": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "note": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

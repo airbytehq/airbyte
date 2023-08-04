@@ -39,7 +39,7 @@ class ItemPaginationStrategy(PageIncrement):
             self._sub_page += 1
         else:
             self._sub_page = self.start_from_page
-            if len(response.json()["data"]["boards"]):
+            if response.json()["data"].get("boards"):
                 self._page += 1
             else:
                 return None

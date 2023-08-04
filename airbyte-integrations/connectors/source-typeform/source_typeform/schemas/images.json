@@ -9,6 +9,21 @@
     },
     "src": {
       "type": ["null", "string"]
+    },
+    "width":{
+      "type": ["null", "integer"]
+    },
+    "height": {
+      "type": ["null", "integer"]
+    },
+    "media_type": {
+      "type": ["null", "string"]
+    },
+    "avg_color":{
+      "type": ["null", "string"]
+    },
+    "has_alpha": {
+      "type": ["null", "boolean"]
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#"

@@ -1,5 +1,5 @@
 import json
-
+import re
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -40,7 +40,16 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         else:
             return "text/plain"
 
-    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None):
+    def get_full_key(self, *args, **kwargs):
+        full_key = super().get_full_key(*args, **kwargs)
+
+        # remove the first slash if it exists to prevent double slashes
+        if full_key.startswith("/"):
+            full_key = full_key[1:]
+
+        return full_key
+
+    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None) -> PublicGCSFileHandle:
         """
         Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
 
@@ -49,6 +58,7 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         key = check.opt_str_param(key, "key", default=str(uuid.uuid4()))
         check_file_like_obj(file_obj)
         gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+
         bucket_obj = self._client.bucket(self._gcs_bucket)
         blob = bucket_obj.blob(gcs_key)
 
@@ -59,6 +69,18 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         blob.content_type = self.get_content_type(ext)
 
         blob.upload_from_file(file_obj)
+        return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
+
+    def delete_by_key(self, key: str, ext: Optional[str] = None) -> Optional[PublicGCSFileHandle]:
+        gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+        bucket_obj = self._client.bucket(self._gcs_bucket)
+        blob = bucket_obj.blob(gcs_key)
+
+        # if the file does not exist, return None
+        if not blob.exists():
+            return None
+
+        blob.delete()
         return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 
 
@@ -133,7 +155,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     config_schema={
         "gcs_bucket": StringSource,
         "prefix": StringSource,
-        "suffix": StringSource,
+        "match_regex": StringSource,
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
@@ -142,15 +164,15 @@ def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
     """
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
-    suffix = resource_context.resource_config["suffix"]
+    match_regex = resource_context.resource_config["match_regex"]
 
     storage_client = resource_context.resources.gcp_gcs_client
     bucket = storage_client.get_bucket(gcs_bucket)
 
-    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, suffix: {suffix}, in bucket: {gcs_bucket}")
+    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, match_regex: {match_regex}, in bucket: {gcs_bucket}")
 
     gcs_file_blobs = bucket.list_blobs(prefix=prefix)
-    if suffix:
-        gcs_file_blobs = [blob for blob in gcs_file_blobs if blob.name.endswith(suffix)]
+    if match_regex:
+        gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(match_regex, blob.name)]
 
     return gcs_file_blobs

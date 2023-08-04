@@ -155,7 +155,7 @@ class TestIncremental(BaseTest):
         inputs: IncrementalConfig,
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
-        cursor_paths: dict[str, list[str]],
+        cursor_paths: dict[str, list[Union[int, str]]],
         docker_runner: ConnectorRunner,
     ):
         threshold_days = getattr(inputs, "threshold_days") or 0
