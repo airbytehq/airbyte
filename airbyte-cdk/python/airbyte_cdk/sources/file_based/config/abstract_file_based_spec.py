@@ -4,20 +4,22 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Generic, TypeVar
 
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidFormatType
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic import AnyUrl, BaseModel, Field
 
 
-class AbstractFileBasedSpec(BaseModel):
+FileBasedStreamConfigType = TypeVar("FileBasedStreamConfigType", bound="FileBasedStreamConfig")
+
+class AbstractFileBasedSpec(BaseModel, Generic[FileBasedStreamConfigType]):
     """
     Used during spec; allows the developer to configure the cloud provider specific options
     that are needed when users configure a file-based source.
     """
 
-    streams: List[FileBasedStreamConfig] = Field(
+    streams: List[FileBasedStreamConfigType] = Field(
         title="The list of streams to sync",
         description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
         order=10,
@@ -36,12 +38,14 @@ class AbstractFileBasedSpec(BaseModel):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
+        #schema["properties"] = cls.__orig_bases__[0].__args__[0].schema()
+        config_schema = cls.__orig_bases__[0].__args__[0].schema()
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
+        transformed_schema["properties"]["streams"]["items"]["properties"]["format"] = config_schema["properties"]["format"]
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
 
         return transformed_schema
-
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
         """

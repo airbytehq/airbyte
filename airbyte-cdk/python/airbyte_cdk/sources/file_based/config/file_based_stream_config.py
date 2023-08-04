@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, List, Mapping, Optional, Type, Union, Generic, TypeVar, Dict
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -11,7 +11,7 @@ from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, create_model
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
@@ -24,8 +24,11 @@ class ValidationPolicy(Enum):
     skip_record = "Skip Record"
     wait_for_discover = "Wait for Discover"
 
+ValidFormatType = TypeVar("ValidFormatType")
+DEFAULT_VALID_FORMATS = Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat]
 
-class FileBasedStreamConfig(BaseModel):
+
+class FileBasedStreamConfig(BaseModel, Generic[ValidFormatType]):
     name: str = Field(title="Name", description="The name of the stream.")
     file_type: str = Field(title="File Type", description="The data file type that is being extracted for a stream.")
     globs: Optional[List[str]] = Field(
@@ -48,7 +51,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Optional[Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat]] = Field(
+    format: Optional[ValidFormatType] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )
@@ -57,6 +60,18 @@ class FileBasedStreamConfig(BaseModel):
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
         default=False,
     )
+
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Generates the mapping comprised of the config fields
+        """
+        schema = super().schema(*args, **kwargs)
+        format_types = cls.__orig_bases__[0].__args__[0].__args__
+        format_schemas = [format_class.schema() for format_class in format_types]
+
+        schema["properties"]["format"] = create_model("OneOfFormat", **{"oneOf": format_schemas}).schema()
+        return schema
 
     @validator("file_type", pre=True)
     def validate_file_type(cls, v: str) -> str:

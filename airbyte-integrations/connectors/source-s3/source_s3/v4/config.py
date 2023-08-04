@@ -2,13 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import Optional, Literal, Union
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import AnyUrl, Field, ValidationError, root_validator
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import DEFAULT_VALID_FORMATS
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidFormatType
+from pydantic import BaseModel
+
+from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 
 
-class Config(AbstractFileBasedSpec):
+class CustomFormat(BaseModel):
+    filetype: Literal["custom_format"] = "custom_format"
+
+class S3FileBasedStreamConfig(FileBasedStreamConfig[Union[CustomFormat, CsvFormat]]):
+    pass
+
+class Config(AbstractFileBasedSpec[S3FileBasedStreamConfig]):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")

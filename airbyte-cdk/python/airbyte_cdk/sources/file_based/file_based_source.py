@@ -5,13 +5,13 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Generic
 
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, FileBasedStreamConfigType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy, ValidFormatType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -26,11 +26,11 @@ from pydantic.error_wrappers import ValidationError
 DEFAULT_MAX_HISTORY_SIZE = 10_000
 
 
-class FileBasedSource(AbstractSource, ABC):
+class FileBasedSource(AbstractSource, ABC, Generic[FileBasedStreamConfigType]):
     def __init__(
         self,
         stream_reader: AbstractFileBasedStreamReader,
-        spec_class: Type[AbstractFileBasedSpec],
+        spec_class: Type[AbstractFileBasedSpec[FileBasedStreamConfigType]],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
