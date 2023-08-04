@@ -584,13 +584,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.of(cursor),
-        new LinkedHashMap<>() {{
-          put(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER);
-          put(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER);
-          put(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-          put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
-        }}
-    );
+        new LinkedHashMap<>() {
+
+          {
+            put(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER);
+            put(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER);
+            put(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+            put(generator.buildColumnId("$starts_with_dollar_sign"), AirbyteProtocolType.STRING);
+          }
+
+        });
 
     String createTable = generator.createTable(stream, "");
     destinationHandler.execute(createTable);
