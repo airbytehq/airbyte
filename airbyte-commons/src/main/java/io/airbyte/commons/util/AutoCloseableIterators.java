@@ -208,4 +208,5 @@ public class AutoCloseableIterators {
   public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators) {
     return concatWithEagerClose(iterators, null);
   }
+
 }
