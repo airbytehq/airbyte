@@ -4,10 +4,12 @@ import base64
 import dateutil
 import datetime
 import humanize
+import os
 
 from dagster import Output, asset, OpExecutionContext
 from github import Repository
 
+from orchestrator.ops.slack import send_slack_message
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.logging import sentry
 
@@ -50,9 +52,6 @@ def github_metadata_file_md5s(context):
     github_connector_repo = context.resources.github_connector_repo
     github_connectors_metadata_files = context.resources.github_connectors_metadata_files
 
-    # FOR DEV ONLY: limit the number of metadata files to 20
-    github_connectors_metadata_files = github_connectors_metadata_files[:20]
-
     metadata_file_paths = {
         metadata_file["path"]: {
             "md5": _get_md5_of_github_file(context, github_connector_repo, metadata_file["path"]),
@@ -88,13 +87,14 @@ def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
     not_in_gcs = latest_gcs_metadata_md5s.get(github_file_info["md5"]) is None
     return not_in_gcs and _should_publish_have_ran(github_file_info["last_modified"])
 
-@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
     """
     Return a list of all metadata files in the github repo and denote whether they are stale or not.
 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
+    human_readable_stale_bools = {True: "🚨 YES!!!", False: "No"}
     latest_gcs_metadata_file_blobs = context.resources.latest_metadata_file_blobs
     latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_gcs_metadata_file_blobs}
 
@@ -117,11 +117,17 @@ def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> 
         by=["stale", "github_path"],
         ascending=[False, True],
     )
-    stale_metadata_files_df.replace({True: "🚨 YES!!!", False: "No"}, inplace=True)
 
-    # TODO (ben) add schedule and if stale exist report to slack
-    # Waiting on: https://github.com/airbytehq/airbyte/pull/28759
+    # If any stale files exist, report to slack
+    channel = os.getenv("STALE_REPORT_CHANNEL")
+    any_stale = stale_metadata_files_df["stale"].any()
+    if channel and any_stale:
+        only_stale_df = stale_metadata_files_df[stale_metadata_files_df["stale"] == True]
+        pretty_stale_df = only_stale_df.replace(human_readable_stale_bools)
+        stale_report_md = pretty_stale_df.to_markdown(index=False)
+        send_slack_message(context, channel, stale_report_md, enable_code_block_wrapping=True)
 
+    stale_metadata_files_df.replace(human_readable_stale_bools, inplace=True)
     return output_dataframe(stale_metadata_files_df)
 
 

@@ -38,7 +38,7 @@ def debug_registry():
     persisted_oss_registry(context).value
 
 
-def test_debug_github_folders():
+def debug_github_folders():
     context = build_op_context(
         resources={
             **GITHUB_RESOURCE_TREE,
