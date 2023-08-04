@@ -28,8 +28,8 @@ data:
       3.0.0:
         message: "Attribution report stream schemas fix."
         upgradeDeadline: "2023-07-24"
-  _ab_internal:
-    _sl: 300
-    _ql: 300
+  ab_internal:
+    sl: 300
+    ql: 300
   supportLevel: certified
 metadataSpecVersion: "1.0"
