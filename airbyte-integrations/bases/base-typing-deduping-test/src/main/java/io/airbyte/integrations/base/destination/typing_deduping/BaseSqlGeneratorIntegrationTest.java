@@ -338,8 +338,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Create a nonempty users_final_tmp table. Overwrite users_final from users_final_tmp.
-   * Verify that users_final now exists and contains nonzero records.
+   * Create a nonempty users_final_tmp table. Overwrite users_final from users_final_tmp. Verify that
+   * users_final now exists and contains nonzero records.
    */
   @Test
   public void overwriteFinalTable() throws Exception {
