@@ -1,0 +1,18 @@
+{
+    "properties": {
+        "date": {
+            "format": "date-time"
+        },
+        "length": {
+            "type": ["null", "number", "object"],
+            "properties": {
+                "setId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                }
+            }
+        }
+    }
+}
