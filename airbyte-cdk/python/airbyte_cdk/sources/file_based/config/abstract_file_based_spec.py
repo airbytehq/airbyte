@@ -38,11 +38,14 @@ class AbstractFileBasedSpec(BaseModel, Generic[FileBasedStreamConfigType]):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-        #schema["properties"] = cls.__orig_bases__[0].__args__[0].schema()
         config_schema = cls.__orig_bases__[0].__args__[0].schema()
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
+
+        # This is a little wild
+        # We replace the format field with the format field from the config schema, which is a specialized template
         transformed_schema["properties"]["streams"]["items"]["properties"]["format"] = config_schema["properties"]["format"]
+
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
 
         return transformed_schema

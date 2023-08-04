@@ -67,9 +67,13 @@ class FileBasedStreamConfig(BaseModel, Generic[ValidFormatType]):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
+
+        # pydantic doesn't know abotu the generic format type so we need to manually add it
         format_types = cls.__orig_bases__[0].__args__[0].__args__
+        # convert the Union of format types to a list of schemas
         format_schemas = [format_class.schema() for format_class in format_types]
 
+        # add the format schema to the schema
         schema["properties"]["format"] = create_model("OneOfFormat", **{"oneOf": format_schemas}).schema()
         return schema
 
