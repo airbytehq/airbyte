@@ -622,7 +622,7 @@ class RequestOption(BaseModel):
     )
     inject_into: InjectInto = Field(
         ...,
-        description="Configures where the descriptor should be set on the HTTP requests.",
+        description="Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.",
         examples=["request_parameter", "header", "body_data", "body_json"],
         title="Inject Into",
     )
@@ -819,6 +819,11 @@ class DatetimeBasedCursor(BaseModel):
         description="The datetime that determines the earliest record that should be synced.",
         examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
         title="Start Datetime",
+    )
+    cursor_datetime_formats: Optional[List[str]] = Field(
+        None,
+        description="The possible formats for the cursor field",
+        title="Cursor Datetime Formats",
     )
     cursor_granularity: Optional[str] = Field(
         None,
@@ -1100,7 +1105,7 @@ class SessionTokenAuthenticator(BaseModel):
     request_authentication: Union[SessionTokenRequestApiKeyAuthenticator, SessionTokenRequestBearerAuthenticator] = Field(
         ...,
         description="Authentication method to use for requests sent to the API, specifying how to inject the session token.",
-        title="Data request authentication",
+        title="Data Request Authentication",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
