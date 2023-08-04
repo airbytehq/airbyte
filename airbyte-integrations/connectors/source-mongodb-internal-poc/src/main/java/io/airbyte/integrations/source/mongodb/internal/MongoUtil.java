@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import com.google.common.collect.Lists;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
@@ -23,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.v0.SyncMode;
 import org.bson.Document;
 
 public class MongoUtil {
