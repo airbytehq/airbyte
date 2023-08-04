@@ -145,7 +145,9 @@ def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: Va
     return tmp_metadata_file_path
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions = ValidatorOptions()) -> MetadataUploadInfo:
+def upload_metadata_to_gcs(
+    bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions = ValidatorOptions()
+) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
