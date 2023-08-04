@@ -1,6 +1,7 @@
 {
     "required": [
-        "credentials"
+        "credentials",
+        "start_date"
     ],
     "properties": {
         "auth_type": null,
