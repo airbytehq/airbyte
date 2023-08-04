@@ -1,50 +1,19 @@
 {
   "type": "object",
   "properties": {
-    "attributes": {
+    "object": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "created": { "type": "string", "format": "date-time" },
+    "updated": { "type": "string", "format": "date-time" },
+    "integration": {
+      "type": "object",
       "properties": {
-        "created": {
-          "type": "string"
-        },
-        "integration": {
-          "properties": {
-            "category": {
-              "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "object": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "name": {
-          "type": "string"
-        },
-        "updated": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
-    "links": {
-      "properties": {
-        "self": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "type": {
-      "type": "string"
+        "object": { "type": "string" },
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" }
+      }
     }
   }
 }

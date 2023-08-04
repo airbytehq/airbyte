@@ -1,67 +1,13 @@
 {
   "type": "object",
   "properties": {
-    "type": { "type": "string" },
+    "object": { "type": "string" },
     "id": { "type": "string" },
-    "attributes": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "status": { "type": "string" },
-        "archived": { "type": "string" },
-        "created": { "type": "string", "format": "date-time" },
-        "updated": { "type": "string", "format": "date-time" },
-        "trigger_type": { "type": "string" }
-      }
-    },
-    "links": {
-      "type": "object",
-      "properties": {
-        "self": { "type": "string" }
-      }
-    },
-    "relationships": {
-      "type": "object",
-      "properties": {
-        "flow-actions": {
-          "type": "object",
-          "properties":{
-            "data": {
-              "type": "array",
-              "properties":[{
-                "type": { "type": "string" },
-                "id": { "type": "string" }
-              }]
-            },
-            "links": {
-              "type": "object",
-              "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
-              }
-            }
-          }
-        },
-        "tags": {
-          "type": "object",
-          "properties":{
-            "data": {
-              "type": "array",
-              "properties":[{
-                "type": { "type": "string" },
-                "id": { "type": "string" }
-              }]
-            },
-            "links": {
-              "type": "object",
-              "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
-              }
-            }
-          }
-        }
-      }
-    }
+    "name": { "type": "string" },
+    "status": { "type": "string" },
+    "created": { "type": "string", "format": "date-time" },
+    "updated": { "type": "string", "format": "date-time" },
+    "customer_filter": { "type": ["null", "object"] },
+    "trigger": { "type": "object" }
   }
 }
