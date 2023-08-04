@@ -213,7 +213,10 @@ allprojects {
 
     version = rootProject.ext.version
 }
-
+tasks.register('publishJavaCdkToMavenLocal') {
+    // If connectors need to be built with a snapshot version of the CDK, then build and publish the CDK to maven local.
+    dependsOn ':airbyte-cdk:java:airbyte-cdk:build'
+}
 // Java projects common configurations
 subprojects { subproj ->
 
@@ -291,7 +294,9 @@ subprojects { subproj ->
 
     if (subproj.name.startsWith("source-") || subproj.name.startsWith("destination-")) {
         // This is a Java connector project.
-        // We need to build the CDK before building the connector.
+
+        // We need to evaluate CDK project before evaluating the connector.
+        evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
         afterEvaluate {
             // Accessing the configurations object directly can only be done after the project has been evaluated
             def isSnapshotCDKVersion = configurations.compileClasspath.incoming.resolutionResult.allDependencies.find {
@@ -300,20 +305,9 @@ subprojects { subproj ->
                 it.requested.module == 'airbyte-cdk' && 
                 it.requested.version.endsWith('-SNAPSHOT')
             } != null
-
             if (isSnapshotCDKVersion) {
-                task buildCDK(type: Exec) {
-                    logger.lifecycle("Building airbyte-cdk, snapshot dependency found.")
-
-                    // TODO: This should ideally be replaced with a task dependency.
-                    workingDir "${rootProject.rootDir}"
-                    commandLine 'sh', '-c', './gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal'
-                }
-                tasks.named('build').configure {
-                    dependsOn(buildCDK)
-                }
-                tasks.named('test').configure {
-                    dependsOn(buildCDK)
+                tasks.named('compileJava') {
+                    dependsOn publishJavaCdkToMavenLocal
                 }
             }
         }

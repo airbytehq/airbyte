@@ -41,6 +41,9 @@ publishing {
     }
 }
 
+// Ensures that connectors can use snapshot versions of the CDK in MavenLocal.
+build.dependsOn(publishToMavenLocal)
+
 test {
     useJUnitPlatform()
     testLogging {
