@@ -104,7 +104,7 @@
       "window_in_days": {
         "type": "integer",
         "title": "Data Request Interval (Days)",
-        "description": "The interval in days for each data request made to the Google Analytics API. A larger value speeds up data sync, but increases the chance of data sampling, which may result in inaccuracies. We recommend a value of 1 to minimize sampling, unless speed is a priority over accuracy. Acceptable values range from 1 to 364. Does not apply to custom Cohort reports. More information is available in <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-data-api\">the documentation</a>.",
+        "description": "The interval in days for each data request made to the Google Analytics API. A larger value speeds up data sync, but increases the chance of data sampling, which may result in inaccuracies. We recommend a value of 1 to minimize sampling, unless speed is an absolute priority over accuracy. Acceptable values range from 1 to 364. Does not apply to custom Cohort reports. More information is available in <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-data-api\">the documentation</a>.",
         "examples": [30, 60, 90, 120, 200, 364],
         "minimum": 1,
         "maximum": 364,
