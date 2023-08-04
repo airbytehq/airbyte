@@ -18,6 +18,9 @@ from pyarrow import Scalar
 
 
 class ParquetParser(FileTypeParser):
+
+    ENCODING = None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
@@ -29,7 +32,7 @@ class ParquetParser(FileTypeParser):
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             parquet_file = pq.ParquetFile(fp)
             parquet_schema = parquet_file.schema_arrow
 
@@ -51,7 +54,7 @@ class ParquetParser(FileTypeParser):
         parquet_format = config.format[config.file_type] if config.format else ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
-        with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             reader = pq.ParquetFile(fp)
             partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
             for row_group in range(reader.num_row_groups):
