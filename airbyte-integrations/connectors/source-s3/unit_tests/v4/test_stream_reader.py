@@ -143,7 +143,7 @@ def test_get_matching_files_without_config_raises_exception():
 
 def test_open_file_without_config_raises_exception():
     with pytest.raises(ValueError):
-        with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, logger) as fp:
+        with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
             fp.read()
 
 
