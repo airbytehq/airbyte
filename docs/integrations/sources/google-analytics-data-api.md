@@ -6,71 +6,80 @@ The Google Analytics 4 (GA4) connector represents the latest version of Google A
 
 :::note
 
-The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4) utilizes the older version of Google Analytics, which had been the standard for tracking website and app user behavior until the introduction of GA4. Please note that the UA connector is being deprecated in favor of this one. As of July 1, 2023, standard Universal Analytics properties no longer process hits. For further reading on the transition from UA to GA4, refer to [Google's official support page](https://support.google.com/analytics/answer/11583528).
+The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4) utilizes the older version of Google Analytics, which was the standard for tracking website and app user behavior before the introduction of GA4. Please note that the UA connector is being deprecated in favor of this one. As of July 1, 2023, standard Universal Analytics properties no longer process hits. For further reading on the transition from UA to GA4, refer to [Google's official support page](https://support.google.com/analytics/answer/11583528).
 
 :::
 
 ## Prerequisites
 
-- A Google Analytics account with access to the GA4 property you want to track
-- OAuth or JSON credentials for the service account that has access to Google Analytics.
+- A Google Analytics account with access to the GA4 property you want to sync
 
 ## Setup guide
 
-<!-- env:cloud -->
-:::note
-For **Airbyte Cloud** users, we highly recommend using OAuth for authentication, as this significantly simplifies the setup process by allowing you to authenticate your Google Analytics account directly in the Airbyte UI. If you choose to use OAuth with **Airbyte Cloud**, you may proceed directly to [configuring the connector in Airbyte](#for-airbyte-cloud). If you choose to use a service account instead, please follow the instructions below.
-:::
-<!-- /env:cloud -->
-
-### Create a Service Account
-
-1. Sign in to the Google Account you are using for Google Analytics as an admin.
-2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
-3. Select the project you want to use and click **Continue**.
-4. Click **+ Create Service Account** at the top of the page.
-5. Enter a name for the service account, and optionally, a description. Click **Create and continue**.
-6. Choose the role for the service account. We reccomend the **Viewer** role (Read & Analyze permissions). Click **Continue**.
-7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**. 
-8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
-
-### Enable the APIs
-
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user. Enable the API for your account. You can set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user. Enable the API for your account.
-
-### Step 2: Set up the Google Analytics connector in Airbyte
+### For Airbyte Cloud
 
 <!-- env:cloud -->
-#### For Airbyte Cloud
+
+For **Airbyte Cloud** users, we highly recommend using OAuth for authentication, as this significantly simplifies the setup process by allowing you to authenticate your Google Analytics account directly in the Airbyte UI. Please follow the steps below to set up the connector using this method.
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
+4. In the **Source name** field, enter a name to help you identify this source.
 4. Select **Authenticate via Google (Oauth)** from the dropdown menu and click **Authenticate your Google Analytics 4 (GA4) account**. This will open a pop-up window where you can log in to your Google account and grant Airbyte access to your Google Analytics account. 
-5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. For more information, refer to [Google's documentation]((https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id))
+5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
 
 :::note
 If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
 :::
 
-6. Enter the **Start Date** from which to replicate report data in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
-8. **Custom Reports (Optional)**: You may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
+6. In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
+8. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+9. (Optional) In the **Data request time increment in days** field, you can specify the interval used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
 10. Click **Set up source** and wait for the tests to complete.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-#### For Airbyte Open Source:
+
+### For Airbyte Open Source
+
+For **Airbyte Open Source** users, the simplest way to set up the Google Analytics 4 connector is to create a Service Account and set up a JSON key file for authentication. Please follow the steps below to set up the connector using this method.
+
+#### Create a Service Account for authentication
+
+1. Sign in to the Google Account you are using for Google Analytics as an admin.
+2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
+3. Select the project you want to use and click **Continue**.
+4. Click **+ Create Service Account** at the top of the page.
+5. Enter a name for the service account, and optionally, a description. Click **Create and Continue**.
+6. Choose the role for the service account. We reccomend the **Viewer** role (Read & Analyze permissions). Click **Continue**.
+7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**. 
+8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+
+#### Enable the Google Analytics APIs
+
+Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
+
+1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
+2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+
+#### Step 2: Set up the Google Analytics connector in Airbyte
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
-4. Select Service Account for Authentication in dropdown list and enter **Service Account JSON Key** from Step 1.
-5. Enter the [**Property ID**](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) whose events are tracked.
-6. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD. (Not applied to custom Cohort reports).
-7. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
-8. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
+3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
+4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
+
+:::note
+If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
+:::
+
+6. In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
+8. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+9. (Optional) In the **Data request time increment in days** field, you can specify the interval used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -99,6 +108,8 @@ This connector outputs the following incremental streams:
 
 ## Connector-specific features
 
+### Custom Reports
+
 Custom reports allow for flexibility in the reporting dimensions and metrics to meet your specific use case. We recommend using the [GA4 Query Explorer](https://ga-dev-tools.google/ga4/query-explorer/) to help build your report. To ensure your dimensions and metrics are compatible, you can also refer to the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
 
 Custom reports should be constructed in the following format:
@@ -117,6 +128,10 @@ Custom reports should be constructed in the following format:
 
 - Both `pivots` and `cohortSpec` are optional properties. For detailed descriptions of the `cohortSpec` and the `pivots` objects, refer to the official documentation [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
 - To enable Incremental sync for Custom reports, you must include the `date` dimension (except for custom Cohort reports).
+
+### Data Sampling and Data Request Time Increment
+
+Data sampling in Google Analytics 4 refers to the process of estimating analytics data when the amount of data in an account exceeds Google's predefined compute thresholds. To mitigate the chances of data sampling being applied to the results, the **Data request time increment in days** field allows users to specify the interval used when requesting data from the Google Analytics API. By setting the time increment to 1 (one day increment), users can reduce the data processed per request, minimizing the likelihood of data sampling and ensuring more accurate results. While larger time increments can speed up the sync, choosing a smaller value (1) is recommended to prioritize data accuracy unless there is a specific need for faster synchronization at the expense of some potential inaccuracies. Please note that this field does not apply to custom Cohort reports.
 
 ## Performance Considerations
 
