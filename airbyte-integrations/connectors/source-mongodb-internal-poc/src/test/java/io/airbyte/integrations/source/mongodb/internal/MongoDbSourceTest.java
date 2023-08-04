@@ -141,16 +141,26 @@ class MongoDbSourceTest {
     assertTrue(stream.isPresent());
     assertEquals(DB_NAME, stream.get().getNamespace());
     assertEquals("testCollection", stream.get().getName());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("name").get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("last_updated").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("total").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
-    assertEquals(JsonSchemaType.ARRAY.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
-    assertEquals(JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
-    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"), stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("name").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("last_updated").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("total").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
+    assertEquals(JsonSchemaType.ARRAY.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
+    assertEquals(JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
     assertEquals(true, stream.get().getSourceDefinedCursor());
     assertEquals(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD)), stream.get().getSourceDefinedPrimaryKey());
