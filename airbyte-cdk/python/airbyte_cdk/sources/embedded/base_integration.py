@@ -9,13 +9,17 @@ from airbyte_cdk.connector import TConfig
 from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream, get_stream_names
 from airbyte_cdk.sources.embedded.runner import SourceRunner
 from airbyte_cdk.sources.embedded.tools import get_defined_id
-from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode, Type
+from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage, Status, SyncMode, Type
 
 TOutput = TypeVar("TOutput")
 
 
 class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
     def __init__(self, runner: SourceRunner[TConfig], config: TConfig):
+        check_result = runner.check(config)
+        if check_result.status == Status.FAILED:
+            raise ValueError(f"Configuration is not valid: {check_result.message}")
+
         self.source = runner
         self.config = config
 

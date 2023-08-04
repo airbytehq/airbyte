@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 from airbyte_cdk.sources.embedded.base_integration import BaseEmbeddedIntegration
 from airbyte_protocol.models import (
     AirbyteCatalog,
+    AirbyteConnectionStatus,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -18,6 +19,7 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Level,
+    Status,
     SyncMode,
     Type,
 )
@@ -43,6 +45,7 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
         )
         self.stream2 = AirbyteStream(name="test2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
         self.source.discover.return_value = AirbyteCatalog(streams=[self.stream2, self.stream1])
+        self.source.check.return_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def test_integration(self):
         self.source.read.return_value = [
@@ -75,6 +78,12 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
             ),
             None,
         )
+
+    def test_failed_check(self):
+        self.source.check.return_value = AirbyteConnectionStatus(status=Status.FAILED, message="my error")
+        with self.assertRaises(ValueError) as error:
+            TestIntegration(self.source, self.config)
+        assert str(error.exception) == "Configuration is not valid: my error"
 
     def test_state(self):
         state = AirbyteStateMessage(data={})
