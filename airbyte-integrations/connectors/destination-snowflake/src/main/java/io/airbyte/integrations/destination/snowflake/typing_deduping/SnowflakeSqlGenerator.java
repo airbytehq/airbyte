@@ -62,14 +62,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     // TODO verify these types against normalization
     return switch (airbyteProtocolType) {
-      case STRING -> "VARCHAR";
+      case STRING -> "TEXT";
       case NUMBER -> "FLOAT";
-      case INTEGER -> "NUMBER(38,0)";
+      case INTEGER -> "NUMBER";
       case BOOLEAN -> "BOOLEAN";
       case TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ";
       case TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ";
       // If you change this - also change the logic in extractAndCast
-      case TIME_WITH_TIMEZONE -> "VARCHAR";
+      case TIME_WITH_TIMEZONE -> "TEXT";
       case TIME_WITHOUT_TIMEZONE -> "TIME";
       case DATE -> "DATE";
       case UNKNOWN -> "VARIANT";
@@ -90,7 +90,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
         CREATE TABLE ${final_table_id} (
-          "_airbyte_raw_id" VARCHAR NOT NULL,
+          "_airbyte_raw_id" TEXT NOT NULL,
           "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
           "_airbyte_meta" VARIANT NOT NULL,
           ${column_declarations}
@@ -115,7 +115,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
     boolean sameColumns = actualColumns.equals(intendedColumns)
-        && "VARCHAR".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
+        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
         && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_DATA));
 
@@ -169,7 +169,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType);
     } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
-      // We're using VARCHAR for this type, so need to explicitly check the string format.
+      // We're using TEXT for this type, so need to explicitly check the string format.
       // There's a bunch of ways we could do this; this regex is approximately correct and easy to implement.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
