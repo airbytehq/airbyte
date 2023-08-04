@@ -34,9 +34,6 @@ __pycache__
 .ipynb_checkpoints
 .pytest_
 
-# Java
-bin
-
 # Python unit test / coverage reports
 htmlcov/
 .tox/
@@ -105,3 +102,6 @@ tools/ci_connector_ops/pipeline_reports/
 
 # ignore local build scan uri output
 scan-journal.log
+
+# Java bin
+java/**/bin
