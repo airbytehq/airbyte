@@ -21,7 +21,8 @@ def send_slack_webhook(webhook_url, report):
     webhook = WebhookClient(webhook_url)
     for msg in chunk_messages(report):
         # Wrap in code block as slack does not support markdown in webhooks
-        webhook.send(f"```{msg}```")
+        msg = f"```\n{msg}\n```"
+        webhook.send(msg)
 
 
 def send_slack_message(context: OpExecutionContext, channel: str, message: str):
