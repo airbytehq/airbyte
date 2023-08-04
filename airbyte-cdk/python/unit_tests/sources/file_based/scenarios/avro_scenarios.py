@@ -205,7 +205,7 @@ single_avro_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -268,7 +268,7 @@ multiple_avro_combine_schema_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -364,7 +364,7 @@ avro_all_types_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -467,13 +467,13 @@ multiple_streams_avro_scenario = (
                     "name": "songs_stream",
                     "file_type": "avro",
                     "globs": ["*_songs.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "festivals_stream",
                     "file_type": "avro",
                     "globs": ["*_festivals.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
             ]
         }
@@ -633,7 +633,7 @@ avro_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
                         "avro": {
                             "filetype": "avro",

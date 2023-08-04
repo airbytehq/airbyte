@@ -115,8 +115,6 @@ from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import 
 from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import (
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
-    invalid_validation_policy,
-    no_validation_policy,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
@@ -222,8 +220,6 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
 read_scenarios = discover_scenarios + [
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
-    invalid_validation_policy,
-    no_validation_policy,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,

@@ -62,11 +62,14 @@ class AbstractFileBasedSpec(BaseModel):
                         object_property["enum"] = object_property["allOf"][0]["enum"]
                         object_property.pop("allOf")
 
-        properties_to_change = ["primary_key", "input_schema"]
+        properties_to_change = ["primary_key", "validation_policy"]
         for property_to_change in properties_to_change:
-            schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = schema["properties"]["streams"]["items"][
-                "properties"
-            ][property_to_change].pop("anyOf")
+            property_object = schema["properties"]["streams"]["items"]["properties"][property_to_change]
+            if "anyOf" in property_object:
+                schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = property_object.pop("anyOf")
+            if "allOf" in property_object and "enum" in property_object["allOf"][0]:
+                property_object["enum"] = property_object["allOf"][0]["enum"]
+                property_object.pop("allOf")
         return schema
 
     @staticmethod

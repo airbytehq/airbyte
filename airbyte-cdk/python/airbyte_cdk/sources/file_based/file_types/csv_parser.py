@@ -62,7 +62,7 @@ class CsvParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> Iterable[Dict[str, Any]]:
-        schema: Mapping[str, Any] = config.input_schema  # type: ignore
+        schema: Optional[Mapping[str, Any]] = config.get_input_schema()
         config_format = config.format.get(config.file_type) if config.format else CsvFormat()
         if not isinstance(config_format, CsvFormat):
             raise ValueError(f"Invalid format config: {config_format}")

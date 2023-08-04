@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from enum import Enum
 from typing import Any, List, Mapping, Optional, Type, Union
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
 
@@ -17,6 +19,12 @@ PrimaryKeyType = Optional[Union[str, List[str]]]
 VALID_FILE_TYPES: Mapping[str, Type[BaseModel]] = {"avro": AvroFormat, "csv": CsvFormat, "jsonl": JsonlFormat, "parquet": ParquetFormat}
 
 
+class ValidationPolicy(Enum):
+    emit_record = "Emit Record"
+    skip_record = "Skip Record"
+    wait_for_discover = "Wait for Discover"
+
+
 class FileBasedStreamConfig(BaseModel):
     name: str = Field(title="Name", description="The name of the stream.")
     file_type: str = Field(title="File Type", description="The data file type that is being extracted for a stream.")
@@ -24,11 +32,11 @@ class FileBasedStreamConfig(BaseModel):
         title="Globs",
         description='The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
     )
-    validation_policy: str = Field(
+    validation_policy: ValidationPolicy = Field(
         title="Validation Policy",
         description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
     )
-    input_schema: Optional[Union[str, Mapping[str, Any]]] = Field(
+    input_schema: Optional[str] = Field(
         title="Input Schema",
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
@@ -101,10 +109,22 @@ class FileBasedStreamConfig(BaseModel):
         return {**config, **{"decimal_as_float": True}}
 
     @validator("input_schema", pre=True)
-    def transform_input_schema(cls, v: Optional[Union[str, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
+    def validate_input_schema(cls, v: Optional[str]) -> Optional[str]:
         if v:
-            schema = type_mapping_to_jsonschema(v)
+            if type_mapping_to_jsonschema(v):
+                return v
+            else:
+                raise ConfigValidationError(FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA)
+        return None
+
+    def get_input_schema(self) -> Optional[Mapping[str, Any]]:
+        """
+        User defined input_schema is defined as a string in the config. This method takes the string representation
+        and converts it into a Mapping[str, Any] which is used by file-based CDK components.
+        """
+        if self.input_schema:
+            schema = type_mapping_to_jsonschema(self.input_schema)
             if not schema:
-                raise ValueError(f"Unable to create JSON schema from input schema {v}")
+                raise ValueError(f"Unable to create JSON schema from input schema {self.input_schema}")
             return schema
         return None

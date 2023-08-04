@@ -28,7 +28,7 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
         "name": "stream1",
         "file_type": file_type,
         "globs": ["*"],
-        "validation_policy": "emit_record",
+        "validation_policy": "Emit Record",
         "format": {
             file_type: input_format
         },
@@ -56,7 +56,7 @@ def test_legacy_format() -> None:
         "name": "stream1",
         "file_type": "csv",
         "globs": ["*"],
-        "validation_policy": "emit_record_on_schema_mismatch",
+        "validation_policy": "Emit Record",
         "format": {
             "filetype": "csv",
             "delimiter": "d",
@@ -95,8 +95,28 @@ def test_multiple_file_formats_are_not_supported() -> None:
         "name": "stream1",
         "file_type": "csv",
         "globs": ["*"],
-        "validation_policy": "emit_record_on_schema_mismatch",
+        "validation_policy": "Emit Record",
         "format": formats
+    }
+    with pytest.raises(ValidationError):
+        FileBasedStreamConfig(**stream_config)
+
+
+def test_invalid_validation_policy() -> None:
+    stream_config = {
+        "name": "stream1",
+        "file_type": "csv",
+        "globs": ["*"],
+        "validation_policy": "Not Valid Policy",
+        "format": {
+            "filetype": "csv",
+            "delimiter": "d",
+            "quote_char": "q",
+            "escape_char": "e",
+            "encoding": "ascii",
+            "double_quote": True,
+            "quoting_behavior": "Quote All"
+        },
     }
     with pytest.raises(ValidationError):
         FileBasedStreamConfig(**stream_config)

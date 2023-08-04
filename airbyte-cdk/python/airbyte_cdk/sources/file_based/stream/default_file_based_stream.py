@@ -162,7 +162,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
-            return self.config.input_schema  # type: ignore
+            return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
         else:

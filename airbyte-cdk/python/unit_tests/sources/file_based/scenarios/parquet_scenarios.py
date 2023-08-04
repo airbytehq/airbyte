@@ -161,7 +161,7 @@ single_parquet_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -217,7 +217,7 @@ multi_parquet_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -280,7 +280,7 @@ parquet_various_types_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -421,7 +421,7 @@ parquet_file_with_decimal_no_config_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -472,7 +472,7 @@ parquet_file_with_decimal_as_string_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
                         "parquet": {
                             "filetype": "parquet",
@@ -529,7 +529,7 @@ parquet_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "file_type": "parquet",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
                         "parquet": {
                             "filetype": "parquet",
@@ -589,7 +589,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
                         "filetype": "parquet",
                     },
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
