@@ -38,11 +38,13 @@
                         "client_id": {
                             "type": "string",
                             "title": "Client ID",
+                            "airbyte_secret": true,
                             "description": "The client ID"
                         },
                         "client_secret": {
                             "type": "string",
                             "title": "Client secret",
+                            "airbyte_secret": true,
                             "description": "The client secret."
                         },
                         "refresh_token": {
