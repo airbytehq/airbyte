@@ -90,7 +90,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                   "struct" OBJECT,
                   "array" ARRAY,
                   "string" VARCHAR,
-                  "number" NUMBER(38, 9),
+                  "number" FLOAT,
                   "integer" INTEGER,
                   "boolean" BOOLEAN,
                   "timestamp_with_timezone" TIMESTAMP_TZ,

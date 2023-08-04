@@ -63,7 +63,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     // TODO verify these types against normalization
     return switch (airbyteProtocolType) {
       case STRING -> "VARCHAR";
-      case NUMBER -> "NUMBER(38, 9)";
+      case NUMBER -> "FLOAT";
       case INTEGER -> "INTEGER";
       case BOOLEAN -> "BOOLEAN";
       case TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ";
