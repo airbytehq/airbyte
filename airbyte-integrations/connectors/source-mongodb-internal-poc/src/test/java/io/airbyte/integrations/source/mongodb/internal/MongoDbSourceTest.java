@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,14 +120,16 @@ class MongoDbSourceTest {
   @Test
   void testDiscoverOperation() throws IOException {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
-    final Document schemaDiscoveryResponse = Document.parse(MoreResources.readResource("schema_discovery_response.json"));
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
     final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
-    when(cursor.hasNext()).thenReturn(true);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponse);
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
@@ -155,6 +159,8 @@ class MongoDbSourceTest {
         stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
     assertEquals(JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("other").get("type").asText());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
