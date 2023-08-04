@@ -46,7 +46,13 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
-from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from connector_acceptance_test.utils.compare import diff_dicts
+from connector_acceptance_test.utils.json_schema_helper import (
+    JsonSchemaHelper,
+    get_expected_schema_structure,
+    get_object_structure,
+    get_paths_in_connector_config,
+)
 from jsonschema._utils import flatten
 
 
@@ -125,6 +131,8 @@ class TestSpec(BaseTest):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
             assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
+        else:
+            pytest.skip("The spec.yaml or spec.json does not exist. Hence, comparison with the actual one can't be performed")
 
     def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that enum lists in specs contain distinct values."""
@@ -177,11 +185,11 @@ class TestSpec(BaseTest):
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
                 assert (
-                    "default" not in prop_obj
-                ), f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
-                assert (
-                    "enum" not in prop_obj
-                ), f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
+                    "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
+                ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
+                assert "enum" not in prop_obj or (
+                    len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
+                ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
@@ -483,25 +491,31 @@ class TestSpec(BaseTest):
         """Check if connector has correct oauth flow parameters according to
         https://docs.airbyte.io/connector-development/connector-specification-reference
         """
-        if not actual_connector_spec.authSpecification:
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
             return
         spec_schema = actual_connector_spec.connectionSpecification
-        oauth_spec = actual_connector_spec.authSpecification.oauth2Specification
-        parameters: List[List[str]] = oauth_spec.oauthFlowInitParameters + oauth_spec.oauthFlowOutputParameters
-        root_object = oauth_spec.rootObject
-        if len(root_object) == 0:
-            params = {"/" + "/".join(p) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema))
-        elif len(root_object) == 1:
-            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema))
-        elif len(root_object) == 2:
-            params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
-        else:
-            pytest.fail("rootObject cannot have more than 2 elements")
+        paths_to_validate = set()
+        if advanced_auth.predicate_key:
+            paths_to_validate.add("/" + "/".join(advanced_auth.predicate_key))
+        oauth_config_specification = advanced_auth.oauth_config_specification
+        if oauth_config_specification:
+            if oauth_config_specification.oauth_user_input_from_connector_config_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(
+                        oauth_config_specification.oauth_user_input_from_connector_config_specification["properties"]
+                    )
+                )
+            if oauth_config_specification.complete_oauth_output_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_output_specification["properties"])
+                )
+            if oauth_config_specification.complete_oauth_server_output_specification:
+                paths_to_validate.update(
+                    get_paths_in_connector_config(oauth_config_specification.complete_oauth_server_output_specification["properties"])
+                )
 
-        diff = params - schema_path
+        diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
     @pytest.mark.default_timeout(60)
@@ -886,14 +900,8 @@ class TestBasicRead(BaseTest):
         for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
-            detailed_logger.log_json_list(actual)
-            detailed_logger.info(f"Expected records for stream {stream_name}:")
-            detailed_logger.log_json_list(expected)
-
+            detailed_logger.info(actual)
             ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
-            detailed_logger.info(f"Ignored fields for stream {stream_name}:")
-            detailed_logger.log_json_list(ignored_field_names)
-
             self.compare_records(
                 stream_name=stream_name,
                 actual=actual,
@@ -1052,16 +1060,30 @@ class TestBasicRead(BaseTest):
     ):
         """Compare records using combination of restrictions"""
         if exact_order:
-            for r1, r2 in zip(expected, actual):
+            if ignored_fields:
+                for item in actual:
+                    delete_fields(item, ignored_fields)
+                for item in expected:
+                    delete_fields(item, ignored_fields)
+
+            cleaned_actual = []
+            if extra_fields:
+                for r1, r2 in zip(expected, actual):
+                    if r1 and r2:
+                        cleaned_actual.append(TestBasicRead.remove_extra_fields(r2, r1))
+                    else:
+                        break
+
+            cleaned_actual = cleaned_actual or actual
+            complete_diff = "\n".join(diff_dicts(cleaned_actual, expected, use_markup=False))
+            for r1, r2 in zip(expected, cleaned_actual):
                 if r1 is None:
                     assert extra_records, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
                     break
-                if extra_fields:
-                    r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                if ignored_fields:
-                    delete_fields(r1, ignored_fields)
-                    delete_fields(r2, ignored_fields)
-                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
+
+                # to avoid printing the diff twice, we avoid the == operator here (see plugin.pytest_assertrepr_compare)
+                equals = r1 == r2
+                assert equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
         else:
             _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
             expected = set(map(_make_hashable, expected))

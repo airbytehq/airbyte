@@ -80,6 +80,10 @@ This source is capable of syncing the following streams:
 
 All the reports are generated relative to the target profile' timezone.
 
+Campaign reports may sometimes have no data or not presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
+
+Report data synchronization only cover the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+
 ## Performance considerations
 
 Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
@@ -96,7 +100,6 @@ Information about expected report generation waiting time you may find [here](ht
 | `object`                 | `object`     |
 
 ## CHANGELOG
-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|

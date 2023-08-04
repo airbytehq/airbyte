@@ -69,9 +69,9 @@ public class MongoUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
   // Shared constants
-  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
+  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
-  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
+  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   public static final String USER = "user";
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
@@ -114,12 +114,6 @@ public class MongoUtils {
     return objectNode;
   }
 
-  public static JsonNode toJsonNode(final BsonDocument document, final List<String> columnNames) {
-    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    formatDocument(document, objectNode, columnNames);
-    return objectNode;
-  }
-
   public static Object getBsonValue(final BsonType type, final String value) {
     try {
       return switch (type) {
@@ -152,10 +146,6 @@ public class MongoUtils {
 
   private static void formatDocument(final Document document, final ObjectNode objectNode, final List<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
-    formatDocument(bsonDocument, objectNode, columnNames);
-  }
-
-  private static void formatDocument(final BsonDocument bsonDocument, final ObjectNode objectNode, final List<String> columnNames) {
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
     } catch (final Exception e) {
@@ -189,7 +179,7 @@ public class MongoUtils {
    */
   public static boolean tlsEnabledForStandaloneInstance(final JsonNode config, final JsonNode instanceConfig) {
     return config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
-        : (!instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean());
+        : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
   }
 
   public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
@@ -259,7 +249,7 @@ public class MongoUtils {
    */
   public static List<TreeNode<CommonField<BsonType>>> getUniqueFields(final MongoCollection<Document> collection) {
     final var allkeys = new HashSet<>(getFieldsName(collection));
-    LOGGER.debug("Discovered keys '{}' for collection '{}'.", allkeys, collection.getNamespace().getCollectionName());
+
     return allkeys.stream().map(key -> {
       final var types = getTypes(collection, key);
       final var type = getUniqueType(types);
@@ -287,8 +277,6 @@ public class MongoUtils {
                                    final TreeNode<CommonField<BsonType>> parentNode,
                                    final String pathToField) {
     final var nestedKeys = getFieldsName(collection, pathToField);
-    LOGGER.debug("Discovered nested keys '{}' for collection '{}' and path '{}'.", nestedKeys, collection.getNamespace().getCollectionName(),
-        pathToField);
     nestedKeys.forEach(key -> {
       final var types = getTypes(collection, pathToField + "." + key);
       final var nestedType = getUniqueType(types);
@@ -317,17 +305,16 @@ public class MongoUtils {
   }
 
   private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
-    LOGGER.debug("Fetching types for field '{}'...", name);
+    final var fieldName = "$" + name;
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", name))),
+        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
         new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
     final var listOfTypes = new ArrayList<String>();
     final var cursor = output.cursor();
     while (cursor.hasNext()) {
       final var type = ((Document) cursor.next().get(ID)).get("fieldType").toString();
-      LOGGER.debug("Found type '{}' for field '{}' in collection '{}'.", type, name, collection.getNamespace().getCollectionName());
       if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
         listOfTypes.add(type);
       }
