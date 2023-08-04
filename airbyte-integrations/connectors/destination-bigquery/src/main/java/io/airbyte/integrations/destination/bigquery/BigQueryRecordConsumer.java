@@ -68,7 +68,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   protected void startTracked() throws Exception {
     // todo (cgardens) - move contents of #write into this method.
-    typerDeduper.prepareFinalTables();
+    typerDeduper.prepareTables();
     if (use1s1t) {
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {

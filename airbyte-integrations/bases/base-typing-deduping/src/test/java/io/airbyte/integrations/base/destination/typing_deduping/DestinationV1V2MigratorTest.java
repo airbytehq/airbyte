@@ -1,8 +1,10 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V1_COLUMNS;
+import static io.airbyte.integrations.base.destination.typing_deduping.Constants.RAW_TABLE_EXPECTED_V2_COLUMNS;
+
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -16,101 +18,89 @@ import org.mockito.Mockito;
 
 public class DestinationV1V2MigratorTest {
 
+  private static final StreamId STREAM_ID = new StreamId("final", "final_table", "raw", "raw_table", null, null);
+
   public static class ShouldMigrateTestArgumentProvider implements ArgumentsProvider {
 
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+
+      final boolean v2SchemaMatches = true; // Don't throw an exception
       return Stream.of(
-          // Should not migrate
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(true, true, true), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(false, false, false), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(false, true, false), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(false, false, true), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(false, true, true), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(true, false, false), false),
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(true, true, false), false),
-          // Should migrate
-          Arguments.of(MockDestinationV1V2Migrator.shouldMigrateBuilder(true, false, true), true)
+          // Doesn't Migrate because of sync mode
+          Arguments.of(DestinationSyncMode.OVERWRITE, makeMockMigrator(true, false, v2SchemaMatches, true, true), false),
+          // Doesn't migrate because v2 table already exists
+          Arguments.of(DestinationSyncMode.APPEND, makeMockMigrator(true, true, v2SchemaMatches, true, true), false),
+          Arguments.of(DestinationSyncMode.APPEND_DEDUP, makeMockMigrator(true, true, v2SchemaMatches, true, true), false),
+          // Doesn't migrate because a valid v1 raw table does not exist
+          Arguments.of(DestinationSyncMode.APPEND, makeMockMigrator(true, false, v2SchemaMatches, false, true), false),
+          Arguments.of(DestinationSyncMode.APPEND_DEDUP, makeMockMigrator(true, false, v2SchemaMatches, false, true), false),
+          Arguments.of(DestinationSyncMode.APPEND, makeMockMigrator(true, false, v2SchemaMatches, true, false), false),
+          Arguments.of(DestinationSyncMode.APPEND_DEDUP, makeMockMigrator(true, false, v2SchemaMatches, true, false), false),
+          // Migrates
+          Arguments.of(DestinationSyncMode.APPEND, noIssuesMigrator(), true),
+          Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true)
       );
     }
+
+
   }
 
   @ParameterizedTest
   @ArgumentsSource(ShouldMigrateTestArgumentProvider.class)
-  public void testShouldMigrate(DestinationV1V2Migrator migrator, boolean expected) {
-    StreamConfig config = new StreamConfig(null, null, null, null, null, null);
+  public void testShouldMigrate(final DestinationSyncMode destinationSyncMode, final BaseDestinationV1V2Migrator migrator, boolean expected) {
+    final StreamConfig config = new StreamConfig(STREAM_ID, null, destinationSyncMode, null, null, null);
     final var actual = migrator.shouldMigrate(config);
     Assertions.assertEquals(expected, actual);
   }
 
-  public static class MigrationRequiredForSyncModeTestArgumentProvider implements ArgumentsProvider {
 
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, false),
-          Arguments.of(SyncMode.FULL_REFRESH, DestinationSyncMode.APPEND, true),
-          Arguments.of(SyncMode.FULL_REFRESH, DestinationSyncMode.APPEND_DEDUP, true),
-          Arguments.of(SyncMode.INCREMENTAL, DestinationSyncMode.OVERWRITE, true),
-          Arguments.of(SyncMode.INCREMENTAL, DestinationSyncMode.APPEND, true),
-          Arguments.of(SyncMode.INCREMENTAL, DestinationSyncMode.APPEND_DEDUP, true)
-      );
-    }
-  }
-
-  @ParameterizedTest
-  @ArgumentsSource(MigrationRequiredForSyncModeTestArgumentProvider.class)
-  public void testMigrationRequiredForSyncMode(final SyncMode syncMode, final DestinationSyncMode destinationSyncMode, final boolean expected) {
-    final var migrator = new MockDestinationV1V2Migrator();
-    final var actual = migrator.isMigrationRequiredForSyncMode(syncMode, destinationSyncMode);
-    Assertions.assertEquals(expected, actual);
-  }
 
   @Test
   public void testMismatchedSchemaThrowsException() {
-    final var migrator = new MockDestinationV1V2Migrator();
-    migrator.setSchemaMatchesExpectationValue(false);
+    final StreamConfig config = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
+    final var migrator = makeMockMigrator(true, true, false, false, false);
     UnexpectedSchemaException exception = Assertions.assertThrows(UnexpectedSchemaException.class,
-        () -> migrator.doesAirbyteInternalNamespaceRawTableMatchExpectedV2Schema("foo"));
+        () -> migrator.shouldMigrate(config));
     Assertions.assertEquals("Destination V2 Raw Table does not match expected Schema", exception.getMessage());
-  }
-
-  @Test
-  public void testMigrateIfNecessary() {
-    final var migrator = new MockDestinationV1V2Migrator();
-    // Should Migrate
-    migrator.setShouldMigrateValue(true);
-    migrator.setMigrationResultValue(new MigrationResult(true));
-    final var stream = new StreamConfig(new StreamId("foo", "bar", null, null, null, null), null, null, null, null, null);
-    var actual = migrator.migrateIfNecessary(null, null, stream);
-    Assertions.assertTrue(actual.isPresent());
-    Assertions.assertTrue(actual.get().success());
-    // Should not migrate
-    migrator.setShouldMigrateValue(false);
-    actual = migrator.migrateIfNecessary(null, null, null);
-    Assertions.assertFalse(actual.isPresent());
   }
 
   @SneakyThrows
   @Test
   public void testMigrate() {
     final var sqlGenerator = new MockSqlGenerator();
-    final StreamId streamId = new StreamId("foo", "bar", "fizz", "buzz", null, null);
-    final StreamConfig stream = new StreamConfig(streamId, null, null, null, null, null);
+    final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);
-    final var migrator = new MockDestinationV1V2Migrator();
-    final var v1RawName = new AirbyteStreamNameNamespacePair("zip", "zop");
-    migrator.setConvertToV1RawNameValue(v1RawName);
-    final var sql = String.join("\n", sqlGenerator.migrateFromV1toV2(stream, v1RawName), sqlGenerator.softReset(stream));
+    final var sql = String.join("\n", sqlGenerator.migrateFromV1toV2(stream, "v1_raw_namespace", "v1_raw_table"), sqlGenerator.softReset(stream));
     // All is well
-    var actual = migrator.migrate(sqlGenerator, handler, stream);
+    final var migrator = noIssuesMigrator();
+    migrator.migrate(sqlGenerator, handler, stream);
     Mockito.verify(handler).execute(sql);
-    Assertions.assertTrue(actual.success());
-    // Exception during SQL Execution
+    // Exception thrown when executing sql, TableNotMigratedException thrown
     Mockito.doThrow(Exception.class).when(handler).execute(Mockito.anyString());
     TableNotMigratedException exception = Assertions.assertThrows(TableNotMigratedException.class,
         () -> migrator.migrate(sqlGenerator, handler, stream));
-    Assertions.assertEquals("Attempted and failed to migrate stream bar", exception.getMessage());
+    Assertions.assertEquals("Attempted and failed to migrate stream final_table", exception.getMessage());
+  }
+
+  public static BaseDestinationV1V2Migrator makeMockMigrator(final boolean v2NamespaceExists, final boolean v2TableExists,
+      final boolean v2RawSchemaMatches,
+      boolean v1RawTableExists, boolean v1RawTableSchemaMatches) {
+    final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
+    Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
+    final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
+    Mockito.when(migrator.getTableIfExists("raw", "raw_table")).thenReturn(existingTable);
+    Mockito.when(migrator.schemaMatchesExpectation("v2_raw", RAW_TABLE_EXPECTED_V2_COLUMNS)).thenReturn(v2RawSchemaMatches);
+
+    Mockito.when(migrator.convertToV1RawName(Mockito.any())).thenReturn(new NamespacedTableName("v1_raw_namespace", "v1_raw_table"));
+    final var existingV1RawTable = v1RawTableExists ? Optional.of("v1_raw") : Optional.empty();
+    Mockito.when(migrator.getTableIfExists("v1_raw_namespace", "v1_raw_table")).thenReturn(existingV1RawTable);
+    Mockito.when(migrator.schemaMatchesExpectation("v1_raw", RAW_TABLE_EXPECTED_V1_COLUMNS)).thenReturn(v1RawTableSchemaMatches);
+    return migrator;
+  }
+
+  public static BaseDestinationV1V2Migrator noIssuesMigrator() {
+    return makeMockMigrator(true, false, true, true, true);
   }
 
 }

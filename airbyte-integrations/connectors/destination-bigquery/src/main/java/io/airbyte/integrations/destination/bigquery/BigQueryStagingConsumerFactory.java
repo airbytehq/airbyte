@@ -174,7 +174,7 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
-      typerDeduper.prepareFinalTables();
+      typerDeduper.prepareTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }

@@ -27,7 +27,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -584,28 +583,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
-            "final_table_id", streamId.finalTableId(QUOTE),
-            "tmp_final_table", streamId.finalTableId(QUOTE, finalSuffix),
-            "real_final_table", streamId.finalName(QUOTE))).replace(
-            """
+        "final_table_id", streamId.finalTableId(QUOTE),
+        "tmp_final_table", streamId.finalTableId(QUOTE, finalSuffix),
+        "real_final_table", streamId.finalName(QUOTE))).replace(
+        """
             DROP TABLE IF EXISTS ${final_table_id};
             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
             """);
   }
 
-  private String wrapAndQuote(AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair) {
-    return Stream.of(airbyteStreamNameNamespacePair.getNamespace(), airbyteStreamNameNamespacePair.getName())
+  private String wrapAndQuote(final String namespace, final String tableName) {
+    return Stream.of(namespace, tableName)
         .map(part -> StringUtils.wrap(part, QUOTE))
         .collect(joining("."));
   }
 
   @Override
-  public String migrateFromV1toV2(StreamConfig stream, AirbyteStreamNameNamespacePair v1RawTableNameAndNamespace) {
+  public String migrateFromV1toV2(StreamConfig stream, String namespace, String tableName) {
     return new StringSubstitutor(Map.of(
         "v2_raw_table", stream.id().rawTableId(QUOTE),
-        "v1_raw_table", wrapAndQuote(v1RawTableNameAndNamespace))
+        "v1_raw_table", wrapAndQuote(namespace, tableName))
     ).replace(
         """
+            BEGIN TRANSACTION;
+                        
             CREATE OR REPLACE TABLE ${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data JSON,
@@ -622,6 +623,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
                 FROM ${v1_raw_table}
             );
+                        
+            COMMIT TRANSACTION;
             """);
   }
 

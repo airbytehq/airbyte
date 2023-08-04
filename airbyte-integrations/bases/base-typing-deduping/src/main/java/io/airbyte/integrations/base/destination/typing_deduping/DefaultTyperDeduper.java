@@ -14,12 +14,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to call
- * {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise avoid
- * interacting directly with these classes.
+ * {@code new CatalogParser(new FooSqlGenerator()).parseCatalog()}, but should otherwise avoid interacting directly with these classes.
  * <p>
  * In a typical sync, destinations should call the methods:
  * <ol>
- * <li>{@link #prepareFinalTables()} once at the start of the sync</li>
+ * <li>{@link #prepareTables()} once at the start of the sync</li>
  * <li>{@link #typeAndDedupe(String, String)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
@@ -51,12 +50,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   /**
-   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be
-   * the true final tables. Specifically, other than an initial sync (i.e. table does not exist, or is
-   * empty) we write to a temporary final table, and swap it into the true final table at the end of
+   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be the true final tables. Specifically, other than
+   * an initial sync (i.e. table does not exist, or is empty) we write to a temporary final table, and swap it into the true final table at the end of
    * the sync. This is to prevent user downtime during a sync.
    */
-  public void prepareFinalTables() throws Exception {
+  public void prepareTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
     }
