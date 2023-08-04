@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
@@ -28,11 +27,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -119,10 +116,9 @@ public class MongoDbSource extends BaseConnector implements Source {
 
     try (final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config)) {
       final var database = mongoClient.getDatabase(databaseName);
-
-      final List<AutoCloseableIterator<AirbyteMessage>> incIters = incrIters(database, catalog, states, emittedAt);
-
-      return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(incIters, AirbyteTraceMessageUtility::emitStreamStatusTrace), ()-> {
+      // TODO treat INCREMENTAL and FULL_REFRESH differently?
+      final List<AutoCloseableIterator<AirbyteMessage>> iterators = iterators(database, catalog, states, emittedAt);
+      return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace), ()-> {
       });
     }
   }
@@ -153,13 +149,19 @@ public class MongoDbSource extends BaseConnector implements Source {
         );
   }
 
-  private List<AutoCloseableIterator<AirbyteMessage>> incrIters(final MongoDatabase database, final ConfiguredAirbyteCatalog catalog, final Map<String, MongodbStreamState> states, final Instant emittedAt) {
+  private List<AutoCloseableIterator<AirbyteMessage>> iterators(
+      final MongoDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, MongodbStreamState> states,
+      final Instant emittedAt
+  ) {
     return catalog.getStreams()
         .stream()
-        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+        // commented out to so that all sync-modes are treated equally... this allows the tests to pass
+        //  .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           // the stream name is in the format of "[database].[collection]" and we only need the collection.
-          final var collectionName = airbyteStream.getStream().getName().split("\\.", 2)[1];
+          final var collectionName = airbyteStream.getStream().getName();
           LOGGER.info("collection is {}", collectionName);
           final var collection = database.getCollection(collectionName);
           // TODO verify that if all fields are selected that all fields are returned here
