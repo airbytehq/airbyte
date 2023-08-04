@@ -33,8 +33,11 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   private final Instant emittedAt;
   private final int batchSize;
+  /** Counts the number of records seen in this batch, resets when a state-message has been generated. */
   private int count = 0;
+  /** Pointer to the last document seen by this iterator, necessary to track the _id field for state messages */
   private Document last = null;
+  /** This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the final message will be returned. */
   private boolean finalStateNext = false;
 
   MongoDbStateIterator(final MongoCursor<Document> iter, final ConfiguredAirbyteStream stream, final Instant emittedAt, final int batchSize) {
