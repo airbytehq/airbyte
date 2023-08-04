@@ -181,7 +181,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   // TODO : Delete this Override when MSSQL supports individual table snapshot
   @Override
-  public void newTableSnapshotTest() throws Exception {
+  public void newTableSnapshotTest() {
     // Do nothing
   }
 
@@ -314,7 +314,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
         .build());
-    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
+    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     switchSnapshotIsolation(false, dbName);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
@@ -350,7 +350,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   void testCdcCheckOperationsWithDot() throws Exception {
     // assertCdcEnabledInDb and validate escape with special character
     switchCdcOnDatabase(true, dbNamewithDot);
-    AirbyteConnectionStatus status = getSource().check(getConfig());
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 

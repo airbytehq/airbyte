@@ -39,7 +39,8 @@
         "title": "Password",
         "type": "string",
         "airbyte_secret": true,
-        "order": 4
+        "order": 4,
+        "always_show": true
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-jdbc-url-format.html\">JDBC URL parameters</a>.",
@@ -178,25 +179,14 @@
       },
       "replication_method": {
         "type": "object",
-        "title": "Replication Method",
-        "description": "Replication method to use for extracting data from the database.",
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
         "order": 8,
+        "default": "CDC",
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "STANDARD",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Logical Replication (CDC)",
-            "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "title": "Read Changes using Binary Log (CDC)",
+            "description": "Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
             "required": ["method"],
             "properties": {
               "method": {
@@ -211,13 +201,27 @@
                 "default": 300,
                 "min": 120,
                 "max": 1200,
-                "order": 1
+                "order": 1,
+                "always_show": true
               },
               "server_time_zone": {
                 "type": "string",
                 "title": "Configured server timezone for the MySQL source (Advanced)",
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
-                "order": 2
+                "order": 2,
+                "always_show": true
+              }
+            }
+          },
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "STANDARD",
+                "order": 0
               }
             }
           }
