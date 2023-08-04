@@ -12,13 +12,13 @@ jobs:
     outputs:
       atf_modified: ${{ steps.filter.outputs.atf }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          atf:
-            - 'airbyte-to-flow/**'
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            atf:
+              - 'airbyte-to-flow/**'
   airbyte_to_flow:
     runs-on: ubuntu-20.04
 
@@ -28,7 +28,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      
+
     needs: paths-filter
 
     steps:
@@ -166,7 +166,6 @@ jobs:
           - name: source-braze
           - name: source-netsuite
           - name: source-jira
-          - name: source-dynamodb
           - name: source-bigquery
           - name: source-woocommerce
           - name: source-amazon-sqs
