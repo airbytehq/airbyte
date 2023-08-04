@@ -321,16 +321,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     ).replace(
         """
         DELETE FROM ${final_table_id}
-        WHERE
-          "_airbyte_raw_id" IN (
-            SELECT "_airbyte_raw_id" FROM (
-              SELECT "_airbyte_raw_id", row_number() OVER (
-                PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, "_airbyte_extracted_at" DESC
-              ) as row_number FROM ${final_table_id}
-            )
-            WHERE row_number != 1
+        WHERE "_airbyte_raw_id" IN (
+          SELECT "_airbyte_raw_id" FROM (
+            SELECT "_airbyte_raw_id", row_number() OVER (
+              PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC NULLS LAST, "_airbyte_extracted_at" DESC
+            ) as row_number FROM ${final_table_id}
           )
-        ;""");
+          WHERE row_number != 1
+        );
+        """);
   }
 
   @VisibleForTesting
@@ -359,16 +358,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     ).replace(
         """
         DELETE FROM ${final_table_id}
-        WHERE
-          ARRAY_CONSTRUCT(${pk_list}) IN (
-            SELECT ARRAY_CONSTRUCT(
-                ${pk_extracts}
-              )
-            FROM  ${raw_table_id}
-            WHERE
-              "_airbyte_data":"_ab_cdc_deleted_at" IS NOT NULL
-          )
-        ;"""
+        WHERE ARRAY_CONSTRUCT(${pk_list}) IN (
+          SELECT ARRAY_CONSTRUCT(
+              ${pk_extracts}
+            )
+          FROM  ${raw_table_id}
+          WHERE "_airbyte_data":"_ab_cdc_deleted_at" != 'null'
+        );
+        """
     );
   }
 
@@ -381,13 +378,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         // would be painful,
         // and it only matters in a few edge cases.
         """
-        DELETE FROM
-          ${raw_table_id}
-        WHERE
-          "_airbyte_raw_id" NOT IN (
-            SELECT "_airbyte_raw_id" FROM ${final_table_id}
-          )
-        ;""");
+        DELETE FROM ${raw_table_id}
+        WHERE "_airbyte_raw_id" NOT IN (
+          SELECT "_airbyte_raw_id" FROM ${final_table_id}
+        );
+        """);
   }
 
   @VisibleForTesting

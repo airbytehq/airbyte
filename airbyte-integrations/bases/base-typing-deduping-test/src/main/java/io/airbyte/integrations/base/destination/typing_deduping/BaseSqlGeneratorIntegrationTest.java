@@ -595,7 +595,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertAll(
         () -> assertEquals(
             expectedRawRecords,
-            actualRawRecords.size()),
+            actualRawRecords.size(),
+            "Raw record count was incorrect"),
         () -> assertEquals(
             0,
             actualRawRecords.stream()
@@ -603,7 +604,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 .count()),
         () -> assertEquals(
             expectedFinalRecords,
-            actualFinalRecords.size()));
+            actualFinalRecords.size(),
+            "Final record count was incorrect"));
   }
 
 }
