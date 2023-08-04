@@ -409,7 +409,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             """
                 BEGIN TRANSACTION;
                 DROP TABLE IF EXISTS ${final_table};
-                ALTER TABLE ${tmp_final_table} RENAME TO ${final_table}
+                ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};
                 COMMIT;
                 """
         );
