@@ -6,10 +6,12 @@
         "auth_type": null,
         "client_id": null,
         "client_secret": null,
-        "report_record_types": null,
-        "look_back_window": null,
-        "state_filter": null,
         "refresh_token": null,
+        "state_filter": null,
+        "report_record_types": null,
+        "profiles": {
+            "description": "Profile IDs you want to fetch data for. See the docs for more details https://go.estuary.dev/8Ra66M"
+        },
         "region": {
             "description": "Region to pull data from (EU/NA/FE). See the docs for more details https://go.estuary.dev/8Ra66M"
         },
@@ -17,24 +19,20 @@
             "description": "Date from which to start collecting reports, in YYYY-MM-DD format. Shouldn’t be more than 60 days in the past.",
             "format": "date"
         },
-        "report_generation_max_retries": {
-            "type": "integer",
-            "default": 0
-        },
-        "report_wait_timeout": {
-            "type": "integer",
-            "default": 0
-        },
         "credentials": {
+            "order": 10,
+            "type": "object",
             "oneOf": [
                 {
                     "type": "object",
                     "title": "Credentials",
                     "x-oauth2-provider": "amazon-ads",
+                    "required": ["refresh_token"],
                     "properties": {
                         "auth_type": {
                             "type": "string",
                             "title": "Auth Type",
+                            "const": "oauth2.0",
                             "default": "oauth2.0"
                         },
                         "client_id": {
