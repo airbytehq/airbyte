@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import asyncio
 import io
 import logging
 from datetime import datetime
@@ -111,7 +111,7 @@ class MockFileBasedStreamReader(AbstractFileBasedStreamReader):
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> io.IOBase:
         assert encoding == self._expected_encoding
-        return io.BytesIO()
+        return io.StringIO("c1,c2\nv1,v2")
 
     def get_matching_files(self, globs: List[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         pass
@@ -137,3 +137,6 @@ def test_encoding_is_passed_to_stream_reader():
         format={"csv": CsvFormat(encoding=encoding)}
     )
     list(parser.parse_records(config, file, stream_reader, logger))
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(parser.infer_schema(config, file, stream_reader, logger))
