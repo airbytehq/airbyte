@@ -68,6 +68,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       case BOOLEAN -> "BOOLEAN";
       case TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ";
       case TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ";
+      // If you change this - also change the logic in extractAndCast
       case TIME_WITH_TIMEZONE -> "VARCHAR";
       case TIME_WITHOUT_TIMEZONE -> "TIME";
       case DATE -> "DATE";
@@ -168,6 +169,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType);
+    } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
+      // We're using VARCHAR for this type, so need to explicitly check the string format.
+      // There's a bunch of ways we could do this; this regex is approximately correct and easy to implement.
+      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          """
+          CASE
+            WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}:\\\\d{2})')
+              THEN NULL
+            ELSE "_airbyte_data":"${column_name}"
+          END
+          """);
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {

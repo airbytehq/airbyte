@@ -21,17 +21,11 @@ public class SnowflakeTestSourceOperations extends JdbcSourceOperations {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
-    if ("variant".equals(columnTypeName)) {
-      // jdbc converts VARIANT columns to serialized JSON, so we need to deserialize it
-      json.set(columnName, Jsons.deserialize(resultSet.getString(colIndex)));
-    } else {
-      super.copyToJsonField(resultSet, colIndex, json);
+    switch (columnTypeName) {
+      // jdbc converts VARIANT columns to serialized JSON, so we need to deserialize these.
+      case "variant", "array", "object" -> json.set(columnName, Jsons.deserialize(resultSet.getString(colIndex)));
+      default -> super.copyToJsonField(resultSet, colIndex, json);
     }
-  }
-
-  @Override
-  protected void putString(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    DestinationAcceptanceTestUtils.putStringIntoJson(resultSet.getString(index), columnName, node);
   }
 
   @Override
