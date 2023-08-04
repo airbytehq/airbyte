@@ -45,3 +45,8 @@ Avni Source connector Support Following Streams:
 - **Program Enrolment Stream** : This stream provides program enrolment data. You can obtain information about subjects who have enrolled in programs.
 - **Program Encounter Stream**, This stream provides data about encounters that occur within programs. You can retrieve information about all the encounters that have taken place within programs.
 - **Subject Encounter Stream**, This stream provides data about encounters involving subjects, excluding program encounters. You can obtain information about all the encounters that subjects have had outside of program-encounter.
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| 0.1.0   | 2023-07-27 | [28141](https://github.com/airbytehq/airbyte/pull/28141)   |  Avni Source Connector |

@@ -2,37 +2,37 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from source_avni.source import SourceAvni
 
 
-def test_check_connection(mocker):
-
-    mocker.patch('source_avni.source.SourceAvni.get_token').return_value = "Token"
-    mocker.patch('source_avni.source.requests.get').return_value.status_code = 200
-    source = SourceAvni()
-    logger_mock = MagicMock()
-    config_mock = {"username": "test_user", "password": "test_password","start_date": "date"}
-    result, error = source.check_connection(logger_mock, config_mock)
-    assert result is True
+def test_check_connection_success(mocker):
+    with patch('source_avni.source.SourceAvni.get_client_id') as get_client_id_mock, \
+         patch('source_avni.source.SourceAvni.get_token') as get_token_mock, \
+         patch('source_avni.source.Subjects.read_records') as read_records_mock:
+        get_client_id_mock.return_value = "ClientID"
+        get_token_mock.return_value = "Token"
+        read_records_mock.return_value = iter(["record1", "record2"])
+        source = SourceAvni()
+        config_mock = {"username": "test_user", "password": "test_password", "start_date": "2000-06-27T04:18:36.914Z"}
+        result,msg = source.check_connection(None, config_mock)
+        assert result is True
 
 
 def test_streams(mocker):
 
-    mocker.patch('source_avni.source.SourceAvni.generate_streams').return_value = ["a","b","c","d"]
+    mocker.patch('source_avni.source.SourceAvni.get_token').return_value = 'fake_token'
     source = SourceAvni()
     config_mock = {"username": "test_user", "password": "test_password", "start_date": "2000-06-27T04:18:36.914Z"}
     streams = source.streams(config_mock)
     excepted_outcome = 4
     assert len(streams) == excepted_outcome
 
-def test_generate_streams(mocker):
-    
-    mocker.patch('source_avni.source.SourceAvni.get_token').return_value = "Token"
-    mocker.patch('source_avni.source.SourceAvni.get_client_id').return_value = "Token"
+
+def test_get_client_id(mocker):
+
     source = SourceAvni()
-    config_mock = {"username": "test_user", "password": "test_password", "start_date": "2000-06-27T04:18:36.914Z"}
-    streams = source.generate_streams(config_mock)
-    assert len(streams)==4
-    
+    client_id = source.get_client_id()
+    expected_length = 26
+    assert len(client_id) == expected_length

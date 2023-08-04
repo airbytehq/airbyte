@@ -4,7 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "ID": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "External ID": {
       "type": ["null", "string"]
@@ -13,31 +13,21 @@
       "type": "boolean"
     },
     "Subject ID": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "Subject type": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "Subject external ID": {
-      "type": ["null", "string"]
-    },
-    "Enrolment ID": {
-      "type": ["null", "string"]
-    },
-    "Enrolment external ID": {
       "type": ["null", "string"]
     },
     "Program": {
       "type": ["null", "string"]
     },
-    "Encounter type": {
+    "Enrolment datetime": {
       "type": ["null", "string"]
     },
-    "Encounter date time": {
-      "type": ["null", "string"],
-      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
-    },
-    "Encounter location": {
+    "Enrolment location": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -49,41 +39,42 @@
         }
       }
     },
-    "Earliest scheduled date": {
-      "type": ["null", "string"],
-      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    "Exit datetime": {
+      "type": ["null", "string"]
     },
-    "Max scheduled date": {
-      "type": ["null", "string"],
-      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    "Exit location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"]
+        }
+      }
     },
     "observations": {
       "type": ["null", "object"],
       "additionalProperties": true
     },
-    "Cancel location": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {
-        "X": {
-          "type": ["null", "number"]
-        },
-        "Y": {
-          "type": ["null", "number"],
-          "example": 74.7364501
-        }
-      }
-    },
-    "Cancel date time": {
-      "type": ["null", "string"],
-      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
-    },
-    "cancelObservations": {
+    "exitObservations": {
       "type": ["null", "object"],
       "additionalProperties": true
     },
+    "encounters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "last_modified_at":{
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
     "audit": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "Created at": {
           "type": ["null", "string"],
