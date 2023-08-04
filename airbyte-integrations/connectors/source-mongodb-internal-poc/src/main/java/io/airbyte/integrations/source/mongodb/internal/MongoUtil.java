@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import com.google.common.collect.Lists;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
@@ -23,11 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.airbyte.protocol.models.v0.SyncMode;
 import org.bson.Document;
 
 public class MongoUtil {
-
-  public static final String DEFAULT_CURSOR_FIELD = "_id";
 
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
@@ -91,10 +92,7 @@ public class MongoUtil {
   }
 
   private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
-    return CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields)
-        .withSourceDefinedCursor(true)
-        .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
-        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
+    return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
   private static List<Field> getFieldsInCollection(final MongoCollection collection) {
