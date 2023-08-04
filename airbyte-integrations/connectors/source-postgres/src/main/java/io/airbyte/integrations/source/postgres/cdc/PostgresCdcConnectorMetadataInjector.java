@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 
-public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector {
+public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector<Long> {
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
@@ -20,7 +20,8 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
     event.put(CDC_LSN, lsn);
   }
 
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final long lsn) {
+  @Override
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final Long lsn) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LSN, lsn);
     record.put(CDC_DELETED_AT, (String) null);

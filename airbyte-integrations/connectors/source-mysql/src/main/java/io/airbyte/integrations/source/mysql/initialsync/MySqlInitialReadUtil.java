@@ -21,6 +21,7 @@ import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.MySqlCdcProperties;
 import io.airbyte.integrations.source.mysql.MySqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mysql.MySqlCdcStateHandler;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
@@ -90,15 +91,15 @@ public class MySqlInitialReadUtil {
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
 
-      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaPk = initialLoadStreams.streamsForInitialLoad();
-      LOGGER.info("Streams to be synced via primary key : {}", finalListOfStreamsToBeSyncedViaPk.size());
-      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaPk));
+      LOGGER.info("Streams to be synced via primary key : {}", initialLoadStreams.streamsForInitialLoad().size());
+      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
       final MySqlInitialLoadStateManager initialLoadStateManager =
           new MySqlInitialLoadGlobalStateManager(initialLoadStreams, initPairToPrimaryKeyInfoMap(initialLoadStreams, tableNameToTable),
               stateToBeUsed, catalog);
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MySqlInitialLoadSourceOperations sourceOperations =
-          new MySqlInitialLoadSourceOperations(emittedAt.toString(), Optional.of(stateAttributes));
+          new MySqlInitialLoadSourceOperations(
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, new MySqlCdcConnectorMetadataInjector())));
 
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
@@ -107,7 +108,7 @@ public class MySqlInitialReadUtil {
           namespacePair -> Jsons.emptyObject());
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaPk),
+          new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
           emittedAt));
     } else {
