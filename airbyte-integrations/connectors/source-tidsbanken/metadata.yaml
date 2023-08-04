@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 42fb0ab8-99df-450d-a065-711ce2e1d831
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-tidsbanken
+  githubIssueLabel: source-tidsbanken
+  icon: tidsbanken.svg
+  license: MIT
+  name: Tidsbanken
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tidsbanken
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
