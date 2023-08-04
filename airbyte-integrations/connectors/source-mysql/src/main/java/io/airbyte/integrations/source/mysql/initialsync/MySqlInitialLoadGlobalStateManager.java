@@ -77,6 +77,9 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
+    // Update the primary key load status based on state emitted. This is so we can continuosly build the chunking subqueries
+    // TODO : Figure out when when we're done?
+    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);

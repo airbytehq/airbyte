@@ -100,11 +100,13 @@ public class MySqlInitialReadUtil {
       final MySqlInitialLoadSourceOperations sourceOperations =
           new MySqlInitialLoadSourceOperations(emittedAt.toString(), Optional.of(stateAttributes));
 
+      // TODO : Actually populate the table block size
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
           quoteString,
           initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject());
+          namespacePair -> Jsons.emptyObject(),
+          new HashMap<>());
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaPk),

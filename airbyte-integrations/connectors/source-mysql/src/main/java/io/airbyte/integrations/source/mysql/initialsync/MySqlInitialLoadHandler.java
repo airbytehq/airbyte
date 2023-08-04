@@ -9,6 +9,7 @@ import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.mysql.MySqlQueryUtils.TableSizeInfo;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
@@ -50,18 +51,22 @@ public class MySqlInitialLoadHandler {
   private final MySqlInitialLoadStateManager initialLoadStateManager;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
+  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
+
   public MySqlInitialLoadHandler(final JsonNode config,
       final JdbcDatabase database,
       final MySqlInitialLoadSourceOperations sourceOperations,
       final String quoteString,
       final MySqlInitialLoadStateManager initialLoadStateManager,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+      final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.initialLoadStateManager = initialLoadStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
@@ -88,7 +93,9 @@ public class MySqlInitialLoadHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .collect(Collectors.toList());
-        final AutoCloseableIterator<JsonNode> queryStream = queryTablePk(selectedDatabaseFields, table.getNameSpace(), table.getName());
+        final long numRowsToFetchPerQuery = 0;
+        final AutoCloseableIterator<JsonNode> queryStream = queryTablePk(selectedDatabaseFields, table.getNameSpace(), table.getName(),
+            numRowsToFetchPerQuery);
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -100,17 +107,30 @@ public class MySqlInitialLoadHandler {
     return iteratorList;
   }
 
+  private long calculateNumRowsToFetchPerQuery(final TableSizeInfo tableSizeInfo) {
+    return 0;
+  }
+
   private AutoCloseableIterator<JsonNode> queryTablePk(
       final List<String> columnNames,
       final String schemaName,
-      final String tableName) {
+      final String tableName,
+      final long numRowsToFetchPerQuery) {
     LOGGER.info("Queueing query for table: {}", tableName);
     final AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
+        final PrimaryKeyLoadStatus pkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(airbyteStream);
+        // Rather than trying to read an entire table with a "WHERE pk > 0" query,
+        // We are creating a list of lazy iterators each holding a subquery according to the plan.
+        // All subqueries are then composed in a single composite iterator.
+        // Because list consists of lazy iterators, the query is only executing when needed one after the other.
+        final List<PrimaryKeyLoadStatus> primaryKeyStatuses = getPrimaryKeyStatuses(initialLoadStateManager);
+        final PrimaryKeyInfo pkInfo = initialLoadStateManager.getPrimaryKeyInfo(airbyteStream);
         final Stream<JsonNode> stream = database.unsafeQuery(
-            connection -> createPkQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream),
+            connection -> createPkQueryStatement(connection, columnNames, schemaName, tableName, pkInfo, pkLoadStatus,
+                numRowsToFetchPerQuery),
             sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
@@ -119,12 +139,18 @@ public class MySqlInitialLoadHandler {
     }, airbyteStream);
   }
 
+  private List<PrimaryKeyLoadStatus> getPrimaryKeyStatuses(final MySqlInitialLoadStateManager initialLoadStateManager) {
+    return null;
+  }
+
   private PreparedStatement createPkQueryStatement(
       final Connection connection,
       final List<String> columnNames,
       final String schemaName,
       final String tableName,
-      final AirbyteStreamNameNamespacePair pair) {
+      final PrimaryKeyInfo pkInfo,
+      final PrimaryKeyLoadStatus pkLoadStatus,
+      final long numRowsToFetchPerQuery) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
@@ -132,10 +158,8 @@ public class MySqlInitialLoadHandler {
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
 
-      final PrimaryKeyLoadStatus pkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
-      final PrimaryKeyInfo pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
       final PreparedStatement preparedStatement =
-          getPkPreparedStatement(connection, wrappedColumnNames, fullTableName, pkLoadStatus, pkInfo);
+          getPkPreparedStatement(connection, wrappedColumnNames, fullTableName, pkLoadStatus, pkInfo, numRowsToFetchPerQuery);
       LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
       return preparedStatement;
     } catch (final SQLException e) {
@@ -147,21 +171,21 @@ public class MySqlInitialLoadHandler {
       final String wrappedColumnNames,
       final String fullTableName,
       final PrimaryKeyLoadStatus pkLoadStatus,
-      final PrimaryKeyInfo pkInfo)
+      final PrimaryKeyInfo pkInfo, final long numRowsToFetchPerQuery)
       throws SQLException {
 
     if (pkLoadStatus == null) {
       final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
-      final String sql = String.format("SELECT %s FROM %s ORDER BY %s", wrappedColumnNames, fullTableName,
-          quotedCursorField, quotedCursorField);
+      final String sql = String.format("SELECT %s FROM %s ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+          quotedCursorField, quotedCursorField, numRowsToFetchPerQuery);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       return preparedStatement;
 
     } else {
       final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
       // Since a pk is unique, we can issue a > query instead of a >=, as there cannot be two records with the same pk.
-      final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s", wrappedColumnNames, fullTableName,
-          quotedCursorField, quotedCursorField);
+      final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s LIMIT %s", wrappedColumnNames, fullTableName,
+          quotedCursorField, quotedCursorField, numRowsToFetchPerQuery);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       final MysqlType cursorFieldType = pkInfo.fieldType();
