@@ -47,23 +47,21 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public boolean hasNext() {
-    LOGGER.info("!!! hasNext called");
     if (iter.hasNext()) {
-      LOGGER.info("!!! true 1");
       return true;
     }
     if (!finalStateNext) {
-      LOGGER.info("!!! true 2");
       finalStateNext = true;
       return true;
     }
-    LOGGER.info("!!! false");
     return false;
   }
 
   @Override
   public AirbyteMessage next() {
     if ((count > 0 && count % batchSize == 0) || finalStateNext) {
+      count = 0;
+
       final var streamState = new AirbyteStreamState()
           .withStreamDescriptor(new StreamDescriptor()
               .withName(stream.getStream().getName())
@@ -87,7 +85,6 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     final var jsonNode = MongoUtils.toJsonNode(document, fields);
 
     last = document;
-    LOGGER.info("document {} - {}", count, last);
 
     return new AirbyteMessage()
         .withType(Type.RECORD)
