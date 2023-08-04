@@ -15,7 +15,6 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,9 +82,13 @@ public class MongoUtil {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final List<Field> fields = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName));
-      streams.add(CatalogHelpers.createAirbyteStream(collectionName, databaseName, fields));
+      streams.add(createAirbyteStream(collectionName, databaseName, fields));
     });
     return streams;
+  }
+
+  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
+    return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
   private static List<Field> getFieldsInCollection(final MongoCollection collection) {
