@@ -104,20 +104,23 @@ class SchemaInferrenceTestCase(TestCase):
     def test_given_booleans_only_when_infer_schema_then_type_is_boolean(self) -> None:
         self._test_infer_schema(list(_DEFAULT_TRUE_VALUES.union(_DEFAULT_FALSE_VALUES)), "boolean")
 
-    def test_given_numbers_only_when_infer_schema_then_type_is_number(self) -> None:
+    def test_given_integers_only_when_infer_schema_then_type_is_integer(self) -> None:
+        self._test_infer_schema(["2", "90329", "5645"], "integer")
+
+    def test_given_numbers_and_integers_when_infer_schema_then_type_is_number(self) -> None:
         self._test_infer_schema(["2", "90329", "2.312"], "number")
 
     def test_given_arrays_only_when_infer_schema_then_type_is_array(self) -> None:
-        self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "array")
+        self._test_infer_schema(['["first_item", "second_item"]', '["first_item_again", "second_item_again"]'], "string")
 
     def test_given_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "object")
+        self._test_infer_schema(['{"object1_key": 1}', '{"object2_key": 2}'], "string")
 
     def test_given_arrays_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._test_infer_schema(['["first_item", "second_item"]', '{"an_object_key": "an_object_value"}'], "object")
+        self._test_infer_schema(['["first_item", "second_item"]', '{"an_object_key": "an_object_value"}'], "string")
 
     def test_given_strings_and_objects_only_when_infer_schema_then_type_is_object(self) -> None:
-        self._test_infer_schema(['["first_item", "second_item"]', "this is a string"], "object")
+        self._test_infer_schema(['["first_item", "second_item"]', "this is a string"], "string")
 
     def test_given_strings_only_when_infer_schema_then_type_is_string(self) -> None:
         self._test_infer_schema(["a string", "another string"], "string")
@@ -128,7 +131,7 @@ class SchemaInferrenceTestCase(TestCase):
         assert inferred_schema == {"header": {"type": expected_type}}
 
     def test_given_big_file_when_infer_schema_then_stop_early(self) -> None:
-        self._csv_reader.read_data.return_value = ({"header": row} for row in ["2" * 1_000_000] + ["this is a string"])
+        self._csv_reader.read_data.return_value = ({"header": row} for row in ["2." + "2" * 1_000_000] + ["this is a string"])
         inferred_schema = self._infer_schema()
         # since the type is number, we know the string at the end was not considered
         assert inferred_schema == {"header": {"type": "number"}}

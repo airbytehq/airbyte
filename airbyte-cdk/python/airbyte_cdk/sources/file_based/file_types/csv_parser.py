@@ -237,6 +237,7 @@ class CsvParser(FileTypeParser):
 
 class _TypeInferrer:
     _BOOLEAN_TYPE = "boolean"
+    _INTEGER_TYPE = "integer"
     _NUMBER_TYPE = "number"
     _ARRAY_TYPE = "array"
     _OBJECT_TYPE = "object"
@@ -255,17 +256,18 @@ class _TypeInferrer:
 
         if types == {self._BOOLEAN_TYPE}:
             return self._BOOLEAN_TYPE
-        elif types == {self._NUMBER_TYPE}:
+        elif types == {self._INTEGER_TYPE}:
+            return self._INTEGER_TYPE
+        elif types == {self._NUMBER_TYPE} or types == {self._INTEGER_TYPE, self._NUMBER_TYPE}:
             return self._NUMBER_TYPE
-        elif types == {self._ARRAY_TYPE}:
-            return self._ARRAY_TYPE
-        elif self._ARRAY_TYPE in types or self._OBJECT_TYPE in types:
-            return self._OBJECT_TYPE
+        # to keep backward compatibility with PyArrow, we will not parse types
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> str:
         if self._is_boolean(value):
             return self._BOOLEAN_TYPE
+        elif self._is_integer(value):
+            return self._INTEGER_TYPE
         elif self._is_number(value):
             return self._NUMBER_TYPE
         elif self._is_array(value):
@@ -278,6 +280,14 @@ class _TypeInferrer:
     def _is_boolean(self, value: str) -> bool:
         try:
             _value_to_bool(value, self._boolean_trues, self._boolean_falses)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def _is_integer(value: str) -> bool:
+        try:
+            _value_to_python_type(value, int)
             return True
         except ValueError:
             return False
