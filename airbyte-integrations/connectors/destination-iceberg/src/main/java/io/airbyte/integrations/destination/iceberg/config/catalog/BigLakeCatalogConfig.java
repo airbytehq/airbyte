@@ -28,7 +28,8 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
   private final String biglake_project_id;
 
   public BigLakeCatalogConfig(@NotNull JsonNode catalogConfigJson) {
-    this.biglake_project_id = catalogConfigJson.get(GCS_PROJECT_ID_CONFIG_KEY).asText();
+    //this.biglake_project_id = catalogConfigJson.get(GCS_PROJECT_ID_CONFIG_KEY).asText();
+    this.biglake_project_id = "thomas-van-latum-sndbx-l";
   }
 
   @Override
@@ -37,7 +38,8 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
     configMap.put("spark.jars.packages", "org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.2.0");
     configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
     configMap.put("spark.sql.catalog." + CATALOG_NAME + ".catalog-impl", "org.apache.iceberg.gcp.biglake.BigLakeCatalog");
-
+    configMap.put("spark.sql.catalog." + CATALOG_NAME + ".gcp_project", this.biglake_project_id);
+    configMap.put("spark.sql.catalog." + CATALOG_NAME + ".blms_catalog", CATALOG_NAME);
     configMap.putAll(this.storageConfig.sparkConfigMap(CATALOG_NAME));
     return configMap;
   }
@@ -46,7 +48,15 @@ public class BigLakeCatalogConfig extends IcebergCatalogConfig {
   public Catalog genCatalog() {
     BigLakeCatalog catalog = new BigLakeCatalog();
     Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
-    properties.put("spark.sql.catalog."+CATALOG_NAME+".gcp_project", this.biglake_project_id);
+    // properties.put("spark.jars.packages", "org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.2.0");
+    // properties.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
+    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".catalog-impl", "org.apache.iceberg.gcp.biglake.BigLakeCatalog");
+    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".gcp_project", this.biglake_project_id);
+    // properties.put("spark.sql.catalog." + CATALOG_NAME + ".blms_catalog", CATALOG_NAME);
+    // properties.put("spark.sql.catalog."+CATALOG_NAME+".blms_catalog", CATALOG_NAME);
+    properties.put("gcp_project", this.biglake_project_id);
+    properties.put("warehouse", this.storageConfig.getWarehouseUri());
+    properties.putAll(this.storageConfig.catalogInitializeProperties());
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }
