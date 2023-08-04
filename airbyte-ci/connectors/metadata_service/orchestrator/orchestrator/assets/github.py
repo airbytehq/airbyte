@@ -1,6 +1,9 @@
 import pandas as pd
 import hashlib
 import base64
+import dateutil
+import datetime
+import humanize
 
 from dagster import Output, asset, OpExecutionContext
 from github import Repository
@@ -47,13 +50,43 @@ def github_metadata_file_md5s(context):
     github_connector_repo = context.resources.github_connector_repo
     github_connectors_metadata_files = context.resources.github_connectors_metadata_files
 
+    # FOR DEV ONLY: limit the number of metadata files to 20
+    github_connectors_metadata_files = github_connectors_metadata_files[:20]
+
     metadata_file_paths = {
-        metadata_path: _get_md5_of_github_file(context, github_connector_repo, metadata_path)
-        for metadata_path in github_connectors_metadata_files
+        metadata_file["path"]: {
+            "md5": _get_md5_of_github_file(context, github_connector_repo, metadata_file["path"]),
+            "last_modified": metadata_file["last_modified"],
+        }
+        for metadata_file in github_connectors_metadata_files
     }
 
     return Output(metadata_file_paths, metadata={"preview": metadata_file_paths})
 
+def _should_publish_have_ran(datetime_string: str) -> bool:
+    """
+    Return true if the datetime is 2 hours old.
+
+    """
+    dt = dateutil.parser.parse(datetime_string)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    two_hours_ago = now - datetime.timedelta(hours=2)
+    return dt < two_hours_ago
+
+def _to_time_ago(datetime_string: str) -> str:
+    """
+    Return a string of how long ago the datetime is human readable format. 10 min
+    """
+    dt = dateutil.parser.parse(datetime_string)
+    return humanize.naturaltime(dt)
+
+
+def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
+    """
+    Return true if the github info is stale.
+    """
+    not_in_gcs = latest_gcs_metadata_md5s.get(github_file_info["md5"]) is None
+    return not_in_gcs and _should_publish_have_ran(github_file_info["last_modified"])
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
@@ -63,18 +96,18 @@ def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
     latest_gcs_metadata_file_blobs = context.resources.latest_metadata_file_blobs
-
     latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_gcs_metadata_file_blobs}
 
     stale_report = [
         {
+            "stale": _is_stale(github_file_info, latest_gcs_metadata_md5s),
             "github_path": github_path,
-            "stale": latest_gcs_metadata_md5s.get(github_md5) is None,
-            "github_md5": github_md5,
-            "gcs_md5": latest_gcs_metadata_md5s.get(github_md5),
-            "gcs_path": latest_gcs_metadata_md5s.get(github_md5),
+            "github_md5": github_file_info["md5"],
+            "github_last_modified": _to_time_ago(github_file_info["last_modified"]),
+            "gcs_md5": latest_gcs_metadata_md5s.get(github_file_info["md5"]),
+            "gcs_path": latest_gcs_metadata_md5s.get(github_file_info["md5"]),
         }
-        for github_path, github_md5 in github_metadata_file_md5s.items()
+        for github_path, github_file_info in github_metadata_file_md5s.items()
     ]
 
     stale_metadata_files_df = pd.DataFrame(stale_report)

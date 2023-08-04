@@ -1,7 +1,8 @@
 from typing import List
 from dagster import StringSource, InitResourceContext, resource
-from github import Github, Repository, ContentFile
+from github import Github, Repository, ContentFile, GitTreeElement
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 
 from orchestrator.config import CONNECTORS_PATH
 from metadata_service.constants import METADATA_FILE_NAME
@@ -48,15 +49,19 @@ def github_connectors_directory(resource_context: InitResourceContext) -> List[C
     required_resource_keys={"github_connector_repo"},
     config_schema={"connectors_path": StringSource},
 )
-def github_connectors_metadata_files(resource_context: InitResourceContext) -> List[str]:
+def github_connectors_metadata_files(resource_context: InitResourceContext) -> List[dict]:
     resource_context.log.info(f"retrieving github metadata files")
 
     github_connector_repo = resource_context.resources.github_connector_repo
     repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
-    metadata_file_paths = [github_file.path for github_file in repo_file_tree if _valid_metadata_file_path(github_file.path)]
+    metadata_file_paths = [{
+        "path": github_file.path,
+        "sha": github_file.sha,
+        "last_modified": github_file.last_modified
+    } for github_file in repo_file_tree if _valid_metadata_file_path(github_file.path)]
 
     resource_context.log.info(f"finished retrieving github metadata files")
-
+    # import pdb; pdb.set_trace()
     return metadata_file_paths
 
 
