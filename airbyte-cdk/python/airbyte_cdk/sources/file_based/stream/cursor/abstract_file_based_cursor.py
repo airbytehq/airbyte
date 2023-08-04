@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, MutableMapping
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.types import StreamState
 
@@ -15,6 +16,10 @@ class AbstractFileBasedCursor(ABC):
     """
     Abstract base class for cursors used by file-based streams.
     """
+
+    @abstractmethod
+    def __init__(self, stream_config: FileBasedStreamConfig, **kwargs: Any):
+        ...
 
     @abstractmethod
     def add_file(self, file: RemoteFile) -> None:
